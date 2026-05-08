@@ -1,0 +1,179 @@
+{
+  "$schema": "https://schema.optimizationmaxxing/versions.v1.json",
+  "comment": "Phase 9 self-update prep. Hosted at /versions.json next to the landing page. The Tauri updater will fetch this to discover new releases. SHA-256 placeholders are filled in at release time by the build pipeline (TODO).",
+  "current": "0.1.35",
+  "channel": "pilot",
+  "releases": [
+    {
+      "version": "0.1.35",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.35_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Research-driven mega-batch: 4 parallel agent dossiers → catalog 68 → 87",
+        "Intel 13/14gen Microcode + VBS Status Diagnostics cards",
+        "Live DPC sparkline · HID priority · MSI mode (safe-class) · IFEO priority for Fortnite/Valorant/CS2 · 9 service kills · 13 scheduled-task batch disable",
+        "Clean State Gaming community preset bundling 19 entries"
+      ]
+    },
+    {
+      "version": "0.1.34",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.34_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Latency Probe (Toolkit): 6 gaming-relevant targets + custom-host slot for game-server ping from netstat",
+        "PCIe Link card (Diagnostics): flags x8/x16 regression + sub-max gen with ASPM caveat",
+        "AMD UCLK warning (Diagnostics): heuristic 1:2-mode flag for Ryzen 7000 above 6400 MT/s",
+        "Discord low-FPS research article (4 manual toggles + why we can't automate)"
+      ]
+    },
+    {
+      "version": "0.1.33",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.33_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Audit deferral pass: all 8 UX/correctness flags from the 3-agent audit shipped",
+        "Per-NUMA/per-CCD DPC breakdown · NIC probe-and-log · formFactor desktop/laptop targeting",
+        "FileWrite resolved-path pinning · one-way action surfacing · registry error precision"
+      ]
+    },
+    {
+      "version": "0.1.32",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.32_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Audit-driven correctness pass: 3 research agents validated every tweak",
+        "Catalog 78 → 68 honest tweaks (removed 10 placebos / folklore)",
+        "Fixed 2 actively wrong values + 2 revert bugs + 4 misleading rationales",
+        "Network Low-Latency rebuilt around tweaks that actually work on Win10/11"
+      ]
+    },
+    {
+      "version": "0.1.31",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.31_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "FileWrite engine action variant — catalog can ship Engine.ini / .nip / .cfg tweaks",
+        "Snapshot-backed byte-perfect revert · env-var path expansion · user-profile vs admin routing"
+      ]
+    },
+    {
+      "version": "0.1.30",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.30_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "DPC + Interrupt Time card on Diagnostics — measurable before/after for every preset (the differentiator)",
+        "Save baseline → apply → Refresh → see exactly what moved"
+      ]
+    },
+    {
+      "version": "0.1.29",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.29_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Catalog 70 → 78: 8 deepest-impact latency tweaks (NIC interrupt mod / flow / RSS, core parking, PCIe ASPM, USB-3 link power, device-side HPET, TCP window cap)",
+        "Tournament FPS community preset bundles all 8"
+      ]
+    },
+    {
+      "version": "0.1.28",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.28_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Scan rig state — see which catalog tweaks are already at target on your rig vs which would change",
+        "Per-row state badge (✓ already / ◐ partial / ✗ would change / ? unknown) + per-action breakdown when expanded",
+        "Last-scan summary + new On-rig filter"
+      ]
+    },
+    {
+      "version": "0.1.27",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.27_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Diagnostics page — rig + live metrics + temps + disk-free in one snapshot, Copy-to-clipboard",
+        "Landing refreshed to v0.1.27 stats (70 tweaks, 10 presets)"
+      ]
+    },
+    {
+      "version": "0.1.26",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.26_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Changelog page reachable from in-app nav",
+        "Rig targeting expanded to 26/70 tweaks (OS-build floors on 7 more entries)"
+      ]
+    },
+    {
+      "version": "0.1.25",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.25_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Catalog 70 tweaks (+5 curated)",
+        "/changelog page route",
+        "sitemap.xml + robots.txt",
+        "Compare matrix search, Preview KindChip glyphs, score-blocker hint"
+      ]
+    },
+    {
+      "version": "0.1.21",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.21_x64-setup.exe",
+      "size_bytes": 3508629,
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Expandable Tweak rows with rationale + risk-why + source",
+        "Preset glyphs",
+        "Recently Applied on Dashboard",
+        "Compare Presets matrix"
+      ]
+    },
+    {
+      "version": "0.1.20",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.20_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": [
+        "Suggest-a-Tweak modal",
+        "Structured Tweak Preview drawer with Before/After"
+      ]
+    },
+    {
+      "version": "0.1.19",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.19_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": ["What's-New modal on first-launch-after-upgrade"]
+    },
+    {
+      "version": "0.1.18",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.18_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": ["Tune Score on Dashboard", "Apply All Recommended (1 UAC)"]
+    },
+    {
+      "version": "0.1.17",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.17_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": ["4 bundled community presets"]
+    },
+    {
+      "version": "0.1.16",
+      "released_at": "2026-05-07",
+      "url": "optimizationmaxxing_0.1.16_x64-setup.exe",
+      "sha256": "TODO-fill-at-release",
+      "highlights": ["Custom Preset Builder + JSON export/import"]
+    }
+  ]
+}

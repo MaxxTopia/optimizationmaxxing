@@ -1,0 +1,27 @@
+{
+  "name": "Clean State Gaming",
+  "glyph": "🛡",
+  "tagline": "Disable everything non-essential · keep only the game + anti-cheat alive",
+  "description": "Bundles 12 service kills + 13 telemetry scheduled tasks + HID priority boost + game-process priority bump. Built around the canonical safe-disable list (BlackViper-era research, Raphire/Win11Debloat, djdallmann GamingPCSetup). Hard-excludes anything anti-cheat needs (CryptSvc, BFE, MpsSvc, AudioSrv, MMCSS, Dnscache, Dhcp, EventLog, RpcSs, DcomLaunch). After applying, run /diagnostics → DPC card → save baseline before, re-measure after, see the actual delta.",
+  "tweakIds": [
+    "service.werservice.disable",
+    "service.maps-broker.disable",
+    "service.retail-demo.disable",
+    "service.fax.disable",
+    "service.wmp-network.disable",
+    "service.geolocation.disable",
+    "service.smart-card.disable",
+    "service.biometric.disable",
+    "service.tablet-input.disable",
+    "process.sysmain.disable",
+    "process.windows-search.disable",
+    "tasks.telemetry-batch.disable",
+    "hid.mouse.priority-realtime",
+    "hid.mouse.queue-size.optimize",
+    "hid.keyboard.priority-realtime",
+    "hid.keyboard.queue-size.optimize",
+    "process.fortnite.priority-high",
+    "process.valorant.priority-high",
+    "process.cs2.priority-high"
+  ]
+}

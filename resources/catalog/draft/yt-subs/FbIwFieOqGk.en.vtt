@@ -1,0 +1,1928 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.040 --> 00:00:01.589 align:start position:0%
+ 
+so<00:00:00.120><c> I</c><00:00:00.240><c> just</c><00:00:00.359><c> got</c><00:00:00.520><c> a</c><00:00:00.640><c> fresh</c><00:00:00.919><c> version</c><00:00:01.160><c> of</c><00:00:01.280><c> Windows</c>
+
+00:00:01.589 --> 00:00:01.599 align:start position:0%
+so I just got a fresh version of Windows
+ 
+
+00:00:01.599 --> 00:00:04.630 align:start position:0%
+so I just got a fresh version of Windows
+11<00:00:02.120><c> and</c><00:00:02.240><c> this</c><00:00:02.399><c> how</c><00:00:02.639><c> went</c><00:00:02.800><c> from</c><00:00:03.080><c> 180</c><00:00:04.000><c> processes</c>
+
+00:00:04.630 --> 00:00:04.640 align:start position:0%
+11 and this how went from 180 processes
+ 
+
+00:00:04.640 --> 00:00:06.630 align:start position:0%
+11 and this how went from 180 processes
+all<00:00:04.759><c> the</c><00:00:04.839><c> way</c><00:00:05.040><c> down</c><00:00:05.200><c> to</c><00:00:05.440><c> around</c><00:00:05.799><c> 70</c><00:00:06.399><c> I'm</c><00:00:06.480><c> going</c>
+
+00:00:06.630 --> 00:00:06.640 align:start position:0%
+all the way down to around 70 I'm going
+ 
+
+00:00:06.640 --> 00:00:08.509 align:start position:0%
+all the way down to around 70 I'm going
+to<00:00:06.759><c> show</c><00:00:06.919><c> you</c><00:00:07.080><c> step</c><00:00:07.319><c> by</c><00:00:07.560><c> step</c><00:00:07.879><c> exactly</c><00:00:08.280><c> how</c><00:00:08.360><c> to</c>
+
+00:00:08.509 --> 00:00:08.519 align:start position:0%
+to show you step by step exactly how to
+ 
+
+00:00:08.519 --> 00:00:10.430 align:start position:0%
+to show you step by step exactly how to
+deep<00:00:08.800><c> load</c><00:00:08.960><c> WIndows</c><00:00:09.280><c> 11</c><00:00:09.679><c> properly</c><00:00:10.200><c> and</c><00:00:10.320><c> the</c>
+
+00:00:10.430 --> 00:00:10.440 align:start position:0%
+deep load WIndows 11 properly and the
+ 
+
+00:00:10.440 --> 00:00:12.150 align:start position:0%
+deep load WIndows 11 properly and the
+best<00:00:10.599><c> part</c><00:00:10.759><c> about</c><00:00:10.920><c> it</c><00:00:11.120><c> is</c><00:00:11.320><c> it's</c><00:00:11.559><c> really</c><00:00:11.880><c> safe</c>
+
+00:00:12.150 --> 00:00:12.160 align:start position:0%
+best part about it is it's really safe
+ 
+
+00:00:12.160 --> 00:00:13.749 align:start position:0%
+best part about it is it's really safe
+and<00:00:12.360><c> also</c><00:00:12.679><c> really</c><00:00:13.040><c> fast</c><00:00:13.320><c> so</c><00:00:13.480><c> therefore</c><00:00:13.679><c> it</c>
+
+00:00:13.749 --> 00:00:13.759 align:start position:0%
+and also really fast so therefore it
+ 
+
+00:00:13.759 --> 00:00:15.430 align:start position:0%
+and also really fast so therefore it
+won't<00:00:13.960><c> retake</c><00:00:14.280><c> a</c><00:00:14.400><c> lot</c><00:00:14.519><c> of</c><00:00:14.679><c> time</c><00:00:14.920><c> guys</c><00:00:15.200><c> you</c><00:00:15.320><c> can</c>
+
+00:00:15.430 --> 00:00:15.440 align:start position:0%
+won't retake a lot of time guys you can
+ 
+
+00:00:15.440 --> 00:00:17.870 align:start position:0%
+won't retake a lot of time guys you can
+see<00:00:15.639><c> before</c><00:00:15.879><c> we</c><00:00:16.000><c> deplo</c><00:00:16.440><c> windows</c><00:00:16.840><c> I</c><00:00:16.920><c> have</c><00:00:17.119><c> over</c>
+
+00:00:17.870 --> 00:00:17.880 align:start position:0%
+see before we deplo windows I have over
+ 
+
+00:00:17.880 --> 00:00:19.950 align:start position:0%
+see before we deplo windows I have over
+160<00:00:18.359><c> processors</c><00:00:18.920><c> which</c><00:00:19.039><c> is</c><00:00:19.279><c> horrible</c><00:00:19.720><c> for</c>
+
+00:00:19.950 --> 00:00:19.960 align:start position:0%
+160 processors which is horrible for
+ 
+
+00:00:19.960 --> 00:00:21.870 align:start position:0%
+160 processors which is horrible for
+system<00:00:20.199><c> render</c><00:00:20.560><c> latency</c><00:00:21.199><c> the</c><00:00:21.320><c> overall</c><00:00:21.680><c> speed</c>
+
+00:00:21.870 --> 00:00:21.880 align:start position:0%
+system render latency the overall speed
+ 
+
+00:00:21.880 --> 00:00:23.470 align:start position:0%
+system render latency the overall speed
+of<00:00:22.039><c> the</c><00:00:22.240><c> system</c><00:00:22.680><c> and</c><00:00:22.800><c> as</c><00:00:22.960><c> well</c><00:00:23.160><c> gaming</c>
+
+00:00:23.470 --> 00:00:23.480 align:start position:0%
+of the system and as well gaming
+ 
+
+00:00:23.480 --> 00:00:24.830 align:start position:0%
+of the system and as well gaming
+performance<00:00:24.000><c> so</c><00:00:24.119><c> what</c><00:00:24.240><c> we</c><00:00:24.320><c> want</c><00:00:24.439><c> to</c><00:00:24.519><c> do</c><00:00:24.640><c> in</c><00:00:24.720><c> the</c>
+
+00:00:24.830 --> 00:00:24.840 align:start position:0%
+performance so what we want to do in the
+ 
+
+00:00:24.840 --> 00:00:26.349 align:start position:0%
+performance so what we want to do in the
+first<00:00:25.039><c> place</c><00:00:25.400><c> once</c><00:00:25.560><c> we</c><00:00:25.760><c> not</c><00:00:25.880><c> already</c><00:00:26.119><c> in</c><00:00:26.240><c> the</c>
+
+00:00:26.349 --> 00:00:26.359 align:start position:0%
+first place once we not already in the
+ 
+
+00:00:26.359 --> 00:00:28.109 align:start position:0%
+first place once we not already in the
+testment<00:00:26.800><c> job</c><00:00:27.000><c> what</c><00:00:27.119><c> I</c><00:00:27.199><c> want</c><00:00:27.320><c> you</c><00:00:27.400><c> to</c><00:00:27.560><c> do</c><00:00:27.800><c> is</c><00:00:27.960><c> go</c>
+
+00:00:28.109 --> 00:00:28.119 align:start position:0%
+testment job what I want you to do is go
+ 
+
+00:00:28.119 --> 00:00:30.150 align:start position:0%
+testment job what I want you to do is go
+over<00:00:28.320><c> to</c><00:00:28.560><c> Startup</c><00:00:29.199><c> applications</c><00:00:30.000><c> it's</c>
+
+00:00:30.150 --> 00:00:30.160 align:start position:0%
+over to Startup applications it's
+ 
+
+00:00:30.160 --> 00:00:31.269 align:start position:0%
+over to Startup applications it's
+literally<00:00:30.480><c> straight</c><00:00:30.679><c> up</c><00:00:30.840><c> in</c><00:00:31.000><c> there</c><00:00:31.160><c> just</c>
+
+00:00:31.269 --> 00:00:31.279 align:start position:0%
+literally straight up in there just
+ 
+
+00:00:31.279 --> 00:00:32.670 align:start position:0%
+literally straight up in there just
+follow<00:00:31.560><c> exactly</c><00:00:31.840><c> what</c><00:00:31.960><c> I'm</c><00:00:32.079><c> doing</c><00:00:32.320><c> here</c><00:00:32.559><c> and</c>
+
+00:00:32.670 --> 00:00:32.680 align:start position:0%
+follow exactly what I'm doing here and
+ 
+
+00:00:32.680 --> 00:00:34.750 align:start position:0%
+follow exactly what I'm doing here and
+make<00:00:32.840><c> sure</c><00:00:33.000><c> that</c><00:00:33.160><c> you</c><00:00:33.399><c> disable</c><00:00:34.040><c> every</c><00:00:34.320><c> single</c>
+
+00:00:34.750 --> 00:00:34.760 align:start position:0%
+make sure that you disable every single
+ 
+
+00:00:34.760 --> 00:00:36.310 align:start position:0%
+make sure that you disable every single
+process<00:00:35.160><c> which</c><00:00:35.280><c> you</c><00:00:35.480><c> guys</c><00:00:35.719><c> don't</c><00:00:36.000><c> need</c>
+
+00:00:36.310 --> 00:00:36.320 align:start position:0%
+process which you guys don't need
+ 
+
+00:00:36.320 --> 00:00:37.990 align:start position:0%
+process which you guys don't need
+disabling<00:00:36.760><c> as</c><00:00:36.879><c> many</c><00:00:37.079><c> startup</c><00:00:37.480><c> applications</c>
+
+00:00:37.990 --> 00:00:38.000 align:start position:0%
+disabling as many startup applications
+ 
+
+00:00:38.000 --> 00:00:39.830 align:start position:0%
+disabling as many startup applications
+as<00:00:38.160><c> possible</c><00:00:38.480><c> can</c><00:00:38.640><c> have</c><00:00:38.840><c> so</c><00:00:38.960><c> many</c><00:00:39.239><c> advantages</c>
+
+00:00:39.830 --> 00:00:39.840 align:start position:0%
+as possible can have so many advantages
+ 
+
+00:00:39.840 --> 00:00:41.389 align:start position:0%
+as possible can have so many advantages
+like<00:00:39.960><c> speeding</c><00:00:40.280><c> up</c><00:00:40.440><c> the</c><00:00:40.640><c> process</c><00:00:41.000><c> as</c><00:00:41.079><c> well</c><00:00:41.239><c> of</c>
+
+00:00:41.389 --> 00:00:41.399 align:start position:0%
+like speeding up the process as well of
+ 
+
+00:00:41.399 --> 00:00:42.910 align:start position:0%
+like speeding up the process as well of
+launching<00:00:41.719><c> your</c><00:00:41.879><c> windows</c><00:00:42.480><c> which</c><00:00:42.600><c> is</c><00:00:42.680><c> going</c><00:00:42.800><c> to</c>
+
+00:00:42.910 --> 00:00:42.920 align:start position:0%
+launching your windows which is going to
+ 
+
+00:00:42.920 --> 00:00:45.150 align:start position:0%
+launching your windows which is going to
+be<00:00:43.160><c> really</c><00:00:43.440><c> nice</c><00:00:43.760><c> guys</c><00:00:44.000><c> because</c><00:00:44.320><c> we</c><00:00:44.480><c> all</c><00:00:44.680><c> know</c>
+
+00:00:45.150 --> 00:00:45.160 align:start position:0%
+be really nice guys because we all know
+ 
+
+00:00:45.160 --> 00:00:46.950 align:start position:0%
+be really nice guys because we all know
+we<00:00:45.399><c> hate</c><00:00:45.600><c> it</c><00:00:45.760><c> when</c><00:00:46.000><c> texes</c><00:00:46.239><c> like</c><00:00:46.399><c> long</c><00:00:46.600><c> when</c><00:00:46.719><c> our</c>
+
+00:00:46.950 --> 00:00:46.960 align:start position:0%
+we hate it when texes like long when our
+ 
+
+00:00:46.960 --> 00:00:49.069 align:start position:0%
+we hate it when texes like long when our
+PC<00:00:47.239><c> Starts</c><00:00:47.760><c> Now</c><00:00:47.920><c> for</c><00:00:48.079><c> the</c><00:00:48.280><c> actual</c><00:00:48.559><c> deep</c><00:00:48.840><c> load</c>
+
+00:00:49.069 --> 00:00:49.079 align:start position:0%
+PC Starts Now for the actual deep load
+ 
+
+00:00:49.079 --> 00:00:50.670 align:start position:0%
+PC Starts Now for the actual deep load
+step<00:00:49.440><c> I</c><00:00:49.520><c> want</c><00:00:49.640><c> you</c><00:00:49.719><c> to</c><00:00:49.920><c> actually</c><00:00:50.160><c> go</c><00:00:50.360><c> in</c><00:00:50.480><c> your</c>
+
+00:00:50.670 --> 00:00:50.680 align:start position:0%
+step I want you to actually go in your
+ 
+
+00:00:50.680 --> 00:00:52.430 align:start position:0%
+step I want you to actually go in your
+browser<00:00:51.120><c> and</c><00:00:51.239><c> just</c><00:00:51.360><c> simply</c><00:00:51.640><c> Google</c><00:00:51.920><c> up</c><00:00:52.120><c> Chris</c>
+
+00:00:52.430 --> 00:00:52.440 align:start position:0%
+browser and just simply Google up Chris
+ 
+
+00:00:52.440 --> 00:00:54.069 align:start position:0%
+browser and just simply Google up Chris
+Titus<00:00:52.800><c> Tech</c><00:00:53.039><c> utility</c><00:00:53.559><c> this</c><00:00:53.680><c> is</c><00:00:53.760><c> the</c><00:00:53.840><c> tool</c>
+
+00:00:54.069 --> 00:00:54.079 align:start position:0%
+Titus Tech utility this is the tool
+ 
+
+00:00:54.079 --> 00:00:55.389 align:start position:0%
+Titus Tech utility this is the tool
+which<00:00:54.199><c> we're</c><00:00:54.320><c> going</c><00:00:54.480><c> to</c><00:00:54.640><c> utilize</c><00:00:55.160><c> which</c><00:00:55.239><c> is</c>
+
+00:00:55.389 --> 00:00:55.399 align:start position:0%
+which we're going to utilize which is
+ 
+
+00:00:55.399 --> 00:00:57.270 align:start position:0%
+which we're going to utilize which is
+going<00:00:55.520><c> to</c><00:00:55.719><c> remove</c><00:00:56.199><c> a</c><00:00:56.440><c> huge</c><00:00:56.760><c> chunk</c><00:00:57.039><c> of</c><00:00:57.160><c> our</c>
+
+00:00:57.270 --> 00:00:57.280 align:start position:0%
+going to remove a huge chunk of our
+ 
+
+00:00:57.280 --> 00:00:59.110 align:start position:0%
+going to remove a huge chunk of our
+blood<00:00:57.600><c> Weare</c><00:00:57.760><c> off</c><00:00:57.879><c> our</c><00:00:58.000><c> Windows</c><00:00:58.359><c> PC</c><00:00:58.800><c> it's</c><00:00:58.920><c> an</c>
+
+00:00:59.110 --> 00:00:59.120 align:start position:0%
+blood Weare off our Windows PC it's an
+ 
+
+00:00:59.120 --> 00:01:00.750 align:start position:0%
+blood Weare off our Windows PC it's an
+amazing<00:00:59.480><c> tool</c><00:00:59.719><c> and</c><00:01:00.039><c> all</c><00:01:00.120><c> you</c><00:01:00.199><c> got</c><00:01:00.320><c> to</c><00:01:00.440><c> do</c><00:01:00.600><c> is</c>
+
+00:01:00.750 --> 00:01:00.760 align:start position:0%
+amazing tool and all you got to do is
+ 
+
+00:01:00.760 --> 00:01:02.310 align:start position:0%
+amazing tool and all you got to do is
+copy<00:01:01.039><c> the</c><00:01:01.160><c> following</c><00:01:01.559><c> commment</c><00:01:02.039><c> then</c><00:01:02.160><c> you</c><00:01:02.239><c> got</c>
+
+00:01:02.310 --> 00:01:02.320 align:start position:0%
+copy the following commment then you got
+ 
+
+00:01:02.320 --> 00:01:03.910 align:start position:0%
+copy the following commment then you got
+to<00:01:02.440><c> go</c><00:01:02.600><c> back</c><00:01:02.719><c> onto</c><00:01:02.920><c> your</c><00:01:03.079><c> desktop</c><00:01:03.519><c> just</c><00:01:03.640><c> simply</c>
+
+00:01:03.910 --> 00:01:03.920 align:start position:0%
+to go back onto your desktop just simply
+ 
+
+00:01:03.920 --> 00:01:05.870 align:start position:0%
+to go back onto your desktop just simply
+search<00:01:04.199><c> up</c><00:01:04.439><c> pow</c><00:01:04.680><c> shell</c><00:01:05.040><c> and</c><00:01:05.239><c> right</c><00:01:05.439><c> click</c><00:01:05.640><c> onto</c>
+
+00:01:05.870 --> 00:01:05.880 align:start position:0%
+search up pow shell and right click onto
+ 
+
+00:01:05.880 --> 00:01:07.870 align:start position:0%
+search up pow shell and right click onto
+it<00:01:06.080><c> and</c><00:01:06.280><c> launch</c><00:01:06.560><c> it</c><00:01:06.760><c> as</c><00:01:07.040><c> administrator</c><00:01:07.720><c> guys</c>
+
+00:01:07.870 --> 00:01:07.880 align:start position:0%
+it and launch it as administrator guys
+ 
+
+00:01:07.880 --> 00:01:09.510 align:start position:0%
+it and launch it as administrator guys
+that<00:01:08.040><c> is</c><00:01:08.240><c> super</c><00:01:08.520><c> important</c><00:01:09.080><c> once</c><00:01:09.240><c> you</c><00:01:09.360><c> get</c>
+
+00:01:09.510 --> 00:01:09.520 align:start position:0%
+that is super important once you get
+ 
+
+00:01:09.520 --> 00:01:11.390 align:start position:0%
+that is super important once you get
+that<00:01:09.680><c> a</c><00:01:09.840><c> new</c><00:01:09.960><c> window</c><00:01:10.280><c> should</c><00:01:10.520><c> pop</c><00:01:10.720><c> up</c><00:01:11.040><c> guys</c><00:01:11.280><c> and</c>
+
+00:01:11.390 --> 00:01:11.400 align:start position:0%
+that a new window should pop up guys and
+ 
+
+00:01:11.400 --> 00:01:13.590 align:start position:0%
+that a new window should pop up guys and
+this<00:01:11.520><c> is</c><00:01:11.720><c> basically</c><00:01:12.119><c> now</c><00:01:12.400><c> your</c><00:01:12.600><c> poell</c><00:01:13.080><c> console</c>
+
+00:01:13.590 --> 00:01:13.600 align:start position:0%
+this is basically now your poell console
+ 
+
+00:01:13.600 --> 00:01:14.789 align:start position:0%
+this is basically now your poell console
+and<00:01:13.720><c> in</c><00:01:13.880><c> there</c><00:01:14.000><c> you're</c><00:01:14.119><c> going</c><00:01:14.280><c> to</c><00:01:14.439><c> paste</c><00:01:14.680><c> the</c>
+
+00:01:14.789 --> 00:01:14.799 align:start position:0%
+and in there you're going to paste the
+ 
+
+00:01:14.799 --> 00:01:16.590 align:start position:0%
+and in there you're going to paste the
+following<00:01:15.200><c> link</c><00:01:15.479><c> which</c><00:01:15.600><c> you</c><00:01:15.759><c> just</c><00:01:16.000><c> copi</c><00:01:16.439><c> and</c>
+
+00:01:16.590 --> 00:01:16.600 align:start position:0%
+following link which you just copi and
+ 
+
+00:01:16.600 --> 00:01:18.230 align:start position:0%
+following link which you just copi and
+just<00:01:16.759><c> simply</c><00:01:17.080><c> press</c><00:01:17.360><c> enter</c><00:01:17.759><c> it's</c><00:01:17.920><c> then</c><00:01:18.080><c> going</c>
+
+00:01:18.230 --> 00:01:18.240 align:start position:0%
+just simply press enter it's then going
+ 
+
+00:01:18.240 --> 00:01:19.710 align:start position:0%
+just simply press enter it's then going
+to<00:01:18.360><c> download</c><00:01:18.720><c> for</c><00:01:18.880><c> you</c><00:01:19.119><c> everything</c><00:01:19.439><c> which</c><00:01:19.560><c> it</c>
+
+00:01:19.710 --> 00:01:19.720 align:start position:0%
+to download for you everything which it
+ 
+
+00:01:19.720 --> 00:01:21.749 align:start position:0%
+to download for you everything which it
+needs<00:01:19.920><c> to</c><00:01:20.159><c> actually</c><00:01:20.400><c> run</c><00:01:20.600><c> the</c><00:01:20.759><c> utility</c><00:01:21.240><c> tool</c>
+
+00:01:21.749 --> 00:01:21.759 align:start position:0%
+needs to actually run the utility tool
+ 
+
+00:01:21.759 --> 00:01:23.789 align:start position:0%
+needs to actually run the utility tool
+and<00:01:21.920><c> then</c><00:01:22.240><c> afterwards</c><00:01:22.720><c> it's</c><00:01:22.880><c> going</c><00:01:23.040><c> to</c><00:01:23.200><c> start</c>
+
+00:01:23.789 --> 00:01:23.799 align:start position:0%
+and then afterwards it's going to start
+ 
+
+00:01:23.799 --> 00:01:24.950 align:start position:0%
+and then afterwards it's going to start
+that's<00:01:23.960><c> literally</c><00:01:24.240><c> the</c><00:01:24.320><c> coolest</c><00:01:24.600><c> part</c><00:01:24.799><c> about</c>
+
+00:01:24.950 --> 00:01:24.960 align:start position:0%
+that's literally the coolest part about
+ 
+
+00:01:24.960 --> 00:01:26.590 align:start position:0%
+that's literally the coolest part about
+it<00:01:25.119><c> you</c><00:01:25.200><c> don't</c><00:01:25.360><c> have</c><00:01:25.479><c> to</c><00:01:25.640><c> download</c><00:01:26.040><c> anything</c>
+
+00:01:26.590 --> 00:01:26.600 align:start position:0%
+it you don't have to download anything
+ 
+
+00:01:26.600 --> 00:01:27.990 align:start position:0%
+it you don't have to download anything
+and<00:01:26.720><c> now</c><00:01:26.840><c> once</c><00:01:26.960><c> we</c><00:01:27.079><c> in</c><00:01:27.200><c> the</c><00:01:27.320><c> tool</c><00:01:27.560><c> itself</c><00:01:27.880><c> you</c>
+
+00:01:27.990 --> 00:01:28.000 align:start position:0%
+and now once we in the tool itself you
+ 
+
+00:01:28.000 --> 00:01:29.950 align:start position:0%
+and now once we in the tool itself you
+can<00:01:28.119><c> see</c><00:01:28.280><c> on</c><00:01:28.400><c> the</c><00:01:28.560><c> top</c><00:01:28.759><c> bar</c><00:01:29.000><c> actually</c><00:01:29.439><c> tweak</c>
+
+00:01:29.950 --> 00:01:29.960 align:start position:0%
+can see on the top bar actually tweak
+ 
+
+00:01:29.960 --> 00:01:31.230 align:start position:0%
+can see on the top bar actually tweak
+section<00:01:30.320><c> guys</c><00:01:30.560><c> this</c><00:01:30.640><c> is</c><00:01:30.799><c> what</c><00:01:30.920><c> we</c><00:01:31.000><c> want</c><00:01:31.119><c> to</c>
+
+00:01:31.230 --> 00:01:31.240 align:start position:0%
+section guys this is what we want to
+ 
+
+00:01:31.240 --> 00:01:32.950 align:start position:0%
+section guys this is what we want to
+focus<00:01:31.520><c> around</c><00:01:31.880><c> you</c><00:01:31.960><c> have</c><00:01:32.079><c> a</c><00:01:32.200><c> bunch</c><00:01:32.399><c> of</c><00:01:32.560><c> presets</c>
+
+00:01:32.950 --> 00:01:32.960 align:start position:0%
+focus around you have a bunch of presets
+ 
+
+00:01:32.960 --> 00:01:35.550 align:start position:0%
+focus around you have a bunch of presets
+for<00:01:33.119><c> your</c><00:01:33.360><c> PC</c><00:01:34.000><c> laptop</c><00:01:34.520><c> minimal</c><00:01:35.079><c> and</c><00:01:35.240><c> even</c><00:01:35.399><c> to</c>
+
+00:01:35.550 --> 00:01:35.560 align:start position:0%
+for your PC laptop minimal and even to
+ 
+
+00:01:35.560 --> 00:01:37.109 align:start position:0%
+for your PC laptop minimal and even to
+reverse<00:01:35.960><c> all</c><00:01:36.079><c> of</c><00:01:36.159><c> the</c><00:01:36.320><c> tweaks</c><00:01:36.759><c> but</c><00:01:36.920><c> what</c><00:01:37.040><c> we</c>
+
+00:01:37.109 --> 00:01:37.119 align:start position:0%
+reverse all of the tweaks but what we
+ 
+
+00:01:37.119 --> 00:01:38.749 align:start position:0%
+reverse all of the tweaks but what we
+want<00:01:37.240><c> to</c><00:01:37.399><c> focus</c><00:01:37.640><c> on</c><00:01:37.960><c> guys</c><00:01:38.159><c> are</c><00:01:38.320><c> just</c><00:01:38.439><c> something</c>
+
+00:01:38.749 --> 00:01:38.759 align:start position:0%
+want to focus on guys are just something
+ 
+
+00:01:38.759 --> 00:01:40.670 align:start position:0%
+want to focus on guys are just something
+the<00:01:38.920><c> normal</c><00:01:39.280><c> PC</c><00:01:39.680><c> recommendations</c><00:01:40.439><c> so</c><00:01:40.560><c> we're</c>
+
+00:01:40.670 --> 00:01:40.680 align:start position:0%
+the normal PC recommendations so we're
+ 
+
+00:01:40.680 --> 00:01:42.190 align:start position:0%
+the normal PC recommendations so we're
+going<00:01:40.840><c> to</c><00:01:40.960><c> click</c><00:01:41.159><c> on</c><00:01:41.320><c> the</c><00:01:41.439><c> desktop</c><00:01:41.920><c> and</c><00:01:42.079><c> make</c>
+
+00:01:42.190 --> 00:01:42.200 align:start position:0%
+going to click on the desktop and make
+ 
+
+00:01:42.200 --> 00:01:44.350 align:start position:0%
+going to click on the desktop and make
+sure<00:01:42.360><c> to</c><00:01:42.560><c> check</c><00:01:42.840><c> as</c><00:01:43.040><c> well</c><00:01:43.320><c> create</c><00:01:43.720><c> a</c><00:01:43.880><c> restart</c>
+
+00:01:44.350 --> 00:01:44.360 align:start position:0%
+sure to check as well create a restart
+ 
+
+00:01:44.360 --> 00:01:46.069 align:start position:0%
+sure to check as well create a restart
+Point<00:01:44.680><c> guys</c><00:01:44.960><c> this</c><00:01:45.079><c> is</c><00:01:45.240><c> so</c><00:01:45.439><c> important</c><00:01:45.920><c> every</c>
+
+00:01:46.069 --> 00:01:46.079 align:start position:0%
+Point guys this is so important every
+ 
+
+00:01:46.079 --> 00:01:47.510 align:start position:0%
+Point guys this is so important every
+single<00:01:46.360><c> time</c><00:01:46.479><c> before</c><00:01:46.680><c> you</c><00:01:46.799><c> apply</c><00:01:47.119><c> any</c><00:01:47.280><c> major</c>
+
+00:01:47.510 --> 00:01:47.520 align:start position:0%
+single time before you apply any major
+ 
+
+00:01:47.520 --> 00:01:49.149 align:start position:0%
+single time before you apply any major
+tweaks<00:01:47.960><c> always</c><00:01:48.200><c> make</c><00:01:48.320><c> sure</c><00:01:48.560><c> that</c><00:01:48.680><c> you</c><00:01:48.880><c> create</c>
+
+00:01:49.149 --> 00:01:49.159 align:start position:0%
+tweaks always make sure that you create
+ 
+
+00:01:49.159 --> 00:01:51.030 align:start position:0%
+tweaks always make sure that you create
+a<00:01:49.320><c> restart</c><00:01:49.759><c> point</c><00:01:50.079><c> we</c><00:01:50.200><c> already</c><00:01:50.479><c> have</c><00:01:50.640><c> run</c><00:01:50.880><c> with</c>
+
+00:01:51.030 --> 00:01:51.040 align:start position:0%
+a restart point we already have run with
+ 
+
+00:01:51.040 --> 00:01:52.870 align:start position:0%
+a restart point we already have run with
+own<00:01:51.280><c> o</c><00:01:51.439><c> shut</c><00:01:51.640><c> up</c><00:01:51.799><c> as</c><00:01:51.920><c> well</c><00:01:52.119><c> applied</c><00:01:52.439><c> in</c><00:01:52.560><c> here</c><00:01:52.719><c> so</c>
+
+00:01:52.870 --> 00:01:52.880 align:start position:0%
+own o shut up as well applied in here so
+ 
+
+00:01:52.880 --> 00:01:54.590 align:start position:0%
+own o shut up as well applied in here so
+just<00:01:53.000><c> simply</c><00:01:53.280><c> click</c><00:01:53.520><c> run</c><00:01:53.880><c> tweaks</c><00:01:54.320><c> and</c><00:01:54.439><c> it's</c>
+
+00:01:54.590 --> 00:01:54.600 align:start position:0%
+just simply click run tweaks and it's
+ 
+
+00:01:54.600 --> 00:01:56.469 align:start position:0%
+just simply click run tweaks and it's
+going<00:01:54.759><c> to</c><00:01:55.040><c> literally</c><00:01:55.520><c> adjust</c><00:01:56.000><c> every</c><00:01:56.200><c> single</c>
+
+00:01:56.469 --> 00:01:56.479 align:start position:0%
+going to literally adjust every single
+ 
+
+00:01:56.479 --> 00:01:57.789 align:start position:0%
+going to literally adjust every single
+thing<00:01:56.640><c> for</c><00:01:56.799><c> you</c><00:01:56.960><c> automatically</c><00:01:57.560><c> it's</c><00:01:57.680><c> going</c>
+
+00:01:57.789 --> 00:01:57.799 align:start position:0%
+thing for you automatically it's going
+ 
+
+00:01:57.799 --> 00:01:59.190 align:start position:0%
+thing for you automatically it's going
+to<00:01:57.920><c> remove</c><00:01:58.200><c> all</c><00:01:58.320><c> the</c><00:01:58.439><c> bloatware</c><00:01:58.920><c> it's</c><00:01:59.039><c> going</c>
+
+00:01:59.190 --> 00:01:59.200 align:start position:0%
+to remove all the bloatware it's going
+ 
+
+00:01:59.200 --> 00:02:01.230 align:start position:0%
+to remove all the bloatware it's going
+to<00:01:59.320><c> apply</c><00:01:59.600><c> all</c><00:02:00.000><c> the</c><00:02:00.119><c> privacy</c><00:02:00.479><c> settings</c><00:02:01.000><c> all</c><00:02:01.119><c> of</c>
+
+00:02:01.230 --> 00:02:01.240 align:start position:0%
+to apply all the privacy settings all of
+ 
+
+00:02:01.240 --> 00:02:02.990 align:start position:0%
+to apply all the privacy settings all of
+the<00:02:01.360><c> telary</c><00:02:01.960><c> processes</c><00:02:02.479><c> are</c><00:02:02.600><c> going</c><00:02:02.719><c> to</c><00:02:02.840><c> get</c>
+
+00:02:02.990 --> 00:02:03.000 align:start position:0%
+the telary processes are going to get
+ 
+
+00:02:03.000 --> 00:02:04.830 align:start position:0%
+the telary processes are going to get
+stopped<00:02:03.360><c> so</c><00:02:03.520><c> Microsoft</c><00:02:03.960><c> cannot</c><00:02:04.240><c> collect</c><00:02:04.560><c> data</c>
+
+00:02:04.830 --> 00:02:04.840 align:start position:0%
+stopped so Microsoft cannot collect data
+ 
+
+00:02:04.840 --> 00:02:06.590 align:start position:0%
+stopped so Microsoft cannot collect data
+off<00:02:05.000><c> your</c><00:02:05.159><c> PC</c><00:02:05.479><c> anymore</c><00:02:06.000><c> and</c><00:02:06.119><c> once</c><00:02:06.280><c> you're</c><00:02:06.399><c> done</c>
+
+00:02:06.590 --> 00:02:06.600 align:start position:0%
+off your PC anymore and once you're done
+ 
+
+00:02:06.600 --> 00:02:07.670 align:start position:0%
+off your PC anymore and once you're done
+with<00:02:06.719><c> it</c><00:02:06.880><c> it's</c><00:02:07.000><c> going</c><00:02:07.159><c> to</c><00:02:07.240><c> tell</c><00:02:07.399><c> you</c><00:02:07.560><c> the</c>
+
+00:02:07.670 --> 00:02:07.680 align:start position:0%
+with it it's going to tell you the
+ 
+
+00:02:07.680 --> 00:02:09.389 align:start position:0%
+with it it's going to tell you the
+tweaks<00:02:07.960><c> are</c><00:02:08.160><c> finished</c><00:02:08.640><c> and</c><00:02:08.759><c> now</c><00:02:08.959><c> just</c><00:02:09.119><c> simply</c>
+
+00:02:09.389 --> 00:02:09.399 align:start position:0%
+tweaks are finished and now just simply
+ 
+
+00:02:09.399 --> 00:02:11.270 align:start position:0%
+tweaks are finished and now just simply
+restart<00:02:09.840><c> your</c><00:02:10.080><c> PC</c><00:02:10.720><c> and</c><00:02:10.800><c> now</c><00:02:10.959><c> once</c><00:02:11.120><c> we</c>
+
+00:02:11.270 --> 00:02:11.280 align:start position:0%
+restart your PC and now once we
+ 
+
+00:02:11.280 --> 00:02:13.150 align:start position:0%
+restart your PC and now once we
+restarted<00:02:11.720><c> our</c><00:02:11.959><c> PC</c><00:02:12.360><c> let's</c><00:02:12.640><c> actually</c><00:02:12.840><c> check</c><00:02:13.040><c> in</c>
+
+00:02:13.150 --> 00:02:13.160 align:start position:0%
+restarted our PC let's actually check in
+ 
+
+00:02:13.160 --> 00:02:14.949 align:start position:0%
+restarted our PC let's actually check in
+the<00:02:13.319><c> task</c><00:02:13.520><c> manager</c><00:02:13.959><c> how</c><00:02:14.040><c> many</c><00:02:14.360><c> processes</c><00:02:14.840><c> we</c>
+
+00:02:14.949 --> 00:02:14.959 align:start position:0%
+the task manager how many processes we
+ 
+
+00:02:14.959 --> 00:02:16.750 align:start position:0%
+the task manager how many processes we
+are<00:02:15.120><c> on</c><00:02:15.599><c> and</c><00:02:15.760><c> as</c><00:02:15.879><c> you</c><00:02:16.000><c> can</c><00:02:16.120><c> see</c><00:02:16.360><c> guys</c><00:02:16.640><c> we</c>
+
+00:02:16.750 --> 00:02:16.760 align:start position:0%
+are on and as you can see guys we
+ 
+
+00:02:16.760 --> 00:02:18.990 align:start position:0%
+are on and as you can see guys we
+already<00:02:17.040><c> went</c><00:02:17.239><c> from</c><00:02:17.480><c> well</c><00:02:17.680><c> over</c><00:02:18.319><c> 160</c><00:02:18.760><c> all</c><00:02:18.879><c> the</c>
+
+00:02:18.990 --> 00:02:19.000 align:start position:0%
+already went from well over 160 all the
+ 
+
+00:02:19.000 --> 00:02:21.830 align:start position:0%
+already went from well over 160 all the
+way<00:02:19.160><c> down</c><00:02:19.319><c> to</c><00:02:19.560><c> 89</c><00:02:20.160><c> to</c><00:02:20.319><c> 90</c><00:02:20.760><c> processors</c><00:02:21.560><c> but</c><00:02:21.720><c> we</c>
+
+00:02:21.830 --> 00:02:21.840 align:start position:0%
+way down to 89 to 90 processors but we
+ 
+
+00:02:21.840 --> 00:02:23.309 align:start position:0%
+way down to 89 to 90 processors but we
+still<00:02:22.080><c> don't</c><00:02:22.280><c> want</c><00:02:22.400><c> to</c><00:02:22.519><c> stop</c><00:02:22.800><c> here</c><00:02:23.000><c> guys</c><00:02:23.200><c> like</c>
+
+00:02:23.309 --> 00:02:23.319 align:start position:0%
+still don't want to stop here guys like
+ 
+
+00:02:23.319 --> 00:02:25.070 align:start position:0%
+still don't want to stop here guys like
+we<00:02:23.440><c> can</c><00:02:23.560><c> get</c><00:02:23.720><c> this</c><00:02:23.879><c> number</c><00:02:24.280><c> even</c><00:02:24.519><c> lower</c><00:02:24.920><c> so</c>
+
+00:02:25.070 --> 00:02:25.080 align:start position:0%
+we can get this number even lower so
+ 
+
+00:02:25.080 --> 00:02:26.430 align:start position:0%
+we can get this number even lower so
+what<00:02:25.160><c> we're</c><00:02:25.319><c> actually</c><00:02:25.519><c> going</c><00:02:25.680><c> to</c><00:02:25.800><c> do</c><00:02:26.080><c> guys</c><00:02:26.319><c> is</c>
+
+00:02:26.430 --> 00:02:26.440 align:start position:0%
+what we're actually going to do guys is
+ 
+
+00:02:26.440 --> 00:02:27.990 align:start position:0%
+what we're actually going to do guys is
+go<00:02:26.560><c> into</c><00:02:26.680><c> our</c><00:02:26.840><c> search</c><00:02:27.080><c> bar</c><00:02:27.319><c> and</c><00:02:27.440><c> type</c><00:02:27.599><c> in</c><00:02:27.760><c> their</c>
+
+00:02:27.990 --> 00:02:28.000 align:start position:0%
+go into our search bar and type in their
+ 
+
+00:02:28.000 --> 00:02:29.910 align:start position:0%
+go into our search bar and type in their
+services<00:02:28.640><c> right</c><00:02:28.800><c> click</c><00:02:29.000><c> onto</c><00:02:29.239><c> it</c><00:02:29.360><c> and</c><00:02:29.480><c> run</c><00:02:29.640><c> it</c>
+
+00:02:29.910 --> 00:02:29.920 align:start position:0%
+services right click onto it and run it
+ 
+
+00:02:29.920 --> 00:02:31.990 align:start position:0%
+services right click onto it and run it
+as<00:02:30.080><c> administrator</c><00:02:30.959><c> of</c><00:02:31.120><c> course</c><00:02:31.400><c> again</c><00:02:31.680><c> create</c>
+
+00:02:31.990 --> 00:02:32.000 align:start position:0%
+as administrator of course again create
+ 
+
+00:02:32.000 --> 00:02:33.630 align:start position:0%
+as administrator of course again create
+a<00:02:32.160><c> restart</c><00:02:32.560><c> Point</c><00:02:32.840><c> guys</c><00:02:33.040><c> before</c><00:02:33.239><c> you</c><00:02:33.360><c> apply</c>
+
+00:02:33.630 --> 00:02:33.640 align:start position:0%
+a restart Point guys before you apply
+ 
+
+00:02:33.640 --> 00:02:34.990 align:start position:0%
+a restart Point guys before you apply
+the<00:02:33.720><c> next</c><00:02:33.879><c> following</c><00:02:34.280><c> settings</c><00:02:34.599><c> again</c><00:02:34.840><c> make</c>
+
+00:02:34.990 --> 00:02:35.000 align:start position:0%
+the next following settings again make
+ 
+
+00:02:35.000 --> 00:02:36.550 align:start position:0%
+the next following settings again make
+another<00:02:35.319><c> restart</c><00:02:35.720><c> point</c><00:02:36.000><c> just</c><00:02:36.120><c> so</c><00:02:36.280><c> you're</c><00:02:36.440><c> on</c>
+
+00:02:36.550 --> 00:02:36.560 align:start position:0%
+another restart point just so you're on
+ 
+
+00:02:36.560 --> 00:02:38.110 align:start position:0%
+another restart point just so you're on
+the<00:02:36.760><c> secure</c><00:02:37.120><c> side</c><00:02:37.400><c> because</c><00:02:37.599><c> with</c><00:02:37.760><c> the</c><00:02:37.920><c> Chris</c>
+
+00:02:38.110 --> 00:02:38.120 align:start position:0%
+the secure side because with the Chris
+ 
+
+00:02:38.120 --> 00:02:39.869 align:start position:0%
+the secure side because with the Chris
+Titus<00:02:38.440><c> Tech</c><00:02:38.640><c> utility</c><00:02:39.280><c> these</c><00:02:39.440><c> are</c><00:02:39.599><c> already</c>
+
+00:02:39.869 --> 00:02:39.879 align:start position:0%
+Titus Tech utility these are already
+ 
+
+00:02:39.879 --> 00:02:41.910 align:start position:0%
+Titus Tech utility these are already
+safe<00:02:40.239><c> tweaks</c><00:02:40.800><c> so</c><00:02:41.000><c> make</c><00:02:41.159><c> another</c><00:02:41.480><c> restore</c>
+
+00:02:41.910 --> 00:02:41.920 align:start position:0%
+safe tweaks so make another restore
+ 
+
+00:02:41.920 --> 00:02:43.990 align:start position:0%
+safe tweaks so make another restore
+point<00:02:42.239><c> and</c><00:02:42.400><c> then</c><00:02:42.599><c> continue</c><00:02:43.200><c> now</c><00:02:43.360><c> in</c><00:02:43.519><c> Services</c>
+
+00:02:43.990 --> 00:02:44.000 align:start position:0%
+point and then continue now in Services
+ 
+
+00:02:44.000 --> 00:02:45.470 align:start position:0%
+point and then continue now in Services
+you<00:02:44.120><c> can</c><00:02:44.239><c> see</c><00:02:44.400><c> a</c><00:02:44.519><c> whole</c><00:02:44.720><c> entire</c><00:02:45.080><c> list</c><00:02:45.319><c> of</c>
+
+00:02:45.470 --> 00:02:45.480 align:start position:0%
+you can see a whole entire list of
+ 
+
+00:02:45.480 --> 00:02:47.149 align:start position:0%
+you can see a whole entire list of
+basically<00:02:46.040><c> every</c><00:02:46.200><c> single</c><00:02:46.480><c> service</c><00:02:46.920><c> which</c><00:02:47.040><c> is</c>
+
+00:02:47.149 --> 00:02:47.159 align:start position:0%
+basically every single service which is
+ 
+
+00:02:47.159 --> 00:02:48.990 align:start position:0%
+basically every single service which is
+running<00:02:47.400><c> on</c><00:02:47.519><c> your</c><00:02:47.680><c> Windows</c><00:02:48.000><c> PC</c><00:02:48.720><c> there's</c>
+
+00:02:48.990 --> 00:02:49.000 align:start position:0%
+running on your Windows PC there's
+ 
+
+00:02:49.000 --> 00:02:51.309 align:start position:0%
+running on your Windows PC there's
+around<00:02:49.560><c> 50</c><00:02:50.319><c> I</c><00:02:50.400><c> would</c><00:02:50.599><c> say</c><00:02:50.879><c> which</c><00:02:51.000><c> are</c><00:02:51.159><c> from</c>
+
+00:02:51.309 --> 00:02:51.319 align:start position:0%
+around 50 I would say which are from
+ 
+
+00:02:51.319 --> 00:02:53.190 align:start position:0%
+around 50 I would say which are from
+Windows<00:02:51.760><c> directly</c><00:02:52.400><c> then</c><00:02:52.560><c> you</c><00:02:52.680><c> have</c><00:02:52.800><c> a</c><00:02:52.920><c> few</c>
+
+00:02:53.190 --> 00:02:53.200 align:start position:0%
+Windows directly then you have a few
+ 
+
+00:02:53.200 --> 00:02:54.949 align:start position:0%
+Windows directly then you have a few
+applications<00:02:54.000><c> and</c><00:02:54.120><c> then</c><00:02:54.239><c> you</c><00:02:54.319><c> have</c><00:02:54.440><c> a</c><00:02:54.640><c> small</c>
+
+00:02:54.949 --> 00:02:54.959 align:start position:0%
+applications and then you have a small
+ 
+
+00:02:54.959 --> 00:02:56.949 align:start position:0%
+applications and then you have a small
+portion<00:02:55.400><c> as</c><00:02:55.519><c> well</c><00:02:55.720><c> of</c><00:02:55.920><c> extra</c><00:02:56.280><c> services</c><00:02:56.840><c> and</c>
+
+00:02:56.949 --> 00:02:56.959 align:start position:0%
+portion as well of extra services and
+ 
+
+00:02:56.959 --> 00:02:58.390 align:start position:0%
+portion as well of extra services and
+we're<00:02:57.120><c> going</c><00:02:57.280><c> to</c><00:02:57.400><c> deactivate</c><00:02:57.920><c> a</c><00:02:58.040><c> mixture</c>
+
+00:02:58.390 --> 00:02:58.400 align:start position:0%
+we're going to deactivate a mixture
+ 
+
+00:02:58.400 --> 00:03:00.149 align:start position:0%
+we're going to deactivate a mixture
+between<00:02:58.680><c> the</c><00:02:58.760><c> windows</c><00:02:59.080><c> ws</c><00:02:59.440><c> and</c><00:02:59.560><c> these</c><00:02:59.879><c> extra</c>
+
+00:03:00.149 --> 00:03:00.159 align:start position:0%
+between the windows ws and these extra
+ 
+
+00:03:00.159 --> 00:03:01.589 align:start position:0%
+between the windows ws and these extra
+ones<00:03:00.599><c> so</c><00:03:00.760><c> what</c><00:03:00.879><c> I</c><00:03:00.959><c> want</c><00:03:01.080><c> you</c><00:03:01.200><c> to</c><00:03:01.280><c> do</c><00:03:01.400><c> in</c><00:03:01.480><c> the</c>
+
+00:03:01.589 --> 00:03:01.599 align:start position:0%
+ones so what I want you to do in the
+ 
+
+00:03:01.599 --> 00:03:03.190 align:start position:0%
+ones so what I want you to do in the
+first<00:03:01.879><c> place</c><00:03:02.080><c> is</c><00:03:02.200><c> scroll</c><00:03:02.519><c> all</c><00:03:02.680><c> the</c><00:03:02.800><c> way</c><00:03:02.959><c> down</c>
+
+00:03:03.190 --> 00:03:03.200 align:start position:0%
+first place is scroll all the way down
+ 
+
+00:03:03.200 --> 00:03:04.830 align:start position:0%
+first place is scroll all the way down
+guys<00:03:03.400><c> and</c><00:03:03.480><c> make</c><00:03:03.599><c> sure</c><00:03:03.720><c> to</c><00:03:03.879><c> disable</c><00:03:04.319><c> all</c><00:03:04.480><c> of</c><00:03:04.599><c> the</c>
+
+00:03:04.830 --> 00:03:04.840 align:start position:0%
+guys and make sure to disable all of the
+ 
+
+00:03:04.840 --> 00:03:06.990 align:start position:0%
+guys and make sure to disable all of the
+Xbox<00:03:05.280><c> Services</c><00:03:05.879><c> if</c><00:03:06.000><c> you</c><00:03:06.200><c> actually</c><00:03:06.440><c> don't</c><00:03:06.760><c> need</c>
+
+00:03:06.990 --> 00:03:07.000 align:start position:0%
+Xbox Services if you actually don't need
+ 
+
+00:03:07.000 --> 00:03:08.270 align:start position:0%
+Xbox Services if you actually don't need
+them<00:03:07.319><c> guys</c><00:03:07.519><c> this</c><00:03:07.640><c> are</c><00:03:07.879><c> super</c><00:03:08.080><c> hard</c>
+
+00:03:08.270 --> 00:03:08.280 align:start position:0%
+them guys this are super hard
+ 
+
+00:03:08.280 --> 00:03:09.830 align:start position:0%
+them guys this are super hard
+recommending<00:03:08.879><c> so</c><00:03:09.080><c> therefore</c><00:03:09.400><c> make</c><00:03:09.519><c> sure</c><00:03:09.680><c> to</c>
+
+00:03:09.830 --> 00:03:09.840 align:start position:0%
+recommending so therefore make sure to
+ 
+
+00:03:09.840 --> 00:03:11.509 align:start position:0%
+recommending so therefore make sure to
+delete<00:03:10.239><c> everything</c><00:03:10.640><c> there</c><00:03:11.000><c> it's</c><00:03:11.120><c> like</c><00:03:11.319><c> this</c>
+
+00:03:11.509 --> 00:03:11.519 align:start position:0%
+delete everything there it's like this
+ 
+
+00:03:11.519 --> 00:03:13.670 align:start position:0%
+delete everything there it's like this
+Xbox<00:03:12.000><c> game</c><00:03:12.200><c> bar</c><00:03:12.440><c> which</c><00:03:12.519><c> is</c><00:03:12.720><c> active</c><00:03:13.040><c> 24/7</c><00:03:13.599><c> in</c>
+
+00:03:13.670 --> 00:03:13.680 align:start position:0%
+Xbox game bar which is active 24/7 in
+ 
+
+00:03:13.680 --> 00:03:15.229 align:start position:0%
+Xbox game bar which is active 24/7 in
+the<00:03:13.799><c> background</c><00:03:14.319><c> really</c><00:03:14.560><c> taking</c><00:03:14.840><c> a</c><00:03:14.959><c> lot</c><00:03:15.120><c> of</c>
+
+00:03:15.229 --> 00:03:15.239 align:start position:0%
+the background really taking a lot of
+ 
+
+00:03:15.239 --> 00:03:16.869 align:start position:0%
+the background really taking a lot of
+system<00:03:15.560><c> performance</c><00:03:16.120><c> and</c><00:03:16.239><c> now</c><00:03:16.400><c> in</c><00:03:16.519><c> this</c><00:03:16.680><c> next</c>
+
+00:03:16.869 --> 00:03:16.879 align:start position:0%
+system performance and now in this next
+ 
+
+00:03:16.879 --> 00:03:18.390 align:start position:0%
+system performance and now in this next
+step<00:03:17.159><c> I'm</c><00:03:17.280><c> going</c><00:03:17.440><c> to</c><00:03:17.640><c> guide</c><00:03:17.879><c> you</c><00:03:18.000><c> through</c><00:03:18.239><c> a</c>
+
+00:03:18.390 --> 00:03:18.400 align:start position:0%
+step I'm going to guide you through a
+ 
+
+00:03:18.400 --> 00:03:20.309 align:start position:0%
+step I'm going to guide you through a
+whole<00:03:18.640><c> entire</c><00:03:19.000><c> list</c><00:03:19.440><c> of</c><00:03:19.720><c> every</c><00:03:19.959><c> single</c>
+
+00:03:20.309 --> 00:03:20.319 align:start position:0%
+whole entire list of every single
+ 
+
+00:03:20.319 --> 00:03:22.350 align:start position:0%
+whole entire list of every single
+process<00:03:20.799><c> which</c><00:03:21.120><c> I</c><00:03:21.200><c> would</c><00:03:21.360><c> say</c><00:03:21.560><c> you</c><00:03:21.680><c> can</c><00:03:21.959><c> safely</c>
+
+00:03:22.350 --> 00:03:22.360 align:start position:0%
+process which I would say you can safely
+ 
+
+00:03:22.360 --> 00:03:24.110 align:start position:0%
+process which I would say you can safely
+actually<00:03:22.560><c> deactivate</c><00:03:23.360><c> as</c><00:03:23.480><c> mentioned</c><00:03:23.959><c> you</c>
+
+00:03:24.110 --> 00:03:24.120 align:start position:0%
+actually deactivate as mentioned you
+ 
+
+00:03:24.120 --> 00:03:25.910 align:start position:0%
+actually deactivate as mentioned you
+have<00:03:24.200><c> a</c><00:03:24.319><c> restart</c><00:03:24.720><c> Point</c><00:03:25.080><c> don't</c><00:03:25.239><c> be</c><00:03:25.360><c> worried</c><00:03:25.799><c> if</c>
+
+00:03:25.910 --> 00:03:25.920 align:start position:0%
+have a restart Point don't be worried if
+ 
+
+00:03:25.920 --> 00:03:27.190 align:start position:0%
+have a restart Point don't be worried if
+there's<00:03:26.120><c> something</c><00:03:26.400><c> which</c><00:03:26.519><c> you</c><00:03:26.640><c> don't</c><00:03:26.840><c> like</c>
+
+00:03:27.190 --> 00:03:27.200 align:start position:0%
+there's something which you don't like
+ 
+
+00:03:27.200 --> 00:03:28.550 align:start position:0%
+there's something which you don't like
+just<00:03:27.360><c> simply</c><00:03:27.640><c> go</c><00:03:27.799><c> back</c><00:03:28.120><c> but</c><00:03:28.239><c> I'm</c><00:03:28.360><c> just</c><00:03:28.480><c> going</c>
+
+00:03:28.550 --> 00:03:28.560 align:start position:0%
+just simply go back but I'm just going
+ 
+
+00:03:28.560 --> 00:03:30.270 align:start position:0%
+just simply go back but I'm just going
+to<00:03:28.680><c> play</c><00:03:28.840><c> it</c><00:03:28.959><c> now</c><00:03:29.120><c> and</c><00:03:29.239><c> make</c><00:03:29.319><c> sure</c><00:03:29.439><c> to</c><00:03:29.560><c> C</c><00:03:30.040><c> every</c>
+
+00:03:30.270 --> 00:03:30.280 align:start position:0%
+to play it now and make sure to C every
+ 
+
+00:03:30.280 --> 00:03:32.930 align:start position:0%
+to play it now and make sure to C every
+single<00:03:30.640><c> step</c><00:03:31.000><c> guys</c>
+
+00:03:32.930 --> 00:03:32.940 align:start position:0%
+single step guys
+ 
+
+00:03:32.940 --> 00:03:45.900 align:start position:0%
+single step guys
+[Music]
+
+00:03:45.900 --> 00:03:45.910 align:start position:0%
+ 
+ 
+
+00:03:45.910 --> 00:03:53.740 align:start position:0%
+ 
+[Music]
+
+00:03:53.740 --> 00:03:53.750 align:start position:0%
+ 
+ 
+
+00:03:53.750 --> 00:04:03.880 align:start position:0%
+ 
+[Music]
+
+00:04:03.880 --> 00:04:03.890 align:start position:0%
+ 
+ 
+
+00:04:03.890 --> 00:04:22.540 align:start position:0%
+ 
+[Music]
+
+00:04:22.540 --> 00:04:22.550 align:start position:0%
+ 
+ 
+
+00:04:22.550 --> 00:04:34.090 align:start position:0%
+ 
+[Music]
+
+00:04:34.090 --> 00:04:34.100 align:start position:0%
+ 
+ 
+
+00:04:34.100 --> 00:04:53.710 align:start position:0%
+ 
+[Music]
+
+00:04:53.710 --> 00:04:53.720 align:start position:0%
+[Music]
+ 
+
+00:04:53.720 --> 00:04:55.230 align:start position:0%
+[Music]
+now<00:04:53.840><c> the</c><00:04:53.960><c> most</c><00:04:54.160><c> hardw</c><00:04:54.520><c> demend</c><00:04:54.880><c> one</c><00:04:55.080><c> is</c>
+
+00:04:55.230 --> 00:04:55.240 align:start position:0%
+now the most hardw demend one is
+ 
+
+00:04:55.240 --> 00:04:56.629 align:start position:0%
+now the most hardw demend one is
+actually<00:04:55.440><c> a</c><00:04:55.520><c> window</c><00:04:55.800><c> search</c><00:04:56.039><c> bar</c><00:04:56.280><c> guys</c><00:04:56.440><c> so</c>
+
+00:04:56.629 --> 00:04:56.639 align:start position:0%
+actually a window search bar guys so
+ 
+
+00:04:56.639 --> 00:04:57.950 align:start position:0%
+actually a window search bar guys so
+therefore<00:04:57.000><c> for</c><00:04:57.240><c> this</c><00:04:57.360><c> one</c><00:04:57.560><c> you</c><00:04:57.680><c> have</c><00:04:57.759><c> to</c>
+
+00:04:57.950 --> 00:04:57.960 align:start position:0%
+therefore for this one you have to
+ 
+
+00:04:57.960 --> 00:04:59.990 align:start position:0%
+therefore for this one you have to
+decide<00:04:58.199><c> for</c><00:04:58.400><c> yourself</c><00:04:58.840><c> if</c><00:04:58.919><c> you</c><00:04:59.120><c> actually</c><00:04:59.680><c> uze</c>
+
+00:04:59.990 --> 00:05:00.000 align:start position:0%
+decide for yourself if you actually uze
+ 
+
+00:05:00.000 --> 00:05:01.710 align:start position:0%
+decide for yourself if you actually uze
+it<00:05:00.120><c> or</c><00:05:00.280><c> not</c><00:05:00.440><c> on</c><00:05:00.560><c> your</c><00:05:00.720><c> Windows</c><00:05:01.039><c> PC</c><00:05:01.440><c> going</c><00:05:01.600><c> to</c>
+
+00:05:01.710 --> 00:05:01.720 align:start position:0%
+it or not on your Windows PC going to
+ 
+
+00:05:01.720 --> 00:05:03.469 align:start position:0%
+it or not on your Windows PC going to
+lose<00:05:01.960><c> a</c><00:05:02.080><c> bunch</c><00:05:02.240><c> of</c><00:05:02.440><c> abilities</c><00:05:02.880><c> of</c><00:05:03.080><c> it</c><00:05:03.280><c> so</c>
+
+00:05:03.469 --> 00:05:03.479 align:start position:0%
+lose a bunch of abilities of it so
+ 
+
+00:05:03.479 --> 00:05:05.070 align:start position:0%
+lose a bunch of abilities of it so
+therefore<00:05:03.840><c> if</c><00:05:03.919><c> you</c><00:05:04.039><c> use</c><00:05:04.199><c> it</c><00:05:04.320><c> on</c><00:05:04.440><c> a</c><00:05:04.560><c> day-to-day</c>
+
+00:05:05.070 --> 00:05:05.080 align:start position:0%
+therefore if you use it on a day-to-day
+ 
+
+00:05:05.080 --> 00:05:06.790 align:start position:0%
+therefore if you use it on a day-to-day
+base<00:05:05.520><c> make</c><00:05:05.680><c> sure</c><00:05:05.800><c> to</c><00:05:05.919><c> leave</c><00:05:06.080><c> it</c><00:05:06.199><c> on</c><00:05:06.600><c> I</c><00:05:06.680><c> just</c>
+
+00:05:06.790 --> 00:05:06.800 align:start position:0%
+base make sure to leave it on I just
+ 
+
+00:05:06.800 --> 00:05:08.310 align:start position:0%
+base make sure to leave it on I just
+want<00:05:06.919><c> to</c><00:05:07.080><c> include</c><00:05:07.400><c> it</c><00:05:07.520><c> since</c><00:05:07.840><c> it's</c><00:05:07.960><c> the</c><00:05:08.080><c> most</c>
+
+00:05:08.310 --> 00:05:08.320 align:start position:0%
+want to include it since it's the most
+ 
+
+00:05:08.320 --> 00:05:10.150 align:start position:0%
+want to include it since it's the most
+Hardware<00:05:08.680><c> demanding</c><00:05:09.039><c> one</c><00:05:09.440><c> for</c><00:05:09.600><c> the</c><00:05:09.759><c> next</c><00:05:09.919><c> step</c>
+
+00:05:10.150 --> 00:05:10.160 align:start position:0%
+Hardware demanding one for the next step
+ 
+
+00:05:10.160 --> 00:05:11.350 align:start position:0%
+Hardware demanding one for the next step
+guys<00:05:10.320><c> I</c><00:05:10.400><c> want</c><00:05:10.520><c> you</c><00:05:10.600><c> to</c><00:05:10.720><c> go</c><00:05:10.840><c> into</c><00:05:11.000><c> your</c><00:05:11.080><c> windows</c>
+
+00:05:11.350 --> 00:05:11.360 align:start position:0%
+guys I want you to go into your windows
+ 
+
+00:05:11.360 --> 00:05:12.870 align:start position:0%
+guys I want you to go into your windows
+search<00:05:11.560><c> bar</c><00:05:11.759><c> and</c><00:05:11.840><c> just</c><00:05:11.960><c> simply</c><00:05:12.320><c> type</c><00:05:12.479><c> in</c><00:05:12.639><c> that</c>
+
+00:05:12.870 --> 00:05:12.880 align:start position:0%
+search bar and just simply type in that
+ 
+
+00:05:12.880 --> 00:05:14.310 align:start position:0%
+search bar and just simply type in that
+task<00:05:13.160><c> until</c><00:05:13.360><c> you</c><00:05:13.440><c> can</c><00:05:13.600><c> find</c><00:05:13.800><c> the</c><00:05:14.000><c> task</c>
+
+00:05:14.310 --> 00:05:14.320 align:start position:0%
+task until you can find the task
+ 
+
+00:05:14.320 --> 00:05:15.990 align:start position:0%
+task until you can find the task
+schedule<00:05:14.720><c> up</c><00:05:14.919><c> and</c><00:05:15.080><c> in</c><00:05:15.199><c> here</c><00:05:15.360><c> now</c><00:05:15.520><c> we</c><00:05:15.680><c> can</c><00:05:15.800><c> find</c>
+
+00:05:15.990 --> 00:05:16.000 align:start position:0%
+schedule up and in here now we can find
+ 
+
+00:05:16.000 --> 00:05:18.230 align:start position:0%
+schedule up and in here now we can find
+a<00:05:16.160><c> summary</c><00:05:16.680><c> of</c><00:05:16.960><c> every</c><00:05:17.199><c> single</c><00:05:17.639><c> task</c><00:05:17.919><c> which</c><00:05:18.039><c> is</c>
+
+00:05:18.230 --> 00:05:18.240 align:start position:0%
+a summary of every single task which is
+ 
+
+00:05:18.240 --> 00:05:20.150 align:start position:0%
+a summary of every single task which is
+scheduled<00:05:18.680><c> on</c><00:05:18.840><c> our</c><00:05:19.080><c> PC</c><00:05:19.520><c> as</c><00:05:19.639><c> mentioned</c><00:05:19.960><c> I</c><00:05:20.039><c> have</c>
+
+00:05:20.150 --> 00:05:20.160 align:start position:0%
+scheduled on our PC as mentioned I have
+ 
+
+00:05:20.160 --> 00:05:21.790 align:start position:0%
+scheduled on our PC as mentioned I have
+a<00:05:20.240><c> fresh</c><00:05:20.520><c> Windows</c><00:05:20.919><c> version</c><00:05:21.280><c> so</c><00:05:21.479><c> therefore</c>
+
+00:05:21.790 --> 00:05:21.800 align:start position:0%
+a fresh Windows version so therefore
+ 
+
+00:05:21.800 --> 00:05:23.390 align:start position:0%
+a fresh Windows version so therefore
+there's<00:05:22.000><c> not</c><00:05:22.280><c> actually</c><00:05:22.600><c> much</c><00:05:22.800><c> in</c><00:05:23.000><c> here</c><00:05:23.280><c> but</c>
+
+00:05:23.390 --> 00:05:23.400 align:start position:0%
+there's not actually much in here but
+ 
+
+00:05:23.400 --> 00:05:25.070 align:start position:0%
+there's not actually much in here but
+for<00:05:23.560><c> you</c><00:05:23.759><c> there</c><00:05:23.880><c> might</c><00:05:24.039><c> be</c><00:05:24.199><c> a</c><00:05:24.360><c> lot</c><00:05:24.600><c> more</c><00:05:24.960><c> and</c>
+
+00:05:25.070 --> 00:05:25.080 align:start position:0%
+for you there might be a lot more and
+ 
+
+00:05:25.080 --> 00:05:26.510 align:start position:0%
+for you there might be a lot more and
+what<00:05:25.199><c> you</c><00:05:25.280><c> want</c><00:05:25.360><c> to</c><00:05:25.520><c> make</c><00:05:25.639><c> sure</c><00:05:25.919><c> is</c><00:05:26.120><c> basically</c>
+
+00:05:26.510 --> 00:05:26.520 align:start position:0%
+what you want to make sure is basically
+ 
+
+00:05:26.520 --> 00:05:28.909 align:start position:0%
+what you want to make sure is basically
+disable<00:05:27.000><c> as</c><00:05:27.280><c> many</c><00:05:27.639><c> as</c><00:05:27.880><c> possible</c><00:05:28.319><c> as</c><00:05:28.479><c> you</c><00:05:28.639><c> can</c>
+
+00:05:28.909 --> 00:05:28.919 align:start position:0%
+disable as many as possible as you can
+ 
+
+00:05:28.919 --> 00:05:31.029 align:start position:0%
+disable as many as possible as you can
+as<00:05:29.039><c> an</c><00:05:29.160><c> example</c><00:05:29.440><c> some</c><00:05:29.880><c> like</c><00:05:30.120><c> Microsoft</c><00:05:30.720><c> Edge</c>
+
+00:05:31.029 --> 00:05:31.039 align:start position:0%
+as an example some like Microsoft Edge
+ 
+
+00:05:31.039 --> 00:05:33.150 align:start position:0%
+as an example some like Microsoft Edge
+update<00:05:31.440><c> test</c><00:05:31.759><c> machine</c><00:05:32.199><c> here</c><00:05:32.720><c> this</c><00:05:32.840><c> one</c>
+
+00:05:33.150 --> 00:05:33.160 align:start position:0%
+update test machine here this one
+ 
+
+00:05:33.160 --> 00:05:35.070 align:start position:0%
+update test machine here this one
+basically<00:05:33.840><c> when</c><00:05:33.960><c> I</c><00:05:34.080><c> go</c><00:05:34.280><c> into</c><00:05:34.520><c> property</c><00:05:34.960><c> just</c>
+
+00:05:35.070 --> 00:05:35.080 align:start position:0%
+basically when I go into property just
+ 
+
+00:05:35.080 --> 00:05:36.749 align:start position:0%
+basically when I go into property just
+tells<00:05:35.319><c> me</c><00:05:35.720><c> it</c><00:05:35.840><c> keeps</c><00:05:36.039><c> your</c><00:05:36.240><c> Microsoft</c>
+
+00:05:36.749 --> 00:05:36.759 align:start position:0%
+tells me it keeps your Microsoft
+ 
+
+00:05:36.759 --> 00:05:38.629 align:start position:0%
+tells me it keeps your Microsoft
+software<00:05:37.199><c> up</c><00:05:37.360><c> to</c><00:05:37.520><c> date</c><00:05:37.960><c> and</c><00:05:38.160><c> since</c><00:05:38.319><c> I</c><00:05:38.440><c> don't</c>
+
+00:05:38.629 --> 00:05:38.639 align:start position:0%
+software up to date and since I don't
+ 
+
+00:05:38.639 --> 00:05:40.390 align:start position:0%
+software up to date and since I don't
+really<00:05:38.880><c> utilize</c><00:05:39.280><c> Microsoft</c><00:05:39.720><c> Edge</c><00:05:39.960><c> anymore</c><00:05:40.319><c> I</c>
+
+00:05:40.390 --> 00:05:40.400 align:start position:0%
+really utilize Microsoft Edge anymore I
+ 
+
+00:05:40.400 --> 00:05:42.150 align:start position:0%
+really utilize Microsoft Edge anymore I
+can<00:05:40.600><c> actually</c><00:05:40.840><c> fully</c><00:05:41.199><c> disable</c><00:05:41.600><c> it</c><00:05:41.840><c> because</c><00:05:42.039><c> if</c>
+
+00:05:42.150 --> 00:05:42.160 align:start position:0%
+can actually fully disable it because if
+ 
+
+00:05:42.160 --> 00:05:43.590 align:start position:0%
+can actually fully disable it because if
+you're<00:05:42.280><c> going</c><00:05:42.440><c> to</c><00:05:42.560><c> take</c><00:05:42.680><c> a</c><00:05:42.840><c> look</c><00:05:43.080><c> it</c><00:05:43.319><c> actually</c>
+
+00:05:43.590 --> 00:05:43.600 align:start position:0%
+you're going to take a look it actually
+ 
+
+00:05:43.600 --> 00:05:45.309 align:start position:0%
+you're going to take a look it actually
+just<00:05:43.840><c> happened</c><00:05:44.199><c> today</c><00:05:44.639><c> like</c><00:05:44.800><c> today</c><00:05:45.039><c> was</c><00:05:45.199><c> the</c>
+
+00:05:45.309 --> 00:05:45.319 align:start position:0%
+just happened today like today was the
+ 
+
+00:05:45.319 --> 00:05:46.990 align:start position:0%
+just happened today like today was the
+last<00:05:45.479><c> time</c><00:05:45.759><c> when</c><00:05:45.919><c> this</c><00:05:46.080><c> service</c><00:05:46.479><c> was</c><00:05:46.720><c> actually</c>
+
+00:05:46.990 --> 00:05:47.000 align:start position:0%
+last time when this service was actually
+ 
+
+00:05:47.000 --> 00:05:49.110 align:start position:0%
+last time when this service was actually
+running<00:05:47.479><c> and</c><00:05:47.680><c> was</c><00:05:47.919><c> updating</c><00:05:48.440><c> Microsoft</c><00:05:48.880><c> Edge</c>
+
+00:05:49.110 --> 00:05:49.120 align:start position:0%
+running and was updating Microsoft Edge
+ 
+
+00:05:49.120 --> 00:05:50.550 align:start position:0%
+running and was updating Microsoft Edge
+in<00:05:49.199><c> the</c><00:05:49.360><c> background</c><00:05:49.759><c> even</c><00:05:49.960><c> though</c><00:05:50.160><c> I</c><00:05:50.319><c> never</c>
+
+00:05:50.550 --> 00:05:50.560 align:start position:0%
+in the background even though I never
+ 
+
+00:05:50.560 --> 00:05:52.230 align:start position:0%
+in the background even though I never
+use<00:05:50.759><c> it</c><00:05:50.960><c> going</c><00:05:51.160><c> to</c><00:05:51.280><c> do</c><00:05:51.440><c> the</c><00:05:51.560><c> same</c><00:05:51.800><c> here</c><00:05:51.919><c> as</c><00:05:52.080><c> well</c>
+
+00:05:52.230 --> 00:05:52.240 align:start position:0%
+use it going to do the same here as well
+ 
+
+00:05:52.240 --> 00:05:53.830 align:start position:0%
+use it going to do the same here as well
+with<00:05:52.360><c> the</c><00:05:52.479><c> other</c><00:05:52.680><c> one</c><00:05:53.000><c> if</c><00:05:53.120><c> we</c><00:05:53.199><c> can</c><00:05:53.360><c> see</c><00:05:53.520><c> as</c><00:05:53.680><c> well</c>
+
+00:05:53.830 --> 00:05:53.840 align:start position:0%
+with the other one if we can see as well
+ 
+
+00:05:53.840 --> 00:05:55.870 align:start position:0%
+with the other one if we can see as well
+in<00:05:53.880><c> the</c><00:05:54.039><c> properties</c><00:05:54.400><c> real</c><00:05:54.680><c> quick</c><00:05:55.199><c> that</c><00:05:55.639><c> it's</c>
+
+00:05:55.870 --> 00:05:55.880 align:start position:0%
+in the properties real quick that it's
+ 
+
+00:05:55.880 --> 00:05:58.189 align:start position:0%
+in the properties real quick that it's
+also<00:05:56.080><c> for</c><00:05:56.240><c> the</c><00:05:56.400><c> software</c><00:05:56.800><c> update</c><00:05:57.639><c> and</c><00:05:58.039><c> yeah</c>
+
+00:05:58.189 --> 00:05:58.199 align:start position:0%
+also for the software update and yeah
+ 
+
+00:05:58.199 --> 00:05:59.670 align:start position:0%
+also for the software update and yeah
+and<00:05:58.319><c> as</c><00:05:58.479><c> mentioned</c><00:05:58.800><c> all</c><00:05:58.919><c> we</c><00:05:59.000><c> got</c><00:05:59.120><c> to</c><00:05:59.240><c> do</c><00:05:59.400><c> is</c>
+
+00:05:59.670 --> 00:05:59.680 align:start position:0%
+and as mentioned all we got to do is
+ 
+
+00:05:59.680 --> 00:06:01.230 align:start position:0%
+and as mentioned all we got to do is
+click<00:05:59.840><c> under</c><00:06:00.120><c> disable</c><00:06:00.639><c> that</c><00:06:00.759><c> way</c><00:06:00.919><c> we</c><00:06:01.039><c> now</c>
+
+00:06:01.230 --> 00:06:01.240 align:start position:0%
+click under disable that way we now
+ 
+
+00:06:01.240 --> 00:06:02.950 align:start position:0%
+click under disable that way we now
+already<00:06:01.479><c> disabled</c><00:06:01.960><c> this</c><00:06:02.120><c> year</c><00:06:02.440><c> and</c><00:06:02.560><c> it's</c><00:06:02.759><c> not</c>
+
+00:06:02.950 --> 00:06:02.960 align:start position:0%
+already disabled this year and it's not
+ 
+
+00:06:02.960 --> 00:06:04.629 align:start position:0%
+already disabled this year and it's not
+a<00:06:03.120><c> service</c><00:06:03.520><c> which</c><00:06:03.639><c> is</c><00:06:03.720><c> going</c><00:06:03.840><c> to</c><00:06:04.000><c> run</c><00:06:04.280><c> once</c><00:06:04.479><c> or</c>
+
+00:06:04.629 --> 00:06:04.639 align:start position:0%
+a service which is going to run once or
+ 
+
+00:06:04.639 --> 00:06:06.670 align:start position:0%
+a service which is going to run once or
+twice<00:06:04.880><c> a</c><00:06:05.000><c> day</c><00:06:05.120><c> on</c><00:06:05.280><c> our</c><00:06:05.560><c> PC</c><00:06:06.080><c> Nvidia</c><00:06:06.479><c> we're</c><00:06:06.599><c> going</c>
+
+00:06:06.670 --> 00:06:06.680 align:start position:0%
+twice a day on our PC Nvidia we're going
+ 
+
+00:06:06.680 --> 00:06:09.110 align:start position:0%
+twice a day on our PC Nvidia we're going
+to<00:06:06.919><c> let</c><00:06:07.240><c> here</c><00:06:07.599><c> Nvidia</c><00:06:07.960><c> the</c><00:06:08.160><c> self</c><00:06:08.440><c> update</c>
+
+00:06:09.110 --> 00:06:09.120 align:start position:0%
+to let here Nvidia the self update
+ 
+
+00:06:09.120 --> 00:06:10.749 align:start position:0%
+to let here Nvidia the self update
+theoretically<00:06:09.680><c> you</c><00:06:09.759><c> could</c><00:06:09.960><c> also</c><00:06:10.240><c> deactivate</c>
+
+00:06:10.749 --> 00:06:10.759 align:start position:0%
+theoretically you could also deactivate
+ 
+
+00:06:10.759 --> 00:06:12.629 align:start position:0%
+theoretically you could also deactivate
+it<00:06:11.000><c> if</c><00:06:11.080><c> you</c><00:06:11.199><c> want</c><00:06:11.319><c> to</c><00:06:11.440><c> do</c><00:06:11.599><c> it</c><00:06:11.960><c> manually</c><00:06:12.520><c> you</c>
+
+00:06:12.629 --> 00:06:12.639 align:start position:0%
+it if you want to do it manually you
+ 
+
+00:06:12.639 --> 00:06:14.150 align:start position:0%
+it if you want to do it manually you
+know<00:06:12.840><c> there's</c><00:06:13.039><c> also</c><00:06:13.199><c> a</c><00:06:13.319><c> button</c><00:06:13.560><c> in</c><00:06:13.680><c> the</c><00:06:13.759><c> Nvidia</c>
+
+00:06:14.150 --> 00:06:14.160 align:start position:0%
+know there's also a button in the Nvidia
+ 
+
+00:06:14.160 --> 00:06:15.990 align:start position:0%
+know there's also a button in the Nvidia
+app<00:06:14.440><c> the</c><00:06:14.599><c> same</c><00:06:14.800><c> goes</c><00:06:15.039><c> as</c><00:06:15.160><c> well</c><00:06:15.280><c> for</c><00:06:15.639><c> my</c><00:06:15.759><c> other</c>
+
+00:06:15.990 --> 00:06:16.000 align:start position:0%
+app the same goes as well for my other
+ 
+
+00:06:16.000 --> 00:06:18.150 align:start position:0%
+app the same goes as well for my other
+launcher<00:06:16.360><c> Opa</c><00:06:16.680><c> GX</c><00:06:17.240><c> we</c><00:06:17.440><c> most</c><00:06:17.639><c> likely</c><00:06:17.919><c> going</c><00:06:18.039><c> to</c>
+
+00:06:18.150 --> 00:06:18.160 align:start position:0%
+launcher Opa GX we most likely going to
+ 
+
+00:06:18.160 --> 00:06:20.230 align:start position:0%
+launcher Opa GX we most likely going to
+have<00:06:18.319><c> multiple</c><00:06:18.800><c> services</c><00:06:19.319><c> in</c><00:06:19.520><c> here</c><00:06:19.960><c> make</c><00:06:20.080><c> sure</c>
+
+00:06:20.230 --> 00:06:20.240 align:start position:0%
+have multiple services in here make sure
+ 
+
+00:06:20.240 --> 00:06:22.189 align:start position:0%
+have multiple services in here make sure
+to<00:06:20.599><c> do</c><00:06:20.759><c> some</c><00:06:20.960><c> quick</c><00:06:21.240><c> research</c><00:06:21.720><c> and</c><00:06:21.880><c> look</c><00:06:22.080><c> if</c>
+
+00:06:22.189 --> 00:06:22.199 align:start position:0%
+to do some quick research and look if
+ 
+
+00:06:22.199 --> 00:06:23.710 align:start position:0%
+to do some quick research and look if
+you<00:06:22.280><c> can</c><00:06:22.479><c> actually</c><00:06:22.720><c> disable</c><00:06:23.120><c> them</c><00:06:23.400><c> now</c><00:06:23.520><c> after</c>
+
+00:06:23.710 --> 00:06:23.720 align:start position:0%
+you can actually disable them now after
+ 
+
+00:06:23.720 --> 00:06:25.230 align:start position:0%
+you can actually disable them now after
+we<00:06:23.880><c> done</c><00:06:24.080><c> with</c><00:06:24.240><c> that</c><00:06:24.440><c> I</c><00:06:24.520><c> want</c><00:06:24.639><c> you</c><00:06:24.720><c> to</c><00:06:24.880><c> go</c><00:06:25.039><c> again</c>
+
+00:06:25.230 --> 00:06:25.240 align:start position:0%
+we done with that I want you to go again
+ 
+
+00:06:25.240 --> 00:06:26.589 align:start position:0%
+we done with that I want you to go again
+into<00:06:25.400><c> your</c><00:06:25.520><c> window</c><00:06:25.759><c> search</c><00:06:25.960><c> bar</c><00:06:26.160><c> and</c><00:06:26.280><c> type</c><00:06:26.440><c> in</c>
+
+00:06:26.589 --> 00:06:26.599 align:start position:0%
+into your window search bar and type in
+ 
+
+00:06:26.599 --> 00:06:28.150 align:start position:0%
+into your window search bar and type in
+that<00:06:26.800><c> taskbar</c><00:06:27.360><c> because</c><00:06:27.599><c> you</c><00:06:27.680><c> can</c><00:06:27.840><c> see</c><00:06:28.000><c> the</c>
+
+00:06:28.150 --> 00:06:28.160 align:start position:0%
+that taskbar because you can see the
+ 
+
+00:06:28.160 --> 00:06:29.550 align:start position:0%
+that taskbar because you can see the
+small<00:06:28.400><c> widgets</c><00:06:28.800><c> which</c><00:06:28.919><c> are</c><00:06:29.000><c> on</c><00:06:29.120><c> our</c><00:06:29.240><c> home</c><00:06:29.360><c> scen</c>
+
+00:06:29.550 --> 00:06:29.560 align:start position:0%
+small widgets which are on our home scen
+ 
+
+00:06:29.560 --> 00:06:31.189 align:start position:0%
+small widgets which are on our home scen
+screen<00:06:29.880><c> we</c><00:06:30.000><c> want</c><00:06:30.080><c> to</c><00:06:30.199><c> fully</c><00:06:30.479><c> disable</c><00:06:30.880><c> them</c><00:06:31.080><c> and</c>
+
+00:06:31.189 --> 00:06:31.199 align:start position:0%
+screen we want to fully disable them and
+ 
+
+00:06:31.199 --> 00:06:32.670 align:start position:0%
+screen we want to fully disable them and
+this<00:06:31.280><c> is</c><00:06:31.440><c> exactly</c><00:06:31.720><c> where</c><00:06:31.880><c> you</c><00:06:31.960><c> do</c><00:06:32.080><c> it</c><00:06:32.280><c> guys</c><00:06:32.560><c> you</c>
+
+00:06:32.670 --> 00:06:32.680 align:start position:0%
+this is exactly where you do it guys you
+ 
+
+00:06:32.680 --> 00:06:34.550 align:start position:0%
+this is exactly where you do it guys you
+can<00:06:32.800><c> see</c><00:06:32.960><c> straight</c><00:06:33.240><c> up</c><00:06:33.520><c> option</c><00:06:33.759><c> for</c><00:06:34.039><c> widgets</c>
+
+00:06:34.550 --> 00:06:34.560 align:start position:0%
+can see straight up option for widgets
+ 
+
+00:06:34.560 --> 00:06:35.870 align:start position:0%
+can see straight up option for widgets
+you<00:06:34.680><c> want</c><00:06:34.759><c> to</c><00:06:34.880><c> make</c><00:06:35.000><c> sure</c><00:06:35.160><c> to</c><00:06:35.360><c> just</c><00:06:35.479><c> simply</c><00:06:35.759><c> put</c>
+
+00:06:35.870 --> 00:06:35.880 align:start position:0%
+you want to make sure to just simply put
+ 
+
+00:06:35.880 --> 00:06:38.029 align:start position:0%
+you want to make sure to just simply put
+it<00:06:36.000><c> on</c><00:06:36.160><c> off</c><00:06:36.520><c> guys</c><00:06:36.919><c> it's</c><00:06:37.160><c> super</c><00:06:37.479><c> important</c>
+
+00:06:38.029 --> 00:06:38.039 align:start position:0%
+it on off guys it's super important
+ 
+
+00:06:38.039 --> 00:06:39.830 align:start position:0%
+it on off guys it's super important
+since<00:06:38.280><c> widgets</c><00:06:38.639><c> also</c><00:06:38.880><c> take</c><00:06:39.039><c> a</c><00:06:39.199><c> lot</c><00:06:39.319><c> of</c><00:06:39.479><c> system</c>
+
+00:06:39.830 --> 00:06:39.840 align:start position:0%
+since widgets also take a lot of system
+ 
+
+00:06:39.840 --> 00:06:41.909 align:start position:0%
+since widgets also take a lot of system
+power<00:06:40.440><c> they're</c><00:06:40.680><c> basically</c><00:06:41.039><c> backed</c><00:06:41.280><c> up</c><00:06:41.440><c> by</c><00:06:41.599><c> AI</c>
+
+00:06:41.909 --> 00:06:41.919 align:start position:0%
+power they're basically backed up by AI
+ 
+
+00:06:41.919 --> 00:06:43.790 align:start position:0%
+power they're basically backed up by AI
+you<00:06:42.039><c> know</c><00:06:42.280><c> permanently</c><00:06:42.840><c> updating</c><00:06:43.400><c> giving</c><00:06:43.599><c> us</c>
+
+00:06:43.790 --> 00:06:43.800 align:start position:0%
+you know permanently updating giving us
+ 
+
+00:06:43.800 --> 00:06:45.189 align:start position:0%
+you know permanently updating giving us
+infos<00:06:44.120><c> and</c><00:06:44.280><c> all</c><00:06:44.400><c> of</c><00:06:44.520><c> that</c><00:06:44.720><c> stuff</c><00:06:44.919><c> we</c><00:06:45.039><c> don't</c>
+
+00:06:45.189 --> 00:06:45.199 align:start position:0%
+infos and all of that stuff we don't
+ 
+
+00:06:45.199 --> 00:06:46.710 align:start position:0%
+infos and all of that stuff we don't
+need<00:06:45.400><c> that</c><00:06:45.840><c> and</c><00:06:45.960><c> once</c><00:06:46.120><c> you're</c><00:06:46.280><c> in</c><00:06:46.400><c> the</c><00:06:46.560><c> same</c>
+
+00:06:46.710 --> 00:06:46.720 align:start position:0%
+need that and once you're in the same
+ 
+
+00:06:46.720 --> 00:06:48.189 align:start position:0%
+need that and once you're in the same
+window<00:06:47.000><c> you</c><00:06:47.080><c> can</c><00:06:47.240><c> also</c><00:06:47.440><c> see</c><00:06:47.599><c> on</c><00:06:47.720><c> the</c><00:06:47.840><c> left</c><00:06:48.039><c> side</c>
+
+00:06:48.189 --> 00:06:48.199 align:start position:0%
+window you can also see on the left side
+ 
+
+00:06:48.199 --> 00:06:50.670 align:start position:0%
+window you can also see on the left side
+now<00:06:48.560><c> applications</c><00:06:49.360><c> click</c><00:06:49.599><c> onto</c><00:06:49.880><c> it</c><00:06:50.080><c> guys</c><00:06:50.520><c> and</c>
+
+00:06:50.670 --> 00:06:50.680 align:start position:0%
+now applications click onto it guys and
+ 
+
+00:06:50.680 --> 00:06:52.189 align:start position:0%
+now applications click onto it guys and
+then<00:06:50.800><c> we</c><00:06:50.919><c> now</c><00:06:51.039><c> have</c><00:06:51.160><c> a</c><00:06:51.280><c> bunch</c><00:06:51.440><c> of</c><00:06:51.560><c> presets</c><00:06:52.080><c> the</c>
+
+00:06:52.189 --> 00:06:52.199 align:start position:0%
+then we now have a bunch of presets the
+ 
+
+00:06:52.199 --> 00:06:53.830 align:start position:0%
+then we now have a bunch of presets the
+insult<00:06:52.599><c> applications</c><00:06:53.199><c> I</c><00:06:53.280><c> want</c><00:06:53.400><c> you</c><00:06:53.560><c> to</c><00:06:53.720><c> go</c>
+
+00:06:53.830 --> 00:06:53.840 align:start position:0%
+insult applications I want you to go
+ 
+
+00:06:53.840 --> 00:06:55.710 align:start position:0%
+insult applications I want you to go
+through<00:06:54.240><c> every</c><00:06:54.599><c> single</c><00:06:54.960><c> one</c><00:06:55.120><c> of</c><00:06:55.280><c> them</c><00:06:55.560><c> and</c>
+
+00:06:55.710 --> 00:06:55.720 align:start position:0%
+through every single one of them and
+ 
+
+00:06:55.720 --> 00:06:57.589 align:start position:0%
+through every single one of them and
+just<00:06:55.919><c> figure</c><00:06:56.160><c> out</c><00:06:56.479><c> okay</c><00:06:56.639><c> do</c><00:06:56.759><c> I</c><00:06:56.879><c> need</c><00:06:57.080><c> it</c><00:06:57.360><c> no</c><00:06:57.520><c> I</c>
+
+00:06:57.589 --> 00:06:57.599 align:start position:0%
+just figure out okay do I need it no I
+ 
+
+00:06:57.599 --> 00:06:59.749 align:start position:0%
+just figure out okay do I need it no I
+don't<00:06:57.800><c> need</c><00:06:57.960><c> it</c><00:06:58.280><c> okay</c><00:06:58.520><c> that</c><00:06:58.639><c> one</c><00:06:58.840><c> also</c><00:06:59.280><c> because</c>
+
+00:06:59.749 --> 00:06:59.759 align:start position:0%
+don't need it okay that one also because
+ 
+
+00:06:59.759 --> 00:07:01.150 align:start position:0%
+don't need it okay that one also because
+Windows<00:07:00.080><c> has</c><00:07:00.199><c> a</c><00:07:00.360><c> lot</c><00:07:00.520><c> of</c><00:07:00.720><c> them</c><00:07:00.879><c> which</c><00:07:00.960><c> are</c>
+
+00:07:01.150 --> 00:07:01.160 align:start position:0%
+Windows has a lot of them which are
+ 
+
+00:07:01.160 --> 00:07:02.749 align:start position:0%
+Windows has a lot of them which are
+pre-installed<00:07:01.960><c> which</c><00:07:02.080><c> are</c><00:07:02.280><c> just</c><00:07:02.440><c> simply</c>
+
+00:07:02.749 --> 00:07:02.759 align:start position:0%
+pre-installed which are just simply
+ 
+
+00:07:02.759 --> 00:07:04.550 align:start position:0%
+pre-installed which are just simply
+useless<00:07:03.560><c> like</c><00:07:03.720><c> I'm</c><00:07:03.840><c> not</c><00:07:04.000><c> going</c><00:07:04.120><c> to</c><00:07:04.280><c> use</c>
+
+00:07:04.550 --> 00:07:04.560 align:start position:0%
+useless like I'm not going to use
+ 
+
+00:07:04.560 --> 00:07:06.469 align:start position:0%
+useless like I'm not going to use
+anything<00:07:04.879><c> like</c><00:07:05.000><c> a</c><00:07:05.199><c> contact</c><00:07:05.520><c> book</c><00:07:05.840><c> on</c><00:07:06.000><c> my</c><00:07:06.160><c> PC</c>
+
+00:07:06.469 --> 00:07:06.479 align:start position:0%
+anything like a contact book on my PC
+ 
+
+00:07:06.479 --> 00:07:07.869 align:start position:0%
+anything like a contact book on my PC
+when<00:07:06.639><c> I</c><00:07:06.759><c> have</c><00:07:06.879><c> a</c><00:07:07.000><c> phone</c><00:07:07.319><c> you</c><00:07:07.479><c> know</c><00:07:07.639><c> what</c><00:07:07.759><c> I'm</c>
+
+00:07:07.869 --> 00:07:07.879 align:start position:0%
+when I have a phone you know what I'm
+ 
+
+00:07:07.879 --> 00:07:09.469 align:start position:0%
+when I have a phone you know what I'm
+saying<00:07:08.199><c> guys</c><00:07:08.560><c> so</c><00:07:08.800><c> therefore</c><00:07:09.080><c> make</c><00:07:09.199><c> sure</c><00:07:09.360><c> that</c>
+
+00:07:09.469 --> 00:07:09.479 align:start position:0%
+saying guys so therefore make sure that
+ 
+
+00:07:09.479 --> 00:07:11.350 align:start position:0%
+saying guys so therefore make sure that
+you<00:07:09.599><c> go</c><00:07:09.720><c> through</c><00:07:10.080><c> every</c><00:07:10.319><c> single</c><00:07:10.639><c> one</c><00:07:10.759><c> of</c><00:07:10.919><c> them</c>
+
+00:07:11.350 --> 00:07:11.360 align:start position:0%
+you go through every single one of them
+ 
+
+00:07:11.360 --> 00:07:13.150 align:start position:0%
+you go through every single one of them
+and<00:07:11.560><c> just</c><00:07:11.720><c> simply</c><00:07:12.039><c> hit</c><00:07:12.240><c> uninstall</c><00:07:12.840><c> guys</c><00:07:13.039><c> I'm</c>
+
+00:07:13.150 --> 00:07:13.160 align:start position:0%
+and just simply hit uninstall guys I'm
+ 
+
+00:07:13.160 --> 00:07:14.670 align:start position:0%
+and just simply hit uninstall guys I'm
+going<00:07:13.280><c> to</c><00:07:13.400><c> speed</c><00:07:13.599><c> up</c><00:07:13.720><c> the</c><00:07:13.840><c> process</c><00:07:14.160><c> real</c><00:07:14.360><c> quick</c>
+
+00:07:14.670 --> 00:07:14.680 align:start position:0%
+going to speed up the process real quick
+ 
+
+00:07:14.680 --> 00:07:19.560 align:start position:0%
+going to speed up the process real quick
+so<00:07:14.800><c> you</c><00:07:14.919><c> can</c><00:07:15.039><c> see</c><00:07:15.280><c> what</c><00:07:15.400><c> I</c><00:07:15.560><c> did</c><00:07:15.759><c> here</c>
+
+00:07:19.560 --> 00:07:19.570 align:start position:0%
+ 
+ 
+
+00:07:19.570 --> 00:07:47.909 align:start position:0%
+ 
+[Music]
+
+00:07:47.909 --> 00:07:47.919 align:start position:0%
+ 
+ 
+
+00:07:47.919 --> 00:07:49.589 align:start position:0%
+ 
+the<00:07:48.120><c> next</c><00:07:48.319><c> up</c><00:07:48.520><c> also</c><00:07:48.680><c> go</c><00:07:48.840><c> under</c><00:07:49.120><c> apps</c><00:07:49.400><c> for</c>
+
+00:07:49.589 --> 00:07:49.599 align:start position:0%
+the next up also go under apps for
+ 
+
+00:07:49.599 --> 00:07:51.149 align:start position:0%
+the next up also go under apps for
+websites<00:07:50.039><c> and</c><00:07:50.120><c> make</c><00:07:50.240><c> sure</c><00:07:50.440><c> that</c><00:07:50.520><c> you</c><00:07:50.680><c> uncheck</c>
+
+00:07:51.149 --> 00:07:51.159 align:start position:0%
+websites and make sure that you uncheck
+ 
+
+00:07:51.159 --> 00:07:52.670 align:start position:0%
+websites and make sure that you uncheck
+every<00:07:51.360><c> single</c><00:07:51.639><c> one</c><00:07:51.800><c> of</c><00:07:51.960><c> these</c><00:07:52.159><c> options</c><00:07:52.560><c> which</c>
+
+00:07:52.670 --> 00:07:52.680 align:start position:0%
+every single one of these options which
+ 
+
+00:07:52.680 --> 00:07:54.270 align:start position:0%
+every single one of these options which
+are<00:07:52.840><c> avable</c><00:07:53.319><c> and</c><00:07:53.479><c> then</c><00:07:53.639><c> once</c><00:07:53.800><c> again</c><00:07:54.039><c> you</c><00:07:54.120><c> can</c>
+
+00:07:54.270 --> 00:07:54.280 align:start position:0%
+are avable and then once again you can
+ 
+
+00:07:54.280 --> 00:07:55.830 align:start position:0%
+are avable and then once again you can
+also<00:07:54.479><c> double</c><00:07:54.759><c> check</c><00:07:54.960><c> your</c><00:07:55.080><c> startup</c><00:07:55.479><c> to</c><00:07:55.639><c> really</c>
+
+00:07:55.830 --> 00:07:55.840 align:start position:0%
+also double check your startup to really
+ 
+
+00:07:55.840 --> 00:07:57.510 align:start position:0%
+also double check your startup to really
+see<00:07:56.120><c> if</c><00:07:56.280><c> there's</c><00:07:56.479><c> not</c><00:07:56.800><c> anything</c><00:07:57.240><c> which</c><00:07:57.360><c> is</c>
+
+00:07:57.510 --> 00:07:57.520 align:start position:0%
+see if there's not anything which is
+ 
+
+00:07:57.520 --> 00:07:59.510 align:start position:0%
+see if there's not anything which is
+maybe<00:07:57.800><c> still</c><00:07:58.000><c> turned</c><00:07:58.280><c> on</c><00:07:58.639><c> next</c><00:07:58.800><c> up</c><00:07:59.039><c> also</c><00:07:59.159><c> click</c>
+
+00:07:59.510 --> 00:07:59.520 align:start position:0%
+maybe still turned on next up also click
+ 
+
+00:07:59.520 --> 00:08:00.950 align:start position:0%
+maybe still turned on next up also click
+under<00:07:59.759><c> gaming</c><00:08:00.120><c> guys</c><00:08:00.360><c> and</c><00:08:00.479><c> they</c><00:08:00.560><c> can</c><00:08:00.680><c> see</c><00:08:00.879><c> a</c>
+
+00:08:00.950 --> 00:08:00.960 align:start position:0%
+under gaming guys and they can see a
+ 
+
+00:08:00.960 --> 00:08:02.589 align:start position:0%
+under gaming guys and they can see a
+feature<00:08:01.280><c> for</c><00:08:01.479><c> the</c><00:08:01.639><c> game</c><00:08:01.919><c> bar</c><00:08:02.319><c> this</c><00:08:02.400><c> is</c>
+
+00:08:02.589 --> 00:08:02.599 align:start position:0%
+feature for the game bar this is
+ 
+
+00:08:02.599 --> 00:08:04.189 align:start position:0%
+feature for the game bar this is
+basically<00:08:02.960><c> the</c><00:08:03.120><c> windows</c><00:08:03.520><c> on</c><00:08:03.800><c> recording</c>
+
+00:08:04.189 --> 00:08:04.199 align:start position:0%
+basically the windows on recording
+ 
+
+00:08:04.199 --> 00:08:05.510 align:start position:0%
+basically the windows on recording
+software<00:08:04.599><c> and</c><00:08:04.680><c> you</c><00:08:04.800><c> want</c><00:08:04.879><c> to</c><00:08:05.000><c> make</c><00:08:05.120><c> sure</c><00:08:05.280><c> to</c>
+
+00:08:05.510 --> 00:08:05.520 align:start position:0%
+software and you want to make sure to
+ 
+
+00:08:05.520 --> 00:08:07.230 align:start position:0%
+software and you want to make sure to
+actually<00:08:05.800><c> flip</c><00:08:06.120><c> it</c><00:08:06.240><c> on</c><00:08:06.440><c> off</c><00:08:06.759><c> guys</c><00:08:07.000><c> because</c>
+
+00:08:07.230 --> 00:08:07.240 align:start position:0%
+actually flip it on off guys because
+ 
+
+00:08:07.240 --> 00:08:08.309 align:start position:0%
+actually flip it on off guys because
+that<00:08:07.319><c> one</c><00:08:07.520><c> is</c><00:08:07.639><c> also</c><00:08:07.840><c> running</c><00:08:08.080><c> in</c><00:08:08.199><c> the</c>
+
+00:08:08.309 --> 00:08:08.319 align:start position:0%
+that one is also running in the
+ 
+
+00:08:08.319 --> 00:08:09.510 align:start position:0%
+that one is also running in the
+background<00:08:08.720><c> and</c><00:08:08.840><c> it's</c><00:08:09.000><c> super</c><00:08:09.280><c> hard</c>
+
+00:08:09.510 --> 00:08:09.520 align:start position:0%
+background and it's super hard
+ 
+
+00:08:09.520 --> 00:08:10.909 align:start position:0%
+background and it's super hard
+recommending<00:08:10.039><c> and</c><00:08:10.159><c> now</c><00:08:10.280><c> all</c><00:08:10.360><c> you</c><00:08:10.479><c> got</c><00:08:10.560><c> to</c><00:08:10.680><c> do</c>
+
+00:08:10.909 --> 00:08:10.919 align:start position:0%
+recommending and now all you got to do
+ 
+
+00:08:10.919 --> 00:08:12.710 align:start position:0%
+recommending and now all you got to do
+is<00:08:11.039><c> restart</c><00:08:11.440><c> your</c><00:08:11.560><c> PC</c><00:08:11.919><c> again</c><00:08:12.199><c> and</c><00:08:12.360><c> check</c><00:08:12.560><c> how</c>
+
+00:08:12.710 --> 00:08:12.720 align:start position:0%
+is restart your PC again and check how
+ 
+
+00:08:12.720 --> 00:08:14.390 align:start position:0%
+is restart your PC again and check how
+the<00:08:12.879><c> processes</c><00:08:13.400><c> have</c><00:08:13.520><c> changed</c><00:08:14.080><c> after</c><00:08:14.280><c> the</c>
+
+00:08:14.390 --> 00:08:14.400 align:start position:0%
+the processes have changed after the
+ 
+
+00:08:14.400 --> 00:08:16.270 align:start position:0%
+the processes have changed after the
+next<00:08:14.599><c> time</c><00:08:14.800><c> restarting</c><00:08:15.280><c> my</c><00:08:15.479><c> PC</c><00:08:15.840><c> you</c><00:08:15.960><c> can</c><00:08:16.080><c> see</c>
+
+00:08:16.270 --> 00:08:16.280 align:start position:0%
+next time restarting my PC you can see
+ 
+
+00:08:16.280 --> 00:08:18.110 align:start position:0%
+next time restarting my PC you can see
+that<00:08:16.400><c> I</c><00:08:16.560><c> go</c><00:08:16.720><c> down</c><00:08:16.960><c> all</c><00:08:17.080><c> the</c><00:08:17.199><c> way</c><00:08:17.319><c> to</c><00:08:17.560><c> 72</c>
+
+00:08:18.110 --> 00:08:18.120 align:start position:0%
+that I go down all the way to 72
+ 
+
+00:08:18.120 --> 00:08:19.990 align:start position:0%
+that I go down all the way to 72
+processes<00:08:18.720><c> but</c><00:08:18.879><c> also</c><00:08:19.120><c> keep</c><00:08:19.280><c> in</c><00:08:19.400><c> mind</c><00:08:19.840><c> I'm</c>
+
+00:08:19.990 --> 00:08:20.000 align:start position:0%
+processes but also keep in mind I'm
+ 
+
+00:08:20.000 --> 00:08:22.189 align:start position:0%
+processes but also keep in mind I'm
+running<00:08:20.319><c> OBS</c><00:08:20.720><c> on</c><00:08:20.840><c> my</c><00:08:21.039><c> PC</c><00:08:21.599><c> and</c><00:08:21.759><c> as</c><00:08:21.879><c> well</c><00:08:22.080><c> some</c>
+
+00:08:22.189 --> 00:08:22.199 align:start position:0%
+running OBS on my PC and as well some
+ 
+
+00:08:22.199 --> 00:08:23.469 align:start position:0%
+running OBS on my PC and as well some
+other<00:08:22.440><c> software</c><00:08:22.800><c> which</c><00:08:22.919><c> I</c><00:08:23.000><c> need</c><00:08:23.159><c> for</c><00:08:23.319><c> the</c>
+
+00:08:23.469 --> 00:08:23.479 align:start position:0%
+other software which I need for the
+ 
+
+00:08:23.479 --> 00:08:24.790 align:start position:0%
+other software which I need for the
+recording<00:08:23.960><c> so</c><00:08:24.159><c> actually</c><00:08:24.360><c> we're</c><00:08:24.520><c> moving</c>
+
+00:08:24.790 --> 00:08:24.800 align:start position:0%
+recording so actually we're moving
+ 
+
+00:08:24.800 --> 00:08:27.469 align:start position:0%
+recording so actually we're moving
+around<00:08:25.159><c> 65</c><00:08:25.759><c> processes</c><00:08:26.440><c> which</c><00:08:26.560><c> is</c><00:08:26.680><c> an</c><00:08:26.960><c> amazing</c>
+
+00:08:27.469 --> 00:08:27.479 align:start position:0%
+around 65 processes which is an amazing
+ 
+
+00:08:27.479 --> 00:08:29.869 align:start position:0%
+around 65 processes which is an amazing
+upgrade<00:08:27.919><c> guys</c><00:08:28.080><c> from</c><00:08:28.280><c> having</c><00:08:28.599><c> over</c><00:08:29.080><c> 100</c><00:08:29.520><c> 60</c><00:08:29.800><c> in</c>
+
+00:08:29.869 --> 00:08:29.879 align:start position:0%
+upgrade guys from having over 100 60 in
+ 
+
+00:08:29.879 --> 00:08:31.110 align:start position:0%
+upgrade guys from having over 100 60 in
+the<00:08:30.000><c> first</c><00:08:30.199><c> place</c><00:08:30.520><c> if</c><00:08:30.599><c> you</c><00:08:30.680><c> enjoyed</c><00:08:30.960><c> this</c>
+
+00:08:31.110 --> 00:08:31.120 align:start position:0%
+the first place if you enjoyed this
+ 
+
+00:08:31.120 --> 00:08:32.149 align:start position:0%
+the first place if you enjoyed this
+video<00:08:31.319><c> and</c><00:08:31.440><c> you</c><00:08:31.520><c> want</c><00:08:31.599><c> to</c><00:08:31.720><c> optimize</c><00:08:32.080><c> your</c>
+
+00:08:32.149 --> 00:08:32.159 align:start position:0%
+video and you want to optimize your
+ 
+
+00:08:32.159 --> 00:08:33.589 align:start position:0%
+video and you want to optimize your
+Windows<00:08:32.479><c> PC</c><00:08:32.760><c> even</c><00:08:32.919><c> further</c><00:08:33.320><c> make</c><00:08:33.399><c> sure</c><00:08:33.519><c> to</c>
+
+00:08:33.589 --> 00:08:33.599 align:start position:0%
+Windows PC even further make sure to
+ 
+
+00:08:33.599 --> 00:08:34.790 align:start position:0%
+Windows PC even further make sure to
+check<00:08:33.760><c> out</c><00:08:33.880><c> the</c><00:08:34.000><c> two</c><00:08:34.120><c> videos</c><00:08:34.399><c> which</c><00:08:34.519><c> are</c><00:08:34.640><c> right</c>
+
+00:08:34.790 --> 00:08:34.800 align:start position:0%
+check out the two videos which are right
+ 
+
+00:08:34.800 --> 00:08:35.990 align:start position:0%
+check out the two videos which are right
+near<00:08:34.959><c> on</c><00:08:35.080><c> screen</c><00:08:35.399><c> and</c><00:08:35.479><c> don't</c><00:08:35.640><c> forget</c><00:08:35.880><c> to</c>
+
+00:08:35.990 --> 00:08:36.000 align:start position:0%
+near on screen and don't forget to
+ 
+
+00:08:36.000 --> 00:08:38.440 align:start position:0%
+near on screen and don't forget to
+subscribe
+

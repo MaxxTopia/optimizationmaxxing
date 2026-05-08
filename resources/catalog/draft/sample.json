@@ -1,0 +1,66 @@
+[
+  {
+    "id": "discord.cpu.1474042345895890955",
+    "channel": "cpu",
+    "message_id": "1474042345895890955",
+    "timestamp": "2026-02-19T05:58:01.644-08:00",
+    "author": "diggyt",
+    "content": "https://bitsum.com/download-process-lasso/\nLaunch Fortnite and sit in the lobby. FortniteClient-Win64-Shipping.exe CPU Affinity -> Always -> Select CPU Affinity. CPU Priority -> Always, and set it to High go to Efficiency Mode -> Always -> OFF.",
+    "signals": {
+      "registry_paths": [],
+      "bcdedit_commands": [],
+      "reg_add_commands": [],
+      "powershell_hints": [],
+      "named_values": [
+        "Affinity = Always",
+        "Priority = Always",
+        "Mode = Always"
+      ]
+    },
+    "has_attachments": false,
+    "needs_review": true
+  },
+  {
+    "id": "discord.cpu.1474052828518420674",
+    "channel": "cpu",
+    "message_id": "1474052828518420674",
+    "timestamp": "2026-02-19T06:39:40.896-08:00",
+    "author": "diggyt",
+    "content": "Open Command Prompt (Admin) and run these exact commands one by one:\n\n    bcdedit /set useplatformclock no\n\n        Why: This forces Windows to use the TSC (Time Stamp Counter) instead of the slower HPET. This is the single most important tweak for 0.1% low stability.\n\n    bcdedit /set disabledynamictick yes\n\n        Why: This stops the CPU from stopping its clock during idle moments. It keeps the CPU \"awake\" and ready to process a frame at all times.\n\n    bcdedit /set tscsyncpolicy enhanced\n\n        Why: Specifically for the 14900K’s hybrid architecture, this ensures all 24 cores are perfectly synchronized in time.\n\n    bcdedit /set useplatformtick no\n\n        Why: Prevents Windows from using an extra synthetic layer for time-keeping, further reducing kernel-level latency.\n\n    bcdedit /set hypervisorlaunchtype off\n\n        Why: This is the \"Nuclear Option\" to ensure VBS/Core Isolation is dead. If this is ON, your CPU is running in a \"virtual bubble,\" adding ~5-10% latency to every frame.",
+    "signals": {
+      "registry_paths": [],
+      "bcdedit_commands": [
+        "bcdedit /set useplatformclock no",
+        "bcdedit /set useplatformtick no",
+        "bcdedit /set disabledynamictick yes",
+        "bcdedit /set tscsyncpolicy enhanced",
+        "bcdedit /set hypervisorlaunchtype off"
+      ],
+      "reg_add_commands": [],
+      "powershell_hints": [],
+      "named_values": []
+    },
+    "has_attachments": false,
+    "needs_review": true
+  },
+  {
+    "id": "discord.cpu.1474067954072289595",
+    "channel": "cpu",
+    "message_id": "1474067954072289595",
+    "timestamp": "2026-02-19T07:39:47.109-08:00",
+    "author": "diggyt",
+    "content": "🆕 \nRun CMD as Admin: bcdedit /set tscsyncpolicy Enhanced (You did this).\n\nThe Add-on: bcdedit /set clockres 10000\n\nWhy: This sets the global kernel timer resolution to exactly 0.5ms (10,000 units). While tools like \"Timer Resolution\" do this in the app, setting it at the BCD level ensures it's active from the second you boot.",
+    "signals": {
+      "registry_paths": [],
+      "bcdedit_commands": [
+        "bcdedit /set tscsyncpolicy Enhanced (You did this).",
+        "bcdedit /set clockres 10000"
+      ],
+      "reg_add_commands": [],
+      "powershell_hints": [],
+      "named_values": []
+    },
+    "has_attachments": false,
+    "needs_review": true
+  }
+]

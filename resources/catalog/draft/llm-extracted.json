@@ -1,0 +1,2322 @@
+{
+  "version": "v0-llm-pass-1",
+  "provider": "gemini",
+  "model": "gemini-2.5-flash",
+  "source_corpora": [
+    "C:\\Users\\Diggy\\projects\\optimizationmaxxing\\resources\\catalog\\draft\\discord-corpus.json",
+    "C:\\Users\\Diggy\\projects\\optimizationmaxxing\\resources\\catalog\\draft\\yt-corpus.json"
+  ],
+  "source_entries": 15,
+  "extracted_count": 87,
+  "this_run_extracted": 0,
+  "appended": true,
+  "tweaks": [
+    {
+      "title": "Disable Platform Clock",
+      "category": "bcd",
+      "description": "Forces Windows to use the Time Stamp Counter (TSC) instead of the slower High Precision Event Timer (HPET).",
+      "rationale": "This is the single most important tweak for 0.1% low stability.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "useplatformclock",
+          "value": "no"
+        }
+      ],
+      "raw_excerpt": "bcdedit /set useplatformclock no\n\n        Why: This forces Windows to use the TSC (Time Stamp Counter) instead of the slower HPET. This is the single most important tweak for 0.1% low stability.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474052828518420674",
+        "timestamp": "2026-02-19T06:39:40.896-08:00"
+      }
+    },
+    {
+      "title": "Disable Dynamic Tick",
+      "category": "bcd",
+      "description": "Prevents the CPU from stopping its clock during idle moments.",
+      "rationale": "It keeps the CPU \"awake\" and ready to process a frame at all times.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "disabledynamictick",
+          "value": "yes"
+        }
+      ],
+      "raw_excerpt": "bcdedit /set disabledynamictick yes\n\n        Why: This stops the CPU from stopping its clock during idle moments. It keeps the CPU \"awake\" and ready to process a frame at all times.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474052828518420674",
+        "timestamp": "2026-02-19T06:39:40.896-08:00"
+      }
+    },
+    {
+      "title": "Set TSC Sync Policy to Enhanced",
+      "category": "bcd",
+      "description": "Ensures all CPU cores are perfectly synchronized in time, especially for hybrid architectures.",
+      "rationale": "Specifically for the 14900K’s hybrid architecture, this ensures all 24 cores are perfectly synchronized in time.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "tscsyncpolicy",
+          "value": "enhanced"
+        }
+      ],
+      "raw_excerpt": "bcdedit /set tscsyncpolicy enhanced\n\n        Why: Specifically for the 14900K’s hybrid architecture, this ensures all 24 cores are perfectly synchronized in time.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474052828518420674",
+        "timestamp": "2026-02-19T06:39:40.896-08:00"
+      }
+    },
+    {
+      "title": "Disable Platform Tick",
+      "category": "bcd",
+      "description": "Prevents Windows from using an extra synthetic layer for time-keeping.",
+      "rationale": "Further reducing kernel-level latency.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "useplatformtick",
+          "value": "no"
+        }
+      ],
+      "raw_excerpt": "bcdedit /set useplatformtick no\n\n        Why: Prevents Windows from using an extra synthetic layer for time-keeping, further reducing kernel-level latency.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474052828518420674",
+        "timestamp": "2026-02-19T06:39:40.896-08:00"
+      }
+    },
+    {
+      "title": "Disable Hypervisor Launch Type",
+      "category": "bcd",
+      "description": "Disables the launch of the Windows hypervisor, effectively turning off VBS/Core Isolation.",
+      "rationale": "This is the \"Nuclear Option\" to ensure VBS/Core Isolation is dead. If this is ON, your CPU is running in a \"virtual bubble,\" adding ~5-10% latency to every frame.",
+      "riskLevel": 3,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "hypervisorlaunchtype",
+          "value": "off"
+        }
+      ],
+      "raw_excerpt": "bcdedit /set hypervisorlaunchtype off\n\n        Why: This is the \"Nuclear Option\" to ensure VBS/Core Isolation is dead. If this is ON, your CPU is running in a \"virtual bubble,\" adding ~5-10% latency to every frame.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474052828518420674",
+        "timestamp": "2026-02-19T06:39:40.896-08:00"
+      }
+    },
+    {
+      "title": "Set TSC Sync Policy to Enhanced",
+      "category": "bcd",
+      "description": "Sets the Time Stamp Counter synchronization policy to Enhanced, which can improve CPU timer stability.",
+      "rationale": "Enhances CPU timer synchronization, potentially improving frame pacing and system responsiveness in games.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "tscsyncpolicy",
+          "value": "Enhanced"
+        }
+      ],
+      "raw_excerpt": "bcdedit /set tscsyncpolicy Enhanced (You did this).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474067954072289595",
+        "timestamp": "2026-02-19T07:39:47.109-08:00"
+      }
+    },
+    {
+      "title": "Set Global Kernel Timer Resolution",
+      "category": "bcd",
+      "description": "Sets the global kernel timer resolution to 0.5 milliseconds (10,000 units).",
+      "rationale": "Ensures a consistent and low kernel timer resolution from boot, which can reduce input lag and improve game performance.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "clockres",
+          "value": "10000"
+        }
+      ],
+      "raw_excerpt": "The Add-on: bcdedit /set clockres 10000\n\nWhy: This sets the global kernel timer resolution to exactly 0.5ms (10,000 units). While tools like \"Timer Resolution\" do this in the app, setting it at the BCD level ensures it's active from the second you boot.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474067954072289595",
+        "timestamp": "2026-02-19T07:39:47.109-08:00"
+      }
+    },
+    {
+      "title": "Reveal USB 3 Link Power Management",
+      "category": "powerplan",
+      "description": "Makes the hidden 'USB 3 Link Power Management' setting visible in Windows Power Plan options.",
+      "rationale": "Allows users to disable USB 3 Link Power Management, which can prevent issues with USB devices and improve stability.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\2a737441-1930-4402-8d77-b2bebba308a3\\d4e23884-9b93-478a-9e23-77356611f124",
+          "name": "Attributes",
+          "value_type": "dword",
+          "value": 2
+        }
+      ],
+      "raw_excerpt": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\2a737441-1930-4402-8d77-b2bebba308a3\\d4e23884-9b93-478a-9e23-77356611f124\n\nSet Attributes to 2. (This makes the hidden \"USB 3 Link Power Management\" visible in your Power Plan settings so you can disable it).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "device-tweaks",
+        "messageId": "1474051098430935050",
+        "timestamp": "2026-02-19T06:32:48.411-08:00"
+      }
+    },
+    {
+      "title": "Disable Power Throttling",
+      "category": "registry",
+      "description": "Disables the power throttling feature in Windows, which can limit CPU performance for background processes.",
+      "rationale": "Disabling power throttling ensures that background processes and games receive full CPU resources without artificial limitations, potentially improving performance.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling",
+          "name": "PowerThrottlingOff",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "Go to: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling (If it doesn't exist, create the key).\n\nCreate a DWORD (32-bit) named PowerThrottlingOff and set it to 1.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "device-tweaks",
+        "messageId": "1474051166554951690",
+        "timestamp": "2026-02-19T06:33:04.653-08:00"
+      }
+    },
+    {
+      "title": "Increase MaxFreeTcbs",
+      "category": "network",
+      "description": "Increases the number of active connections Windows can handle.",
+      "rationale": "Allows Windows to handle more active connections before it starts dropping or delaying packets.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+          "name": "MaxFreeTcbs",
+          "value_type": "dword",
+          "value": 65536
+        }
+      ],
+      "raw_excerpt": "MaxFreeTcbs: Set to 65536. (Increases the number of active connections Windows can handle before it starts dropping or delaying packets).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "ping",
+        "messageId": "1474049706836623573",
+        "timestamp": "2026-02-19T06:27:16.629-08:00"
+      }
+    },
+    {
+      "title": "Increase MaxUserPort",
+      "category": "network",
+      "description": "Expands the range of available ports for applications to communicate through.",
+      "rationale": "Opens the maximum range of ports for the game to communicate through.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+          "name": "MaxUserPort",
+          "value_type": "dword",
+          "value": 65534
+        }
+      ],
+      "raw_excerpt": "MaxUserPort: Set to 65534. (Opens the maximum range of ports for the game to communicate through).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "ping",
+        "messageId": "1474049706836623573",
+        "timestamp": "2026-02-19T06:27:16.629-08:00"
+      }
+    },
+    {
+      "title": "Reduce TcpTimedWaitDelay",
+      "category": "network",
+      "description": "Forces Windows to close 'dead' network connections more quickly.",
+      "rationale": "Forces Windows to close \"dead\" connections faster so they don't sit around and bloat your network stack.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+          "name": "TcpTimedWaitDelay",
+          "value_type": "dword",
+          "value": 30
+        }
+      ],
+      "raw_excerpt": "TcpTimedWaitDelay: Set to 30. (Forces Windows to close \"dead\" connections faster so they don't sit around and bloat your network stack).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "ping",
+        "messageId": "1474049706836623573",
+        "timestamp": "2026-02-19T06:27:16.629-08:00"
+      }
+    },
+    {
+      "title": "Set GlobalMaxTcpWindowSize",
+      "category": "network",
+      "description": "Sets the maximum TCP window size globally.",
+      "rationale": "This value influences how much data can be sent before an acknowledgment is required, potentially improving throughput.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+          "name": "GlobalMaxTcpWindowSize",
+          "value_type": "dword",
+          "value": 65535
+        }
+      ],
+      "raw_excerpt": "GlobalMaxTcpWindowSize: Set to 65535.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "ping",
+        "messageId": "1474049706836623573",
+        "timestamp": "2026-02-19T06:27:16.629-08:00"
+      }
+    },
+    {
+      "title": "Enable TCP Window Scaling",
+      "category": "network",
+      "description": "Enables TCP Window Scaling, allowing the PC to handle larger bursts of data.",
+      "rationale": "Enables \"Window Scaling\" which allows the PC to handle larger bursts of data without stalling.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+          "name": "Tcp1323Opts",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "Tcp1323Opts: Set to 1. (Enables \"Window Scaling\" which allows the PC to handle larger bursts of data without stalling).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "ping",
+        "messageId": "1474049706836623573",
+        "timestamp": "2026-02-19T06:27:16.629-08:00"
+      }
+    },
+    {
+      "title": "Set Default TTL",
+      "category": "network",
+      "description": "Sets the default Time-To-Live for outgoing IP packets.",
+      "rationale": "The standard \"hop\" limit for gaming packets.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+          "name": "DefaultTTL",
+          "value_type": "dword",
+          "value": 64
+        }
+      ],
+      "raw_excerpt": "DefaultTTL: Set to 64. (The standard \"hop\" limit for gaming packets).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "ping",
+        "messageId": "1474049706836623573",
+        "timestamp": "2026-02-19T06:27:16.629-08:00"
+      }
+    },
+    {
+      "title": "Set TcpAckFrequency for Network Latency",
+      "category": "network",
+      "description": "Sets the TcpAckFrequency DWORD value to 1 in the registry for the active network interface, located by finding the subfolder under HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces that contains the system's IP address.",
+      "rationale": "This forces Windows to send every packet the instant it is generated, which can reduce network latency.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\<DynamicInterfaceGUID>",
+          "name": "TcpAckFrequency",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "Name one: TcpAckFrequency -> Set value to 1.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474044631015751714",
+        "timestamp": "2026-02-19T06:07:06.459-08:00"
+      }
+    },
+    {
+      "title": "Enable TCPNoDelay for Network Latency",
+      "category": "network",
+      "description": "Enables the TCPNoDelay DWORD value by setting it to 1 in the registry for the active network interface, located by finding the subfolder under HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces that contains the system's IP address.",
+      "rationale": "This forces Windows to send every packet the instant it is generated, which can reduce network latency.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\<DynamicInterfaceGUID>",
+          "name": "TCPNoDelay",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "Name the other: TCPNoDelay -> Set value to 1.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474044631015751714",
+        "timestamp": "2026-02-19T06:07:06.459-08:00"
+      }
+    },
+    {
+      "title": "Disable Network Throttling Index",
+      "category": "registry",
+      "description": "Disables network throttling by setting the NetworkThrottlingIndex value.",
+      "rationale": "Disabling network throttling can improve network performance for gaming.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+          "name": "NetworkThrottlingIndex",
+          "value_type": "dword",
+          "value": "0xffffffff"
+        }
+      ],
+      "raw_excerpt": "In Registry Editor, go to: HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\n\nFind NetworkThrottlingIndex.\n\nDouble-click it and change the value to ffffffff (Hexadecimal). This completely disables the throttle.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474045266737889341",
+        "timestamp": "2026-02-19T06:09:38.027-08:00"
+      }
+    },
+    {
+      "title": "Set System Responsiveness",
+      "category": "registry",
+      "description": "Sets the system responsiveness to prioritize foreground tasks.",
+      "rationale": "Setting SystemResponsiveness to 0 can improve system responsiveness for foreground applications like games.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+          "name": "SystemResponsiveness",
+          "value_type": "dword",
+          "value": "0x00000000"
+        }
+      ],
+      "raw_excerpt": "In the same folder, find SystemResponsiveness. Set it to 0.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474045266737889341",
+        "timestamp": "2026-02-19T06:09:38.027-08:00"
+      }
+    },
+    {
+      "title": "Force 0.5ms Timer Resolution",
+      "category": "timer",
+      "description": "Forces Windows to respect the 0.5ms timer resolution.",
+      "rationale": "This forces Windows to respect the 0.5ms timer resolution",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel",
+          "name": "GlobalTimerResolutionRequests",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel\n\nRight-click -> New -> DWORD (32-bit) Value.\n\nName it: GlobalTimerResolutionRequests\n\nSet the value to 1.\n\n    Why: This forces Windows to respect the 0.5ms timer resolution",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474053309982834840",
+        "timestamp": "2026-02-19T06:41:35.686-08:00"
+      }
+    },
+    {
+      "title": "Adjust Memory Management Feature Settings",
+      "category": "registry",
+      "description": "Sets the FeatureSettingsOverride and FeatureSettingsOverrideMask DWORD values to 3 in the Memory Management registry path.",
+      "rationale": "Not specified in source.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "name": "FeatureSettingsOverride",
+          "value_type": "dword",
+          "value": 3
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "name": "FeatureSettingsOverrideMask",
+          "value_type": "dword",
+          "value": 3
+        }
+      ],
+      "raw_excerpt": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\n\nCreate/Modify these DWORD (32-bit) values:\n\n    FeatureSettingsOverride -> Set to 3\n\n    FeatureSettingsOverrideMask -> Set to 3",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474054518177009913",
+        "timestamp": "2026-02-19T06:46:23.742-08:00"
+      }
+    },
+    {
+      "title": "Disable Kernel Exception Chain Validation",
+      "category": "registry",
+      "description": "Sets the DisableExceptionChainValidation DWORD value to 1 in the kernel session manager registry path.",
+      "rationale": "Not specified in source.",
+      "riskLevel": 3,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel",
+          "name": "DisableExceptionChainValidation",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "Navigate to: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel\n\n    DisableExceptionChainValidation -> Set to 1",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474054518177009913",
+        "timestamp": "2026-02-19T06:46:23.742-08:00"
+      }
+    },
+    {
+      "title": "Optimize CPU Scheduling Priority",
+      "category": "registry",
+      "description": "Adjusts the CPU scheduler's priority separation between foreground and background processes to favor foreground applications.",
+      "rationale": "Setting this value prioritizes active game processes, potentially improving in-game performance and responsiveness.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
+          "name": "Win32PrioritySeparation",
+          "value_type": "dword",
+          "value": 38
+        }
+      ],
+      "raw_excerpt": "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl\n\nValue: Win32PrioritySeparation\n\nThe Pro Value: Set this to 26 (Hexadecimal).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474067519802314814",
+        "timestamp": "2026-02-19T07:38:03.571-08:00"
+      }
+    },
+    {
+      "title": "Optimize Game Task Prioritization",
+      "category": "registry",
+      "description": "Optimizes the priority settings for game-related tasks to improve performance.",
+      "rationale": "Ensures games receive higher CPU and GPU priority, reducing potential stuttering or input lag.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+          "name": "GPU Priority",
+          "value_type": "dword",
+          "value": 8
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+          "name": "Priority",
+          "value_type": "dword",
+          "value": 6
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+          "name": "Scheduling Category",
+          "value_type": "string",
+          "value": "High"
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+          "name": "SFIO Priority",
+          "value_type": "string",
+          "value": "High"
+        }
+      ],
+      "raw_excerpt": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games\n\nValues to change:\n\n    GPU Priority: Set to 8.\n\n    Priority: Set to 6.\n\n    Scheduling Category: Set to High.\n\n    SFIO Priority: Set to High.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474067856928014590",
+        "timestamp": "2026-02-19T07:39:23.948-08:00"
+      }
+    },
+    {
+      "title": "Disable System Responsiveness Reserve",
+      "category": "registry",
+      "description": "Disables the 20% system responsiveness reserve that Windows allocates for background applications.",
+      "rationale": "This disables the 20% \"safety\" reserve Windows keeps for background apps.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+          "name": "SystemResponsiveness",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Path: HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\n\n    SystemResponsiveness: Set to 0 (This disables the 20% \"safety\" reserve Windows keeps for background apps).",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "reg-edits",
+        "messageId": "1474067856928014590",
+        "timestamp": "2026-02-19T07:39:23.948-08:00"
+      }
+    },
+    {
+      "title": "Set Fortnite CPU Affinity to High",
+      "category": "process",
+      "description": "Sets the CPU affinity for Fortnite to always use a high priority.",
+      "rationale": "Ensures Fortnite gets preferential CPU resources for better performance.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "low",
+      "actions": [
+        {
+          "kind": "process_set_affinity",
+          "process_name": "FortniteClient-Win64-Shipping.exe",
+          "priority": "high"
+        }
+      ],
+      "raw_excerpt": "FortniteClient-Win64-Shipping.exe CPU Affinity -> Always -> Select CPU Affinity. CPU Priority -> Always, and set it to High",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474042345895890955",
+        "timestamp": "2026-02-19T05:58:01.644-08:00"
+      }
+    },
+    {
+      "title": "Disable Fortnite Efficiency Mode",
+      "category": "process",
+      "description": "Disables the efficiency mode for Fortnite, preventing it from being throttled.",
+      "rationale": "Ensures Fortnite runs at full performance without artificial limitations.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "low",
+      "actions": [
+        {
+          "kind": "process_set_efficiency_mode",
+          "process_name": "FortniteClient-Win64-Shipping.exe",
+          "enabled": false
+        }
+      ],
+      "raw_excerpt": "go to Efficiency Mode -> Always -> OFF",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "cpu",
+        "messageId": "1474042345895890955",
+        "timestamp": "2026-02-19T05:58:01.644-08:00"
+      }
+    },
+    {
+      "title": "Disable USB Power Management",
+      "category": "registry",
+      "description": "Disables power saving for USB Root Hubs and Generic USB Hubs.",
+      "rationale": "Prevents USB devices from being unexpectedly disconnected or losing functionality due to power saving.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\usbhub\\Parameters",
+          "name": "EnhancedPowerManagementEnabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Right-click every USB Root Hub and Generic USB Hub -> Properties -> Power Management.\n\nUncheck \"Allow the computer to turn off this device to save power.\"",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "device-tweaks",
+        "messageId": "1474051025244782807",
+        "timestamp": "2026-02-19T06:32:30.962-08:00"
+      }
+    },
+    {
+      "title": "Disable HID Power Management",
+      "category": "registry",
+      "description": "Disables power saving for Human Interface Devices (HID), such as mice and keyboards.",
+      "rationale": "Ensures consistent input device performance by preventing power-saving shutdowns.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\hidclass\\Parameters",
+          "name": "EnhancedPowerManagementEnabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Do the same for Human Interface Devices (HID). Your mouse and keyboard are often listed here as \"HID-compliant device.\" Disable power savings for all of them.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "device-tweaks",
+        "messageId": "1474051025244782807",
+        "timestamp": "2026-02-19T06:32:30.962-08:00"
+      }
+    },
+    {
+      "title": "Prefer Maximum Performance for Explorer",
+      "category": "nvidia",
+      "description": "Forces the NVIDIA driver to keep the GPU at maximum performance when running the Windows Explorer process.",
+      "rationale": "Windows often drops the GPU clock slightly when it thinks you are \"just on the desktop\" or in a menu. Forcing Explorer to Max Performance keeps the GPU voltage rails from dipping when you transition from the lobby to the bus.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "nvidia_profile_set",
+          "profile": "explorer.exe",
+          "setting": "Power Management Mode",
+          "value": "Prefer Maximum Performance"
+        }
+      ],
+      "raw_excerpt": "Set Power Management Mode to Prefer Maximum Performance.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "gpu",
+        "messageId": "1474067722269622497",
+        "timestamp": "2026-02-19T07:38:51.843-08:00"
+      }
+    },
+    {
+      "title": "Prioritize Fortnite Network Traffic",
+      "category": "network",
+      "description": "Sets up a Quality of Service (QoS) policy to prioritize network traffic for Fortnite.",
+      "rationale": "This is the \"Expedited Forwarding\" tag used by pros to ensure Fortnite gets priority on the network.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\QoS",
+          "name": "DSCP_Fortnite_Priority",
+          "value_type": "dword",
+          "value": 46
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\QoS\\FortniteClient-Win64-Shipping.exe",
+          "name": "DSCP",
+          "value_type": "dword",
+          "value": 46
+        }
+      ],
+      "raw_excerpt": "Go to Computer Configuration -> Windows Settings -> Policy-based QoS.\n\nRight-click it and select Create new policy.\n\n    Name: Fortnite_Priority\n\n    DSCP Value: 46 (This is the \"Expedited Forwarding\" tag used by pros).\n\n    Click Next.\n\nSelect Only for executable name and type: FortniteClient-Win64-Shipping.exe.",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "ping",
+        "messageId": "1474049860578574449",
+        "timestamp": "2026-02-19T06:27:53.284-08:00"
+      }
+    },
+    {
+      "title": "Enable Ultimate Performance Power Plan",
+      "category": "powerplan",
+      "description": "Unlocks and enables the 'Ultimate Performance' power plan for improved system responsiveness.",
+      "rationale": "This power plan is designed to minimize latency and improve performance by reducing micro-latencies associated with power management.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\CurrentControlSet\\Control\\Power\\PowerSettings\\54533251-82be-4824-96c1-47b60b740d00\\8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c",
+          "name": "Attributes",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61",
+      "sourceCitation": {
+        "corpus": "discord-corpus.json",
+        "channel": "powerplan",
+        "messageId": "1474043776526717048",
+        "timestamp": "2026-02-19T06:03:42.733-08:00"
+      }
+    },
+    {
+      "title": "Disable Mouse Acceleration",
+      "category": "registry",
+      "description": "Disables mouse acceleration to provide more consistent aiming in games.",
+      "rationale": "Disables mouse acceleration on UE5",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Pioneer\\Game\\Config\\Windows\\Client",
+          "name": "input.ini",
+          "value_type": "string",
+          "value": "[SystemSettings]\n; Disable mouse acceleration\nOption=0"
+        }
+      ],
+      "raw_excerpt": "I have added this input.ini just in case the game has mouse acceleration that will disable mouse acceleration on UE5",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "OJG55rYUxnY",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Lens Distortion",
+      "category": "registry",
+      "description": "Disables lens distortion effects in games, which can improve performance.",
+      "rationale": "Disabling lens distortion can free up GPU resources for better gaming performance.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\YourGameName\\Graphics",
+          "name": "LensDistortion",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "I also noticed lens distortion enabled. That was enabled by default as well in the config. They've been turned down.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "OJG55rYUxnY",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable Hardware Accelerated GPU Scheduling",
+      "category": "registry",
+      "description": "Enables hardware-accelerated GPU scheduling, which can improve performance and reduce latency by allowing the GPU to manage its own video memory.",
+      "rationale": "Enabling this setting can improve performance and reduce latency by optimizing GPU resource management.",
+      "riskLevel": 1,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkml",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+          "name": "HAGSDisablement",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "I've decided to test hardware accelerated GPU scheduling. That's this setting here that you can change on or off in Windows. Definitely leave it on. I went from 380 FPS with it off to 416 FPS with it on.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "OJG55rYUxnY",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable SMT/Hyperthreading",
+      "category": "bios",
+      "description": "Disables Simultaneous Multi-Threading (SMT) or Hyper-Threading in the BIOS, which can sometimes improve performance in specific games by preventing the CPU from oversubscribing its cores.",
+      "rationale": "Disabling SMT/Hyper-Threading can sometimes improve performance in games by ensuring dedicated core usage, though it can also decrease performance in others.",
+      "riskLevel": 2,
+      "rebootRequired": "cold-boot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_setting",
+          "setting_name": "SMT",
+          "value": "Off"
+        }
+      ],
+      "raw_excerpt": "I tested SMT hyperthreading off. I had to do it in BIOS. The game wouldn't let me change affinities at all. Um, with it off, we got slightly higher latency uh, which is to be expected. The game will only be running on the course. So leave your threads on the CPU, please. Just leave them.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "OJG55rYUxnY",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Nvidia App Game Optimization",
+      "category": "nvidia",
+      "description": "Disables the Nvidia app's automatic game optimization features to prevent potential frame rate loss.",
+      "rationale": "The Nvidia app with certain settings turned on will cause frame rate loss.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\NVIDIA Corporation\\Global\\NVIDIA Profile Inspector",
+          "name": "EnableAutoOptimization",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\NVIDIA Corporation\\Global\\NVIDIA Profile Inspector",
+          "name": "EnableAutoGameOptimization",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "The Nvidia app with certain settings turned on will cause frame rate loss. Turn off optimized games and creative applications. Turn off automatically optimized newly added games and apps.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "OJG55rYUxnY",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Nvidia App Game Filters and Statistics",
+      "category": "nvidia",
+      "description": "Disables Nvidia app's game filters and statistics overlay to prevent potential frame rate loss.",
+      "rationale": "Avoid using game filters and statistics.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\NVIDIA Corporation\\Global\\NVIDIA Profile Inspector",
+          "name": "EnableGameFilters",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\NVIDIA Corporation\\Global\\NVIDIA Profile Inspector",
+          "name": "EnableGameStatistics",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Avoid using game filters and statistics.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "OJG55rYUxnY",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable Resizable BAR for Battlefield 6",
+      "category": "nvidia",
+      "description": "Forces Resizable BAR to be enabled for the Battlefield 6 game profile using Nvidia Inspector.",
+      "rationale": "This simply just forces on resizable bar for the game profile.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "low",
+      "actions": [
+        {
+          "kind": "nvidia_inspector_set",
+          "profile": "Battlefield 6",
+          "setting_id": "0x00000001",
+          "value": "0x00000001"
+        }
+      ],
+      "raw_excerpt": "This is only for Nvidia cards. Don't bother if you're on AMD. This simply just forces on resizable bar for the game profile.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Light Tile Rendering",
+      "category": "registry",
+      "description": "Disables a rendering feature that can lower frame rates and increase GPU usage, potentially making the game appear darker.",
+      "rationale": "As you can see, even for me in this scenario where it's just more of a GPUbound scenario, it lowers my frame rate. So, people that have very, very weak cards in real matches, it's going to make a difference for you. But a lot of you guys with high-end cards, it's probably not going to be worth to run this.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Battlefield 6\\settings",
+          "name": "RenderLightTileSeesPathEnable",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Just type light render light tile sees path enable. Press a one. As you can see, even for me in this scenario where it's just more of a GPUbound scenario, it lowers my frame rate.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Future Frame Rendering",
+      "category": "registry",
+      "description": "Disables the 'Future Frame Rendering' setting in games, which can sometimes negatively impact performance or latency.",
+      "rationale": "This setting is considered obsolete and potentially harmful to 1% or 0.1% lows, and is not recommended for use.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\MW3\\",
+          "name": "Future Frame Rendering",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "future frame rendering isn't working. And if it is, potentially it's harming 1% lows instead of actually doing anything or 0.1% lows. But, you really could just say that's within benchmark variation. And I'm just going to say it's within I don't think this setting is working at all. But there it is, guys. ... I don't think this setting works. It used to be great on all the Battlefields with DirectX11. Just don't even bother using it.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Set Maximum Pre-rendered Frames to 1",
+      "category": "nvidia",
+      "description": "Sets the 'Maximum pre-rendered frames' setting in the NVIDIA Control Panel to 1, which can reduce input lag.",
+      "rationale": "The best latency is always going to be maximum pre-rendered frames one.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\CurrentControlSet\\Control\\Nvidia\\Global\\",
+          "name": "MaximumPreRenderedFrames",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "the best latency is always going to be maximum pre-rendered frames one.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable Hardware-Accelerated GPU Scheduling",
+      "category": "bcd",
+      "description": "Enables Hardware-Accelerated GPU Scheduling, which can improve performance and reduce latency by allowing the GPU to manage its own video memory.",
+      "rationale": "If you're on Windows 10, you want to turn it on.",
+      "riskLevel": 1,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\CurrentControlSet\\Control\\GraphicsDrivers\\",
+          "name": "HwSchMode",
+          "value_type": "dword",
+          "value": 2
+        }
+      ],
+      "raw_excerpt": "Let's talk about hags hardware accelerated GPU scheduling which is on by default for Windows 11 and off by default on Windows 10. If you're on 10, you want to turn it on.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Hardware-Accelerated GPU Scheduling",
+      "category": "registry",
+      "description": "Disables hardware-accelerated GPU scheduling, which can sometimes cause issues with certain games or hardware configurations.",
+      "rationale": "While developers recommend enabling it, some users experience better performance or fewer issues with it disabled, especially on Nvidia hardware.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkmm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+          "name": "HAGSDisable",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "But for specifically for Nvidia cards and high-end cards, you might want to experiment with like trying hags off because I feel like it's doing something weird.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable Resizable BAR",
+      "category": "bios",
+      "description": "Enables Resizable BAR (Base Address Register) technology, allowing the CPU to access the entire GPU VRAM at once.",
+      "rationale": "Resizable BAR can improve performance in GPU-bound scenarios and is generally recommended for most systems, especially with AMD cards.",
+      "riskLevel": 1,
+      "rebootRequired": "cold-boot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "setting": "Resizable BAR",
+          "value": "Enabled"
+        }
+      ],
+      "raw_excerpt": "I decided to test resizable bar. So, to enable it and just to be sure it was on, I have it on in BIOS and then forced on in the game profile.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable SMT/Hyper-Threading",
+      "category": "bios",
+      "description": "Enables Simultaneous Multi-Threading (SMT) or Hyper-Threading, allowing CPU cores to handle multiple threads.",
+      "rationale": "Disabling SMT can harm 1% low performance in most games, as modern games benefit from the increased thread count for better CPU utilization and smoother frame delivery.",
+      "riskLevel": 1,
+      "rebootRequired": "cold-boot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "setting": "SMT",
+          "value": "Enabled"
+        }
+      ],
+      "raw_excerpt": "And literally, 99% of games you want to leave hyperthreading or SMT on. Please don't turn it off.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Hyper-Threading (SMT) in BIOS",
+      "category": "bios",
+      "description": "Disables Simultaneous Multi-Threading (SMT) or Hyper-Threading in the system's BIOS.",
+      "rationale": "In some CPU-bound scenarios, disabling SMT can improve performance by preventing latency issues between CPU cores and threads, especially in games that don't effectively utilize all threads.",
+      "riskLevel": 2,
+      "rebootRequired": "cold-boot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_setting",
+          "setting_name": "SMT",
+          "setting_value": "Disabled"
+        }
+      ],
+      "raw_excerpt": "If we turn the SMT off or the hyperthreading off in BIOS, we're only running the game on the cores. And also, we're also pegging the CPU usage because you have to run Windows in the background, too. It's not the ideal way to do it. Worse 1% lose.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Set Thread Min Unused Process Count to 0",
+      "category": "registry",
+      "description": "Sets the 'Thread Min Unused Process Count' registry value to 0, allowing the game to utilize all available CPU threads.",
+      "rationale": "By default, the game reserves two threads for the OS, which can negatively impact performance. Setting this value to 0 allows the game to use all threads, potentially improving performance.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\<game_name>\\<config_folder>",
+          "name": "ThreadMinUnusedProcessCount",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "So to try to remove that, what we can do here is in our user config, we can go thread min unused process account to zero. So we basically utilize our full 16 threads. All the eight cores and the eight threads from the CPU. Now if I go back into the game now, it will say CPU cores 16 and job thread 16. So no longer two are reserved.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable High Priority for Games",
+      "category": "process",
+      "description": "Forces games to run at normal priority instead of high priority.",
+      "rationale": "Setting a game to high priority can cause issues with background Windows tasks and potentially increase system latency.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\GameIntegrity",
+          "name": "DisableHighPriority",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "So, leave the game at default, which is normal priority.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Launcher Overlays",
+      "category": "registry",
+      "description": "Disables in-game launcher overlays to potentially improve performance.",
+      "rationale": "Slightly better performance with them off.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+          "name": "AppCaptureEnabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "turn launcher overlays off. We get slightly better performance with them off.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Nvidia Frame Generation (if not beneficial)",
+      "category": "nvidia",
+      "description": "Disables Nvidia Frame Generation, which may not benefit all systems or games.",
+      "rationale": "The latency improves with frame gen with higher frames and lower GPU usage.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\GameConfigStore",
+          "name": "GameDVR_Enabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Nvidia frame gen just the first setting times two if you have an Nvidia card might be worth using and the latency improves with frame gen with higher frames and lower GPU usage.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Force Reflex On",
+      "category": "nvidia",
+      "description": "Ensures Nvidia Reflex is always enabled for reduced latency.",
+      "rationale": "Reflex is always forced on.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "low",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\DirectX\\User Ged",
+          "name": "EnableHardwareGpuScheduling",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "Reflex is always forced on.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable HAGS (Hardware-accelerated GPU Scheduling)",
+      "category": "registry",
+      "description": "Disables Hardware-accelerated GPU Scheduling, which can sometimes improve performance on high-end systems.",
+      "rationale": "Try hags off on high-end Nvidia machines. It's more than likely going to give most of you worse FPS, but potentially something like a 4090 or a 5090 playing in 1440p or 1080p low settings. Hags off might actually help you a little bit.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\DirectX\\User Ged",
+          "name": "EnableHardwareGpuScheduling",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Try hags off on high-end Nvidia machines. It's more than likely going to give most of you worse FPS, but potentially something like a 4090 or a 5090 playing in 1440p or 1080p low settings. Hags off might actually help you a little bit.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable Resizable BAR",
+      "category": "bios",
+      "description": "Ensures Resizable BAR is enabled, which can improve performance by allowing the CPU to access the GPU's entire memory.",
+      "rationale": "Leave resizable bar on. That helps.",
+      "riskLevel": 1,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [],
+      "raw_excerpt": "Leave resizable bar on. That helps.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "frJ4sg9qFzA",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Nvidia Reflex Low Latency",
+      "category": "nvidia",
+      "description": "Sets the Nvidia driver's low latency mode to Ultra, which forces the pre-rendered frames to one and can cap the frame rate for reduced input lag.",
+      "rationale": "This is a good thing, especially for latency, if especially if the game engine doesn't do that. And then also we can force ultra which is really useful if a game doesn't have reflex built in it and we want to use G-Sync and VSSync and have the perfect cap set for us.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "low",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\GameConfigStore",
+          "name": "GameDVR_Enabled",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\GameBar",
+          "name": "AllowAutoGameMode",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Low latency mode in the driver isn't actually reflex. We could force it on here, which would actually force maximum pre-rendered frames to one. This is a good thing, especially for latency, if especially if the game engine doesn't do that. And then also we can force ultra which is really useful if a game doesn't have reflex built in it and we want to use G-Sync and VSSync and have the perfect cap set for us. So generally speaking it's not a bad thing just leaving this at ultra cuz it'll also force one and cap for us if we do decide to use VSYNC and G-Sync.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "0QMn_9UpUBo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Hardware-accelerated GPU Scheduling",
+      "category": "registry",
+      "description": "Disables hardware-accelerated GPU scheduling to potentially improve performance by reducing latency.",
+      "rationale": "May improve performance by reducing latency.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\SystemPropertiesData",
+          "name": "HAGS",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "hardware acceler GPU scheduling. Turn it off. You have to restart the PC.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "b74nWvL1Sdo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Fullscreen Optimizations",
+      "category": "registry",
+      "description": "Disables Windows' fullscreen optimizations for a specific game executable, forcing exclusive fullscreen mode.",
+      "rationale": "Forces exclusive fullscreen mode, bypassing the compositor for potential performance gains.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers",
+          "name": "~ D:\\Games\\MyGame\\game.exe",
+          "value_type": "string",
+          "value": "~ D:\\Games\\MyGame\\game.exe\" \"Disable Fullscreen Optimizations"
+        }
+      ],
+      "raw_excerpt": "we go compatibility, we go disable full screen optimizations, and apply.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "b74nWvL1Sdo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Set Game Process Priority to High",
+      "category": "process",
+      "description": "Sets the priority of a game's process to 'High' to give it more CPU resources.",
+      "rationale": "Gives the game more CPU resources.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "low",
+      "actions": [],
+      "raw_excerpt": "We could just open the game, right click the XC file, go to set priority, set it to high.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "b74nWvL1Sdo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable SMT/Hyper-Threading for Game Threads",
+      "category": "process",
+      "description": "Disables specific threads associated with SMT/Hyper-Threading for a game process to potentially improve performance on some CPUs.",
+      "rationale": "Can improve performance on some CPUs by disabling threads.",
+      "riskLevel": 3,
+      "rebootRequired": "none",
+      "anticheatRisk": "medium",
+      "actions": [],
+      "raw_excerpt": "So to disable the threads we would simply select the second one. So we would disable that one that one. That one. That one.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "b74nWvL1Sdo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Core 1 for Game Process",
+      "category": "process",
+      "description": "Disables Core 1 for a game process, forcing it to run on other cores.",
+      "rationale": "Saw good scaling with the game only running on cores without core one.",
+      "riskLevel": 3,
+      "rebootRequired": "none",
+      "anticheatRisk": "medium",
+      "actions": [],
+      "raw_excerpt": "So, if we want to disable core one as well, which like I saw good scaling with it too.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "b74nWvL1Sdo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Ensure RAM Profile (XMP/DOCP/EXPO) is Enabled",
+      "category": "bios",
+      "description": "Enables the RAM's performance profile (XMP, DOCP, or EXPO) in the BIOS to achieve its rated speed.",
+      "rationale": "Ensures RAM runs at its advertised speed for better gaming performance.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [],
+      "raw_excerpt": "check XMP docp Expo is enabled so what is that all right so if any of you guys get a little bit lost on what anything is you can simply give it a bit of a Google if you like but what XMP DSP Expo is is just your RAM profile so most gaming PCs will have a ram profile that is not on by default server and Enterprise builds and work builds sometimes they don't or really really cheap PCS they don't the ram doesn't have a ram profile on or if you have a really cheap board it might not allow you to enable that profile 99% out of you will be able to enable this and it's very important",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Verify RAM Stick Placement for Dual Channel",
+      "category": "bios",
+      "description": "Ensures RAM sticks are installed in the correct motherboard slots to enable dual-channel memory mode.",
+      "rationale": "Correct RAM slot placement is crucial for dual-channel performance, which can significantly impact gaming.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [],
+      "raw_excerpt": "we also want to verify Ram is in the correct slots so let's go back to SPD all right we have slot one which will be the one closest to the CPU Slot 2 slot three and Slot 4 now for jeel Channel which is what I currently have now the the jeel channel is like two sticks okay you want them in slot two and four check your motherboard manual for this and make sure you get it right if you don't have it right you might actually have issues with even running the ram profile if you want to turn it on or you might just be having issues with the PC in general it's quite important to make sure you have the RAM sticks in the Right Slots check your motherboard manual to do so it's very very easy to do just just to be sure 46 you don't have to worry if it's no floor board okay but um two sticks nine times out of 10 from what I've seen you want them in slot two and four but check your motherboard manual it's quite important I see a lot of people get that wrong",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Avoid Mismatched RAM Modules",
+      "category": "bios",
+      "description": "Recommends using identical RAM modules (same part number and speed) to prevent performance issues and instability.",
+      "rationale": "Mismatched RAM can lead to instability and reduced performance, negatively impacting gaming.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [],
+      "raw_excerpt": "now we want to confirm there is no mismatch in Ram modules this is huge mismatch Ram is a huge no no so what I mean by generally rule thumb try to stick to the same part number right or at least the same profile of sticks I'd prefer you to just stick with the same part number to keep things easier but say you've got one stick of eight and one stick of 16 that's a big no no like say you've got one ram stick that is 5,000 MHz and another Ram stick that is 6,000 MHz that is a big no no so you it's very very important to keep them the same now you can if you know what you're doing and you know how to tune things in BIOS you can make some different RAM sticks work but I highly don't recommend it for most of you out there all right most General users just make sure you don't mismatch Ram it's very very important okay to fix that if you do have mismatch Ram",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable XMP/DOCP/EXPO for RAM",
+      "category": "bios",
+      "description": "Enables the Extreme Memory Profile (XMP), DOCP, or EXPO settings to automatically configure RAM timings, speeds, and voltages for optimal performance.",
+      "rationale": "This will load our speeds timings and voltages all for us we don't have to worry about it.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "path": "OC Tweaker/DRAM Profile Configuration",
+          "name": "DRAM Profile",
+          "value": "EXPO"
+        }
+      ],
+      "raw_excerpt": "I want to go ahead and want to switch this to expoo on Intel it is usually XMP um or docp so it will load our speeds timings and voltages all for us we don't have to worry about it",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable Resizable BAR",
+      "category": "bios",
+      "description": "Enables Resizable BAR (Base Address Register) which allows the CPU to access the entire GPU VRAM at once, potentially improving performance in games.",
+      "rationale": "Enables Resizable BAR PCI configuration so resize B now nine times out of 10 most modern boards and bios if you're on a bios update will enable it by default",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "path": "PCI Configuration",
+          "name": "Resizable BAR",
+          "value": "Enabled"
+        }
+      ],
+      "raw_excerpt": "now another thing we want to do is we want enable resize bar PCI configuration so resize B now nine times out of 10 most modern boards and bios if you're on a bios update will enable it by default",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable Above 4G Decoding",
+      "category": "bios",
+      "description": "Enables the 'Above 4G Decoding' setting, which is often a prerequisite for enabling Resizable BAR.",
+      "rationale": "Some boards won't show this option if you've got above 4G decoding disabled so if you do go ahead and enable above 4G decoding and then you should see resize bar and you should have the option to enable it",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "path": "PCI Configuration",
+          "name": "Above 4G Decoding",
+          "value": "Enabled"
+        }
+      ],
+      "raw_excerpt": "Some boards won't show this option if you've got above 4G decoding disabled so if you do go ahead and enable above 4G decoding and then you should see resize bar and you should have the option to enable it",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Enable Precision Boost Overdrive (PBO)",
+      "category": "bios",
+      "description": "Enables AMD's Precision Boost Overdrive (PBO) feature, which allows the CPU to boost beyond its standard limits.",
+      "rationale": "This is a safe setting to turn on and you shouldn't have any issues with it so definitely have this on",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "path": "Advanced/AMD Clock Overclocking",
+          "name": "Precision Boost Overdrive",
+          "value": "Enabled"
+        }
+      ],
+      "raw_excerpt": "now another thing we want to do is we want enable Precision boost overdrive so lucky for me this board has a performance preset PBO enabled now if you don't see this on your AMD board you may need to go to Advanced and AMD clock overclocking and then Precision boost overdrive and you can just turn it on there to enabled",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable C-States (Intel)",
+      "category": "bios",
+      "description": "Disables the C-States power saving feature on Intel CPUs, which can sometimes interfere with maximum boost clocks.",
+      "rationale": "If you have an Intel system nine times out of 10 on all boards you need to go to Advanced CPU configuration and then down here there should be something called C state so you might need to go Advanced CPU power management and disable C states there",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "path": "Advanced CPU Power Management",
+          "name": "C-States",
+          "value": "Disabled"
+        }
+      ],
+      "raw_excerpt": "If you have an Intel system nine times out of 10 on all boards you need to go to Advanced CPU configuration and then down here there should be something called C state so you might need to go Advanced CPU power management and disable C states there",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Set CPU Fan to Max Speed",
+      "category": "bios",
+      "description": "Sets the CPU fan speed to its maximum setting for optimal cooling.",
+      "rationale": "we need to Max the pump and set fans to Performance so most of you should sort of have a fan setting you want to put your your water pump in Max and the CPU fans in extrem or Max",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "path": "Fan Control",
+          "name": "CPU Fan Speed",
+          "value": "Max"
+        }
+      ],
+      "raw_excerpt": "we need to Max the pump and set fans to Performance so most of you should sort of have a fan setting you want to put your your water pump in Max and the CPU fans in extrem or Max",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Set Pump Speed to Max",
+      "category": "bios",
+      "description": "Sets the water pump speed to its maximum setting for optimal cooling.",
+      "rationale": "we need to Max the pump and set fans to Performance so most of you should sort of have a fan setting you want to put your your water pump in Max and the CPU fans in extrem or Max",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bios_set",
+          "path": "Fan Control",
+          "name": "Pump Speed",
+          "value": "Max"
+        }
+      ],
+      "raw_excerpt": "we need to Max the pump and set fans to Performance so most of you should sort of have a fan setting you want to put your your water pump in Max and the CPU fans in extrem or Max",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Telemetry",
+      "category": "registry",
+      "description": "Disables Windows telemetry services to prevent data collection.",
+      "rationale": "Telemetry can consume system resources and potentially impact performance.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+          "name": "AllowTelemetry",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\DiagTrack",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ],
+      "raw_excerpt": "kill telemetry",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "PlACZ9Gp1xo",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Bypass Windows 11 Hardware Requirements",
+      "category": "registry",
+      "description": "Bypasses TPM, Secure Boot, RAM, CPU, and Storage checks during the Windows 11 installation process.",
+      "rationale": "Allows installation of Windows 11 on non-supported hardware and prevents setup-time hardware polling.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\Setup\\LabConfig",
+          "name": "BypassTPMCheck",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\Setup\\LabConfig",
+          "name": "BypassRAMCheck",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\Setup\\LabConfig",
+          "name": "BypassSecureBootCheck",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\Setup\\LabConfig",
+          "name": "BypassCPUCheck",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\Setup\\LabConfig",
+          "name": "BypassStorageCheck",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "We're bypassing the TPM check, bypassing RAM check, bypass secure boot check, bypass CPU check, and bypass the storage check.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Automatic Windows Driver Updates",
+      "category": "registry",
+      "description": "Prevents Windows Update from automatically downloading and installing hardware drivers and OEM software.",
+      "rationale": "Ensures that Windows does not overwrite stable, manually installed drivers with generic or bloated versions.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+          "name": "ExcludeWUDriversInQualityUpdate",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\DriverSearching",
+          "name": "SearchOrderConfig",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "There are registry keys that get applied through group policy that can let you choose whether you want driver updates or not... next time we do updates, no drivers will ever come through or OEM bloatware or anything like that.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Windows 11 Background Mouse Polling Rate Cap",
+      "category": "registry",
+      "description": "Prevents Windows 11 from capping background application mouse polling rates to 125Hz.",
+      "rationale": "Ensures consistent mouse responsiveness and prevents stutters in games that may be affected by the background polling cap.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\PrecisionTouchPad",
+          "name": "BackgroundPollingRate",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Windows 11 added a new feature to cap your background polling rate to 125 Hz for all applications unless it's your game. So, when you're in your game, it's supposed to be uncapped, but personally, I don't trust Microsoft and I prefer the old way of doing things.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Mouse Acceleration",
+      "category": "registry",
+      "description": "Disables 'Enhance Pointer Precision' and sets mouse threshold values to zero for raw movement feel.",
+      "rationale": "Provides a consistent 1:1 mouse movement on the desktop and in games that do not use raw input.",
+      "riskLevel": 1,
+      "rebootRequired": "logout",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Mouse",
+          "name": "MouseSpeed",
+          "value_type": "string",
+          "value": "0"
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Mouse",
+          "name": "MouseThreshold1",
+          "value_type": "string",
+          "value": "0"
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Mouse",
+          "name": "MouseThreshold2",
+          "value_type": "string",
+          "value": "0"
+        }
+      ],
+      "raw_excerpt": "And we've already discussed this about mouse acceleration. Um, and it's not necessarily newer games that have raw input, this is not an issue for, but it's just nice to not have mouse acceleration on the desktop.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Windows Defender",
+      "category": "registry",
+      "description": "Completely disables Windows Defender antivirus services and background drivers.",
+      "rationale": "Reduces background CPU usage and system interruptions caused by real-time scanning.",
+      "riskLevel": 4,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "low",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows Defender",
+          "name": "DisableAntiSpyware",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "Defender will give you the option to entirely switch Defender off entirely. So, the services and the drivers won't run at all in the background",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Windows SmartScreen",
+      "category": "registry",
+      "description": "Disables the Windows SmartScreen filter that checks files and apps for security.",
+      "rationale": "Prevents background evaluation of applications and files to reduce latency and system overhead.",
+      "riskLevel": 3,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+          "name": "EnableSmartScreen",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Smart Screen won't be there at all. So, it will kind of completely nuke Defender, but in a safe way where it can be reverted.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Windows Defender and SmartScreen",
+      "category": "registry",
+      "description": "Disables Windows Defender antivirus, real-time monitoring, and the SmartScreen filter.",
+      "rationale": "Reduces background CPU usage and prevents service-related micro-stuttering during gaming.",
+      "riskLevel": 4,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows Defender",
+          "name": "DisableAntiSpyware",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection",
+          "name": "DisableRealtimeMonitoring",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+          "name": "SmartScreenEnabled",
+          "value_type": "string",
+          "value": "Off"
+        }
+      ],
+      "raw_excerpt": "turns off defender without muking defender... It turns off all the settings in here other than control flow guard and it stops the services and the drivers from running and turns off smart screen.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Windows Firewall",
+      "category": "network",
+      "description": "Completely disables the Windows Firewall service.",
+      "rationale": "Reduces network processing overhead and background service activity.",
+      "riskLevel": 4,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\mpssvc",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ],
+      "raw_excerpt": "Firewall. This is a way if you want to completely disable firewall. ... we can apply that and we'll have to restart. Restarted. Now firewall will be off completely.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Spectre and Meltdown Mitigations",
+      "category": "registry",
+      "description": "Disables CPU security mitigations for Spectre and Meltdown vulnerabilities.",
+      "rationale": "Improves CPU performance by removing security-related execution overhead, especially on older processors.",
+      "riskLevel": 3,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "name": "FeatureSettingsOverride",
+          "value_type": "dword",
+          "value": 3
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "name": "FeatureSettingsOverrideMask",
+          "value_type": "dword",
+          "value": 3
+        }
+      ],
+      "raw_excerpt": "Spectra meltdown. This is security patch for a bunch of older CPUs and disabling it helped performance a little bit. ... This will completely disable Spectre and meltdown.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Data Execution Prevention (DEP)",
+      "category": "bcd",
+      "description": "Disables DEP, a security feature that prevents code execution from non-executable memory regions.",
+      "rationale": "Can potentially resolve compatibility issues or overhead in specific testing scenarios.",
+      "riskLevel": 4,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "nx",
+          "value": "AlwaysOff"
+        }
+      ],
+      "raw_excerpt": "Data execution prevention. It's this one here. You can entirely turn it off. ... To get to that setting, the easiest way nowadays on Windows 11 is going system about advanced system settings",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable File Download Security Warning",
+      "category": "registry",
+      "description": "Prevents Windows from marking downloaded files with a 'Zone.Identifier' that triggers security prompts.",
+      "rationale": "Prevents Windows from blocking downloaded files by default, streamlining the use of third-party tools.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Attachments",
+          "name": "SaveZoneInformation",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "File download security warning. ... by default, Windows will block the file if it wasn't made on your machine. So, this will actually get rid of that entirely.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Prefetcher and Superfetch",
+      "category": "ram",
+      "description": "Disables Windows prefetching and Superfetch (SysMain) services.",
+      "rationale": "Prevents background disk activity and memory management overhead associated with application pre-loading.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters",
+          "name": "EnablePrefetcher",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters",
+          "name": "EnableSuperfetch",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "raw_excerpt": "Mim features, we kind of covered this with disabling memory compression. Now we can disable them all entirely. So what it will actually do is disable prefetching and sort of remembering an app to sort of reload for next time.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Multi-Plane Overlay (MPO)",
+      "category": "monitor",
+      "description": "Disables the Multi-Plane Overlay feature in the Windows Desktop Window Manager.",
+      "rationale": "Can resolve stuttering, flickering, and black screen issues, particularly on AMD graphics cards or when using specific capture card setups.",
+      "riskLevel": 2,
+      "rebootRequired": "reboot",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows\\Dwm",
+          "name": "OverlayTestMode",
+          "value_type": "dword",
+          "value": 5
+        }
+      ],
+      "raw_excerpt": "MBO, the MBO script will basically disable uh um MBO entirely and borderless optimization for full screen because so and it's for testing purposes. Most of you guys shouldn't touch this, but if you wanted to test it, you can go off or on.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Fullscreen Optimizations (FSO) Global",
+      "category": "monitor",
+      "description": "Disables Windows Fullscreen Optimizations to force legacy Full Screen Exclusive mode.",
+      "rationale": "Bypasses the Windows compositor in non-DirectX 12 games, which some users prefer for mouse input consistency.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\GameConfigStore",
+          "name": "GameDVR_FSEBehaviorMode",
+          "value_type": "dword",
+          "value": 2
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\GameConfigStore",
+          "name": "GameDVR_DXGIHonorFSEWindowsMode",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "raw_excerpt": "the default is full screen optimizations are independent flipped, right? FSO default. And then if you wanted to force full screen exclusive, we can do that here.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Set Process Priority to High",
+      "category": "process",
+      "description": "Configures a specific executable to always run with High CPU priority.",
+      "rationale": "Ensures the game process receives CPU resources before background tasks, which can help with frame time stability in CPU-limited scenarios.",
+      "riskLevel": 2,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\BMS.exe\\PerfOptions",
+          "name": "CpuPriorityClass",
+          "value_type": "dword",
+          "value": 3
+        }
+      ],
+      "raw_excerpt": "So if we want to change it to something different, high above normal, normal, below normal, idle... usually people go high. So let's say we want to test high.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    },
+    {
+      "title": "Disable Optimizations for Windowed Games",
+      "category": "monitor",
+      "description": "Disables the modern flip model optimizations for windowed and borderless applications.",
+      "rationale": "Prevents Windows from applying modern flip presentation to windowed games, which is necessary if disabling MPO for testing purposes.",
+      "riskLevel": 1,
+      "rebootRequired": "none",
+      "anticheatRisk": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\DirectX\\UserGpuPreferences",
+          "name": "DirectXUserGlobalSettings",
+          "value_type": "string",
+          "value": "GlobalOptimizationsFlags=0;"
+        }
+      ],
+      "raw_excerpt": "as well as disabling NO, it's going to disable optimizations for windowed games because there's no point having no on having this on if you're going to have no off.",
+      "sourceCitation": {
+        "corpus": "yt-corpus.json",
+        "channel": "yt:fr33thy",
+        "messageId": "zwPEDXteJYQ",
+        "timestamp": null
+      }
+    }
+  ]
+}

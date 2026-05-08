@@ -1,0 +1,3008 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.040 --> 00:00:01.510 align:start position:0%
+ 
+if<00:00:00.120><c> you're</c><00:00:00.240><c> not</c><00:00:00.399><c> optimizing</c><00:00:00.880><c> your</c><00:00:01.079><c> bios</c>
+
+00:00:01.510 --> 00:00:01.520 align:start position:0%
+if you're not optimizing your bios
+ 
+
+00:00:01.520 --> 00:00:03.590 align:start position:0%
+if you're not optimizing your bios
+you're<00:00:01.680><c> leaving</c><00:00:02.040><c> FPS</c><00:00:02.720><c> on</c><00:00:02.879><c> the</c><00:00:03.080><c> table</c><00:00:03.439><c> and</c>
+
+00:00:03.590 --> 00:00:03.600 align:start position:0%
+you're leaving FPS on the table and
+ 
+
+00:00:03.600 --> 00:00:05.309 align:start position:0%
+you're leaving FPS on the table and
+adding<00:00:03.919><c> input</c><00:00:04.240><c> delay</c><00:00:04.560><c> without</c><00:00:04.799><c> even</c><00:00:05.040><c> knowing</c>
+
+00:00:05.309 --> 00:00:05.319 align:start position:0%
+adding input delay without even knowing
+ 
+
+00:00:05.319 --> 00:00:06.990 align:start position:0%
+adding input delay without even knowing
+it<00:00:05.560><c> this</c><00:00:05.640><c> is</c><00:00:05.759><c> the</c><00:00:05.879><c> difference</c><00:00:06.200><c> between</c><00:00:06.560><c> stock</c>
+
+00:00:06.990 --> 00:00:07.000 align:start position:0%
+it this is the difference between stock
+ 
+
+00:00:07.000 --> 00:00:09.350 align:start position:0%
+it this is the difference between stock
+settings<00:00:07.520><c> and</c><00:00:07.680><c> a</c><00:00:07.919><c> properly</c><00:00:08.320><c> tuned</c><00:00:08.800><c> bios</c>
+
+00:00:09.350 --> 00:00:09.360 align:start position:0%
+settings and a properly tuned bios
+ 
+
+00:00:09.360 --> 00:00:11.629 align:start position:0%
+settings and a properly tuned bios
+smoother<00:00:09.719><c> gameplay</c><00:00:10.200><c> lower</c><00:00:10.480><c> latency</c><00:00:11.160><c> and</c><00:00:11.360><c> more</c>
+
+00:00:11.629 --> 00:00:11.639 align:start position:0%
+smoother gameplay lower latency and more
+ 
+
+00:00:11.639 --> 00:00:13.270 align:start position:0%
+smoother gameplay lower latency and more
+FPS<00:00:12.320><c> and</c><00:00:12.440><c> today</c><00:00:12.639><c> I'm</c><00:00:12.719><c> going</c><00:00:12.840><c> to</c><00:00:12.920><c> show</c><00:00:13.080><c> you</c>
+
+00:00:13.270 --> 00:00:13.280 align:start position:0%
+FPS and today I'm going to show you
+ 
+
+00:00:13.280 --> 00:00:15.150 align:start position:0%
+FPS and today I'm going to show you
+exactly<00:00:13.639><c> how</c><00:00:13.719><c> to</c><00:00:13.839><c> unlock</c><00:00:14.160><c> your</c><00:00:14.280><c> cpu's</c><00:00:14.839><c> full</c>
+
+00:00:15.150 --> 00:00:15.160 align:start position:0%
+exactly how to unlock your cpu's full
+ 
+
+00:00:15.160 --> 00:00:16.790 align:start position:0%
+exactly how to unlock your cpu's full
+potential<00:00:15.559><c> for</c><00:00:15.759><c> the</c><00:00:16.000><c> fastest</c><00:00:16.480><c> most</c>
+
+00:00:16.790 --> 00:00:16.800 align:start position:0%
+potential for the fastest most
+ 
+
+00:00:16.800 --> 00:00:19.230 align:start position:0%
+potential for the fastest most
+responsive<00:00:17.359><c> gaming</c><00:00:17.880><c> experience</c><00:00:18.480><c> possible</c><00:00:19.000><c> so</c>
+
+00:00:19.230 --> 00:00:19.240 align:start position:0%
+responsive gaming experience possible so
+ 
+
+00:00:19.240 --> 00:00:20.470 align:start position:0%
+responsive gaming experience possible so
+let's<00:00:19.400><c> get</c><00:00:19.640><c> right</c><00:00:19.800><c> into</c><00:00:20.039><c> it</c><00:00:20.240><c> all</c><00:00:20.359><c> right</c>
+
+00:00:20.470 --> 00:00:20.480 align:start position:0%
+let's get right into it all right
+ 
+
+00:00:20.480 --> 00:00:22.150 align:start position:0%
+let's get right into it all right
+everyone<00:00:20.760><c> so</c><00:00:20.880><c> whenever</c><00:00:21.160><c> you're</c><00:00:21.359><c> in</c><00:00:21.519><c> the</c><00:00:21.720><c> Bios</c>
+
+00:00:22.150 --> 00:00:22.160 align:start position:0%
+everyone so whenever you're in the Bios
+ 
+
+00:00:22.160 --> 00:00:23.589 align:start position:0%
+everyone so whenever you're in the Bios
+and<00:00:22.279><c> you</c><00:00:22.359><c> want</c><00:00:22.439><c> to</c><00:00:22.600><c> get</c><00:00:22.720><c> this</c><00:00:22.880><c> done</c><00:00:23.279><c> all</c><00:00:23.439><c> we're</c>
+
+00:00:23.589 --> 00:00:23.599 align:start position:0%
+and you want to get this done all we're
+ 
+
+00:00:23.599 --> 00:00:25.470 align:start position:0%
+and you want to get this done all we're
+going<00:00:23.720><c> to</c><00:00:23.840><c> do</c><00:00:24.199><c> find</c><00:00:24.519><c> the</c><00:00:24.720><c> tab</c><00:00:25.000><c> where</c><00:00:25.160><c> you</c><00:00:25.240><c> can</c>
+
+00:00:25.470 --> 00:00:25.480 align:start position:0%
+going to do find the tab where you can
+ 
+
+00:00:25.480 --> 00:00:27.870 align:start position:0%
+going to do find the tab where you can
+load<00:00:25.920><c> optimized</c><00:00:26.519><c> defaults</c><00:00:27.199><c> or</c><00:00:27.320><c> it</c><00:00:27.439><c> might</c><00:00:27.640><c> be</c><00:00:27.760><c> a</c>
+
+00:00:27.870 --> 00:00:27.880 align:start position:0%
+load optimized defaults or it might be a
+ 
+
+00:00:27.880 --> 00:00:30.390 align:start position:0%
+load optimized defaults or it might be a
+button<00:00:28.199><c> called</c><00:00:28.480><c> load</c><00:00:28.840><c> UEFI</c><00:00:29.519><c> default</c><00:00:30.279><c> you're</c>
+
+00:00:30.390 --> 00:00:30.400 align:start position:0%
+button called load UEFI default you're
+ 
+
+00:00:30.400 --> 00:00:31.910 align:start position:0%
+button called load UEFI default you're
+going<00:00:30.519><c> to</c><00:00:30.640><c> click</c><00:00:30.880><c> enter</c><00:00:31.199><c> on</c><00:00:31.400><c> this</c><00:00:31.599><c> and</c><00:00:31.720><c> then</c>
+
+00:00:31.910 --> 00:00:31.920 align:start position:0%
+going to click enter on this and then
+ 
+
+00:00:31.920 --> 00:00:33.950 align:start position:0%
+going to click enter on this and then
+press<00:00:32.320><c> okay</c><00:00:33.000><c> and</c><00:00:33.120><c> the</c><00:00:33.200><c> reason</c><00:00:33.440><c> we're</c><00:00:33.640><c> doing</c>
+
+00:00:33.950 --> 00:00:33.960 align:start position:0%
+press okay and the reason we're doing
+ 
+
+00:00:33.960 --> 00:00:35.430 align:start position:0%
+press okay and the reason we're doing
+this<00:00:34.160><c> is</c><00:00:34.320><c> just</c><00:00:34.520><c> because</c><00:00:34.800><c> you</c><00:00:34.920><c> might</c><00:00:35.120><c> have</c><00:00:35.239><c> some</c>
+
+00:00:35.430 --> 00:00:35.440 align:start position:0%
+this is just because you might have some
+ 
+
+00:00:35.440 --> 00:00:37.590 align:start position:0%
+this is just because you might have some
+settings<00:00:35.800><c> from</c><00:00:35.960><c> the</c><00:00:36.280><c> past</c><00:00:36.920><c> or</c><00:00:37.160><c> you</c><00:00:37.280><c> might</c><00:00:37.440><c> have</c>
+
+00:00:37.590 --> 00:00:37.600 align:start position:0%
+settings from the past or you might have
+ 
+
+00:00:37.600 --> 00:00:39.750 align:start position:0%
+settings from the past or you might have
+just<00:00:37.760><c> done</c><00:00:38.040><c> some</c><00:00:38.239><c> weird</c><00:00:38.559><c> things</c><00:00:38.840><c> in</c><00:00:38.960><c> your</c><00:00:39.200><c> bios</c>
+
+00:00:39.750 --> 00:00:39.760 align:start position:0%
+just done some weird things in your bios
+ 
+
+00:00:39.760 --> 00:00:41.590 align:start position:0%
+just done some weird things in your bios
+or<00:00:39.960><c> it</c><00:00:40.079><c> could</c><00:00:40.239><c> be</c><00:00:40.399><c> just</c><00:00:40.920><c> some</c><00:00:41.079><c> settings</c><00:00:41.399><c> are</c>
+
+00:00:41.590 --> 00:00:41.600 align:start position:0%
+or it could be just some settings are
+ 
+
+00:00:41.600 --> 00:00:42.869 align:start position:0%
+or it could be just some settings are
+already<00:00:41.840><c> changed</c><00:00:42.160><c> and</c><00:00:42.280><c> you</c><00:00:42.360><c> don't</c><00:00:42.520><c> even</c><00:00:42.719><c> know</c>
+
+00:00:42.869 --> 00:00:42.879 align:start position:0%
+already changed and you don't even know
+ 
+
+00:00:42.879 --> 00:00:45.310 align:start position:0%
+already changed and you don't even know
+it<00:00:43.280><c> and</c><00:00:43.440><c> this</c><00:00:43.520><c> could</c><00:00:43.719><c> cause</c><00:00:44.039><c> issues</c><00:00:44.399><c> later</c><00:00:44.680><c> on</c>
+
+00:00:45.310 --> 00:00:45.320 align:start position:0%
+it and this could cause issues later on
+ 
+
+00:00:45.320 --> 00:00:46.590 align:start position:0%
+it and this could cause issues later on
+so<00:00:45.600><c> once</c><00:00:45.760><c> you've</c><00:00:46.000><c> done</c><00:00:46.160><c> that</c><00:00:46.320><c> we're</c><00:00:46.440><c> going</c><00:00:46.520><c> to</c>
+
+00:00:46.590 --> 00:00:46.600 align:start position:0%
+so once you've done that we're going to
+ 
+
+00:00:46.600 --> 00:00:48.069 align:start position:0%
+so once you've done that we're going to
+go<00:00:46.680><c> to</c><00:00:46.800><c> extreme</c><00:00:47.120><c> tweaker</c><00:00:47.719><c> and</c><00:00:47.800><c> for</c><00:00:47.960><c> the</c>
+
+00:00:48.069 --> 00:00:48.079 align:start position:0%
+go to extreme tweaker and for the
+ 
+
+00:00:48.079 --> 00:00:49.830 align:start position:0%
+go to extreme tweaker and for the
+purposes<00:00:48.559><c> of</c><00:00:48.800><c> this</c><00:00:49.000><c> video</c><00:00:49.440><c> we're</c><00:00:49.600><c> just</c><00:00:49.719><c> going</c>
+
+00:00:49.830 --> 00:00:49.840 align:start position:0%
+purposes of this video we're just going
+ 
+
+00:00:49.840 --> 00:00:51.950 align:start position:0%
+purposes of this video we're just going
+to<00:00:50.120><c> be</c><00:00:50.280><c> using</c><00:00:50.640><c> XMP</c><00:00:51.399><c> we're</c><00:00:51.559><c> not</c><00:00:51.680><c> going</c><00:00:51.760><c> to</c><00:00:51.840><c> be</c>
+
+00:00:51.950 --> 00:00:51.960 align:start position:0%
+to be using XMP we're not going to be
+ 
+
+00:00:51.960 --> 00:00:54.470 align:start position:0%
+to be using XMP we're not going to be
+doing<00:00:52.440><c> anything</c><00:00:52.840><c> crazy</c><00:00:53.559><c> before</c><00:00:54.079><c> you</c><00:00:54.280><c> pretty</c>
+
+00:00:54.470 --> 00:00:54.480 align:start position:0%
+doing anything crazy before you pretty
+ 
+
+00:00:54.480 --> 00:00:56.389 align:start position:0%
+doing anything crazy before you pretty
+much<00:00:54.680><c> reset</c><00:00:55.199><c> everything</c><00:00:55.800><c> even</c><00:00:56.000><c> though</c><00:00:56.280><c> you</c>
+
+00:00:56.389 --> 00:00:56.399 align:start position:0%
+much reset everything even though you
+ 
+
+00:00:56.399 --> 00:00:58.029 align:start position:0%
+much reset everything even though you
+might<00:00:56.559><c> have</c><00:00:56.719><c> already</c><00:00:57.079><c> done</c><00:00:57.280><c> so</c><00:00:57.719><c> you</c><00:00:57.840><c> want</c><00:00:57.920><c> to</c>
+
+00:00:58.029 --> 00:00:58.039 align:start position:0%
+might have already done so you want to
+ 
+
+00:00:58.039 --> 00:00:59.670 align:start position:0%
+might have already done so you want to
+make<00:00:58.199><c> sure</c><00:00:58.359><c> that</c><00:00:58.440><c> you</c><00:00:58.600><c> save</c><00:00:58.920><c> a</c><00:00:59.160><c> profile</c><00:00:59.559><c> just</c>
+
+00:00:59.670 --> 00:00:59.680 align:start position:0%
+make sure that you save a profile just
+ 
+
+00:00:59.680 --> 00:01:02.029 align:start position:0%
+make sure that you save a profile just
+in<00:01:00.120><c> case</c><00:01:00.440><c> of</c><00:01:00.719><c> whatever</c><00:01:00.960><c> you</c><00:01:01.120><c> had</c><00:01:01.320><c> done</c><00:01:01.600><c> last</c><00:01:01.879><c> to</c>
+
+00:01:02.029 --> 00:01:02.039 align:start position:0%
+in case of whatever you had done last to
+ 
+
+00:01:02.039 --> 00:01:04.750 align:start position:0%
+in case of whatever you had done last to
+your<00:01:02.239><c> bios</c><00:01:03.199><c> this</c><00:01:03.399><c> is</c><00:01:03.640><c> just</c><00:01:03.920><c> a</c><00:01:04.320><c> completely</c>
+
+00:01:04.750 --> 00:01:04.760 align:start position:0%
+your bios this is just a completely
+ 
+
+00:01:04.760 --> 00:01:06.789 align:start position:0%
+your bios this is just a completely
+stock<00:01:05.280><c> bios</c><00:01:05.720><c> optimization</c><00:01:06.479><c> we're</c><00:01:06.600><c> not</c><00:01:06.720><c> going</c>
+
+00:01:06.789 --> 00:01:06.799 align:start position:0%
+stock bios optimization we're not going
+ 
+
+00:01:06.799 --> 00:01:09.190 align:start position:0%
+stock bios optimization we're not going
+to<00:01:06.920><c> be</c><00:01:07.000><c> doing</c><00:01:07.280><c> any</c><00:01:07.520><c> sort</c><00:01:07.720><c> of</c><00:01:07.960><c> overclocking</c><00:01:08.600><c> so</c>
+
+00:01:09.190 --> 00:01:09.200 align:start position:0%
+to be doing any sort of overclocking so
+ 
+
+00:01:09.200 --> 00:01:11.230 align:start position:0%
+to be doing any sort of overclocking so
+first<00:01:09.799><c> xmp1</c><00:01:10.600><c> is</c><00:01:10.720><c> the</c><00:01:10.840><c> one</c><00:01:10.960><c> that</c><00:01:11.040><c> you're</c><00:01:11.159><c> going</c>
+
+00:01:11.230 --> 00:01:11.240 align:start position:0%
+first xmp1 is the one that you're going
+ 
+
+00:01:11.240 --> 00:01:13.670 align:start position:0%
+first xmp1 is the one that you're going
+to<00:01:11.320><c> be</c><00:01:11.479><c> using</c><00:01:11.960><c> xmp2</c><00:01:12.799><c> pretty</c><00:01:13.000><c> much</c><00:01:13.159><c> just</c><00:01:13.280><c> Lads</c>
+
+00:01:13.670 --> 00:01:13.680 align:start position:0%
+to be using xmp2 pretty much just Lads
+ 
+
+00:01:13.680 --> 00:01:16.390 align:start position:0%
+to be using xmp2 pretty much just Lads
+the<00:01:13.840><c> entire</c><00:01:14.439><c> profile</c><00:01:15.240><c> of</c><00:01:15.479><c> your</c><00:01:15.640><c> memory</c><00:01:16.000><c> sticks</c>
+
+00:01:16.390 --> 00:01:16.400 align:start position:0%
+the entire profile of your memory sticks
+ 
+
+00:01:16.400 --> 00:01:19.789 align:start position:0%
+the entire profile of your memory sticks
+on<00:01:16.600><c> the</c><00:01:16.720><c> motherboard</c><00:01:17.600><c> xmp1</c><00:01:18.600><c> loads</c><00:01:19.040><c> some</c><00:01:19.240><c> of</c><00:01:19.400><c> it</c>
+
+00:01:19.789 --> 00:01:19.799 align:start position:0%
+on the motherboard xmp1 loads some of it
+ 
+
+00:01:19.799 --> 00:01:21.469 align:start position:0%
+on the motherboard xmp1 loads some of it
+and<00:01:19.920><c> then</c><00:01:20.119><c> just</c><00:01:20.280><c> trains</c><00:01:20.759><c> the</c><00:01:20.920><c> rest</c><00:01:21.119><c> of</c><00:01:21.280><c> the</c>
+
+00:01:21.469 --> 00:01:21.479 align:start position:0%
+and then just trains the rest of the
+ 
+
+00:01:21.479 --> 00:01:24.830 align:start position:0%
+and then just trains the rest of the
+memory<00:01:22.000><c> itself</c><00:01:22.880><c> so</c><00:01:23.479><c> I</c><00:01:23.720><c> recommend</c><00:01:24.159><c> xmp1</c>
+
+00:01:24.830 --> 00:01:24.840 align:start position:0%
+memory itself so I recommend xmp1
+ 
+
+00:01:24.840 --> 00:01:26.350 align:start position:0%
+memory itself so I recommend xmp1
+because<00:01:25.040><c> the</c><00:01:25.159><c> motherboard</c><00:01:25.600><c> tends</c><00:01:25.840><c> to</c><00:01:26.000><c> set</c><00:01:26.200><c> it</c>
+
+00:01:26.350 --> 00:01:26.360 align:start position:0%
+because the motherboard tends to set it
+ 
+
+00:01:26.360 --> 00:01:28.190 align:start position:0%
+because the motherboard tends to set it
+a<00:01:26.439><c> little</c><00:01:26.600><c> bit</c><00:01:26.799><c> lower</c><00:01:27.280><c> and</c><00:01:27.520><c> lower</c><00:01:27.759><c> is</c><00:01:27.920><c> always</c>
+
+00:01:28.190 --> 00:01:28.200 align:start position:0%
+a little bit lower and lower is always
+ 
+
+00:01:28.200 --> 00:01:31.030 align:start position:0%
+a little bit lower and lower is always
+better<00:01:28.600><c> as</c><00:01:28.720><c> long</c><00:01:28.880><c> as</c><00:01:29.000><c> it's</c><00:01:29.200><c> stable</c><00:01:30.000><c> now</c><00:01:30.320><c> XMP</c>
+
+00:01:31.030 --> 00:01:31.040 align:start position:0%
+better as long as it's stable now XMP
+ 
+
+00:01:31.040 --> 00:01:32.350 align:start position:0%
+better as long as it's stable now XMP
+the<00:01:31.159><c> speed</c><00:01:31.400><c> might</c><00:01:31.560><c> be</c><00:01:31.680><c> a</c><00:01:31.759><c> little</c><00:01:31.880><c> bit</c><00:01:32.040><c> too</c><00:01:32.240><c> high</c>
+
+00:01:32.350 --> 00:01:32.360 align:start position:0%
+the speed might be a little bit too high
+ 
+
+00:01:32.360 --> 00:01:34.630 align:start position:0%
+the speed might be a little bit too high
+for<00:01:32.520><c> your</c><00:01:32.680><c> motherboard</c><00:01:33.439><c> 7200</c><00:01:34.320><c> on</c><00:01:34.479><c> this</c>
+
+00:01:34.630 --> 00:01:34.640 align:start position:0%
+for your motherboard 7200 on this
+ 
+
+00:01:34.640 --> 00:01:36.830 align:start position:0%
+for your motherboard 7200 on this
+motherboard<00:01:35.320><c> Works</c><00:01:35.840><c> absolutely</c><00:01:36.399><c> fine</c><00:01:36.640><c> with</c>
+
+00:01:36.830 --> 00:01:36.840 align:start position:0%
+motherboard Works absolutely fine with
+ 
+
+00:01:36.840 --> 00:01:40.270 align:start position:0%
+motherboard Works absolutely fine with
+no<00:01:37.079><c> issues</c><00:01:38.000><c> however</c><00:01:38.240><c> for</c><00:01:38.479><c> you</c><00:01:38.960><c> 7,200</c><00:01:39.920><c> on</c><00:01:40.040><c> your</c>
+
+00:01:40.270 --> 00:01:40.280 align:start position:0%
+no issues however for you 7,200 on your
+ 
+
+00:01:40.280 --> 00:01:42.149 align:start position:0%
+no issues however for you 7,200 on your
+specific<00:01:40.600><c> motherboard</c><00:01:41.119><c> might</c><00:01:41.280><c> not</c><00:01:41.439><c> be</c><00:01:41.600><c> stable</c>
+
+00:01:42.149 --> 00:01:42.159 align:start position:0%
+specific motherboard might not be stable
+ 
+
+00:01:42.159 --> 00:01:43.429 align:start position:0%
+specific motherboard might not be stable
+and<00:01:42.280><c> you</c><00:01:42.360><c> might</c><00:01:42.520><c> have</c><00:01:42.640><c> to</c><00:01:42.759><c> drop</c><00:01:42.960><c> it</c><00:01:43.079><c> down</c><00:01:43.240><c> to</c>
+
+00:01:43.429 --> 00:01:43.439 align:start position:0%
+and you might have to drop it down to
+ 
+
+00:01:43.439 --> 00:01:46.910 align:start position:0%
+and you might have to drop it down to
+for<00:01:43.600><c> example</c><00:01:44.000><c> 6,800</c><00:01:44.880><c> or</c><00:01:45.439><c> 6,400</c><00:01:46.439><c> so</c><00:01:46.640><c> that's</c><00:01:46.799><c> for</c>
+
+00:01:46.910 --> 00:01:46.920 align:start position:0%
+for example 6,800 or 6,400 so that's for
+ 
+
+00:01:46.920 --> 00:01:49.030 align:start position:0%
+for example 6,800 or 6,400 so that's for
+ddr5<00:01:47.600><c> for</c><00:01:47.759><c> ddr4</c><00:01:48.280><c> it's</c><00:01:48.399><c> kind</c><00:01:48.520><c> of</c><00:01:48.640><c> the</c><00:01:48.799><c> same</c>
+
+00:01:49.030 --> 00:01:49.040 align:start position:0%
+ddr5 for ddr4 it's kind of the same
+ 
+
+00:01:49.040 --> 00:01:51.910 align:start position:0%
+ddr5 for ddr4 it's kind of the same
+thing<00:01:49.439><c> so</c><00:01:49.600><c> if</c><00:01:49.680><c> you're</c><00:01:49.759><c> on</c><00:01:50.000><c> 4,000</c><00:01:50.520><c> MHz</c><00:01:50.960><c> ddr4</c><00:01:51.799><c> you</c>
+
+00:01:51.910 --> 00:01:51.920 align:start position:0%
+thing so if you're on 4,000 MHz ddr4 you
+ 
+
+00:01:51.920 --> 00:01:54.550 align:start position:0%
+thing so if you're on 4,000 MHz ddr4 you
+might<00:01:52.119><c> have</c><00:01:52.200><c> to</c><00:01:52.320><c> drop</c><00:01:52.520><c> it</c><00:01:52.600><c> down</c><00:01:52.719><c> to</c><00:01:53.240><c> 3,800</c><00:01:54.240><c> or</c>
+
+00:01:54.550 --> 00:01:54.560 align:start position:0%
+might have to drop it down to 3,800 or
+ 
+
+00:01:54.560 --> 00:01:56.469 align:start position:0%
+might have to drop it down to 3,800 or
+do<00:01:54.719><c> some</c><00:01:54.920><c> manual</c><00:01:55.240><c> tuning</c><00:01:55.680><c> on</c><00:01:55.799><c> your</c><00:01:55.920><c> own</c><00:01:56.240><c> time</c>
+
+00:01:56.469 --> 00:01:56.479 align:start position:0%
+do some manual tuning on your own time
+ 
+
+00:01:56.479 --> 00:01:59.310 align:start position:0%
+do some manual tuning on your own time
+to<00:01:56.640><c> figure</c><00:01:56.880><c> out</c><00:01:57.399><c> what</c><00:01:57.640><c> causes</c><00:01:58.240><c> 4,000</c><00:01:58.799><c> MHz</c><00:01:59.240><c> to</c>
+
+00:01:59.310 --> 00:01:59.320 align:start position:0%
+to figure out what causes 4,000 MHz to
+ 
+
+00:01:59.320 --> 00:02:01.510 align:start position:0%
+to figure out what causes 4,000 MHz to
+be<00:01:59.439><c> stable</c><00:02:00.320><c> but</c><00:02:00.640><c> for</c><00:02:00.799><c> the</c><00:02:00.920><c> purposes</c><00:02:01.280><c> of</c><00:02:01.399><c> this</c>
+
+00:02:01.510 --> 00:02:01.520 align:start position:0%
+be stable but for the purposes of this
+ 
+
+00:02:01.520 --> 00:02:02.789 align:start position:0%
+be stable but for the purposes of this
+video<00:02:01.799><c> just</c><00:02:01.920><c> set</c><00:02:02.079><c> it</c><00:02:02.159><c> to</c><00:02:02.320><c> something</c><00:02:02.520><c> that</c><00:02:02.680><c> was</c>
+
+00:02:02.789 --> 00:02:02.799 align:start position:0%
+video just set it to something that was
+ 
+
+00:02:02.799 --> 00:02:04.350 align:start position:0%
+video just set it to something that was
+going<00:02:02.920><c> to</c><00:02:02.960><c> be</c><00:02:03.119><c> guaranteed</c><00:02:03.560><c> to</c><00:02:03.640><c> be</c><00:02:03.840><c> stable</c><00:02:04.240><c> on</c>
+
+00:02:04.350 --> 00:02:04.360 align:start position:0%
+going to be guaranteed to be stable on
+ 
+
+00:02:04.360 --> 00:02:06.230 align:start position:0%
+going to be guaranteed to be stable on
+your<00:02:04.520><c> motherboard</c><00:02:05.399><c> regardless</c><00:02:05.880><c> of</c><00:02:06.039><c> what</c><00:02:06.159><c> you</c>
+
+00:02:06.230 --> 00:02:06.240 align:start position:0%
+your motherboard regardless of what you
+ 
+
+00:02:06.240 --> 00:02:08.630 align:start position:0%
+your motherboard regardless of what you
+do<00:02:06.640><c> so</c><00:02:06.880><c> set</c><00:02:07.079><c> it</c><00:02:07.159><c> to</c><00:02:07.360><c> that</c><00:02:07.600><c> and</c><00:02:07.960><c> adaptive</c><00:02:08.319><c> boost</c>
+
+00:02:08.630 --> 00:02:08.640 align:start position:0%
+do so set it to that and adaptive boost
+ 
+
+00:02:08.640 --> 00:02:10.510 align:start position:0%
+do so set it to that and adaptive boost
+technology<00:02:09.280><c> always</c><00:02:09.599><c> disable</c><00:02:10.039><c> this</c><00:02:10.239><c> and</c><00:02:10.360><c> as</c>
+
+00:02:10.510 --> 00:02:10.520 align:start position:0%
+technology always disable this and as
+ 
+
+00:02:10.520 --> 00:02:11.990 align:start position:0%
+technology always disable this and as
+soon<00:02:10.640><c> as</c><00:02:10.720><c> multicore</c><00:02:11.239><c> enhancement</c><00:02:11.680><c> set</c><00:02:11.879><c> this</c>
+
+00:02:11.990 --> 00:02:12.000 align:start position:0%
+soon as multicore enhancement set this
+ 
+
+00:02:12.000 --> 00:02:14.509 align:start position:0%
+soon as multicore enhancement set this
+to<00:02:12.160><c> enabl</c><00:02:12.480><c> to</c><00:02:12.560><c> remove</c><00:02:12.840><c> all</c><00:02:13.040><c> limits</c><00:02:13.920><c> however</c><00:02:14.400><c> if</c>
+
+00:02:14.509 --> 00:02:14.519 align:start position:0%
+to enabl to remove all limits however if
+ 
+
+00:02:14.519 --> 00:02:16.309 align:start position:0%
+to enabl to remove all limits however if
+you<00:02:14.599><c> have</c><00:02:14.720><c> a</c><00:02:14.840><c> really</c><00:02:15.080><c> bad</c><00:02:15.280><c> CPU</c><00:02:15.680><c> Cooler</c><00:02:16.120><c> I</c><00:02:16.200><c> would</c>
+
+00:02:16.309 --> 00:02:16.319 align:start position:0%
+you have a really bad CPU Cooler I would
+ 
+
+00:02:16.319 --> 00:02:18.110 align:start position:0%
+you have a really bad CPU Cooler I would
+recommend<00:02:16.720><c> enable</c><00:02:17.040><c> to</c><00:02:17.120><c> remove</c><00:02:17.400><c> all</c><00:02:17.560><c> limits</c>
+
+00:02:18.110 --> 00:02:18.120 align:start position:0%
+recommend enable to remove all limits
+ 
+
+00:02:18.120 --> 00:02:20.190 align:start position:0%
+recommend enable to remove all limits
+90°<00:02:19.120><c> and</c><00:02:19.280><c> what</c><00:02:19.400><c> this</c><00:02:19.519><c> is</c><00:02:19.640><c> going</c><00:02:19.720><c> to</c><00:02:19.879><c> do</c><00:02:20.120><c> if</c>
+
+00:02:20.190 --> 00:02:20.200 align:start position:0%
+90° and what this is going to do if
+ 
+
+00:02:20.200 --> 00:02:21.390 align:start position:0%
+90° and what this is going to do if
+you're<00:02:20.319><c> running</c><00:02:20.519><c> a</c><00:02:20.640><c> stress</c><00:02:20.920><c> test</c><00:02:21.160><c> or</c><00:02:21.319><c> if</c>
+
+00:02:21.390 --> 00:02:21.400 align:start position:0%
+you're running a stress test or if
+ 
+
+00:02:21.400 --> 00:02:23.390 align:start position:0%
+you're running a stress test or if
+you're<00:02:21.519><c> running</c><00:02:22.040><c> a</c><00:02:22.200><c> heavy</c><00:02:22.440><c> workload</c><00:02:23.200><c> it'll</c>
+
+00:02:23.390 --> 00:02:23.400 align:start position:0%
+you're running a heavy workload it'll
+ 
+
+00:02:23.400 --> 00:02:25.309 align:start position:0%
+you're running a heavy workload it'll
+just<00:02:23.599><c> cap</c><00:02:23.800><c> it</c><00:02:23.920><c> at</c><00:02:24.040><c> 90°</c><00:02:24.560><c> and</c><00:02:24.720><c> start</c><00:02:24.920><c> lowering</c>
+
+00:02:25.309 --> 00:02:25.319 align:start position:0%
+just cap it at 90° and start lowering
+ 
+
+00:02:25.319 --> 00:02:27.110 align:start position:0%
+just cap it at 90° and start lowering
+the<00:02:25.400><c> CPU</c><00:02:25.800><c> speed</c><00:02:26.080><c> down</c><00:02:26.319><c> so</c><00:02:26.480><c> it</c><00:02:26.599><c> doesn't</c><00:02:26.920><c> go</c>
+
+00:02:27.110 --> 00:02:27.120 align:start position:0%
+the CPU speed down so it doesn't go
+ 
+
+00:02:27.120 --> 00:02:29.030 align:start position:0%
+the CPU speed down so it doesn't go
+above<00:02:27.400><c> that</c><00:02:27.959><c> but</c><00:02:28.120><c> since</c><00:02:28.280><c> I</c><00:02:28.360><c> have</c><00:02:28.480><c> a</c><00:02:28.599><c> very</c><00:02:28.879><c> good</c>
+
+00:02:29.030 --> 00:02:29.040 align:start position:0%
+above that but since I have a very good
+ 
+
+00:02:29.040 --> 00:02:30.430 align:start position:0%
+above that but since I have a very good
+cooler<00:02:29.400><c> I'm</c><00:02:29.480><c> going</c><00:02:29.599><c> to</c><00:02:29.640><c> set</c><00:02:29.959><c> to</c><00:02:30.080><c> enable</c><00:02:30.319><c> to</c>
+
+00:02:30.430 --> 00:02:30.440 align:start position:0%
+cooler I'm going to set to enable to
+ 
+
+00:02:30.440 --> 00:02:32.270 align:start position:0%
+cooler I'm going to set to enable to
+remove<00:02:30.680><c> all</c><00:02:30.800><c> limits</c><00:02:31.160><c> without</c><00:02:31.440><c> that</c><00:02:31.599><c> setting</c>
+
+00:02:32.270 --> 00:02:32.280 align:start position:0%
+remove all limits without that setting
+ 
+
+00:02:32.280 --> 00:02:33.509 align:start position:0%
+remove all limits without that setting
+then<00:02:32.400><c> I'm</c><00:02:32.480><c> going</c><00:02:32.560><c> to</c><00:02:32.640><c> scroll</c><00:02:32.959><c> down</c><00:02:33.319><c> and</c>
+
+00:02:33.509 --> 00:02:33.519 align:start position:0%
+then I'm going to scroll down and
+ 
+
+00:02:33.519 --> 00:02:35.430 align:start position:0%
+then I'm going to scroll down and
+performance<00:02:33.959><c> core</c><00:02:34.280><c> ratio</c><00:02:34.720><c> for</c><00:02:34.879><c> the</c><00:02:35.000><c> purposes</c>
+
+00:02:35.430 --> 00:02:35.440 align:start position:0%
+performance core ratio for the purposes
+ 
+
+00:02:35.440 --> 00:02:38.270 align:start position:0%
+performance core ratio for the purposes
+of<00:02:35.599><c> this</c><00:02:35.760><c> video</c><00:02:36.160><c> and</c><00:02:36.480><c> any</c><00:02:36.760><c> 12th</c><00:02:37.200><c> 13th</c><00:02:37.599><c> and</c><00:02:37.879><c> 14th</c>
+
+00:02:38.270 --> 00:02:38.280 align:start position:0%
+of this video and any 12th 13th and 14th
+ 
+
+00:02:38.280 --> 00:02:40.470 align:start position:0%
+of this video and any 12th 13th and 14th
+gen<00:02:38.599><c> CPU</c><00:02:39.239><c> you</c><00:02:39.319><c> want</c><00:02:39.440><c> to</c><00:02:39.560><c> set</c><00:02:39.720><c> this</c><00:02:39.840><c> to</c><00:02:39.959><c> sync</c><00:02:40.239><c> all</c>
+
+00:02:40.470 --> 00:02:40.480 align:start position:0%
+gen CPU you want to set this to sync all
+ 
+
+00:02:40.480 --> 00:02:42.470 align:start position:0%
+gen CPU you want to set this to sync all
+cores<00:02:41.080><c> and</c><00:02:41.239><c> all</c><00:02:41.480><c> core</c><00:02:41.720><c> ratio</c><00:02:42.040><c> limit</c><00:02:42.280><c> you</c><00:02:42.400><c> want</c>
+
+00:02:42.470 --> 00:02:42.480 align:start position:0%
+cores and all core ratio limit you want
+ 
+
+00:02:42.480 --> 00:02:44.910 align:start position:0%
+cores and all core ratio limit you want
+to<00:02:42.599><c> set</c><00:02:42.800><c> it</c><00:02:43.000><c> to</c><00:02:43.519><c> your</c><00:02:43.720><c> CPU</c><00:02:44.159><c> speed</c><00:02:44.480><c> that</c><00:02:44.599><c> it</c>
+
+00:02:44.910 --> 00:02:44.920 align:start position:0%
+to set it to your CPU speed that it
+ 
+
+00:02:44.920 --> 00:02:46.949 align:start position:0%
+to set it to your CPU speed that it
+normally<00:02:45.239><c> runs</c><00:02:45.519><c> at</c><00:02:46.080><c> so</c><00:02:46.480><c> I'm</c><00:02:46.560><c> going</c><00:02:46.680><c> to</c><00:02:46.760><c> list</c>
+
+00:02:46.949 --> 00:02:46.959 align:start position:0%
+normally runs at so I'm going to list
+ 
+
+00:02:46.959 --> 00:02:48.470 align:start position:0%
+normally runs at so I'm going to list
+just<00:02:47.080><c> a</c><00:02:47.159><c> bunch</c><00:02:47.360><c> of</c><00:02:47.480><c> CPUs</c><00:02:48.000><c> and</c><00:02:48.159><c> what</c><00:02:48.280><c> they</c>
+
+00:02:48.470 --> 00:02:48.480 align:start position:0%
+just a bunch of CPUs and what they
+ 
+
+00:02:48.480 --> 00:02:50.949 align:start position:0%
+just a bunch of CPUs and what they
+typically<00:02:48.800><c> run</c><00:02:49.040><c> at</c><00:02:49.400><c> so</c><00:02:49.560><c> for</c><00:02:49.800><c> 14900</c><00:02:50.480><c> K</c><00:02:50.840><c> you're</c>
+
+00:02:50.949 --> 00:02:50.959 align:start position:0%
+typically run at so for 14900 K you're
+ 
+
+00:02:50.959 --> 00:02:53.869 align:start position:0%
+typically run at so for 14900 K you're
+going<00:02:51.080><c> to</c><00:02:51.159><c> set</c><00:02:51.319><c> this</c><00:02:51.440><c> to</c><00:02:51.599><c> 57</c><00:02:52.440><c> for</c><00:02:52.720><c> 13900</c><00:02:53.440><c> KS</c>
+
+00:02:53.869 --> 00:02:53.879 align:start position:0%
+going to set this to 57 for 13900 KS
+ 
+
+00:02:53.879 --> 00:02:55.630 align:start position:0%
+going to set this to 57 for 13900 KS
+you're<00:02:53.959><c> going</c><00:02:54.040><c> to</c><00:02:54.120><c> set</c><00:02:54.280><c> this</c><00:02:54.400><c> to</c><00:02:54.560><c> 56</c><00:02:55.239><c> just</c><00:02:55.440><c> like</c>
+
+00:02:55.630 --> 00:02:55.640 align:start position:0%
+you're going to set this to 56 just like
+ 
+
+00:02:55.640 --> 00:02:58.509 align:start position:0%
+you're going to set this to 56 just like
+me<00:02:56.280><c> and</c><00:02:56.400><c> if</c><00:02:56.480><c> you</c><00:02:56.599><c> have</c><00:02:56.680><c> a</c><00:02:56.800><c> 139k</c><00:02:57.680><c> or</c><00:02:57.879><c> KF</c><00:02:58.400><c> you're</c>
+
+00:02:58.509 --> 00:02:58.519 align:start position:0%
+me and if you have a 139k or KF you're
+ 
+
+00:02:58.519 --> 00:03:00.750 align:start position:0%
+me and if you have a 139k or KF you're
+going<00:02:58.599><c> to</c><00:02:58.680><c> set</c><00:02:58.840><c> it</c><00:02:58.959><c> to</c><00:02:59.239><c> 54</c><00:02:59.840><c> 4</c><00:03:00.360><c> and</c><00:03:00.480><c> if</c><00:03:00.560><c> you</c><00:03:00.640><c> have</c>
+
+00:03:00.750 --> 00:03:00.760 align:start position:0%
+going to set it to 54 4 and if you have
+ 
+
+00:03:00.760 --> 00:03:05.710 align:start position:0%
+going to set it to 54 4 and if you have
+a<00:03:00.879><c> 13700</c><00:03:01.760><c> K</c><00:03:02.040><c> or</c><00:03:02.239><c> KF</c><00:03:02.800><c> 53</c><00:03:03.720><c> a</c><00:03:03.840><c> 14700</c><00:03:04.760><c> K</c><00:03:05.040><c> or</c><00:03:05.239><c> KF</c><00:03:05.599><c> is</c>
+
+00:03:05.710 --> 00:03:05.720 align:start position:0%
+a 13700 K or KF 53 a 14700 K or KF is
+ 
+
+00:03:05.720 --> 00:03:07.350 align:start position:0%
+a 13700 K or KF 53 a 14700 K or KF is
+going<00:03:05.840><c> to</c><00:03:06.040><c> 54</c><00:03:06.519><c> make</c><00:03:06.640><c> sure</c><00:03:06.720><c> to</c><00:03:06.840><c> set</c><00:03:07.040><c> to</c><00:03:07.159><c> those</c>
+
+00:03:07.350 --> 00:03:07.360 align:start position:0%
+going to 54 make sure to set to those
+ 
+
+00:03:07.360 --> 00:03:09.270 align:start position:0%
+going to 54 make sure to set to those
+values<00:03:07.959><c> don't</c><00:03:08.120><c> set</c><00:03:08.280><c> it</c><00:03:08.440><c> higher</c><00:03:08.840><c> don't</c><00:03:09.000><c> set</c><00:03:09.159><c> it</c>
+
+00:03:09.270 --> 00:03:09.280 align:start position:0%
+values don't set it higher don't set it
+ 
+
+00:03:09.280 --> 00:03:10.990 align:start position:0%
+values don't set it higher don't set it
+lower<00:03:09.720><c> just</c><00:03:09.840><c> set</c><00:03:10.000><c> it</c><00:03:10.080><c> to</c><00:03:10.239><c> those</c><00:03:10.440><c> values</c><00:03:10.840><c> or</c>
+
+00:03:10.990 --> 00:03:11.000 align:start position:0%
+lower just set it to those values or
+ 
+
+00:03:11.000 --> 00:03:13.550 align:start position:0%
+lower just set it to those values or
+whatever<00:03:11.319><c> the</c><00:03:11.560><c> PS</c><00:03:12.280><c> usually</c><00:03:12.599><c> run</c><00:03:12.840><c> at</c><00:03:13.239><c> for</c><00:03:13.440><c> the</c>
+
+00:03:13.550 --> 00:03:13.560 align:start position:0%
+whatever the PS usually run at for the
+ 
+
+00:03:13.560 --> 00:03:15.309 align:start position:0%
+whatever the PS usually run at for the
+purposes<00:03:14.000><c> of</c><00:03:14.200><c> this</c><00:03:14.400><c> video</c><00:03:14.920><c> we're</c><00:03:15.080><c> not</c><00:03:15.200><c> going</c>
+
+00:03:15.309 --> 00:03:15.319 align:start position:0%
+purposes of this video we're not going
+ 
+
+00:03:15.319 --> 00:03:17.190 align:start position:0%
+purposes of this video we're not going
+to<00:03:15.400><c> be</c><00:03:15.480><c> overclocking</c><00:03:16.400><c> if</c><00:03:16.519><c> you</c><00:03:16.599><c> want</c><00:03:16.680><c> to</c><00:03:16.959><c> learn</c>
+
+00:03:17.190 --> 00:03:17.200 align:start position:0%
+to be overclocking if you want to learn
+ 
+
+00:03:17.200 --> 00:03:19.390 align:start position:0%
+to be overclocking if you want to learn
+how<00:03:17.280><c> to</c><00:03:17.400><c> overclock</c><00:03:17.879><c> your</c><00:03:18.000><c> inel</c><00:03:18.319><c> CPU</c><00:03:19.000><c> go</c><00:03:19.120><c> to</c><00:03:19.280><c> the</c>
+
+00:03:19.390 --> 00:03:19.400 align:start position:0%
+how to overclock your inel CPU go to the
+ 
+
+00:03:19.400 --> 00:03:21.110 align:start position:0%
+how to overclock your inel CPU go to the
+previous<00:03:19.760><c> video</c><00:03:20.040><c> with</c><00:03:20.239><c> these</c><00:03:20.560><c> same</c><00:03:20.840><c> exact</c>
+
+00:03:21.110 --> 00:03:21.120 align:start position:0%
+previous video with these same exact
+ 
+
+00:03:21.120 --> 00:03:23.030 align:start position:0%
+previous video with these same exact
+settings<00:03:21.840><c> and</c><00:03:22.159><c> you'll</c><00:03:22.360><c> be</c><00:03:22.480><c> getting</c><00:03:22.840><c> good</c>
+
+00:03:23.030 --> 00:03:23.040 align:start position:0%
+settings and you'll be getting good
+ 
+
+00:03:23.040 --> 00:03:24.869 align:start position:0%
+settings and you'll be getting good
+overclock<00:03:23.599><c> that</c><00:03:23.720><c> will</c><00:03:23.879><c> give</c><00:03:24.000><c> you</c><00:03:24.120><c> more</c><00:03:24.360><c> FPS</c>
+
+00:03:24.869 --> 00:03:24.879 align:start position:0%
+overclock that will give you more FPS
+ 
+
+00:03:24.879 --> 00:03:27.070 align:start position:0%
+overclock that will give you more FPS
+and<00:03:25.080><c> better</c><00:03:25.280><c> input</c><00:03:25.599><c> delay</c><00:03:26.159><c> scroll</c><00:03:26.480><c> down</c><00:03:26.680><c> Dam</c>
+
+00:03:27.070 --> 00:03:27.080 align:start position:0%
+and better input delay scroll down Dam
+ 
+
+00:03:27.080 --> 00:03:28.869 align:start position:0%
+and better input delay scroll down Dam
+timing<00:03:27.400><c> control</c><00:03:27.959><c> as</c><00:03:28.040><c> you</c><00:03:28.159><c> guys</c><00:03:28.280><c> can</c><00:03:28.439><c> see</c><00:03:28.760><c> there</c>
+
+00:03:28.869 --> 00:03:28.879 align:start position:0%
+timing control as you guys can see there
+ 
+
+00:03:28.879 --> 00:03:30.110 align:start position:0%
+timing control as you guys can see there
+are<00:03:29.000><c> some</c><00:03:29.159><c> stuff</c><00:03:29.400><c> that</c><00:03:29.480><c> you</c><00:03:29.519><c> can</c><00:03:29.760><c> change</c><00:03:29.959><c> in</c>
+
+00:03:30.110 --> 00:03:30.120 align:start position:0%
+are some stuff that you can change in
+ 
+
+00:03:30.120 --> 00:03:31.910 align:start position:0%
+are some stuff that you can change in
+here<00:03:30.360><c> that</c><00:03:30.519><c> I've</c><00:03:30.680><c> shown</c><00:03:30.920><c> in</c><00:03:31.040><c> the</c><00:03:31.280><c> past</c><00:03:31.799><c> and</c>
+
+00:03:31.910 --> 00:03:31.920 align:start position:0%
+here that I've shown in the past and
+ 
+
+00:03:31.920 --> 00:03:34.110 align:start position:0%
+here that I've shown in the past and
+that<00:03:32.040><c> is</c><00:03:32.159><c> going</c><00:03:32.239><c> to</c><00:03:32.360><c> be</c><00:03:32.519><c> dram</c><00:03:32.959><c> RS</c><00:03:33.319><c> to</c><00:03:33.439><c> RS</c><00:03:33.799><c> delay</c>
+
+00:03:34.110 --> 00:03:34.120 align:start position:0%
+that is going to be dram RS to RS delay
+ 
+
+00:03:34.120 --> 00:03:36.949 align:start position:0%
+that is going to be dram RS to RS delay
+L<00:03:34.480><c> and</c><00:03:34.680><c> dram</c><00:03:35.120><c> RS</c><00:03:35.480><c> to</c><00:03:35.640><c> RS</c><00:03:35.959><c> delay</c><00:03:36.280><c> s</c><00:03:36.560><c> you</c><00:03:36.640><c> can</c><00:03:36.760><c> set</c>
+
+00:03:36.949 --> 00:03:36.959 align:start position:0%
+L and dram RS to RS delay s you can set
+ 
+
+00:03:36.959 --> 00:03:39.710 align:start position:0%
+L and dram RS to RS delay s you can set
+these<00:03:37.200><c> both</c><00:03:37.400><c> to</c><00:03:37.599><c> a</c><00:03:38.000><c> if</c><00:03:38.080><c> you're</c><00:03:38.239><c> on</c><00:03:38.439><c> 32</c><00:03:38.920><c> GB</c><00:03:39.400><c> of</c>
+
+00:03:39.710 --> 00:03:39.720 align:start position:0%
+these both to a if you're on 32 GB of
+ 
+
+00:03:39.720 --> 00:03:42.270 align:start position:0%
+these both to a if you're on 32 GB of
+RAM<00:03:40.280><c> if</c><00:03:40.400><c> you're</c><00:03:40.519><c> on</c><00:03:40.840><c> 48</c><00:03:41.439><c> GB</c><00:03:41.879><c> of</c><00:03:42.000><c> RAM</c><00:03:42.200><c> you're</c>
+
+00:03:42.270 --> 00:03:42.280 align:start position:0%
+RAM if you're on 48 GB of RAM you're
+ 
+
+00:03:42.280 --> 00:03:44.030 align:start position:0%
+RAM if you're on 48 GB of RAM you're
+going<00:03:42.400><c> to</c><00:03:42.519><c> set</c><00:03:42.760><c> the</c><00:03:42.920><c> first</c><00:03:43.159><c> one</c><00:03:43.439><c> that</c><00:03:43.599><c> ends</c><00:03:43.879><c> in</c>
+
+00:03:44.030 --> 00:03:44.040 align:start position:0%
+going to set the first one that ends in
+ 
+
+00:03:44.040 --> 00:03:47.229 align:start position:0%
+going to set the first one that ends in
+L<00:03:44.439><c> to</c><00:03:44.640><c> 12</c><00:03:45.200><c> and</c><00:03:45.360><c> the</c><00:03:45.480><c> second</c><00:03:45.760><c> one</c><00:03:45.879><c> to</c><00:03:46.040><c> 8</c><00:03:46.920><c> then</c><00:03:47.120><c> you</c>
+
+00:03:47.229 --> 00:03:47.239 align:start position:0%
+L to 12 and the second one to 8 then you
+ 
+
+00:03:47.239 --> 00:03:49.110 align:start position:0%
+L to 12 and the second one to 8 then you
+can<00:03:47.360><c> scroll</c><00:03:47.720><c> down</c><00:03:47.920><c> and</c><00:03:48.040><c> dram</c><00:03:48.480><c> refresh</c><00:03:48.840><c> inter</c>
+
+00:03:49.110 --> 00:03:49.120 align:start position:0%
+can scroll down and dram refresh inter
+ 
+
+00:03:49.120 --> 00:03:51.990 align:start position:0%
+can scroll down and dram refresh inter
+roll<00:03:49.400><c> you</c><00:03:49.480><c> can</c><00:03:49.680><c> usually</c><00:03:50.040><c> set</c><00:03:50.280><c> this</c><00:03:50.400><c> to</c><00:03:51.000><c> 3276</c>
+
+00:03:51.990 --> 00:03:52.000 align:start position:0%
+roll you can usually set this to 3276
+ 
+
+00:03:52.000 --> 00:03:53.229 align:start position:0%
+roll you can usually set this to 3276
+then<00:03:52.239><c> that's</c><00:03:52.400><c> pretty</c><00:03:52.560><c> much</c><00:03:52.760><c> all</c><00:03:52.879><c> you</c><00:03:53.000><c> have</c><00:03:53.120><c> to</c>
+
+00:03:53.229 --> 00:03:53.239 align:start position:0%
+then that's pretty much all you have to
+ 
+
+00:03:53.239 --> 00:03:56.350 align:start position:0%
+then that's pretty much all you have to
+do<00:03:53.599><c> in</c><00:03:53.799><c> this</c><00:03:54.040><c> page</c><00:03:54.680><c> and</c><00:03:54.840><c> you</c><00:03:55.040><c> just</c><00:03:55.200><c> go</c><00:03:55.519><c> back</c>
+
+00:03:56.350 --> 00:03:56.360 align:start position:0%
+do in this page and you just go back
+ 
+
+00:03:56.360 --> 00:03:57.750 align:start position:0%
+do in this page and you just go back
+then<00:03:56.480><c> we're</c><00:03:56.599><c> going</c><00:03:56.720><c> to</c><00:03:56.799><c> scroll</c><00:03:57.120><c> down</c><00:03:57.400><c> thermal</c>
+
+00:03:57.750 --> 00:03:57.760 align:start position:0%
+then we're going to scroll down thermal
+ 
+
+00:03:57.760 --> 00:03:59.470 align:start position:0%
+then we're going to scroll down thermal
+velocity<00:03:58.239><c> boost</c><00:03:58.599><c> I</c><00:03:58.680><c> don't</c><00:03:58.879><c> really</c><00:03:59.120><c> recommend</c>
+
+00:03:59.470 --> 00:03:59.480 align:start position:0%
+velocity boost I don't really recommend
+ 
+
+00:03:59.480 --> 00:04:01.190 align:start position:0%
+velocity boost I don't really recommend
+using<00:03:59.959><c> any</c><00:04:00.120><c> of</c><00:04:00.319><c> these</c><00:04:00.720><c> and</c><00:04:00.840><c> you</c><00:04:00.920><c> can</c><00:04:01.040><c> just</c>
+
+00:04:01.190 --> 00:04:01.200 align:start position:0%
+using any of these and you can just
+ 
+
+00:04:01.200 --> 00:04:03.270 align:start position:0%
+using any of these and you can just
+disable<00:04:01.720><c> all</c><00:04:01.840><c> of</c><00:04:01.959><c> them</c><00:04:02.200><c> just</c><00:04:02.360><c> like</c><00:04:02.560><c> so</c><00:04:02.920><c> scroll</c>
+
+00:04:03.270 --> 00:04:03.280 align:start position:0%
+disable all of them just like so scroll
+ 
+
+00:04:03.280 --> 00:04:05.830 align:start position:0%
+disable all of them just like so scroll
+down<00:04:03.840><c> go</c><00:04:03.959><c> to</c><00:04:04.040><c> Tweakers</c><00:04:04.519><c> paradise</c><00:04:05.360><c> and</c><00:04:05.519><c> what</c><00:04:05.599><c> I</c>
+
+00:04:05.830 --> 00:04:05.840 align:start position:0%
+down go to Tweakers paradise and what I
+ 
+
+00:04:05.840 --> 00:04:07.390 align:start position:0%
+down go to Tweakers paradise and what I
+recommend<00:04:06.280><c> is</c><00:04:06.439><c> disabling</c><00:04:06.920><c> the</c><00:04:07.120><c> spread</c>
+
+00:04:07.390 --> 00:04:07.400 align:start position:0%
+recommend is disabling the spread
+ 
+
+00:04:07.400 --> 00:04:09.949 align:start position:0%
+recommend is disabling the spread
+Spectrum<00:04:07.959><c> options</c><00:04:08.640><c> as</c><00:04:08.799><c> these</c><00:04:08.959><c> can</c><00:04:09.159><c> cause</c><00:04:09.720><c> some</c>
+
+00:04:09.949 --> 00:04:09.959 align:start position:0%
+Spectrum options as these can cause some
+ 
+
+00:04:09.959 --> 00:04:12.670 align:start position:0%
+Spectrum options as these can cause some
+extra<00:04:10.319><c> latency</c><00:04:11.319><c> then</c><00:04:11.560><c> ring</c><00:04:11.879><c> down</c><00:04:12.079><c> bin</c><00:04:12.480><c> same</c>
+
+00:04:12.670 --> 00:04:12.680 align:start position:0%
+extra latency then ring down bin same
+ 
+
+00:04:12.680 --> 00:04:15.030 align:start position:0%
+extra latency then ring down bin same
+thing<00:04:12.920><c> here</c><00:04:13.159><c> disable</c><00:04:13.680><c> that</c><00:04:14.000><c> and</c><00:04:14.159><c> bclk</c><00:04:14.760><c> aware</c>
+
+00:04:15.030 --> 00:04:15.040 align:start position:0%
+thing here disable that and bclk aware
+ 
+
+00:04:15.040 --> 00:04:16.710 align:start position:0%
+thing here disable that and bclk aware
+adaptive<00:04:15.400><c> voltage</c><00:04:15.879><c> this</c><00:04:16.000><c> really</c><00:04:16.239><c> messes</c><00:04:16.560><c> up</c>
+
+00:04:16.710 --> 00:04:16.720 align:start position:0%
+adaptive voltage this really messes up
+ 
+
+00:04:16.720 --> 00:04:18.590 align:start position:0%
+adaptive voltage this really messes up
+with<00:04:16.880><c> overclocking</c><00:04:17.759><c> so</c><00:04:17.919><c> you</c><00:04:18.000><c> want</c><00:04:18.120><c> to</c><00:04:18.239><c> disable</c>
+
+00:04:18.590 --> 00:04:18.600 align:start position:0%
+with overclocking so you want to disable
+ 
+
+00:04:18.600 --> 00:04:19.830 align:start position:0%
+with overclocking so you want to disable
+it<00:04:18.720><c> if</c><00:04:18.799><c> you're</c><00:04:18.880><c> going</c><00:04:18.959><c> to</c><00:04:19.079><c> be</c><00:04:19.160><c> overclocking</c><00:04:19.720><c> in</c>
+
+00:04:19.830 --> 00:04:19.840 align:start position:0%
+it if you're going to be overclocking in
+ 
+
+00:04:19.840 --> 00:04:21.390 align:start position:0%
+it if you're going to be overclocking in
+the<00:04:19.959><c> future</c><00:04:20.560><c> but</c><00:04:20.759><c> either</c><00:04:20.959><c> way</c><00:04:21.160><c> I</c><00:04:21.239><c> would</c>
+
+00:04:21.390 --> 00:04:21.400 align:start position:0%
+the future but either way I would
+ 
+
+00:04:21.400 --> 00:04:23.390 align:start position:0%
+the future but either way I would
+recommend<00:04:21.759><c> just</c><00:04:21.880><c> disabling</c><00:04:22.360><c> it</c><00:04:22.520><c> completely</c>
+
+00:04:23.390 --> 00:04:23.400 align:start position:0%
+recommend just disabling it completely
+ 
+
+00:04:23.400 --> 00:04:25.510 align:start position:0%
+recommend just disabling it completely
+then<00:04:23.759><c> go</c><00:04:23.919><c> to</c><00:04:24.040><c> the</c><00:04:24.160><c> advanced</c><00:04:24.600><c> Tab</c><00:04:25.000><c> and</c><00:04:25.160><c> go</c><00:04:25.320><c> to</c>
+
+00:04:25.510 --> 00:04:25.520 align:start position:0%
+then go to the advanced Tab and go to
+ 
+
+00:04:25.520 --> 00:04:27.510 align:start position:0%
+then go to the advanced Tab and go to
+platform<00:04:26.280><c> misconfiguration</c><00:04:27.280><c> you're</c><00:04:27.400><c> going</c>
+
+00:04:27.510 --> 00:04:27.520 align:start position:0%
+platform misconfiguration you're going
+ 
+
+00:04:27.520 --> 00:04:29.029 align:start position:0%
+platform misconfiguration you're going
+to<00:04:27.639><c> pretty</c><00:04:27.800><c> much</c><00:04:28.000><c> disable</c><00:04:28.520><c> everything</c><00:04:28.880><c> in</c>
+
+00:04:29.029 --> 00:04:29.039 align:start position:0%
+to pretty much disable everything in
+ 
+
+00:04:29.039 --> 00:04:31.189 align:start position:0%
+to pretty much disable everything in
+here<00:04:29.320><c> cuz</c><00:04:29.479><c> every</c><00:04:29.880><c> thing</c><00:04:29.960><c> in</c><00:04:30.120><c> here</c><00:04:30.360><c> is</c><00:04:30.600><c> PCI</c>
+
+00:04:31.189 --> 00:04:31.199 align:start position:0%
+here cuz every thing in here is PCI
+ 
+
+00:04:31.199 --> 00:04:33.830 align:start position:0%
+here cuz every thing in here is PCI
+Express<00:04:31.720><c> power</c><00:04:32.000><c> saving</c><00:04:32.320><c> options</c><00:04:33.320><c> now</c><00:04:33.680><c> the</c>
+
+00:04:33.830 --> 00:04:33.840 align:start position:0%
+Express power saving options now the
+ 
+
+00:04:33.840 --> 00:04:35.670 align:start position:0%
+Express power saving options now the
+goal<00:04:34.039><c> with</c><00:04:34.240><c> optimizing</c><00:04:34.800><c> our</c><00:04:35.039><c> bios</c><00:04:35.400><c> is</c><00:04:35.520><c> we're</c>
+
+00:04:35.670 --> 00:04:35.680 align:start position:0%
+goal with optimizing our bios is we're
+ 
+
+00:04:35.680 --> 00:04:37.590 align:start position:0%
+goal with optimizing our bios is we're
+disabling<00:04:36.199><c> any</c><00:04:36.479><c> power</c><00:04:36.759><c> saving</c><00:04:37.120><c> options</c><00:04:37.440><c> or</c>
+
+00:04:37.590 --> 00:04:37.600 align:start position:0%
+disabling any power saving options or
+ 
+
+00:04:37.600 --> 00:04:39.270 align:start position:0%
+disabling any power saving options or
+any<00:04:37.840><c> useless</c><00:04:38.320><c> options</c><00:04:38.680><c> that</c><00:04:38.800><c> can</c><00:04:39.000><c> cause</c>
+
+00:04:39.270 --> 00:04:39.280 align:start position:0%
+any useless options that can cause
+ 
+
+00:04:39.280 --> 00:04:42.749 align:start position:0%
+any useless options that can cause
+stutters<00:04:39.880><c> FPS</c><00:04:40.320><c> drops</c><00:04:40.919><c> and</c><00:04:41.360><c> higher</c><00:04:41.759><c> latency</c>
+
+00:04:42.749 --> 00:04:42.759 align:start position:0%
+stutters FPS drops and higher latency
+ 
+
+00:04:42.759 --> 00:04:45.430 align:start position:0%
+stutters FPS drops and higher latency
+then<00:04:43.039><c> go</c><00:04:43.280><c> back</c><00:04:43.720><c> go</c><00:04:43.840><c> to</c><00:04:43.960><c> CPU</c><00:04:44.360><c> configuration</c><00:04:45.280><c> and</c>
+
+00:04:45.430 --> 00:04:45.440 align:start position:0%
+then go back go to CPU configuration and
+ 
+
+00:04:45.440 --> 00:04:47.590 align:start position:0%
+then go back go to CPU configuration and
+now<00:04:45.680><c> for</c><00:04:46.080><c> almost</c><00:04:46.400><c> everyone</c><00:04:46.800><c> disable</c><00:04:47.240><c> enta</c>
+
+00:04:47.590 --> 00:04:47.600 align:start position:0%
+now for almost everyone disable enta
+ 
+
+00:04:47.600 --> 00:04:49.350 align:start position:0%
+now for almost everyone disable enta
+virtualization<00:04:48.320><c> technology</c><00:04:48.880><c> unless</c><00:04:49.199><c> you</c>
+
+00:04:49.350 --> 00:04:49.360 align:start position:0%
+virtualization technology unless you
+ 
+
+00:04:49.360 --> 00:04:51.150 align:start position:0%
+virtualization technology unless you
+need<00:04:49.680><c> virtualization</c><00:04:50.320><c> based</c><00:04:50.680><c> security</c>
+
+00:04:51.150 --> 00:04:51.160 align:start position:0%
+need virtualization based security
+ 
+
+00:04:51.160 --> 00:04:52.990 align:start position:0%
+need virtualization based security
+enabled<00:04:51.600><c> for</c><00:04:51.800><c> whatever</c><00:04:52.080><c> reason</c><00:04:52.520><c> but</c><00:04:52.639><c> for</c><00:04:52.840><c> most</c>
+
+00:04:52.990 --> 00:04:53.000 align:start position:0%
+enabled for whatever reason but for most
+ 
+
+00:04:53.000 --> 00:04:54.390 align:start position:0%
+enabled for whatever reason but for most
+of<00:04:53.120><c> us</c><00:04:53.280><c> we</c><00:04:53.400><c> don't</c><00:04:53.600><c> really</c><00:04:53.800><c> need</c><00:04:54.000><c> it</c><00:04:54.120><c> so</c><00:04:54.240><c> you</c><00:04:54.320><c> can</c>
+
+00:04:54.390 --> 00:04:54.400 align:start position:0%
+of us we don't really need it so you can
+ 
+
+00:04:54.400 --> 00:04:56.350 align:start position:0%
+of us we don't really need it so you can
+just<00:04:54.600><c> disable</c><00:04:55.000><c> that</c><00:04:55.280><c> active</c><00:04:55.600><c> efficient</c><00:04:55.960><c> cores</c>
+
+00:04:56.350 --> 00:04:56.360 align:start position:0%
+just disable that active efficient cores
+ 
+
+00:04:56.360 --> 00:04:58.430 align:start position:0%
+just disable that active efficient cores
+if<00:04:56.479><c> you</c><00:04:56.560><c> just</c><00:04:56.720><c> play</c><00:04:57.039><c> fortnite</c><00:04:57.560><c> valerant</c><00:04:58.280><c> and</c>
+
+00:04:58.430 --> 00:04:58.440 align:start position:0%
+if you just play fortnite valerant and
+ 
+
+00:04:58.440 --> 00:05:00.230 align:start position:0%
+if you just play fortnite valerant and
+some<00:04:58.560><c> of</c><00:04:58.680><c> these</c><00:04:58.840><c> games</c><00:04:59.120><c> that</c><00:04:59.240><c> only</c><00:04:59.720><c> scale</c><00:05:00.039><c> with</c>
+
+00:05:00.230 --> 00:05:00.240 align:start position:0%
+some of these games that only scale with
+ 
+
+00:05:00.240 --> 00:05:01.909 align:start position:0%
+some of these games that only scale with
+performance<00:05:00.639><c> scores</c><00:05:01.039><c> you</c><00:05:01.120><c> could</c><00:05:01.479><c> completely</c>
+
+00:05:01.909 --> 00:05:01.919 align:start position:0%
+performance scores you could completely
+ 
+
+00:05:01.919 --> 00:05:04.310 align:start position:0%
+performance scores you could completely
+just<00:05:02.120><c> disable</c><00:05:02.600><c> this</c><00:05:02.759><c> and</c><00:05:02.880><c> set</c><00:05:03.039><c> it</c><00:05:03.160><c> to</c><00:05:03.400><c> zero</c>
+
+00:05:04.310 --> 00:05:04.320 align:start position:0%
+just disable this and set it to zero
+ 
+
+00:05:04.320 --> 00:05:05.990 align:start position:0%
+just disable this and set it to zero
+however<00:05:04.600><c> if</c><00:05:04.720><c> you</c><00:05:04.880><c> play</c><00:05:05.160><c> Call</c><00:05:05.360><c> of</c><00:05:05.560><c> Duty</c><00:05:05.880><c> you</c>
+
+00:05:05.990 --> 00:05:06.000 align:start position:0%
+however if you play Call of Duty you
+ 
+
+00:05:06.000 --> 00:05:08.510 align:start position:0%
+however if you play Call of Duty you
+want<00:05:06.080><c> to</c><00:05:06.199><c> set</c><00:05:06.440><c> this</c><00:05:06.560><c> to</c><00:05:06.800><c> all</c><00:05:07.440><c> because</c><00:05:07.800><c> eor</c><00:05:08.280><c> do</c>
+
+00:05:08.510 --> 00:05:08.520 align:start position:0%
+want to set this to all because eor do
+ 
+
+00:05:08.520 --> 00:05:10.189 align:start position:0%
+want to set this to all because eor do
+help<00:05:08.720><c> a</c><00:05:08.840><c> little</c><00:05:09.039><c> bit</c><00:05:09.520><c> whenever</c><00:05:09.759><c> it</c><00:05:09.880><c> comes</c><00:05:10.039><c> to</c>
+
+00:05:10.189 --> 00:05:10.199 align:start position:0%
+help a little bit whenever it comes to
+ 
+
+00:05:10.199 --> 00:05:12.350 align:start position:0%
+help a little bit whenever it comes to
+Call<00:05:10.360><c> of</c><00:05:10.479><c> Duty</c><00:05:10.680><c> you</c><00:05:10.880><c> get</c><00:05:11.080><c> around</c><00:05:11.360><c> 30</c><00:05:11.880><c> to</c><00:05:12.039><c> 40</c>
+
+00:05:12.350 --> 00:05:12.360 align:start position:0%
+Call of Duty you get around 30 to 40
+ 
+
+00:05:12.360 --> 00:05:14.510 align:start position:0%
+Call of Duty you get around 30 to 40
+more<00:05:12.600><c> FPS</c><00:05:13.160><c> on</c><00:05:13.280><c> the</c><00:05:13.400><c> CPU</c><00:05:13.960><c> side</c><00:05:14.280><c> in</c><00:05:14.400><c> the</c>
+
+00:05:14.510 --> 00:05:14.520 align:start position:0%
+more FPS on the CPU side in the
+ 
+
+00:05:14.520 --> 00:05:16.510 align:start position:0%
+more FPS on the CPU side in the
+Benchmark<00:05:15.080><c> just</c><00:05:15.199><c> from</c><00:05:15.680><c> having</c><00:05:15.919><c> e</c><00:05:16.240><c> cores</c>
+
+00:05:16.510 --> 00:05:16.520 align:start position:0%
+Benchmark just from having e cores
+ 
+
+00:05:16.520 --> 00:05:19.230 align:start position:0%
+Benchmark just from having e cores
+enabled<00:05:17.360><c> so</c><00:05:17.800><c> if</c><00:05:17.880><c> you</c><00:05:18.000><c> play</c><00:05:18.199><c> Call</c><00:05:18.400><c> of</c><00:05:18.520><c> Duty</c><00:05:19.039><c> or</c>
+
+00:05:19.230 --> 00:05:19.240 align:start position:0%
+enabled so if you play Call of Duty or
+ 
+
+00:05:19.240 --> 00:05:21.309 align:start position:0%
+enabled so if you play Call of Duty or
+you<00:05:19.360><c> play</c><00:05:19.560><c> a</c><00:05:19.759><c> whole</c><00:05:20.120><c> variety</c><00:05:20.560><c> of</c><00:05:20.800><c> games</c>
+
+00:05:21.309 --> 00:05:21.319 align:start position:0%
+you play a whole variety of games
+ 
+
+00:05:21.319 --> 00:05:23.270 align:start position:0%
+you play a whole variety of games
+practically<00:05:21.759><c> better</c><00:05:22.080><c> to</c><00:05:22.240><c> leave</c><00:05:22.800><c> efficiency</c>
+
+00:05:23.270 --> 00:05:23.280 align:start position:0%
+practically better to leave efficiency
+ 
+
+00:05:23.280 --> 00:05:25.990 align:start position:0%
+practically better to leave efficiency
+cores<00:05:23.759><c> on</c><00:05:24.479><c> now</c><00:05:24.600><c> if</c><00:05:24.720><c> you</c><00:05:24.800><c> are</c><00:05:24.919><c> on</c><00:05:25.080><c> Windows</c><00:05:25.479><c> 10</c>
+
+00:05:25.990 --> 00:05:26.000 align:start position:0%
+cores on now if you are on Windows 10
+ 
+
+00:05:26.000 --> 00:05:27.590 align:start position:0%
+cores on now if you are on Windows 10
+just<00:05:26.240><c> completely</c><00:05:26.680><c> disable</c><00:05:27.080><c> them</c><00:05:27.360><c> because</c>
+
+00:05:27.590 --> 00:05:27.600 align:start position:0%
+just completely disable them because
+ 
+
+00:05:27.600 --> 00:05:29.150 align:start position:0%
+just completely disable them because
+Windows<00:05:27.880><c> 10</c><00:05:28.120><c> doesn't</c><00:05:28.360><c> really</c><00:05:28.560><c> work</c><00:05:28.840><c> that</c><00:05:28.960><c> well</c>
+
+00:05:29.150 --> 00:05:29.160 align:start position:0%
+Windows 10 doesn't really work that well
+ 
+
+00:05:29.160 --> 00:05:31.390 align:start position:0%
+Windows 10 doesn't really work that well
+with<00:05:29.319><c> effic</c><00:05:30.000><c> cores</c><00:05:30.680><c> but</c><00:05:31.039><c> if</c><00:05:31.160><c> you're</c><00:05:31.240><c> on</c>
+
+00:05:31.390 --> 00:05:31.400 align:start position:0%
+with effic cores but if you're on
+ 
+
+00:05:31.400 --> 00:05:33.230 align:start position:0%
+with effic cores but if you're on
+Windows<00:05:31.680><c> 11</c><00:05:32.039><c> you</c><00:05:32.160><c> can</c><00:05:32.280><c> set</c><00:05:32.440><c> it</c><00:05:32.520><c> to</c><00:05:32.680><c> all</c><00:05:33.080><c> and</c><00:05:33.199><c> you</c>
+
+00:05:33.230 --> 00:05:33.240 align:start position:0%
+Windows 11 you can set it to all and you
+ 
+
+00:05:33.240 --> 00:05:35.430 align:start position:0%
+Windows 11 you can set it to all and you
+should<00:05:33.440><c> be</c><00:05:33.639><c> fine</c><00:05:34.600><c> but</c><00:05:34.720><c> for</c><00:05:34.840><c> the</c><00:05:34.960><c> purposes</c><00:05:35.280><c> of</c>
+
+00:05:35.430 --> 00:05:35.440 align:start position:0%
+should be fine but for the purposes of
+ 
+
+00:05:35.440 --> 00:05:36.870 align:start position:0%
+should be fine but for the purposes of
+this<00:05:35.560><c> video</c><00:05:35.759><c> I'm</c><00:05:35.840><c> going</c><00:05:35.919><c> to</c><00:05:36.000><c> set</c><00:05:36.160><c> it</c><00:05:36.240><c> to</c><00:05:36.440><c> zero</c>
+
+00:05:36.870 --> 00:05:36.880 align:start position:0%
+this video I'm going to set it to zero
+ 
+
+00:05:36.880 --> 00:05:38.710 align:start position:0%
+this video I'm going to set it to zero
+because<00:05:37.160><c> most</c><00:05:37.319><c> of</c><00:05:37.440><c> my</c><00:05:37.680><c> followers</c><00:05:38.080><c> are</c><00:05:38.400><c> playing</c>
+
+00:05:38.710 --> 00:05:38.720 align:start position:0%
+because most of my followers are playing
+ 
+
+00:05:38.720 --> 00:05:41.189 align:start position:0%
+because most of my followers are playing
+fortnite<00:05:39.199><c> and</c><00:05:39.440><c> valerant</c><00:05:40.199><c> and</c><00:05:40.360><c> some</c><00:05:40.520><c> people</c><00:05:40.919><c> do</c>
+
+00:05:41.189 --> 00:05:41.199 align:start position:0%
+fortnite and valerant and some people do
+ 
+
+00:05:41.199 --> 00:05:42.670 align:start position:0%
+fortnite and valerant and some people do
+end<00:05:41.360><c> up</c><00:05:41.520><c> playing</c><00:05:41.759><c> some</c><00:05:42.039><c> Call</c><00:05:42.199><c> of</c><00:05:42.319><c> Duty</c><00:05:42.560><c> here</c>
+
+00:05:42.670 --> 00:05:42.680 align:start position:0%
+end up playing some Call of Duty here
+ 
+
+00:05:42.680 --> 00:05:44.790 align:start position:0%
+end up playing some Call of Duty here
+and<00:05:42.880><c> there</c><00:05:43.560><c> now</c><00:05:43.800><c> hyperthreading</c><00:05:44.560><c> you</c><00:05:44.639><c> can</c>
+
+00:05:44.790 --> 00:05:44.800 align:start position:0%
+and there now hyperthreading you can
+ 
+
+00:05:44.800 --> 00:05:46.629 align:start position:0%
+and there now hyperthreading you can
+pretty<00:05:44.960><c> much</c><00:05:45.160><c> disable</c><00:05:45.680><c> this</c><00:05:46.240><c> unless</c><00:05:46.520><c> you're</c>
+
+00:05:46.629 --> 00:05:46.639 align:start position:0%
+pretty much disable this unless you're
+ 
+
+00:05:46.639 --> 00:05:48.270 align:start position:0%
+pretty much disable this unless you're
+going<00:05:46.759><c> to</c><00:05:46.840><c> be</c><00:05:46.960><c> doing</c><00:05:47.240><c> some</c><00:05:47.479><c> heavy</c><00:05:47.720><c> workloads</c>
+
+00:05:48.270 --> 00:05:48.280 align:start position:0%
+going to be doing some heavy workloads
+ 
+
+00:05:48.280 --> 00:05:50.270 align:start position:0%
+going to be doing some heavy workloads
+that<00:05:48.479><c> actually</c><00:05:48.840><c> need</c><00:05:49.440><c> two</c><00:05:49.720><c> threads</c><00:05:50.080><c> per</c>
+
+00:05:50.270 --> 00:05:50.280 align:start position:0%
+that actually need two threads per
+ 
+
+00:05:50.280 --> 00:05:52.430 align:start position:0%
+that actually need two threads per
+activated<00:05:50.759><c> core</c><00:05:51.639><c> but</c><00:05:51.880><c> if</c><00:05:52.000><c> you</c><00:05:52.120><c> just</c><00:05:52.280><c> care</c>
+
+00:05:52.430 --> 00:05:52.440 align:start position:0%
+activated core but if you just care
+ 
+
+00:05:52.440 --> 00:05:53.909 align:start position:0%
+activated core but if you just care
+about<00:05:52.639><c> latency</c><00:05:53.080><c> and</c><00:05:53.160><c> you</c><00:05:53.280><c> care</c><00:05:53.400><c> about</c><00:05:53.600><c> input</c>
+
+00:05:53.909 --> 00:05:53.919 align:start position:0%
+about latency and you care about input
+ 
+
+00:05:53.919 --> 00:05:55.110 align:start position:0%
+about latency and you care about input
+delay<00:05:54.199><c> and</c><00:05:54.280><c> you</c><00:05:54.400><c> just</c><00:05:54.560><c> care</c><00:05:54.759><c> about</c><00:05:54.960><c> the</c>
+
+00:05:55.110 --> 00:05:55.120 align:start position:0%
+delay and you just care about the
+ 
+
+00:05:55.120 --> 00:05:57.830 align:start position:0%
+delay and you just care about the
+maximum<00:05:55.520><c> FPS</c><00:05:56.120><c> and</c><00:05:56.360><c> performance</c><00:05:56.919><c> in</c><00:05:57.240><c> gaming</c>
+
+00:05:57.830 --> 00:05:57.840 align:start position:0%
+maximum FPS and performance in gaming
+ 
+
+00:05:57.840 --> 00:05:59.469 align:start position:0%
+maximum FPS and performance in gaming
+you<00:05:57.919><c> can</c><00:05:58.080><c> just</c><00:05:58.240><c> disable</c><00:05:58.759><c> this</c><00:05:59.080><c> now</c><00:05:59.240><c> just</c><00:05:59.360><c> keep</c>
+
+00:05:59.469 --> 00:05:59.479 align:start position:0%
+you can just disable this now just keep
+ 
+
+00:05:59.479 --> 00:06:01.430 align:start position:0%
+you can just disable this now just keep
+in<00:05:59.720><c> in</c><00:05:59.800><c> mind</c><00:06:00.039><c> stuff</c><00:06:00.280><c> like</c><00:06:00.400><c> rendering</c><00:06:01.000><c> stuff</c>
+
+00:06:01.430 --> 00:06:01.440 align:start position:0%
+in in mind stuff like rendering stuff
+ 
+
+00:06:01.440 --> 00:06:03.110 align:start position:0%
+in in mind stuff like rendering stuff
+and<00:06:01.639><c> blender</c><00:06:02.080><c> and</c><00:06:02.240><c> all</c><00:06:02.479><c> this</c><00:06:02.680><c> other</c><00:06:02.919><c> stuff</c>
+
+00:06:03.110 --> 00:06:03.120 align:start position:0%
+and blender and all this other stuff
+ 
+
+00:06:03.120 --> 00:06:05.070 align:start position:0%
+and blender and all this other stuff
+that<00:06:03.280><c> requires</c><00:06:04.000><c> more</c><00:06:04.319><c> threads</c><00:06:04.680><c> and</c><00:06:04.840><c> more</c>
+
+00:06:05.070 --> 00:06:05.080 align:start position:0%
+that requires more threads and more
+ 
+
+00:06:05.080 --> 00:06:07.309 align:start position:0%
+that requires more threads and more
+hores<00:06:05.759><c> will</c><00:06:05.960><c> be</c><00:06:06.199><c> diminished</c><00:06:06.840><c> due</c><00:06:07.039><c> to</c>
+
+00:06:07.309 --> 00:06:07.319 align:start position:0%
+hores will be diminished due to
+ 
+
+00:06:07.319 --> 00:06:09.510 align:start position:0%
+hores will be diminished due to
+disabling<00:06:07.880><c> the</c><00:06:08.039><c> ecores</c><00:06:08.560><c> and</c><00:06:08.720><c> disabling</c><00:06:09.240><c> hyper</c>
+
+00:06:09.510 --> 00:06:09.520 align:start position:0%
+disabling the ecores and disabling hyper
+ 
+
+00:06:09.520 --> 00:06:11.150 align:start position:0%
+disabling the ecores and disabling hyper
+printing<00:06:10.160><c> but</c><00:06:10.319><c> this</c><00:06:10.479><c> is</c><00:06:10.599><c> going</c><00:06:10.680><c> to</c><00:06:10.800><c> lower</c><00:06:11.039><c> your</c>
+
+00:06:11.150 --> 00:06:11.160 align:start position:0%
+printing but this is going to lower your
+ 
+
+00:06:11.160 --> 00:06:12.629 align:start position:0%
+printing but this is going to lower your
+temperatures<00:06:11.800><c> and</c><00:06:11.919><c> it's</c><00:06:12.080><c> going</c><00:06:12.199><c> to</c><00:06:12.360><c> provide</c>
+
+00:06:12.629 --> 00:06:12.639 align:start position:0%
+temperatures and it's going to provide
+ 
+
+00:06:12.639 --> 00:06:15.230 align:start position:0%
+temperatures and it's going to provide
+lower<00:06:12.919><c> latency</c><00:06:13.720><c> more</c><00:06:14.039><c> FPS</c><00:06:14.520><c> potentially</c><00:06:14.960><c> in</c><00:06:15.120><c> a</c>
+
+00:06:15.230 --> 00:06:15.240 align:start position:0%
+lower latency more FPS potentially in a
+ 
+
+00:06:15.240 --> 00:06:17.510 align:start position:0%
+lower latency more FPS potentially in a
+lot<00:06:15.360><c> of</c><00:06:15.639><c> competitive</c><00:06:16.120><c> games</c><00:06:16.919><c> and</c><00:06:17.280><c> you're</c><00:06:17.400><c> just</c>
+
+00:06:17.510 --> 00:06:17.520 align:start position:0%
+lot of competitive games and you're just
+ 
+
+00:06:17.520 --> 00:06:19.309 align:start position:0%
+lot of competitive games and you're just
+going<00:06:17.639><c> to</c><00:06:17.840><c> notice</c><00:06:18.199><c> a</c><00:06:18.360><c> lot</c><00:06:18.560><c> more</c><00:06:18.759><c> snappier</c>
+
+00:06:19.309 --> 00:06:19.319 align:start position:0%
+going to notice a lot more snappier
+ 
+
+00:06:19.319 --> 00:06:21.749 align:start position:0%
+going to notice a lot more snappier
+feeling<00:06:19.759><c> in</c><00:06:20.000><c> games</c><00:06:20.800><c> then</c><00:06:20.960><c> go</c><00:06:21.080><c> to</c><00:06:21.199><c> CPU</c><00:06:21.560><c> power</c>
+
+00:06:21.749 --> 00:06:21.759 align:start position:0%
+feeling in games then go to CPU power
+ 
+
+00:06:21.759 --> 00:06:23.670 align:start position:0%
+feeling in games then go to CPU power
+management<00:06:22.199><c> control</c><00:06:22.560><c> boot</c><00:06:22.840><c> performance</c><00:06:23.240><c> mode</c>
+
+00:06:23.670 --> 00:06:23.680 align:start position:0%
+management control boot performance mode
+ 
+
+00:06:23.680 --> 00:06:25.469 align:start position:0%
+management control boot performance mode
+turbo<00:06:24.039><c> performance</c><00:06:24.479><c> Intel</c><00:06:24.800><c> speed</c><00:06:25.080><c> step</c><00:06:25.400><c> if</c>
+
+00:06:25.469 --> 00:06:25.479 align:start position:0%
+turbo performance Intel speed step if
+ 
+
+00:06:25.479 --> 00:06:27.230 align:start position:0%
+turbo performance Intel speed step if
+you're<00:06:25.599><c> on</c><00:06:25.800><c> ASRock</c><00:06:26.479><c> you</c><00:06:26.560><c> want</c><00:06:26.680><c> to</c><00:06:26.840><c> keep</c><00:06:27.039><c> this</c>
+
+00:06:27.230 --> 00:06:27.240 align:start position:0%
+you're on ASRock you want to keep this
+ 
+
+00:06:27.240 --> 00:06:29.230 align:start position:0%
+you're on ASRock you want to keep this
+enabled<00:06:28.160><c> however</c><00:06:28.319><c> for</c><00:06:28.560><c> every</c><00:06:28.800><c> other</c><00:06:29.000><c> metal</c>
+
+00:06:29.230 --> 00:06:29.240 align:start position:0%
+enabled however for every other metal
+ 
+
+00:06:29.240 --> 00:06:31.309 align:start position:0%
+enabled however for every other metal
+board<00:06:29.599><c> you</c><00:06:29.680><c> could</c><00:06:29.840><c> disable</c><00:06:30.199><c> it</c><00:06:30.720><c> Intel</c><00:06:31.039><c> Speed</c>
+
+00:06:31.309 --> 00:06:31.319 align:start position:0%
+board you could disable it Intel Speed
+ 
+
+00:06:31.319 --> 00:06:33.550 align:start position:0%
+board you could disable it Intel Speed
+Shift<00:06:31.520><c> technology</c><00:06:32.080><c> disable</c><00:06:32.479><c> it</c><00:06:32.919><c> turbo</c><00:06:33.280><c> mode</c>
+
+00:06:33.550 --> 00:06:33.560 align:start position:0%
+Shift technology disable it turbo mode
+ 
+
+00:06:33.560 --> 00:06:35.629 align:start position:0%
+Shift technology disable it turbo mode
+obviously<00:06:33.880><c> leave</c><00:06:34.080><c> that</c><00:06:34.199><c> enabled</c><00:06:35.000><c> CPU</c><00:06:35.360><c> C</c>
+
+00:06:35.629 --> 00:06:35.639 align:start position:0%
+obviously leave that enabled CPU C
+ 
+
+00:06:35.639 --> 00:06:37.350 align:start position:0%
+obviously leave that enabled CPU C
+States<00:06:35.960><c> if</c><00:06:36.080><c> you</c><00:06:36.160><c> have</c><00:06:36.319><c> a</c><00:06:36.560><c> really</c><00:06:36.800><c> bad</c><00:06:37.000><c> CPU</c>
+
+00:06:37.350 --> 00:06:37.360 align:start position:0%
+States if you have a really bad CPU
+ 
+
+00:06:37.360 --> 00:06:39.270 align:start position:0%
+States if you have a really bad CPU
+Cooler<00:06:37.720><c> and</c><00:06:37.880><c> leave</c><00:06:38.120><c> this</c><00:06:38.280><c> on</c><00:06:38.520><c> auto</c><00:06:38.919><c> do</c><00:06:39.080><c> not</c>
+
+00:06:39.270 --> 00:06:39.280 align:start position:0%
+Cooler and leave this on auto do not
+ 
+
+00:06:39.280 --> 00:06:41.270 align:start position:0%
+Cooler and leave this on auto do not
+disable<00:06:39.680><c> it</c><00:06:40.240><c> however</c><00:06:40.479><c> if</c><00:06:40.560><c> you</c><00:06:40.680><c> have</c><00:06:40.759><c> a</c><00:06:40.919><c> decent</c>
+
+00:06:41.270 --> 00:06:41.280 align:start position:0%
+disable it however if you have a decent
+ 
+
+00:06:41.280 --> 00:06:43.749 align:start position:0%
+disable it however if you have a decent
+CPU<00:06:41.680><c> Cooler</c><00:06:42.240><c> and</c><00:06:42.400><c> it</c><00:06:42.520><c> can</c><00:06:42.639><c> handle</c><00:06:42.960><c> your</c><00:06:43.120><c> CPU</c><00:06:43.560><c> as</c>
+
+00:06:43.749 --> 00:06:43.759 align:start position:0%
+CPU Cooler and it can handle your CPU as
+ 
+
+00:06:43.759 --> 00:06:45.670 align:start position:0%
+CPU Cooler and it can handle your CPU as
+stock<00:06:44.080><c> frequencies</c><00:06:44.880><c> without</c><00:06:45.120><c> any</c><00:06:45.280><c> issues</c><00:06:45.599><c> you</c>
+
+00:06:45.670 --> 00:06:45.680 align:start position:0%
+stock frequencies without any issues you
+ 
+
+00:06:45.680 --> 00:06:48.029 align:start position:0%
+stock frequencies without any issues you
+can<00:06:45.840><c> disable</c><00:06:46.199><c> it</c><00:06:46.759><c> and</c><00:06:47.000><c> thermal</c><00:06:47.360><c> monitor</c><00:06:47.840><c> same</c>
+
+00:06:48.029 --> 00:06:48.039 align:start position:0%
+can disable it and thermal monitor same
+ 
+
+00:06:48.039 --> 00:06:50.309 align:start position:0%
+can disable it and thermal monitor same
+thing<00:06:48.280><c> here</c><00:06:48.599><c> as</c><00:06:48.800><c> CPU</c><00:06:49.400><c> States</c><00:06:49.919><c> if</c><00:06:50.000><c> you</c><00:06:50.120><c> have</c><00:06:50.199><c> a</c>
+
+00:06:50.309 --> 00:06:50.319 align:start position:0%
+thing here as CPU States if you have a
+ 
+
+00:06:50.319 --> 00:06:52.510 align:start position:0%
+thing here as CPU States if you have a
+bad<00:06:50.479><c> CPU</c><00:06:50.840><c> Cooler</c><00:06:51.240><c> leave</c><00:06:51.479><c> this</c><00:06:51.639><c> enabled</c><00:06:52.360><c> if</c><00:06:52.440><c> you</c>
+
+00:06:52.510 --> 00:06:52.520 align:start position:0%
+bad CPU Cooler leave this enabled if you
+ 
+
+00:06:52.520 --> 00:06:54.029 align:start position:0%
+bad CPU Cooler leave this enabled if you
+have<00:06:52.639><c> a</c><00:06:52.720><c> good</c><00:06:52.880><c> CPU</c><00:06:53.199><c> Cooler</c><00:06:53.440><c> you</c><00:06:53.599><c> just</c><00:06:53.759><c> leave</c><00:06:53.919><c> it</c>
+
+00:06:54.029 --> 00:06:54.039 align:start position:0%
+have a good CPU Cooler you just leave it
+ 
+
+00:06:54.039 --> 00:06:57.150 align:start position:0%
+have a good CPU Cooler you just leave it
+on<00:06:54.400><c> disabled</c><00:06:55.400><c> then</c><00:06:55.879><c> go</c><00:06:56.080><c> back</c><00:06:56.319><c> by</c><00:06:56.479><c> pressing</c>
+
+00:06:57.150 --> 00:06:57.160 align:start position:0%
+on disabled then go back by pressing
+ 
+
+00:06:57.160 --> 00:06:58.990 align:start position:0%
+on disabled then go back by pressing
+escape<00:06:57.599><c> twice</c><00:06:58.120><c> go</c><00:06:58.280><c> to</c><00:06:58.440><c> system</c><00:06:58.720><c> agent</c>
+
+00:06:58.990 --> 00:06:59.000 align:start position:0%
+escape twice go to system agent
+ 
+
+00:06:59.000 --> 00:07:00.150 align:start position:0%
+escape twice go to system agent
+configuration
+
+00:07:00.150 --> 00:07:00.160 align:start position:0%
+configuration
+ 
+
+00:07:00.160 --> 00:07:02.070 align:start position:0%
+configuration
+same<00:07:00.400><c> thing</c><00:07:00.720><c> as</c><00:07:01.080><c> entel</c><00:07:01.440><c> virtualization</c>
+
+00:07:02.070 --> 00:07:02.080 align:start position:0%
+same thing as entel virtualization
+ 
+
+00:07:02.080 --> 00:07:03.510 align:start position:0%
+same thing as entel virtualization
+technology<00:07:02.879><c> if</c><00:07:03.000><c> you</c><00:07:03.080><c> don't</c><00:07:03.240><c> use</c>
+
+00:07:03.510 --> 00:07:03.520 align:start position:0%
+technology if you don't use
+ 
+
+00:07:03.520 --> 00:07:05.350 align:start position:0%
+technology if you don't use
+virtualization<00:07:04.240><c> based</c><00:07:04.599><c> security</c><00:07:05.080><c> for</c>
+
+00:07:05.350 --> 00:07:05.360 align:start position:0%
+virtualization based security for
+ 
+
+00:07:05.360 --> 00:07:07.589 align:start position:0%
+virtualization based security for
+valerant<00:07:06.000><c> or</c><00:07:06.560><c> Counter</c><00:07:06.879><c> Strike</c><00:07:07.199><c> you</c><00:07:07.280><c> can</c><00:07:07.400><c> just</c>
+
+00:07:07.589 --> 00:07:07.599 align:start position:0%
+valerant or Counter Strike you can just
+ 
+
+00:07:07.599 --> 00:07:09.270 align:start position:0%
+valerant or Counter Strike you can just
+disable<00:07:08.080><c> this</c><00:07:08.400><c> and</c><00:07:08.599><c> you</c><00:07:08.680><c> don't</c><00:07:08.879><c> have</c><00:07:09.039><c> any</c>
+
+00:07:09.270 --> 00:07:09.280 align:start position:0%
+disable this and you don't have any
+ 
+
+00:07:09.280 --> 00:07:12.710 align:start position:0%
+disable this and you don't have any
+issues<00:07:10.280><c> then</c><00:07:10.599><c> go</c><00:07:10.840><c> back</c><00:07:11.479><c> go</c><00:07:11.720><c> to</c><00:07:12.160><c> Thunderbolt</c>
+
+00:07:12.710 --> 00:07:12.720 align:start position:0%
+issues then go back go to Thunderbolt
+ 
+
+00:07:12.720 --> 00:07:15.430 align:start position:0%
+issues then go back go to Thunderbolt
+configuration<00:07:13.520><c> pcie</c><00:07:14.000><c> tunneling</c><00:07:14.400><c> over</c><00:07:14.599><c> USB</c><00:07:14.960><c> 4S</c>
+
+00:07:15.430 --> 00:07:15.440 align:start position:0%
+configuration pcie tunneling over USB 4S
+ 
+
+00:07:15.440 --> 00:07:18.029 align:start position:0%
+configuration pcie tunneling over USB 4S
+completely<00:07:15.879><c> useless</c><00:07:16.360><c> for</c><00:07:16.680><c> legally</c><00:07:17.120><c> 99%</c><00:07:17.879><c> of</c>
+
+00:07:18.029 --> 00:07:18.039 align:start position:0%
+completely useless for legally 99% of
+ 
+
+00:07:18.039 --> 00:07:19.589 align:start position:0%
+completely useless for legally 99% of
+you<00:07:18.160><c> so</c><00:07:18.280><c> you</c><00:07:18.400><c> can</c><00:07:18.479><c> just</c><00:07:18.599><c> dis</c><00:07:18.759><c> save</c><00:07:19.080><c> this</c><00:07:19.440><c> then</c>
+
+00:07:19.589 --> 00:07:19.599 align:start position:0%
+you so you can just dis save this then
+ 
+
+00:07:19.599 --> 00:07:21.909 align:start position:0%
+you so you can just dis save this then
+go<00:07:19.800><c> back</c><00:07:20.000><c> go</c><00:07:20.120><c> to</c><00:07:20.280><c> PCI</c><00:07:20.639><c> subsystem</c><00:07:21.160><c> settings</c>
+
+00:07:21.909 --> 00:07:21.919 align:start position:0%
+go back go to PCI subsystem settings
+ 
+
+00:07:21.919 --> 00:07:24.230 align:start position:0%
+go back go to PCI subsystem settings
+above<00:07:22.160><c> 4G</c><00:07:22.520><c> decoding</c><00:07:23.160><c> and</c><00:07:23.319><c> resizable</c><00:07:23.960><c> bar</c>
+
+00:07:24.230 --> 00:07:24.240 align:start position:0%
+above 4G decoding and resizable bar
+ 
+
+00:07:24.240 --> 00:07:26.350 align:start position:0%
+above 4G decoding and resizable bar
+support<00:07:24.919><c> doesn't</c><00:07:25.360><c> really</c><00:07:25.599><c> do</c><00:07:25.800><c> anything</c><00:07:26.080><c> in</c><00:07:26.240><c> a</c>
+
+00:07:26.350 --> 00:07:26.360 align:start position:0%
+support doesn't really do anything in a
+ 
+
+00:07:26.360 --> 00:07:28.550 align:start position:0%
+support doesn't really do anything in a
+lot<00:07:26.479><c> of</c><00:07:26.599><c> games</c><00:07:26.879><c> that</c><00:07:27.039><c> everyone</c><00:07:27.479><c> plays</c><00:07:28.240><c> now</c><00:07:28.479><c> I</c>
+
+00:07:28.550 --> 00:07:28.560 align:start position:0%
+lot of games that everyone plays now I
+ 
+
+00:07:28.560 --> 00:07:29.790 align:start position:0%
+lot of games that everyone plays now I
+know<00:07:28.720><c> a</c><00:07:28.800><c> lot</c><00:07:28.919><c> of</c><00:07:29.039><c> these</c><00:07:29.160><c> YouTube</c><00:07:29.599><c> videoos</c>
+
+00:07:29.790 --> 00:07:29.800 align:start position:0%
+know a lot of these YouTube videoos
+ 
+
+00:07:29.800 --> 00:07:31.390 align:start position:0%
+know a lot of these YouTube videoos
+they're<00:07:30.000><c> like</c><00:07:30.240><c> oh</c><00:07:30.520><c> here's</c><00:07:30.720><c> how</c><00:07:30.919><c> you</c><00:07:31.000><c> can</c><00:07:31.160><c> get</c>
+
+00:07:31.390 --> 00:07:31.400 align:start position:0%
+they're like oh here's how you can get
+ 
+
+00:07:31.400 --> 00:07:33.189 align:start position:0%
+they're like oh here's how you can get
+free<00:07:31.759><c> performance</c><00:07:32.240><c> from</c><00:07:32.360><c> the</c><00:07:32.560><c> video</c><00:07:33.000><c> they've</c>
+
+00:07:33.189 --> 00:07:33.199 align:start position:0%
+free performance from the video they've
+ 
+
+00:07:33.199 --> 00:07:35.589 align:start position:0%
+free performance from the video they've
+never<00:07:33.520><c> tested</c><00:07:33.879><c> the</c><00:07:34.000><c> setting</c><00:07:34.479><c> properly</c><00:07:35.360><c> and</c>
+
+00:07:35.589 --> 00:07:35.599 align:start position:0%
+never tested the setting properly and
+ 
+
+00:07:35.599 --> 00:07:36.909 align:start position:0%
+never tested the setting properly and
+from<00:07:35.840><c> my</c><00:07:36.000><c> testing</c><00:07:36.319><c> that</c><00:07:36.440><c> I'm</c><00:07:36.520><c> going</c><00:07:36.599><c> to</c><00:07:36.680><c> throw</c>
+
+00:07:36.909 --> 00:07:36.919 align:start position:0%
+from my testing that I'm going to throw
+ 
+
+00:07:36.919 --> 00:07:39.510 align:start position:0%
+from my testing that I'm going to throw
+up<00:07:37.160><c> right</c><00:07:37.280><c> here</c><00:07:37.960><c> you</c><00:07:38.080><c> can</c><00:07:38.199><c> see</c><00:07:38.560><c> that</c><00:07:38.879><c> resizable</c>
+
+00:07:39.510 --> 00:07:39.520 align:start position:0%
+up right here you can see that resizable
+ 
+
+00:07:39.520 --> 00:07:43.830 align:start position:0%
+up right here you can see that resizable
+bar<00:07:40.080><c> reduces</c><00:07:40.639><c> your</c><00:07:40.879><c> 1%</c><00:07:41.440><c> lows</c><00:07:41.960><c> and.</c><00:07:42.520><c> 1%</c><00:07:43.000><c> lows</c><00:07:43.400><c> by</c>
+
+00:07:43.830 --> 00:07:43.840 align:start position:0%
+bar reduces your 1% lows and. 1% lows by
+ 
+
+00:07:43.840 --> 00:07:46.430 align:start position:0%
+bar reduces your 1% lows and. 1% lows by
+100<00:07:44.400><c> in</c><00:07:44.599><c> fortnite</c><00:07:45.240><c> Now</c><00:07:45.560><c> Call</c><00:07:45.720><c> of</c><00:07:45.840><c> Duty</c><00:07:46.039><c> players</c>
+
+00:07:46.430 --> 00:07:46.440 align:start position:0%
+100 in fortnite Now Call of Duty players
+ 
+
+00:07:46.440 --> 00:07:47.749 align:start position:0%
+100 in fortnite Now Call of Duty players
+already<00:07:46.680><c> know</c><00:07:46.919><c> that</c><00:07:47.039><c> this</c><00:07:47.199><c> setting</c><00:07:47.520><c> kind</c><00:07:47.639><c> of</c>
+
+00:07:47.749 --> 00:07:47.759 align:start position:0%
+already know that this setting kind of
+ 
+
+00:07:47.759 --> 00:07:49.869 align:start position:0%
+already know that this setting kind of
+just<00:07:47.879><c> messes</c><00:07:48.159><c> up</c><00:07:48.280><c> their</c><00:07:48.479><c> FPS</c><00:07:49.319><c> but</c><00:07:49.440><c> for</c><00:07:49.680><c> guys</c>
+
+00:07:49.869 --> 00:07:49.879 align:start position:0%
+just messes up their FPS but for guys
+ 
+
+00:07:49.879 --> 00:07:51.469 align:start position:0%
+just messes up their FPS but for guys
+that<00:07:50.039><c> play</c><00:07:50.240><c> fortnite</c><00:07:50.759><c> valerant</c><00:07:51.199><c> and</c><00:07:51.280><c> some</c><00:07:51.400><c> of</c>
+
+00:07:51.469 --> 00:07:51.479 align:start position:0%
+that play fortnite valerant and some of
+ 
+
+00:07:51.479 --> 00:07:53.189 align:start position:0%
+that play fortnite valerant and some of
+these<00:07:51.639><c> other</c><00:07:51.840><c> games</c><00:07:52.199><c> they</c><00:07:52.400><c> have</c><00:07:52.560><c> no</c><00:07:52.800><c> idea</c><00:07:53.080><c> that</c>
+
+00:07:53.189 --> 00:07:53.199 align:start position:0%
+these other games they have no idea that
+ 
+
+00:07:53.199 --> 00:07:55.830 align:start position:0%
+these other games they have no idea that
+it<00:07:53.360><c> actually</c><00:07:53.680><c> messes</c><00:07:53.960><c> up</c><00:07:54.120><c> the</c><00:07:54.240><c> 1%</c><00:07:54.639><c> lows</c><00:07:55.280><c> so</c>
+
+00:07:55.830 --> 00:07:55.840 align:start position:0%
+it actually messes up the 1% lows so
+ 
+
+00:07:55.840 --> 00:07:57.710 align:start position:0%
+it actually messes up the 1% lows so
+disable<00:07:56.319><c> this</c><00:07:56.479><c> setting</c><00:07:56.960><c> it's</c><00:07:57.159><c> not</c><00:07:57.360><c> good</c><00:07:57.520><c> to</c>
+
+00:07:57.710 --> 00:07:57.720 align:start position:0%
+disable this setting it's not good to
+ 
+
+00:07:57.720 --> 00:08:00.990 align:start position:0%
+disable this setting it's not good to
+use<00:07:58.319><c> unless</c><00:07:58.639><c> you</c><00:07:58.759><c> know</c><00:07:58.960><c> for</c><00:07:59.759><c> fact</c><00:08:00.440><c> 100%</c>
+
+00:08:00.990 --> 00:08:01.000 align:start position:0%
+use unless you know for fact 100%
+ 
+
+00:08:01.000 --> 00:08:03.029 align:start position:0%
+use unless you know for fact 100%
+certainty<00:08:01.680><c> that</c><00:08:02.000><c> the</c><00:08:02.199><c> game</c><00:08:02.400><c> you're</c><00:08:02.599><c> playing</c>
+
+00:08:03.029 --> 00:08:03.039 align:start position:0%
+certainty that the game you're playing
+ 
+
+00:08:03.039 --> 00:08:04.909 align:start position:0%
+certainty that the game you're playing
+which<00:08:03.159><c> is</c><00:08:03.360><c> could</c><00:08:03.479><c> be</c><00:08:03.639><c> like</c><00:08:03.879><c> Assassin's</c><00:08:04.440><c> Creed</c>
+
+00:08:04.909 --> 00:08:04.919 align:start position:0%
+which is could be like Assassin's Creed
+ 
+
+00:08:04.919 --> 00:08:07.149 align:start position:0%
+which is could be like Assassin's Creed
+or<00:08:05.280><c> Tomb</c><00:08:05.599><c> Raider</c><00:08:06.280><c> some</c><00:08:06.440><c> of</c><00:08:06.560><c> these</c><00:08:06.879><c> single</c>
+
+00:08:07.149 --> 00:08:07.159 align:start position:0%
+or Tomb Raider some of these single
+ 
+
+00:08:07.159 --> 00:08:08.589 align:start position:0%
+or Tomb Raider some of these single
+player<00:08:07.479><c> games</c><00:08:07.800><c> that</c><00:08:07.919><c> you</c><00:08:08.000><c> know</c><00:08:08.120><c> for</c><00:08:08.280><c> a</c><00:08:08.440><c> fact</c>
+
+00:08:08.589 --> 00:08:08.599 align:start position:0%
+player games that you know for a fact
+ 
+
+00:08:08.599 --> 00:08:09.950 align:start position:0%
+player games that you know for a fact
+that<00:08:08.759><c> give</c><00:08:08.919><c> you</c><00:08:09.039><c> more</c><00:08:09.240><c> performance</c><00:08:09.639><c> with</c><00:08:09.759><c> the</c>
+
+00:08:09.950 --> 00:08:09.960 align:start position:0%
+that give you more performance with the
+ 
+
+00:08:09.960 --> 00:08:13.430 align:start position:0%
+that give you more performance with the
+setting<00:08:10.280><c> on</c><00:08:10.800><c> then</c><00:08:10.960><c> leave</c><00:08:11.120><c> it</c><00:08:11.280><c> on</c><00:08:11.960><c> but</c><00:08:12.400><c> for</c><00:08:12.720><c> 99%</c>
+
+00:08:13.430 --> 00:08:13.440 align:start position:0%
+setting on then leave it on but for 99%
+ 
+
+00:08:13.440 --> 00:08:14.909 align:start position:0%
+setting on then leave it on but for 99%
+of<00:08:13.520><c> you</c><00:08:13.680><c> that</c><00:08:13.800><c> play</c><00:08:14.039><c> competitive</c><00:08:14.520><c> games</c><00:08:14.759><c> and</c>
+
+00:08:14.909 --> 00:08:14.919 align:start position:0%
+of you that play competitive games and
+ 
+
+00:08:14.919 --> 00:08:16.629 align:start position:0%
+of you that play competitive games and
+most<00:08:15.240><c> popular</c><00:08:15.599><c> games</c><00:08:15.840><c> out</c><00:08:16.080><c> there</c><00:08:16.400><c> just</c>
+
+00:08:16.629 --> 00:08:16.639 align:start position:0%
+most popular games out there just
+ 
+
+00:08:16.639 --> 00:08:18.869 align:start position:0%
+most popular games out there just
+disable<00:08:17.000><c> it</c><00:08:17.520><c> it</c><00:08:17.720><c> has</c><00:08:18.000><c> no</c><00:08:18.319><c> reason</c><00:08:18.599><c> to</c><00:08:18.720><c> be</c>
+
+00:08:18.869 --> 00:08:18.879 align:start position:0%
+disable it it has no reason to be
+ 
+
+00:08:18.879 --> 00:08:20.990 align:start position:0%
+disable it it has no reason to be
+enabled<00:08:19.520><c> just</c><00:08:19.720><c> disable</c><00:08:20.159><c> resize</c><00:08:20.560><c> above</c><00:08:20.800><c> bar</c>
+
+00:08:20.990 --> 00:08:21.000 align:start position:0%
+enabled just disable resize above bar
+ 
+
+00:08:21.000 --> 00:08:23.390 align:start position:0%
+enabled just disable resize above bar
+support<00:08:21.599><c> and</c><00:08:21.960><c> above</c><00:08:22.240><c> 4G</c><00:08:22.599><c> de</c><00:08:22.800><c> coding</c><00:08:23.159><c> make</c><00:08:23.280><c> sure</c>
+
+00:08:23.390 --> 00:08:23.400 align:start position:0%
+support and above 4G de coding make sure
+ 
+
+00:08:23.400 --> 00:08:25.430 align:start position:0%
+support and above 4G de coding make sure
+you<00:08:23.520><c> disable</c><00:08:23.960><c> both</c><00:08:24.520><c> not</c><00:08:24.720><c> just</c><00:08:24.919><c> one</c><00:08:25.120><c> or</c><00:08:25.319><c> the</c>
+
+00:08:25.430 --> 00:08:25.440 align:start position:0%
+you disable both not just one or the
+ 
+
+00:08:25.440 --> 00:08:27.830 align:start position:0%
+you disable both not just one or the
+other<00:08:25.960><c> then</c><00:08:26.280><c> go</c><00:08:26.520><c> back</c><00:08:27.000><c> go</c><00:08:27.159><c> to</c><00:08:27.319><c> USB</c>
+
+00:08:27.830 --> 00:08:27.840 align:start position:0%
+other then go back go to USB
+ 
+
+00:08:27.840 --> 00:08:30.749 align:start position:0%
+other then go back go to USB
+configuration<00:08:28.840><c> xhc</c><00:08:29.800><c> handoff</c><00:08:30.280><c> make</c><00:08:30.440><c> sure</c><00:08:30.680><c> this</c>
+
+00:08:30.749 --> 00:08:30.759 align:start position:0%
+configuration xhc handoff make sure this
+ 
+
+00:08:30.759 --> 00:08:32.630 align:start position:0%
+configuration xhc handoff make sure this
+is<00:08:30.919><c> set</c><00:08:31.080><c> to</c><00:08:31.400><c> enabled</c><00:08:32.080><c> especially</c><00:08:32.440><c> if</c><00:08:32.519><c> you're</c>
+
+00:08:32.630 --> 00:08:32.640 align:start position:0%
+is set to enabled especially if you're
+ 
+
+00:08:32.640 --> 00:08:34.469 align:start position:0%
+is set to enabled especially if you're
+going<00:08:32.719><c> to</c><00:08:32.800><c> be</c><00:08:32.919><c> using</c><00:08:33.159><c> a</c><00:08:33.320><c> mouse</c><00:08:33.640><c> that</c><00:08:33.760><c> is</c><00:08:33.880><c> 8,000</c>
+
+00:08:34.469 --> 00:08:34.479 align:start position:0%
+going to be using a mouse that is 8,000
+ 
+
+00:08:34.479 --> 00:08:37.469 align:start position:0%
+going to be using a mouse that is 8,000
+HZ<00:08:34.919><c> or</c><00:08:35.200><c> 4,000</c><00:08:35.800><c> HZ</c><00:08:36.479><c> go</c><00:08:36.719><c> back</c><00:08:36.919><c> scroll</c><00:08:37.240><c> down</c><00:08:37.320><c> to</c>
+
+00:08:37.469 --> 00:08:37.479 align:start position:0%
+HZ or 4,000 HZ go back scroll down to
+ 
+
+00:08:37.479 --> 00:08:39.110 align:start position:0%
+HZ or 4,000 HZ go back scroll down to
+the<00:08:37.599><c> bottom</c><00:08:37.959><c> go</c><00:08:38.120><c> to</c><00:08:38.279><c> onboard</c><00:08:38.680><c> devices</c>
+
+00:08:39.110 --> 00:08:39.120 align:start position:0%
+the bottom go to onboard devices
+ 
+
+00:08:39.120 --> 00:08:41.190 align:start position:0%
+the bottom go to onboard devices
+configuration<00:08:40.120><c> and</c><00:08:40.279><c> here's</c><00:08:40.560><c> where</c><00:08:40.719><c> you</c><00:08:40.880><c> could</c>
+
+00:08:41.190 --> 00:08:41.200 align:start position:0%
+configuration and here's where you could
+ 
+
+00:08:41.200 --> 00:08:42.790 align:start position:0%
+configuration and here's where you could
+potentially<00:08:41.719><c> disable</c><00:08:42.159><c> some</c><00:08:42.279><c> of</c><00:08:42.399><c> the</c><00:08:42.519><c> extra</c>
+
+00:08:42.790 --> 00:08:42.800 align:start position:0%
+potentially disable some of the extra
+ 
+
+00:08:42.800 --> 00:08:43.990 align:start position:0%
+potentially disable some of the extra
+things<00:08:43.000><c> that</c><00:08:43.120><c> come</c><00:08:43.279><c> with</c><00:08:43.399><c> your</c><00:08:43.519><c> motherboard</c>
+
+00:08:43.990 --> 00:08:44.000 align:start position:0%
+things that come with your motherboard
+ 
+
+00:08:44.000 --> 00:08:46.110 align:start position:0%
+things that come with your motherboard
+that<00:08:44.080><c> you</c><00:08:44.320><c> potentially</c><00:08:44.720><c> don't</c><00:08:44.959><c> need</c><00:08:45.519><c> so</c><00:08:45.680><c> USB</c>
+
+00:08:46.110 --> 00:08:46.120 align:start position:0%
+that you potentially don't need so USB
+ 
+
+00:08:46.120 --> 00:08:47.750 align:start position:0%
+that you potentially don't need so USB
+audio<00:08:46.519><c> I'm</c><00:08:46.600><c> going</c><00:08:46.720><c> to</c><00:08:46.839><c> disable</c><00:08:47.160><c> it</c><00:08:47.320><c> cuz</c><00:08:47.519><c> I</c><00:08:47.640><c> just</c>
+
+00:08:47.750 --> 00:08:47.760 align:start position:0%
+audio I'm going to disable it cuz I just
+ 
+
+00:08:47.760 --> 00:08:51.030 align:start position:0%
+audio I'm going to disable it cuz I just
+use<00:08:48.160><c> a</c><00:08:48.399><c> headset</c><00:08:48.920><c> with</c><00:08:49.360><c> a</c><00:08:49.920><c> dongle</c><00:08:50.480><c> that</c><00:08:50.640><c> plugs</c>
+
+00:08:51.030 --> 00:08:51.040 align:start position:0%
+use a headset with a dongle that plugs
+ 
+
+00:08:51.040 --> 00:08:53.590 align:start position:0%
+use a headset with a dongle that plugs
+into<00:08:51.279><c> the</c><00:08:51.399><c> motherboard</c><00:08:52.120><c> not</c><00:08:52.360><c> really</c><00:08:53.000><c> a</c><00:08:53.200><c> audio</c>
+
+00:08:53.590 --> 00:08:53.600 align:start position:0%
+into the motherboard not really a audio
+ 
+
+00:08:53.600 --> 00:08:55.710 align:start position:0%
+into the motherboard not really a audio
+jacks<00:08:53.880><c> or</c><00:08:54.000><c> any</c><00:08:54.160><c> of</c><00:08:54.279><c> that</c><00:08:54.399><c> sort</c><00:08:54.720><c> tell</c><00:08:54.959><c> L</c><00:08:55.560><c> if</c><00:08:55.640><c> you</c>
+
+00:08:55.710 --> 00:08:55.720 align:start position:0%
+jacks or any of that sort tell L if you
+ 
+
+00:08:55.720 --> 00:08:57.710 align:start position:0%
+jacks or any of that sort tell L if you
+have<00:08:55.800><c> a</c><00:08:55.920><c> network</c><00:08:56.640><c> adapter</c><00:08:57.040><c> that</c><00:08:57.200><c> plugs</c><00:08:57.480><c> into</c>
+
+00:08:57.710 --> 00:08:57.720 align:start position:0%
+have a network adapter that plugs into
+ 
+
+00:08:57.720 --> 00:08:59.670 align:start position:0%
+have a network adapter that plugs into
+the<00:08:57.839><c> PCI</c><00:08:58.320><c> Express</c><00:08:58.640><c> Lane</c><00:08:58.920><c> you</c><00:08:59.000><c> can</c><00:08:59.120><c> disable</c><00:08:59.480><c> a</c>
+
+00:08:59.670 --> 00:08:59.680 align:start position:0%
+the PCI Express Lane you can disable a
+ 
+
+00:08:59.680 --> 00:09:01.710 align:start position:0%
+the PCI Express Lane you can disable a
+this<00:09:00.079><c> however</c><00:09:00.480><c> for</c><00:09:00.839><c> all</c><00:09:00.959><c> of</c><00:09:01.120><c> you</c><00:09:01.360><c> leave</c><00:09:01.560><c> this</c>
+
+00:09:01.710 --> 00:09:01.720 align:start position:0%
+this however for all of you leave this
+ 
+
+00:09:01.720 --> 00:09:04.069 align:start position:0%
+this however for all of you leave this
+enabled<00:09:02.480><c> USB</c><00:09:02.839><c> power</c><00:09:03.079><c> delivery</c><00:09:03.399><c> and</c><00:09:03.560><c> soft</c><00:09:03.839><c> off</c>
+
+00:09:04.069 --> 00:09:04.079 align:start position:0%
+enabled USB power delivery and soft off
+ 
+
+00:09:04.079 --> 00:09:06.230 align:start position:0%
+enabled USB power delivery and soft off
+State<00:09:04.560><c> this</c><00:09:04.760><c> pretty</c><00:09:04.959><c> much</c><00:09:05.200><c> disables</c><00:09:05.680><c> the</c><00:09:05.839><c> USB</c>
+
+00:09:06.230 --> 00:09:06.240 align:start position:0%
+State this pretty much disables the USB
+ 
+
+00:09:06.240 --> 00:09:08.190 align:start position:0%
+State this pretty much disables the USB
+power<00:09:06.519><c> whenever</c><00:09:06.839><c> your</c><00:09:07.079><c> PC's</c><00:09:07.480><c> turned</c><00:09:07.800><c> off</c><00:09:08.040><c> so</c>
+
+00:09:08.190 --> 00:09:08.200 align:start position:0%
+power whenever your PC's turned off so
+ 
+
+00:09:08.200 --> 00:09:09.630 align:start position:0%
+power whenever your PC's turned off so
+you<00:09:08.320><c> can't</c><00:09:08.519><c> charge</c><00:09:08.760><c> your</c><00:09:08.920><c> phone</c><00:09:09.160><c> or</c><00:09:09.320><c> whatever</c>
+
+00:09:09.630 --> 00:09:09.640 align:start position:0%
+you can't charge your phone or whatever
+ 
+
+00:09:09.640 --> 00:09:11.550 align:start position:0%
+you can't charge your phone or whatever
+whenever<00:09:09.920><c> it's</c><00:09:10.040><c> turned</c><00:09:10.360><c> off</c><00:09:10.800><c> so</c><00:09:11.160><c> for</c><00:09:11.360><c> all</c><00:09:11.480><c> of</c>
+
+00:09:11.550 --> 00:09:11.560 align:start position:0%
+whenever it's turned off so for all of
+ 
+
+00:09:11.560 --> 00:09:12.750 align:start position:0%
+whenever it's turned off so for all of
+you<00:09:11.760><c> just</c><00:09:11.920><c> pretty</c><00:09:12.079><c> much</c><00:09:12.200><c> disable</c><00:09:12.519><c> it</c><00:09:12.640><c> it's</c>
+
+00:09:12.750 --> 00:09:12.760 align:start position:0%
+you just pretty much disable it it's
+ 
+
+00:09:12.760 --> 00:09:14.470 align:start position:0%
+you just pretty much disable it it's
+pretty<00:09:12.920><c> much</c><00:09:13.079><c> useless</c><00:09:13.600><c> Wi-Fi</c><00:09:14.160><c> if</c><00:09:14.240><c> you</c><00:09:14.320><c> don't</c>
+
+00:09:14.470 --> 00:09:14.480 align:start position:0%
+pretty much useless Wi-Fi if you don't
+ 
+
+00:09:14.480 --> 00:09:17.750 align:start position:0%
+pretty much useless Wi-Fi if you don't
+use<00:09:14.800><c> Wi-Fi</c><00:09:15.200><c> on</c><00:09:15.440><c> your</c><00:09:15.600><c> PC</c><00:09:16.079><c> at</c><00:09:16.240><c> all</c><00:09:16.760><c> disable</c><00:09:17.200><c> this</c>
+
+00:09:17.750 --> 00:09:17.760 align:start position:0%
+use Wi-Fi on your PC at all disable this
+ 
+
+00:09:17.760 --> 00:09:19.069 align:start position:0%
+use Wi-Fi on your PC at all disable this
+however<00:09:18.120><c> in</c><00:09:18.240><c> case</c><00:09:18.360><c> you</c><00:09:18.440><c> need</c><00:09:18.680><c> Wi-Fi</c><00:09:18.959><c> for</c>
+
+00:09:19.069 --> 00:09:19.079 align:start position:0%
+however in case you need Wi-Fi for
+ 
+
+00:09:19.079 --> 00:09:20.509 align:start position:0%
+however in case you need Wi-Fi for
+whatever<00:09:19.320><c> reason</c><00:09:19.560><c> in</c><00:09:19.680><c> the</c><00:09:19.800><c> future</c><00:09:20.360><c> just</c>
+
+00:09:20.509 --> 00:09:20.519 align:start position:0%
+whatever reason in the future just
+ 
+
+00:09:20.519 --> 00:09:22.670 align:start position:0%
+whatever reason in the future just
+remember<00:09:20.880><c> that</c><00:09:20.959><c> you</c><00:09:21.079><c> did</c><00:09:21.320><c> disable</c><00:09:21.680><c> it</c><00:09:21.760><c> in</c><00:09:21.920><c> BIOS</c>
+
+00:09:22.670 --> 00:09:22.680 align:start position:0%
+remember that you did disable it in BIOS
+ 
+
+00:09:22.680 --> 00:09:24.310 align:start position:0%
+remember that you did disable it in BIOS
+Bluetooth<00:09:23.120><c> controller</c><00:09:23.600><c> same</c><00:09:23.760><c> thing</c><00:09:24.000><c> here</c><00:09:24.240><c> if</c>
+
+00:09:24.310 --> 00:09:24.320 align:start position:0%
+Bluetooth controller same thing here if
+ 
+
+00:09:24.320 --> 00:09:25.509 align:start position:0%
+Bluetooth controller same thing here if
+you<00:09:24.399><c> don't</c><00:09:24.560><c> use</c><00:09:24.760><c> Bluetooth</c><00:09:25.200><c> you</c><00:09:25.240><c> can</c><00:09:25.360><c> pretty</c>
+
+00:09:25.509 --> 00:09:25.519 align:start position:0%
+you don't use Bluetooth you can pretty
+ 
+
+00:09:25.519 --> 00:09:27.389 align:start position:0%
+you don't use Bluetooth you can pretty
+much<00:09:25.760><c> this</c><00:09:25.920><c> to</c><00:09:26.120><c> disabled</c><00:09:26.880><c> and</c><00:09:27.040><c> you're</c><00:09:27.240><c> pretty</c>
+
+00:09:27.389 --> 00:09:27.399 align:start position:0%
+much this to disabled and you're pretty
+ 
+
+00:09:27.399 --> 00:09:29.430 align:start position:0%
+much this to disabled and you're pretty
+much<00:09:27.519><c> good</c><00:09:27.640><c> to</c><00:09:27.800><c> go</c><00:09:28.360><c> LED</c><00:09:28.760><c> lighting</c><00:09:29.120><c> if</c><00:09:29.200><c> you</c><00:09:29.399><c> you</c>
+
+00:09:29.430 --> 00:09:29.440 align:start position:0%
+much good to go LED lighting if you you
+ 
+
+00:09:29.440 --> 00:09:31.230 align:start position:0%
+much good to go LED lighting if you you
+don't<00:09:29.519><c> want</c><00:09:29.640><c> RGB</c><00:09:30.040><c> working</c><00:09:30.320><c> on</c><00:09:30.480><c> your</c><00:09:30.680><c> PC</c><00:09:31.160><c> you</c>
+
+00:09:31.230 --> 00:09:31.240 align:start position:0%
+don't want RGB working on your PC you
+ 
+
+00:09:31.240 --> 00:09:32.949 align:start position:0%
+don't want RGB working on your PC you
+can<00:09:31.360><c> turn</c><00:09:31.600><c> this</c><00:09:31.800><c> off</c><00:09:32.160><c> and</c><00:09:32.320><c> this</c><00:09:32.440><c> will</c><00:09:32.640><c> lower</c>
+
+00:09:32.949 --> 00:09:32.959 align:start position:0%
+can turn this off and this will lower
+ 
+
+00:09:32.959 --> 00:09:34.870 align:start position:0%
+can turn this off and this will lower
+your<00:09:33.160><c> temperatures</c><00:09:33.680><c> in</c><00:09:33.800><c> a</c><00:09:33.959><c> lot</c><00:09:34.120><c> of</c><00:09:34.279><c> areas</c><00:09:34.720><c> on</c>
+
+00:09:34.870 --> 00:09:34.880 align:start position:0%
+your temperatures in a lot of areas on
+ 
+
+00:09:34.880 --> 00:09:36.350 align:start position:0%
+your temperatures in a lot of areas on
+the<00:09:35.000><c> motherboard</c><00:09:35.880><c> and</c><00:09:36.040><c> this</c><00:09:36.160><c> could</c>
+
+00:09:36.350 --> 00:09:36.360 align:start position:0%
+the motherboard and this could
+ 
+
+00:09:36.360 --> 00:09:38.630 align:start position:0%
+the motherboard and this could
+potentially<00:09:36.880><c> reduce</c><00:09:37.240><c> your</c><00:09:37.440><c> Emi</c><00:09:38.320><c> and</c><00:09:38.560><c> you</c>
+
+00:09:38.630 --> 00:09:38.640 align:start position:0%
+potentially reduce your Emi and you
+ 
+
+00:09:38.640 --> 00:09:40.350 align:start position:0%
+potentially reduce your Emi and you
+could<00:09:38.839><c> get</c><00:09:39.000><c> lower</c><00:09:39.360><c> input</c><00:09:39.680><c> delay</c><00:09:40.040><c> just</c><00:09:40.200><c> by</c>
+
+00:09:40.350 --> 00:09:40.360 align:start position:0%
+could get lower input delay just by
+ 
+
+00:09:40.360 --> 00:09:42.310 align:start position:0%
+could get lower input delay just by
+turning<00:09:40.720><c> this</c><00:09:40.920><c> off</c><00:09:41.279><c> then</c><00:09:41.440><c> scroll</c><00:09:41.760><c> down</c><00:09:42.079><c> as</c>
+
+00:09:42.310 --> 00:09:42.320 align:start position:0%
+turning this off then scroll down as
+ 
+
+00:09:42.320 --> 00:09:44.550 align:start position:0%
+turning this off then scroll down as
+media<00:09:42.680><c> controllers</c><00:09:43.440><c> these</c><00:09:43.600><c> are</c><00:09:43.880><c> extra</c><00:09:44.200><c> USB</c>
+
+00:09:44.550 --> 00:09:44.560 align:start position:0%
+media controllers these are extra USB
+ 
+
+00:09:44.560 --> 00:09:46.829 align:start position:0%
+media controllers these are extra USB
+controllers<00:09:45.000><c> that</c><00:09:45.079><c> you</c><00:09:45.200><c> do</c><00:09:45.440><c> not</c><00:09:45.680><c> need</c><00:09:46.320><c> so</c><00:09:46.760><c> if</c>
+
+00:09:46.829 --> 00:09:46.839 align:start position:0%
+controllers that you do not need so if
+ 
+
+00:09:46.839 --> 00:09:48.990 align:start position:0%
+controllers that you do not need so if
+you<00:09:46.959><c> don't</c><00:09:47.079><c> use</c><00:09:47.279><c> certain</c><00:09:47.600><c> USB</c><00:09:48.000><c> ports</c><00:09:48.640><c> and</c><00:09:48.880><c> you</c>
+
+00:09:48.990 --> 00:09:49.000 align:start position:0%
+you don't use certain USB ports and you
+ 
+
+00:09:49.000 --> 00:09:50.990 align:start position:0%
+you don't use certain USB ports and you
+can<00:09:49.120><c> just</c><00:09:49.240><c> switch</c><00:09:49.600><c> the</c><00:09:49.800><c> USB</c><00:09:50.160><c> ports</c><00:09:50.440><c> around</c><00:09:50.760><c> for</c>
+
+00:09:50.990 --> 00:09:51.000 align:start position:0%
+can just switch the USB ports around for
+ 
+
+00:09:51.000 --> 00:09:52.870 align:start position:0%
+can just switch the USB ports around for
+your<00:09:51.160><c> mouse</c><00:09:51.399><c> and</c><00:09:51.560><c> keyboard</c><00:09:51.959><c> or</c><00:09:52.200><c> controller</c>
+
+00:09:52.870 --> 00:09:52.880 align:start position:0%
+your mouse and keyboard or controller
+ 
+
+00:09:52.880 --> 00:09:54.910 align:start position:0%
+your mouse and keyboard or controller
+you<00:09:52.959><c> can</c><00:09:53.079><c> just</c><00:09:53.240><c> disable</c><00:09:53.720><c> both</c><00:09:53.839><c> of</c><00:09:54.000><c> these</c><00:09:54.399><c> or</c>
+
+00:09:54.910 --> 00:09:54.920 align:start position:0%
+you can just disable both of these or
+ 
+
+00:09:54.920 --> 00:09:56.069 align:start position:0%
+you can just disable both of these or
+however<00:09:55.079><c> money</c><00:09:55.360><c> that</c><00:09:55.480><c> you've</c><00:09:55.680><c> got</c><00:09:55.880><c> and</c><00:09:56.000><c> you</c>
+
+00:09:56.069 --> 00:09:56.079 align:start position:0%
+however money that you've got and you
+ 
+
+00:09:56.079 --> 00:09:58.110 align:start position:0%
+however money that you've got and you
+should<00:09:56.240><c> be</c><00:09:56.360><c> good</c><00:09:56.480><c> to</c><00:09:56.640><c> go</c><00:09:57.240><c> then</c><00:09:57.399><c> GNA</c><00:09:57.800><c> device</c>
+
+00:09:58.110 --> 00:09:58.120 align:start position:0%
+should be good to go then GNA device
+ 
+
+00:09:58.120 --> 00:10:00.110 align:start position:0%
+should be good to go then GNA device
+just<00:09:58.279><c> make</c><00:09:58.399><c> sure</c><00:09:58.560><c> that's</c><00:09:58.800><c> disabled</c><00:09:59.399><c> as</c><00:09:59.600><c> well</c>
+
+00:10:00.110 --> 00:10:00.120 align:start position:0%
+just make sure that's disabled as well
+ 
+
+00:10:00.120 --> 00:10:01.790 align:start position:0%
+just make sure that's disabled as well
+then<00:10:00.320><c> go</c><00:10:00.440><c> to</c><00:10:00.600><c> Tool</c><00:10:01.240><c> and</c><00:10:01.360><c> you're</c><00:10:01.480><c> going</c><00:10:01.600><c> to</c><00:10:01.680><c> go</c>
+
+00:10:01.790 --> 00:10:01.800 align:start position:0%
+then go to Tool and you're going to go
+ 
+
+00:10:01.800 --> 00:10:03.389 align:start position:0%
+then go to Tool and you're going to go
+to<00:10:01.920><c> assus</c><00:10:02.279><c> Armory</c><00:10:02.680><c> crate</c><00:10:03.000><c> you're</c><00:10:03.079><c> going</c><00:10:03.200><c> to</c>
+
+00:10:03.389 --> 00:10:03.399 align:start position:0%
+to assus Armory crate you're going to
+ 
+
+00:10:03.399 --> 00:10:05.230 align:start position:0%
+to assus Armory crate you're going to
+pretty<00:10:03.560><c> much</c><00:10:03.800><c> disable</c><00:10:04.320><c> this</c><00:10:04.519><c> as</c><00:10:04.720><c> this</c><00:10:04.800><c> is</c><00:10:05.000><c> not</c>
+
+00:10:05.230 --> 00:10:05.240 align:start position:0%
+pretty much disable this as this is not
+ 
+
+00:10:05.240 --> 00:10:07.509 align:start position:0%
+pretty much disable this as this is not
+needed<00:10:06.160><c> and</c><00:10:06.480><c> you</c><00:10:06.600><c> might</c><00:10:06.839><c> have</c><00:10:07.079><c> different</c>
+
+00:10:07.509 --> 00:10:07.519 align:start position:0%
+needed and you might have different
+ 
+
+00:10:07.519 --> 00:10:09.269 align:start position:0%
+needed and you might have different
+names<00:10:07.920><c> for</c><00:10:08.160><c> whatever</c><00:10:08.680><c> motherboard</c><00:10:09.160><c> you're</c>
+
+00:10:09.269 --> 00:10:09.279 align:start position:0%
+names for whatever motherboard you're
+ 
+
+00:10:09.279 --> 00:10:11.269 align:start position:0%
+names for whatever motherboard you're
+using<00:10:09.640><c> it</c><00:10:09.720><c> could</c><00:10:09.880><c> be</c><00:10:10.040><c> MSI</c><00:10:10.480><c> driver</c><00:10:10.839><c> utility</c>
+
+00:10:11.269 --> 00:10:11.279 align:start position:0%
+using it could be MSI driver utility
+ 
+
+00:10:11.279 --> 00:10:13.430 align:start position:0%
+using it could be MSI driver utility
+installer<00:10:12.000><c> it</c><00:10:12.120><c> could</c><00:10:12.240><c> be</c><00:10:12.440><c> gigabyte</c><00:10:13.040><c> download</c>
+
+00:10:13.430 --> 00:10:13.440 align:start position:0%
+installer it could be gigabyte download
+ 
+
+00:10:13.440 --> 00:10:15.350 align:start position:0%
+installer it could be gigabyte download
+and<00:10:13.600><c> install</c><00:10:14.000><c> configuration</c><00:10:14.760><c> or</c><00:10:14.920><c> it</c><00:10:15.000><c> could</c><00:10:15.120><c> be</c>
+
+00:10:15.350 --> 00:10:15.360 align:start position:0%
+and install configuration or it could be
+ 
+
+00:10:15.360 --> 00:10:17.790 align:start position:0%
+and install configuration or it could be
+Auto<00:10:15.600><c> driver</c><00:10:15.920><c> installer</c><00:10:16.320><c> for</c><00:10:16.560><c> azron</c><00:10:17.560><c> either</c>
+
+00:10:17.790 --> 00:10:17.800 align:start position:0%
+Auto driver installer for azron either
+ 
+
+00:10:17.800 --> 00:10:19.230 align:start position:0%
+Auto driver installer for azron either
+way<00:10:18.160><c> just</c><00:10:18.320><c> make</c><00:10:18.440><c> sure</c><00:10:18.680><c> these</c><00:10:18.839><c> apps</c><00:10:19.079><c> are</c>
+
+00:10:19.230 --> 00:10:19.240 align:start position:0%
+way just make sure these apps are
+ 
+
+00:10:19.240 --> 00:10:20.550 align:start position:0%
+way just make sure these apps are
+disabled<00:10:19.720><c> because</c><00:10:19.959><c> if</c><00:10:20.040><c> they</c><00:10:20.200><c> run</c><00:10:20.360><c> in</c><00:10:20.440><c> the</c>
+
+00:10:20.550 --> 00:10:20.560 align:start position:0%
+disabled because if they run in the
+ 
+
+00:10:20.560 --> 00:10:22.269 align:start position:0%
+disabled because if they run in the
+background<00:10:20.959><c> they</c><00:10:21.079><c> take</c><00:10:21.320><c> a</c><00:10:21.440><c> lot</c><00:10:21.560><c> of</c><00:10:21.680><c> memory</c><00:10:22.160><c> a</c>
+
+00:10:22.269 --> 00:10:22.279 align:start position:0%
+background they take a lot of memory a
+ 
+
+00:10:22.279 --> 00:10:24.269 align:start position:0%
+background they take a lot of memory a
+lot<00:10:22.399><c> of</c><00:10:22.519><c> CPU</c><00:10:23.040><c> it</c><00:10:23.160><c> can</c><00:10:23.360><c> cause</c><00:10:23.760><c> a</c><00:10:23.959><c> lot</c><00:10:24.160><c> of</c>
+
+00:10:24.269 --> 00:10:24.279 align:start position:0%
+lot of CPU it can cause a lot of
+ 
+
+00:10:24.279 --> 00:10:26.269 align:start position:0%
+lot of CPU it can cause a lot of
+stutters<00:10:24.800><c> and</c><00:10:24.920><c> a</c><00:10:25.040><c> lot</c><00:10:25.160><c> of</c><00:10:25.320><c> FPS</c><00:10:25.720><c> drops</c><00:10:26.079><c> that</c><00:10:26.200><c> you</c>
+
+00:10:26.269 --> 00:10:26.279 align:start position:0%
+stutters and a lot of FPS drops that you
+ 
+
+00:10:26.279 --> 00:10:28.430 align:start position:0%
+stutters and a lot of FPS drops that you
+don't<00:10:26.480><c> even</c><00:10:26.680><c> know</c><00:10:27.000><c> why</c><00:10:27.160><c> they're</c><00:10:27.640><c> happening</c><00:10:28.279><c> it</c>
+
+00:10:28.430 --> 00:10:28.440 align:start position:0%
+don't even know why they're happening it
+ 
+
+00:10:28.440 --> 00:10:29.990 align:start position:0%
+don't even know why they're happening it
+could<00:10:28.560><c> be</c><00:10:28.760><c> just</c><00:10:29.000><c> these</c><00:10:29.360><c> applications</c><00:10:29.760><c> running</c>
+
+00:10:29.990 --> 00:10:30.000 align:start position:0%
+could be just these applications running
+ 
+
+00:10:30.000 --> 00:10:32.030 align:start position:0%
+could be just these applications running
+in<00:10:30.120><c> the</c><00:10:30.240><c> background</c><00:10:30.920><c> so</c><00:10:31.399><c> disable</c><00:10:31.800><c> them</c>
+
+00:10:32.030 --> 00:10:32.040 align:start position:0%
+in the background so disable them
+ 
+
+00:10:32.040 --> 00:10:33.430 align:start position:0%
+in the background so disable them
+they're<00:10:32.200><c> not</c><00:10:32.360><c> needed</c><00:10:32.760><c> if</c><00:10:32.839><c> they</c><00:10:32.959><c> are</c><00:10:33.160><c> needed</c>
+
+00:10:33.430 --> 00:10:33.440 align:start position:0%
+they're not needed if they are needed
+ 
+
+00:10:33.440 --> 00:10:35.110 align:start position:0%
+they're not needed if they are needed
+just<00:10:33.600><c> find</c><00:10:33.920><c> Alternatives</c><00:10:34.519><c> that</c><00:10:34.640><c> do</c><00:10:34.760><c> not</c><00:10:34.920><c> run</c>
+
+00:10:35.110 --> 00:10:35.120 align:start position:0%
+just find Alternatives that do not run
+ 
+
+00:10:35.120 --> 00:10:37.310 align:start position:0%
+just find Alternatives that do not run
+in<00:10:35.240><c> the</c><00:10:35.399><c> background</c><00:10:35.880><c> like</c><00:10:36.040><c> open</c><00:10:36.320><c> RGB</c><00:10:37.040><c> or</c>
+
+00:10:37.310 --> 00:10:37.320 align:start position:0%
+in the background like open RGB or
+ 
+
+00:10:37.320 --> 00:10:39.590 align:start position:0%
+in the background like open RGB or
+signal<00:10:37.760><c> RGB</c><00:10:38.760><c> then</c><00:10:39.000><c> you're</c><00:10:39.120><c> going</c><00:10:39.240><c> to</c><00:10:39.399><c> press</c>
+
+00:10:39.590 --> 00:10:39.600 align:start position:0%
+signal RGB then you're going to press
+ 
+
+00:10:39.600 --> 00:10:41.750 align:start position:0%
+signal RGB then you're going to press
+the<00:10:39.760><c> back</c><00:10:39.959><c> button</c><00:10:40.600><c> if</c><00:10:40.680><c> you</c><00:10:40.839><c> have</c><00:10:41.160><c> a</c><00:10:41.360><c> way</c><00:10:41.560><c> to</c>
+
+00:10:41.750 --> 00:10:41.760 align:start position:0%
+the back button if you have a way to
+ 
+
+00:10:41.760 --> 00:10:43.790 align:start position:0%
+the back button if you have a way to
+save<00:10:42.079><c> this</c><00:10:42.320><c> profile</c><00:10:42.760><c> in</c><00:10:42.880><c> your</c><00:10:43.120><c> bios</c><00:10:43.519><c> by</c><00:10:43.639><c> going</c>
+
+00:10:43.790 --> 00:10:43.800 align:start position:0%
+save this profile in your bios by going
+ 
+
+00:10:43.800 --> 00:10:46.030 align:start position:0%
+save this profile in your bios by going
+to<00:10:43.920><c> a</c><00:10:44.040><c> su</c><00:10:44.279><c> user</c><00:10:44.639><c> profile</c><00:10:45.160><c> or</c><00:10:45.399><c> overclocking</c>
+
+00:10:46.030 --> 00:10:46.040 align:start position:0%
+to a su user profile or overclocking
+ 
+
+00:10:46.040 --> 00:10:48.629 align:start position:0%
+to a su user profile or overclocking
+profiles<00:10:46.839><c> or</c><00:10:47.079><c> user</c><00:10:47.519><c> default</c><00:10:48.040><c> profiles</c><00:10:48.480><c> in</c>
+
+00:10:48.629 --> 00:10:48.639 align:start position:0%
+profiles or user default profiles in
+ 
+
+00:10:48.639 --> 00:10:51.269 align:start position:0%
+profiles or user default profiles in
+your<00:10:48.800><c> bios</c><00:10:49.560><c> make</c><00:10:49.800><c> sure</c><00:10:50.079><c> to</c><00:10:50.279><c> save</c><00:10:50.600><c> this</c><00:10:50.839><c> because</c>
+
+00:10:51.269 --> 00:10:51.279 align:start position:0%
+your bios make sure to save this because
+ 
+
+00:10:51.279 --> 00:10:54.150 align:start position:0%
+your bios make sure to save this because
+just<00:10:51.440><c> in</c><00:10:51.639><c> case</c><00:10:52.240><c> one</c><00:10:52.560><c> day</c><00:10:53.120><c> your</c><00:10:53.360><c> PC</c><00:10:53.680><c> decides</c><00:10:53.959><c> to</c>
+
+00:10:54.150 --> 00:10:54.160 align:start position:0%
+just in case one day your PC decides to
+ 
+
+00:10:54.160 --> 00:10:56.150 align:start position:0%
+just in case one day your PC decides to
+reset<00:10:54.639><c> reset</c><00:10:54.959><c> the</c><00:10:55.079><c> bios</c><00:10:55.519><c> because</c><00:10:55.680><c> of</c><00:10:55.800><c> a</c><00:10:55.920><c> power</c>
+
+00:10:56.150 --> 00:10:56.160 align:start position:0%
+reset reset the bios because of a power
+ 
+
+00:10:56.160 --> 00:10:58.110 align:start position:0%
+reset reset the bios because of a power
+outage<00:10:56.680><c> you</c><00:10:56.760><c> can</c><00:10:56.880><c> just</c><00:10:57.040><c> load</c><00:10:57.320><c> this</c><00:10:57.519><c> profile</c>
+
+00:10:58.110 --> 00:10:58.120 align:start position:0%
+outage you can just load this profile
+ 
+
+00:10:58.120 --> 00:11:01.190 align:start position:0%
+outage you can just load this profile
+instantly<00:10:58.680><c> up</c><00:10:59.360><c> and</c><00:10:59.639><c> you'll</c><00:10:59.839><c> be</c><00:11:00.200><c> right</c><00:11:00.399><c> back</c><00:11:00.680><c> to</c>
+
+00:11:01.190 --> 00:11:01.200 align:start position:0%
+instantly up and you'll be right back to
+ 
+
+00:11:01.200 --> 00:11:04.030 align:start position:0%
+instantly up and you'll be right back to
+good<00:11:01.480><c> performance</c><00:11:02.240><c> and</c><00:11:02.519><c> lower</c><00:11:02.880><c> input</c><00:11:03.200><c> delay</c>
+
+00:11:04.030 --> 00:11:04.040 align:start position:0%
+good performance and lower input delay
+ 
+
+00:11:04.040 --> 00:11:05.590 align:start position:0%
+good performance and lower input delay
+but<00:11:04.440><c> that's</c><00:11:04.560><c> going</c><00:11:04.680><c> to</c><00:11:04.800><c> be</c><00:11:05.040><c> pretty</c><00:11:05.200><c> much</c><00:11:05.440><c> it</c>
+
+00:11:05.590 --> 00:11:05.600 align:start position:0%
+but that's going to be pretty much it
+ 
+
+00:11:05.600 --> 00:11:07.550 align:start position:0%
+but that's going to be pretty much it
+for<00:11:05.959><c> the</c><00:11:06.079><c> majority</c><00:11:06.399><c> of</c><00:11:06.480><c> the</c><00:11:06.600><c> bio</c><00:11:06.880><c> settings</c><00:11:07.320><c> one</c>
+
+00:11:07.550 --> 00:11:07.560 align:start position:0%
+for the majority of the bio settings one
+ 
+
+00:11:07.560 --> 00:11:09.190 align:start position:0%
+for the majority of the bio settings one
+other<00:11:07.839><c> extra</c><00:11:08.160><c> thing</c><00:11:08.360><c> that</c><00:11:08.480><c> you</c><00:11:08.560><c> could</c><00:11:08.760><c> do</c><00:11:09.040><c> is</c>
+
+00:11:09.190 --> 00:11:09.200 align:start position:0%
+other extra thing that you could do is
+ 
+
+00:11:09.200 --> 00:11:11.710 align:start position:0%
+other extra thing that you could do is
+go<00:11:09.360><c> to</c><00:11:09.560><c> Q</c><00:11:09.880><c> fan</c><00:11:10.120><c> control</c><00:11:10.639><c> or</c><00:11:10.839><c> the</c><00:11:11.000><c> fan</c><00:11:11.240><c> control</c>
+
+00:11:11.710 --> 00:11:11.720 align:start position:0%
+go to Q fan control or the fan control
+ 
+
+00:11:11.720 --> 00:11:14.190 align:start position:0%
+go to Q fan control or the fan control
+in<00:11:11.839><c> your</c><00:11:12.079><c> bios</c><00:11:12.720><c> and</c><00:11:12.880><c> set</c><00:11:13.240><c> every</c><00:11:13.440><c> single</c><00:11:13.720><c> fan</c><00:11:14.040><c> to</c>
+
+00:11:14.190 --> 00:11:14.200 align:start position:0%
+in your bios and set every single fan to
+ 
+
+00:11:14.200 --> 00:11:15.910 align:start position:0%
+in your bios and set every single fan to
+full<00:11:14.480><c> speed</c><00:11:15.079><c> and</c><00:11:15.279><c> what</c><00:11:15.399><c> this</c><00:11:15.519><c> is</c><00:11:15.600><c> going</c><00:11:15.680><c> to</c><00:11:15.800><c> do</c>
+
+00:11:15.910 --> 00:11:15.920 align:start position:0%
+full speed and what this is going to do
+ 
+
+00:11:15.920 --> 00:11:17.790 align:start position:0%
+full speed and what this is going to do
+is<00:11:16.040><c> going</c><00:11:16.120><c> to</c><00:11:16.279><c> ensure</c><00:11:16.600><c> that</c><00:11:16.720><c> your</c><00:11:16.959><c> CPU</c><00:11:17.399><c> is</c><00:11:17.639><c> not</c>
+
+00:11:17.790 --> 00:11:17.800 align:start position:0%
+is going to ensure that your CPU is not
+ 
+
+00:11:17.800 --> 00:11:19.949 align:start position:0%
+is going to ensure that your CPU is not
+going<00:11:17.920><c> to</c><00:11:18.079><c> overheat</c><00:11:18.839><c> for</c><00:11:19.040><c> whatever</c><00:11:19.399><c> reason</c>
+
+00:11:19.949 --> 00:11:19.959 align:start position:0%
+going to overheat for whatever reason
+ 
+
+00:11:19.959 --> 00:11:21.590 align:start position:0%
+going to overheat for whatever reason
+along<00:11:20.200><c> with</c><00:11:20.360><c> your</c><00:11:20.560><c> RAM</c><00:11:21.040><c> along</c><00:11:21.279><c> with</c><00:11:21.399><c> your</c>
+
+00:11:21.590 --> 00:11:21.600 align:start position:0%
+along with your RAM along with your
+ 
+
+00:11:21.600 --> 00:11:23.550 align:start position:0%
+along with your RAM along with your
+graphics<00:11:21.959><c> card</c><00:11:22.519><c> along</c><00:11:22.760><c> with</c><00:11:22.920><c> all</c><00:11:23.079><c> these</c><00:11:23.360><c> other</c>
+
+00:11:23.550 --> 00:11:23.560 align:start position:0%
+graphics card along with all these other
+ 
+
+00:11:23.560 --> 00:11:25.230 align:start position:0%
+graphics card along with all these other
+components<00:11:23.959><c> in</c><00:11:24.120><c> your</c><00:11:24.279><c> PC</c><00:11:24.880><c> that</c><00:11:25.040><c> could</c>
+
+00:11:25.230 --> 00:11:25.240 align:start position:0%
+components in your PC that could
+ 
+
+00:11:25.240 --> 00:11:27.030 align:start position:0%
+components in your PC that could
+potentially<00:11:25.680><c> benefit</c><00:11:26.120><c> from</c><00:11:26.320><c> your</c><00:11:26.480><c> fans</c>
+
+00:11:27.030 --> 00:11:27.040 align:start position:0%
+potentially benefit from your fans
+ 
+
+00:11:27.040 --> 00:11:28.829 align:start position:0%
+potentially benefit from your fans
+pulling<00:11:27.519><c> more</c><00:11:27.760><c> air</c><00:11:28.240><c> through</c><00:11:28.399><c> the</c><00:11:28.519><c> front</c><00:11:28.720><c> of</c>
+
+00:11:28.829 --> 00:11:28.839 align:start position:0%
+pulling more air through the front of
+ 
+
+00:11:28.839 --> 00:11:31.069 align:start position:0%
+pulling more air through the front of
+the<00:11:29.040><c> make</c><00:11:29.360><c> sure</c><00:11:29.480><c> you</c><00:11:29.600><c> have</c><00:11:29.880><c> AIO</c><00:11:30.399><c> pump</c><00:11:30.680><c> and</c><00:11:30.839><c> any</c>
+
+00:11:31.069 --> 00:11:31.079 align:start position:0%
+the make sure you have AIO pump and any
+ 
+
+00:11:31.079 --> 00:11:33.190 align:start position:0%
+the make sure you have AIO pump and any
+pump<00:11:31.320><c> in</c><00:11:31.440><c> your</c><00:11:31.560><c> PC</c><00:11:31.920><c> set</c><00:11:32.120><c> to</c><00:11:32.279><c> full</c><00:11:32.480><c> speed</c><00:11:33.000><c> that's</c>
+
+00:11:33.190 --> 00:11:33.200 align:start position:0%
+pump in your PC set to full speed that's
+ 
+
+00:11:33.200 --> 00:11:35.389 align:start position:0%
+pump in your PC set to full speed that's
+really<00:11:33.440><c> important</c><00:11:34.200><c> then</c><00:11:34.440><c> press</c><00:11:34.720><c> exit</c><00:11:35.200><c> and</c>
+
+00:11:35.389 --> 00:11:35.399 align:start position:0%
+really important then press exit and
+ 
+
+00:11:35.399 --> 00:11:37.110 align:start position:0%
+really important then press exit and
+again<00:11:35.720><c> we're</c><00:11:35.880><c> going</c><00:11:35.959><c> to</c><00:11:36.079><c> save</c><00:11:36.320><c> this</c><00:11:36.480><c> as</c><00:11:36.560><c> a</c>
+
+00:11:37.110 --> 00:11:37.120 align:start position:0%
+again we're going to save this as a
+ 
+
+00:11:37.120 --> 00:11:39.670 align:start position:0%
+again we're going to save this as a
+profile<00:11:38.120><c> for</c><00:11:38.360><c> example</c><00:11:38.880><c> you</c><00:11:39.000><c> would</c><00:11:39.200><c> just</c><00:11:39.440><c> save</c>
+
+00:11:39.670 --> 00:11:39.680 align:start position:0%
+profile for example you would just save
+ 
+
+00:11:39.680 --> 00:11:43.230 align:start position:0%
+profile for example you would just save
+it<00:11:39.959><c> as</c><00:11:40.480><c> optimized</c><00:11:41.240><c> or</c><00:11:41.680><c> for</c><00:11:41.880><c> example</c><00:11:42.760><c> silly</c>
+
+00:11:43.230 --> 00:11:43.240 align:start position:0%
+it as optimized or for example silly
+ 
+
+00:11:43.240 --> 00:11:45.430 align:start position:0%
+it as optimized or for example silly
+bios<00:11:43.880><c> and</c><00:11:44.000><c> then</c><00:11:44.200><c> save</c><00:11:44.399><c> it</c><00:11:44.480><c> on</c><00:11:44.639><c> a</c><00:11:44.839><c> profile</c><00:11:45.360><c> I'm</c>
+
+00:11:45.430 --> 00:11:45.440 align:start position:0%
+bios and then save it on a profile I'm
+ 
+
+00:11:45.440 --> 00:11:46.710 align:start position:0%
+bios and then save it on a profile I'm
+not<00:11:45.560><c> going</c><00:11:45.639><c> to</c><00:11:45.760><c> save</c><00:11:45.959><c> it</c><00:11:46.160><c> because</c><00:11:46.360><c> I</c><00:11:46.480><c> already</c>
+
+00:11:46.710 --> 00:11:46.720 align:start position:0%
+not going to save it because I already
+ 
+
+00:11:46.720 --> 00:11:48.350 align:start position:0%
+not going to save it because I already
+have<00:11:46.880><c> it</c><00:11:47.000><c> saved</c><00:11:47.320><c> so</c><00:11:47.480><c> we</c><00:11:47.560><c> should</c><00:11:47.720><c> be</c><00:11:47.839><c> chilling</c>
+
+00:11:48.350 --> 00:11:48.360 align:start position:0%
+have it saved so we should be chilling
+ 
+
+00:11:48.360 --> 00:11:49.870 align:start position:0%
+have it saved so we should be chilling
+so<00:11:48.600><c> now</c><00:11:48.839><c> what</c><00:11:48.959><c> I'm</c><00:11:49.040><c> going</c><00:11:49.160><c> to</c><00:11:49.279><c> do</c><00:11:49.519><c> is</c><00:11:49.680><c> I'm</c><00:11:49.760><c> going</c>
+
+00:11:49.870 --> 00:11:49.880 align:start position:0%
+so now what I'm going to do is I'm going
+ 
+
+00:11:49.880 --> 00:11:51.629 align:start position:0%
+so now what I'm going to do is I'm going
+to<00:11:50.000><c> load</c><00:11:50.360><c> the</c><00:11:50.560><c> profile</c><00:11:50.920><c> for</c><00:11:51.160><c> my</c><00:11:51.320><c> second</c>
+
+00:11:51.629 --> 00:11:51.639 align:start position:0%
+to load the profile for my second
+ 
+
+00:11:51.639 --> 00:11:53.790 align:start position:0%
+to load the profile for my second
+profile<00:11:52.480><c> but</c><00:11:52.680><c> other</c><00:11:52.880><c> than</c><00:11:53.040><c> that</c><00:11:53.399><c> all</c><00:11:53.519><c> you</c><00:11:53.680><c> have</c>
+
+00:11:53.790 --> 00:11:53.800 align:start position:0%
+profile but other than that all you have
+ 
+
+00:11:53.800 --> 00:11:55.750 align:start position:0%
+profile but other than that all you have
+to<00:11:53.880><c> do</c><00:11:54.040><c> now</c><00:11:54.160><c> is</c><00:11:54.279><c> just</c><00:11:54.440><c> click</c><00:11:54.680><c> save</c><00:11:54.880><c> changes</c><00:11:55.480><c> and</c>
+
+00:11:55.750 --> 00:11:55.760 align:start position:0%
+to do now is just click save changes and
+ 
+
+00:11:55.760 --> 00:11:58.350 align:start position:0%
+to do now is just click save changes and
+reset<00:11:56.600><c> and</c><00:11:56.839><c> you</c><00:11:56.920><c> will</c><00:11:57.160><c> notice</c><00:11:57.680><c> that</c><00:11:58.079><c> pretty</c>
+
+00:11:58.350 --> 00:11:58.360 align:start position:0%
+reset and you will notice that pretty
+ 
+
+00:11:58.360 --> 00:12:00.430 align:start position:0%
+reset and you will notice that pretty
+much<00:11:58.920><c> your</c><00:11:59.240><c> your</c><00:11:59.360><c> PC</c><00:11:59.639><c> is</c><00:11:59.720><c> going</c><00:11:59.839><c> to</c><00:12:00.079><c> take</c><00:12:00.320><c> a</c>
+
+00:12:00.430 --> 00:12:00.440 align:start position:0%
+much your your PC is going to take a
+ 
+
+00:12:00.440 --> 00:12:02.750 align:start position:0%
+much your your PC is going to take a
+little<00:12:00.639><c> bit</c><00:12:00.800><c> longer</c><00:12:01.079><c> to</c><00:12:01.279><c> restart</c><00:12:01.920><c> because</c><00:12:02.560><c> you</c>
+
+00:12:02.750 --> 00:12:02.760 align:start position:0%
+little bit longer to restart because you
+ 
+
+00:12:02.760 --> 00:12:05.509 align:start position:0%
+little bit longer to restart because you
+pretty<00:12:02.959><c> much</c><00:12:03.200><c> reset</c><00:12:03.800><c> all</c><00:12:04.000><c> of</c><00:12:04.120><c> the</c><00:12:04.279><c> BIOS</c><00:12:05.120><c> and</c>
+
+00:12:05.509 --> 00:12:05.519 align:start position:0%
+pretty much reset all of the BIOS and
+ 
+
+00:12:05.519 --> 00:12:07.470 align:start position:0%
+pretty much reset all of the BIOS and
+you<00:12:05.680><c> just</c><00:12:06.000><c> redid</c><00:12:06.360><c> it</c><00:12:06.519><c> from</c><00:12:06.680><c> scratch</c><00:12:07.240><c> so</c><00:12:07.360><c> now</c>
+
+00:12:07.470 --> 00:12:07.480 align:start position:0%
+you just redid it from scratch so now
+ 
+
+00:12:07.480 --> 00:12:09.150 align:start position:0%
+you just redid it from scratch so now
+you're<00:12:07.600><c> going</c><00:12:07.680><c> to</c><00:12:07.800><c> get</c><00:12:08.120><c> better</c><00:12:08.440><c> performance</c>
+
+00:12:09.150 --> 00:12:09.160 align:start position:0%
+you're going to get better performance
+ 
+
+00:12:09.160 --> 00:12:10.750 align:start position:0%
+you're going to get better performance
+lower<00:12:09.480><c> input</c><00:12:09.760><c> delay</c><00:12:10.320><c> and</c><00:12:10.440><c> you're</c><00:12:10.560><c> not</c><00:12:10.680><c> going</c>
+
+00:12:10.750 --> 00:12:10.760 align:start position:0%
+lower input delay and you're not going
+ 
+
+00:12:10.760 --> 00:12:13.350 align:start position:0%
+lower input delay and you're not going
+to<00:12:10.920><c> have</c><00:12:11.120><c> issues</c><00:12:11.560><c> with</c><00:12:11.920><c> running</c><00:12:12.279><c> into</c><00:12:12.760><c> crashes</c>
+
+00:12:13.350 --> 00:12:13.360 align:start position:0%
+to have issues with running into crashes
+ 
+
+00:12:13.360 --> 00:12:14.829 align:start position:0%
+to have issues with running into crashes
+or<00:12:13.560><c> any</c><00:12:13.680><c> of</c><00:12:13.839><c> these</c><00:12:14.000><c> weird</c><00:12:14.279><c> things</c><00:12:14.480><c> that</c><00:12:14.639><c> could</c>
+
+00:12:14.829 --> 00:12:14.839 align:start position:0%
+or any of these weird things that could
+ 
+
+00:12:14.839 --> 00:12:17.310 align:start position:0%
+or any of these weird things that could
+happen<00:12:15.440><c> potentially</c><00:12:16.240><c> because</c><00:12:16.440><c> of</c><00:12:16.800><c> past</c><00:12:17.160><c> to</c>
+
+00:12:17.310 --> 00:12:17.320 align:start position:0%
+happen potentially because of past to
+ 
+
+00:12:17.320 --> 00:12:18.790 align:start position:0%
+happen potentially because of past to
+done<00:12:17.760><c> now</c><00:12:17.880><c> that's</c><00:12:18.000><c> going</c><00:12:18.079><c> to</c><00:12:18.240><c> be</c><00:12:18.440><c> pretty</c><00:12:18.639><c> much</c>
+
+00:12:18.790 --> 00:12:18.800 align:start position:0%
+done now that's going to be pretty much
+ 
+
+00:12:18.800 --> 00:12:20.990 align:start position:0%
+done now that's going to be pretty much
+it<00:12:18.920><c> for</c><00:12:19.199><c> this</c><00:12:19.440><c> video</c><00:12:20.000><c> If</c><00:12:20.079><c> you</c><00:12:20.199><c> guys</c><00:12:20.399><c> enjoyed</c><00:12:20.760><c> it</c>
+
+00:12:20.990 --> 00:12:21.000 align:start position:0%
+it for this video If you guys enjoyed it
+ 
+
+00:12:21.000 --> 00:12:23.430 align:start position:0%
+it for this video If you guys enjoyed it
+leave<00:12:21.160><c> a</c><00:12:21.360><c> like</c><00:12:21.880><c> subscribe</c><00:12:22.600><c> and</c><00:12:22.959><c> make</c><00:12:23.199><c> sure</c><00:12:23.320><c> to</c>
+
+00:12:23.430 --> 00:12:23.440 align:start position:0%
+leave a like subscribe and make sure to
+ 
+
+00:12:23.440 --> 00:12:26.110 align:start position:0%
+leave a like subscribe and make sure to
+comment<00:12:23.760><c> down</c><00:12:24.000><c> below</c><00:12:24.440><c> if</c><00:12:24.600><c> this</c><00:12:24.760><c> helped</c><00:12:25.079><c> you</c><00:12:26.000><c> if</c>
+
+00:12:26.110 --> 00:12:26.120 align:start position:0%
+comment down below if this helped you if
+ 
+
+00:12:26.120 --> 00:12:27.710 align:start position:0%
+comment down below if this helped you if
+you<00:12:26.240><c> guys</c><00:12:26.399><c> want</c><00:12:26.639><c> this</c><00:12:26.839><c> all</c><00:12:27.040><c> done</c><00:12:27.240><c> for</c><00:12:27.480><c> you</c>
+
+00:12:27.710 --> 00:12:27.720 align:start position:0%
+you guys want this all done for you
+ 
+
+00:12:27.720 --> 00:12:29.590 align:start position:0%
+you guys want this all done for you
+along<00:12:28.000><c> with</c><00:12:28.199><c> CPU</c><00:12:28.639><c> overclock</c><00:12:29.360><c> Ram</c>
+
+00:12:29.590 --> 00:12:29.600 align:start position:0%
+along with CPU overclock Ram
+ 
+
+00:12:29.600 --> 00:12:32.269 align:start position:0%
+along with CPU overclock Ram
+overclocking<00:12:30.360><c> GPU</c><00:12:30.800><c> overclocking</c><00:12:31.720><c> and</c><00:12:32.040><c> a</c>
+
+00:12:32.269 --> 00:12:32.279 align:start position:0%
+overclocking GPU overclocking and a
+ 
+
+00:12:32.279 --> 00:12:34.829 align:start position:0%
+overclocking GPU overclocking and a
+custom<00:12:32.800><c> optimized</c><00:12:33.399><c> Windows</c><00:12:34.320><c> where</c><00:12:34.440><c> we</c><00:12:34.639><c> go</c>
+
+00:12:34.829 --> 00:12:34.839 align:start position:0%
+custom optimized Windows where we go
+ 
+
+00:12:34.839 --> 00:12:36.710 align:start position:0%
+custom optimized Windows where we go
+through<00:12:35.120><c> your</c><00:12:35.320><c> whole</c><00:12:35.560><c> entire</c><00:12:35.920><c> computer</c><00:12:36.519><c> and</c>
+
+00:12:36.710 --> 00:12:36.720 align:start position:0%
+through your whole entire computer and
+ 
+
+00:12:36.720 --> 00:12:38.509 align:start position:0%
+through your whole entire computer and
+pretty<00:12:36.880><c> much</c><00:12:37.199><c> optimize</c><00:12:37.639><c> it</c><00:12:38.040><c> then</c><00:12:38.160><c> go</c><00:12:38.279><c> to</c><00:12:38.399><c> the</c>
+
+00:12:38.509 --> 00:12:38.519 align:start position:0%
+pretty much optimize it then go to the
+ 
+
+00:12:38.519 --> 00:12:39.870 align:start position:0%
+pretty much optimize it then go to the
+first<00:12:38.720><c> link</c><00:12:38.880><c> in</c><00:12:39.000><c> your</c><00:12:39.160><c> description</c><00:12:39.560><c> and</c><00:12:39.720><c> book</c>
+
+00:12:39.870 --> 00:12:39.880 align:start position:0%
+first link in your description and book
+ 
+
+00:12:39.880 --> 00:12:41.829 align:start position:0%
+first link in your description and book
+an<00:12:40.040><c> ultimate</c><00:12:40.440><c> PC</c><00:12:40.800><c> optimization</c><00:12:41.399><c> service</c><00:12:41.720><c> with</c>
+
+00:12:41.829 --> 00:12:41.839 align:start position:0%
+an ultimate PC optimization service with
+ 
+
+00:12:41.839 --> 00:12:43.790 align:start position:0%
+an ultimate PC optimization service with
+the<00:12:41.959><c> best</c><00:12:42.160><c> of</c><00:12:42.240><c> the</c><00:12:42.440><c> best</c><00:12:43.160><c> and</c><00:12:43.480><c> we'll</c><00:12:43.639><c> be</c>
+
+00:12:43.790 --> 00:12:43.800 align:start position:0%
+the best of the best and we'll be
+ 
+
+00:12:43.800 --> 00:12:45.710 align:start position:0%
+the best of the best and we'll be
+talking<00:12:44.079><c> with</c><00:12:44.279><c> you</c><00:12:44.440><c> shortly</c><00:12:45.279><c> hope</c><00:12:45.399><c> you</c><00:12:45.519><c> guys</c>
+
+00:12:45.710 --> 00:12:45.720 align:start position:0%
+talking with you shortly hope you guys
+ 
+
+00:12:45.720 --> 00:12:47.269 align:start position:0%
+talking with you shortly hope you guys
+enjoyed<00:12:46.240><c> and</c><00:12:46.360><c> I'll</c><00:12:46.519><c> see</c><00:12:46.639><c> you</c><00:12:46.839><c> guys</c><00:12:47.000><c> in</c><00:12:47.120><c> the</c>
+
+00:12:47.269 --> 00:12:47.279 align:start position:0%
+enjoyed and I'll see you guys in the
+ 
+
+00:12:47.279 --> 00:12:50.639 align:start position:0%
+enjoyed and I'll see you guys in the
+next<00:12:47.480><c> one</c><00:12:47.959><c> peace</c>
+

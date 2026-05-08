@@ -1,0 +1,2104 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.560 --> 00:00:02.149 align:start position:0%
+ 
+Hey<00:00:00.800><c> YouTube,</c><00:00:01.120><c> it's</c><00:00:01.360><c> Chris.</c><00:00:01.680><c> Welcome</c><00:00:01.920><c> back</c><00:00:02.000><c> to</c>
+
+00:00:02.149 --> 00:00:02.159 align:start position:0%
+Hey YouTube, it's Chris. Welcome back to
+ 
+
+00:00:02.159 --> 00:00:03.350 align:start position:0%
+Hey YouTube, it's Chris. Welcome back to
+the<00:00:02.320><c> channel.</c><00:00:02.560><c> In</c><00:00:02.720><c> this</c><00:00:02.879><c> guide,</c><00:00:03.040><c> I'll</c><00:00:03.200><c> help</c>
+
+00:00:03.350 --> 00:00:03.360 align:start position:0%
+the channel. In this guide, I'll help
+ 
+
+00:00:03.360 --> 00:00:04.630 align:start position:0%
+the channel. In this guide, I'll help
+you<00:00:03.439><c> get</c><00:00:03.600><c> the</c><00:00:03.679><c> highest</c><00:00:03.919><c> frames</c><00:00:04.240><c> and</c><00:00:04.400><c> lowest</c>
+
+00:00:04.630 --> 00:00:04.640 align:start position:0%
+you get the highest frames and lowest
+ 
+
+00:00:04.640 --> 00:00:06.950 align:start position:0%
+you get the highest frames and lowest
+latency<00:00:05.040><c> out</c><00:00:05.200><c> of</c><00:00:05.279><c> the</c><00:00:05.440><c> finals</c><00:00:05.759><c> with</c><00:00:06.000><c> your</c><00:00:06.240><c> PC.</c>
+
+00:00:06.950 --> 00:00:06.960 align:start position:0%
+latency out of the finals with your PC.
+ 
+
+00:00:06.960 --> 00:00:08.950 align:start position:0%
+latency out of the finals with your PC.
+Benchmarks<00:00:07.520><c> are</c><00:00:07.680><c> tested</c><00:00:08.000><c> with</c><00:00:08.240><c> these</c><00:00:08.480><c> specs.</c>
+
+00:00:08.950 --> 00:00:08.960 align:start position:0%
+Benchmarks are tested with these specs.
+ 
+
+00:00:08.960 --> 00:00:11.030 align:start position:0%
+Benchmarks are tested with these specs.
+Do<00:00:09.120><c> not</c><00:00:09.280><c> expect</c><00:00:09.760><c> identical</c><00:00:10.160><c> results</c><00:00:10.559><c> on</c><00:00:10.800><c> your</c>
+
+00:00:11.030 --> 00:00:11.040 align:start position:0%
+Do not expect identical results on your
+ 
+
+00:00:11.040 --> 00:00:12.709 align:start position:0%
+Do not expect identical results on your
+hardware.<00:00:11.599><c> That</c><00:00:11.840><c> said,</c><00:00:12.080><c> you</c><00:00:12.240><c> can</c><00:00:12.400><c> expect</c>
+
+00:00:12.709 --> 00:00:12.719 align:start position:0%
+hardware. That said, you can expect
+ 
+
+00:00:12.719 --> 00:00:15.270 align:start position:0%
+hardware. That said, you can expect
+similar<00:00:13.200><c> scaling</c><00:00:13.519><c> with</c><00:00:13.759><c> my</c><00:00:14.280><c> recommendations.</c>
+
+00:00:15.270 --> 00:00:15.280 align:start position:0%
+similar scaling with my recommendations.
+ 
+
+00:00:15.280 --> 00:00:16.710 align:start position:0%
+similar scaling with my recommendations.
+All<00:00:15.360><c> right,</c><00:00:15.679><c> default</c><00:00:16.080><c> settings</c><00:00:16.400><c> versus</c>
+
+00:00:16.710 --> 00:00:16.720 align:start position:0%
+All right, default settings versus
+ 
+
+00:00:16.720 --> 00:00:18.150 align:start position:0%
+All right, default settings versus
+optimized<00:00:17.199><c> settings.</c><00:00:17.600><c> Keep</c><00:00:17.760><c> in</c><00:00:17.920><c> mind,</c>
+
+00:00:18.150 --> 00:00:18.160 align:start position:0%
+optimized settings. Keep in mind,
+ 
+
+00:00:18.160 --> 00:00:20.310 align:start position:0%
+optimized settings. Keep in mind,
+default<00:00:18.560><c> settings</c><00:00:18.880><c> is</c><00:00:19.199><c> basically</c><00:00:19.760><c> everything</c>
+
+00:00:20.310 --> 00:00:20.320 align:start position:0%
+default settings is basically everything
+ 
+
+00:00:20.320 --> 00:00:21.990 align:start position:0%
+default settings is basically everything
+ultra,<00:00:20.640><c> which</c><00:00:20.880><c> is</c><00:00:20.960><c> what</c><00:00:21.039><c> the</c><00:00:21.199><c> game</c><00:00:21.439><c> set</c><00:00:21.600><c> it</c><00:00:21.760><c> to,</c>
+
+00:00:21.990 --> 00:00:22.000 align:start position:0%
+ultra, which is what the game set it to,
+ 
+
+00:00:22.000 --> 00:00:25.710 align:start position:0%
+ultra, which is what the game set it to,
+but<00:00:22.240><c> we've</c><00:00:22.480><c> turned</c><00:00:22.800><c> any</c><00:00:23.240><c> upscaling</c><00:00:24.240><c> method</c>
+
+00:00:25.710 --> 00:00:25.720 align:start position:0%
+but we've turned any upscaling method
+ 
+
+00:00:25.720 --> 00:00:29.269 align:start position:0%
+but we've turned any upscaling method
+off.<00:00:26.800><c> In</c><00:00:27.039><c> 4K</c><00:00:27.519><c> default,</c><00:00:28.000><c> we're</c><00:00:28.240><c> getting</c><00:00:28.720><c> 155</c>
+
+00:00:29.269 --> 00:00:29.279 align:start position:0%
+off. In 4K default, we're getting 155
+ 
+
+00:00:29.279 --> 00:00:32.069 align:start position:0%
+off. In 4K default, we're getting 155
+fps<00:00:29.760><c> and</c><00:00:30.080><c> 14</c><00:00:30.480><c> milliseconds</c><00:00:30.960><c> input</c><00:00:31.279><c> lag.</c><00:00:31.840><c> Going</c>
+
+00:00:32.069 --> 00:00:32.079 align:start position:0%
+fps and 14 milliseconds input lag. Going
+ 
+
+00:00:32.079 --> 00:00:33.510 align:start position:0%
+fps and 14 milliseconds input lag. Going
+to<00:00:32.239><c> the</c><00:00:32.399><c> optimized</c><00:00:32.800><c> settings,</c><00:00:33.120><c> we're</c><00:00:33.280><c> getting</c>
+
+00:00:33.510 --> 00:00:33.520 align:start position:0%
+to the optimized settings, we're getting
+ 
+
+00:00:33.520 --> 00:00:38.110 align:start position:0%
+to the optimized settings, we're getting
+374<00:00:34.480><c> fps</c><00:00:35.120><c> with</c><00:00:35.520><c> 8.5</c><00:00:36.239><c> milliseconds</c><00:00:36.719><c> input</c>
+
+00:00:38.110 --> 00:00:38.120 align:start position:0%
+374 fps with 8.5 milliseconds input
+ 
+
+00:00:38.120 --> 00:00:42.790 align:start position:0%
+374 fps with 8.5 milliseconds input
+lag.<00:00:39.120><c> Default</c><00:00:39.520><c> on</c><00:00:39.760><c> 1440p,</c><00:00:40.719><c> 275</c><00:00:41.680><c> fps</c><00:00:42.239><c> and</c><00:00:42.559><c> 10</c>
+
+00:00:42.790 --> 00:00:42.800 align:start position:0%
+lag. Default on 1440p, 275 fps and 10
+ 
+
+00:00:42.800 --> 00:00:44.630 align:start position:0%
+lag. Default on 1440p, 275 fps and 10
+mconds<00:00:43.280><c> input</c><00:00:43.600><c> lag.</c><00:00:44.079><c> Going</c><00:00:44.320><c> to</c><00:00:44.480><c> the</c>
+
+00:00:44.630 --> 00:00:44.640 align:start position:0%
+mconds input lag. Going to the
+ 
+
+00:00:44.640 --> 00:00:48.869 align:start position:0%
+mconds input lag. Going to the
+optimization<00:00:45.360><c> setting,</c><00:00:46.360><c> 465</c><00:00:47.360><c> fps</c><00:00:47.840><c> and</c><00:00:48.160><c> 5.6</c>
+
+00:00:48.869 --> 00:00:48.879 align:start position:0%
+optimization setting, 465 fps and 5.6
+ 
+
+00:00:48.879 --> 00:00:50.510 align:start position:0%
+optimization setting, 465 fps and 5.6
+milliseconds<00:00:49.360><c> input</c>
+
+00:00:50.510 --> 00:00:50.520 align:start position:0%
+milliseconds input
+ 
+
+00:00:50.520 --> 00:00:54.950 align:start position:0%
+milliseconds input
+lag.<00:00:51.600><c> on</c><00:00:51.840><c> 1080p</c><00:00:52.399><c> default</c><00:00:53.160><c> 375</c><00:00:54.160><c> fps</c><00:00:54.559><c> at</c><00:00:54.800><c> 10</c>
+
+00:00:54.950 --> 00:00:54.960 align:start position:0%
+lag. on 1080p default 375 fps at 10
+ 
+
+00:00:54.960 --> 00:00:57.510 align:start position:0%
+lag. on 1080p default 375 fps at 10
+milliseconds<00:00:55.440><c> input</c><00:00:55.840><c> lag.</c><00:00:56.719><c> The</c><00:00:56.879><c> optimization</c>
+
+00:00:57.510 --> 00:00:57.520 align:start position:0%
+milliseconds input lag. The optimization
+ 
+
+00:00:57.520 --> 00:01:01.270 align:start position:0%
+milliseconds input lag. The optimization
+settings<00:00:58.199><c> 466</c><00:00:59.199><c> fps</c><00:00:59.840><c> at</c><00:01:00.160><c> 5</c><00:01:00.480><c> milliseconds</c><00:01:00.960><c> input</c>
+
+00:01:01.270 --> 00:01:01.280 align:start position:0%
+settings 466 fps at 5 milliseconds input
+ 
+
+00:01:01.280 --> 00:01:03.510 align:start position:0%
+settings 466 fps at 5 milliseconds input
+lag.<00:01:01.760><c> It's</c><00:01:02.000><c> quite</c><00:01:02.239><c> interesting</c><00:01:02.559><c> to</c><00:01:02.800><c> see.</c><00:01:03.280><c> Even</c>
+
+00:01:03.510 --> 00:01:03.520 align:start position:0%
+lag. It's quite interesting to see. Even
+ 
+
+00:01:03.520 --> 00:01:06.910 align:start position:0%
+lag. It's quite interesting to see. Even
+with<00:01:03.680><c> a</c><00:01:03.920><c> 5090,</c><00:01:04.479><c> this</c><00:01:04.640><c> game</c><00:01:04.799><c> is</c><00:01:05.040><c> super</c><00:01:05.360><c> GPU</c>
+
+00:01:06.910 --> 00:01:06.920 align:start position:0%
+with a 5090, this game is super GPU
+ 
+
+00:01:06.920 --> 00:01:09.270 align:start position:0%
+with a 5090, this game is super GPU
+heavy.<00:01:07.920><c> Optimizing</c><00:01:08.560><c> game</c><00:01:08.799><c> settings</c><00:01:09.040><c> in</c>
+
+00:01:09.270 --> 00:01:09.280 align:start position:0%
+heavy. Optimizing game settings in
+ 
+
+00:01:09.280 --> 00:01:11.590 align:start position:0%
+heavy. Optimizing game settings in
+config<00:01:09.680><c> files</c><00:01:10.080><c> can</c><00:01:10.240><c> only</c><00:01:10.560><c> do</c><00:01:10.720><c> so</c><00:01:10.960><c> much.</c><00:01:11.360><c> Please</c>
+
+00:01:11.590 --> 00:01:11.600 align:start position:0%
+config files can only do so much. Please
+ 
+
+00:01:11.600 --> 00:01:12.950 align:start position:0%
+config files can only do so much. Please
+consider<00:01:11.920><c> going</c><00:01:12.080><c> through</c><00:01:12.320><c> this</c><00:01:12.479><c> video</c><00:01:12.799><c> and</c>
+
+00:01:12.950 --> 00:01:12.960 align:start position:0%
+consider going through this video and
+ 
+
+00:01:12.960 --> 00:01:15.030 align:start position:0%
+consider going through this video and
+GitHub<00:01:13.360><c> guide</c><00:01:13.600><c> to</c><00:01:13.840><c> cover</c><00:01:14.000><c> the</c><00:01:14.240><c> basic</c><00:01:14.640><c> Windows</c>
+
+00:01:15.030 --> 00:01:15.040 align:start position:0%
+GitHub guide to cover the basic Windows
+ 
+
+00:01:15.040 --> 00:01:17.109 align:start position:0%
+GitHub guide to cover the basic Windows
+and<00:01:15.280><c> BIOS</c><00:01:15.680><c> optimizations.</c><00:01:16.400><c> If</c><00:01:16.640><c> hardware</c><00:01:16.960><c> is</c>
+
+00:01:17.109 --> 00:01:17.119 align:start position:0%
+and BIOS optimizations. If hardware is
+ 
+
+00:01:17.119 --> 00:01:18.630 align:start position:0%
+and BIOS optimizations. If hardware is
+limiting<00:01:17.439><c> your</c><00:01:17.759><c> performance,</c><00:01:18.240><c> please</c><00:01:18.479><c> check</c>
+
+00:01:18.630 --> 00:01:18.640 align:start position:0%
+limiting your performance, please check
+ 
+
+00:01:18.640 --> 00:01:20.630 align:start position:0%
+limiting your performance, please check
+out<00:01:18.799><c> my</c><00:01:19.040><c> build</c><00:01:19.280><c> guide</c><00:01:19.520><c> for</c><00:01:19.759><c> upgrades</c><00:01:20.080><c> and</c><00:01:20.320><c> PC</c>
+
+00:01:20.630 --> 00:01:20.640 align:start position:0%
+out my build guide for upgrades and PC
+ 
+
+00:01:20.640 --> 00:01:22.469 align:start position:0%
+out my build guide for upgrades and PC
+build<00:01:20.960><c> suggestions.</c><00:01:21.680><c> Make</c><00:01:21.840><c> sure</c><00:01:22.000><c> to</c><00:01:22.159><c> update</c>
+
+00:01:22.469 --> 00:01:22.479 align:start position:0%
+build suggestions. Make sure to update
+ 
+
+00:01:22.479 --> 00:01:24.230 align:start position:0%
+build suggestions. Make sure to update
+the<00:01:22.640><c> latest</c><00:01:22.880><c> graphics</c><00:01:23.280><c> drivers</c><00:01:23.680><c> or</c><00:01:23.920><c> at</c><00:01:24.000><c> least</c>
+
+00:01:24.230 --> 00:01:24.240 align:start position:0%
+the latest graphics drivers or at least
+ 
+
+00:01:24.240 --> 00:01:25.830 align:start position:0%
+the latest graphics drivers or at least
+the<00:01:24.479><c> recommended</c><00:01:24.960><c> version</c><00:01:25.280><c> from</c><00:01:25.439><c> the</c><00:01:25.600><c> game</c>
+
+00:01:25.830 --> 00:01:25.840 align:start position:0%
+the recommended version from the game
+ 
+
+00:01:25.840 --> 00:01:27.910 align:start position:0%
+the recommended version from the game
+developer.<00:01:26.479><c> All</c><00:01:26.720><c> game</c><00:01:27.040><c> mentioned</c><00:01:27.360><c> in</c><00:01:27.600><c> driver</c>
+
+00:01:27.910 --> 00:01:27.920 align:start position:0%
+developer. All game mentioned in driver
+ 
+
+00:01:27.920 --> 00:01:29.670 align:start position:0%
+developer. All game mentioned in driver
+patch<00:01:28.240><c> notes</c><00:01:28.479><c> from</c><00:01:28.640><c> the</c><00:01:28.799><c> driver</c><00:01:29.119><c> developer.</c>
+
+00:01:29.670 --> 00:01:29.680 align:start position:0%
+patch notes from the driver developer.
+ 
+
+00:01:29.680 --> 00:01:31.429 align:start position:0%
+patch notes from the driver developer.
+Nvidia<00:01:30.000><c> app</c><00:01:30.240><c> with</c><00:01:30.479><c> certain</c><00:01:30.720><c> settings</c><00:01:31.119><c> turned</c>
+
+00:01:31.429 --> 00:01:31.439 align:start position:0%
+Nvidia app with certain settings turned
+ 
+
+00:01:31.439 --> 00:01:33.510 align:start position:0%
+Nvidia app with certain settings turned
+on<00:01:31.680><c> will</c><00:01:32.000><c> cause</c><00:01:32.320><c> frame</c><00:01:32.560><c> rate</c><00:01:32.720><c> loss.</c><00:01:33.119><c> Turn</c><00:01:33.280><c> off</c>
+
+00:01:33.510 --> 00:01:33.520 align:start position:0%
+on will cause frame rate loss. Turn off
+ 
+
+00:01:33.520 --> 00:01:34.870 align:start position:0%
+on will cause frame rate loss. Turn off
+optimized<00:01:34.000><c> games</c><00:01:34.240><c> and</c><00:01:34.479><c> creative</c>
+
+00:01:34.870 --> 00:01:34.880 align:start position:0%
+optimized games and creative
+ 
+
+00:01:34.880 --> 00:01:36.550 align:start position:0%
+optimized games and creative
+applications.<00:01:35.520><c> Turn</c><00:01:35.759><c> off</c><00:01:36.000><c> automatically</c>
+
+00:01:36.550 --> 00:01:36.560 align:start position:0%
+applications. Turn off automatically
+ 
+
+00:01:36.560 --> 00:01:38.469 align:start position:0%
+applications. Turn off automatically
+optimized<00:01:37.040><c> newly</c><00:01:37.360><c> added</c><00:01:37.600><c> games</c><00:01:37.840><c> and</c><00:01:38.079><c> apps.</c>
+
+00:01:38.469 --> 00:01:38.479 align:start position:0%
+optimized newly added games and apps.
+ 
+
+00:01:38.479 --> 00:01:40.870 align:start position:0%
+optimized newly added games and apps.
+Avoid<00:01:38.880><c> using</c><00:01:39.119><c> game</c><00:01:39.439><c> filters</c><00:01:39.840><c> and</c><00:01:40.079><c> statistics.</c>
+
+00:01:40.870 --> 00:01:40.880 align:start position:0%
+Avoid using game filters and statistics.
+ 
+
+00:01:40.880 --> 00:01:43.109 align:start position:0%
+Avoid using game filters and statistics.
+As<00:01:41.040><c> far</c><00:01:41.119><c> as</c><00:01:41.280><c> AMD</c><00:01:41.759><c> drivers,</c><00:01:42.240><c> I've</c><00:01:42.479><c> not</c><00:01:42.640><c> seen</c><00:01:42.799><c> any</c>
+
+00:01:43.109 --> 00:01:43.119 align:start position:0%
+As far as AMD drivers, I've not seen any
+ 
+
+00:01:43.119 --> 00:01:45.270 align:start position:0%
+As far as AMD drivers, I've not seen any
+tests.<00:01:43.759><c> Be</c><00:01:43.920><c> cautious.</c><00:01:44.400><c> Bam</c><00:01:44.640><c> launcher</c><00:01:45.040><c> should</c>
+
+00:01:45.270 --> 00:01:45.280 align:start position:0%
+tests. Be cautious. Bam launcher should
+ 
+
+00:01:45.280 --> 00:01:46.950 align:start position:0%
+tests. Be cautious. Bam launcher should
+have<00:01:45.360><c> logging,</c><00:01:45.840><c> game</c><00:01:46.079><c> overlay,</c><00:01:46.560><c> hardware</c>
+
+00:01:46.950 --> 00:01:46.960 align:start position:0%
+have logging, game overlay, hardware
+ 
+
+00:01:46.960 --> 00:01:49.950 align:start position:0%
+have logging, game overlay, hardware
+acceleration,<00:01:47.600><c> cloud</c><00:01:47.840><c> sync</c><00:01:48.159><c> turned</c>
+
+00:01:49.950 --> 00:01:49.960 align:start position:0%
+acceleration, cloud sync turned
+ 
+
+00:01:49.960 --> 00:01:52.469 align:start position:0%
+acceleration, cloud sync turned
+off.<00:01:50.960><c> Please</c><00:01:51.200><c> do</c><00:01:51.280><c> this</c><00:01:51.439><c> for</c><00:01:51.680><c> web</c><00:01:51.920><c> browsers,</c>
+
+00:01:52.469 --> 00:01:52.479 align:start position:0%
+off. Please do this for web browsers,
+ 
+
+00:01:52.479 --> 00:01:54.550 align:start position:0%
+off. Please do this for web browsers,
+Spotify,<00:01:53.119><c> Discord,</c><00:01:53.600><c> or</c><00:01:53.840><c> anything</c><00:01:54.079><c> else</c><00:01:54.320><c> open</c>
+
+00:01:54.550 --> 00:01:54.560 align:start position:0%
+Spotify, Discord, or anything else open
+ 
+
+00:01:54.560 --> 00:01:55.990 align:start position:0%
+Spotify, Discord, or anything else open
+while<00:01:54.720><c> you</c><00:01:54.880><c> play</c><00:01:55.040><c> your</c><00:01:55.280><c> games.</c><00:01:55.759><c> Any</c>
+
+00:01:55.990 --> 00:01:56.000 align:start position:0%
+while you play your games. Any
+ 
+
+00:01:56.000 --> 00:01:57.910 align:start position:0%
+while you play your games. Any
+monitoring<00:01:56.399><c> or</c><00:01:56.560><c> RGB</c><00:01:57.040><c> program</c><00:01:57.360><c> causes</c><00:01:57.759><c> frame</c>
+
+00:01:57.910 --> 00:01:57.920 align:start position:0%
+monitoring or RGB program causes frame
+ 
+
+00:01:57.920 --> 00:01:59.910 align:start position:0%
+monitoring or RGB program causes frame
+rate<00:01:58.159><c> loss,</c><00:01:58.399><c> even</c><00:01:58.719><c> closed.</c><00:01:59.280><c> This</c><00:01:59.439><c> includes</c>
+
+00:01:59.910 --> 00:01:59.920 align:start position:0%
+rate loss, even closed. This includes
+ 
+
+00:01:59.920 --> 00:02:02.469 align:start position:0%
+rate loss, even closed. This includes
+ASUS<00:02:00.320><c> Armory</c><00:02:00.640><c> Crate,</c><00:02:00.960><c> MSI,</c><00:02:01.520><c> Gigabyte,</c><00:02:02.000><c> ASRock</c>
+
+00:02:02.469 --> 00:02:02.479 align:start position:0%
+ASUS Armory Crate, MSI, Gigabyte, ASRock
+ 
+
+00:02:02.479 --> 00:02:05.190 align:start position:0%
+ASUS Armory Crate, MSI, Gigabyte, ASRock
+driver<00:02:02.880><c> utilities.</c><00:02:03.360><c> NZXT</c><00:02:04.079><c> Cam,</c><00:02:04.320><c> Corsair</c><00:02:04.799><c> IQ,</c>
+
+00:02:05.190 --> 00:02:05.200 align:start position:0%
+driver utilities. NZXT Cam, Corsair IQ,
+ 
+
+00:02:05.200 --> 00:02:07.590 align:start position:0%
+driver utilities. NZXT Cam, Corsair IQ,
+Leon<00:02:05.520><c> Lee,</c><00:02:05.759><c> L</c><00:02:06.000><c> Connect,</c><00:02:06.320><c> and</c><00:02:06.640><c> etc.</c><00:02:06.960><c> Uninstall</c>
+
+00:02:07.590 --> 00:02:07.600 align:start position:0%
+Leon Lee, L Connect, and etc. Uninstall
+ 
+
+00:02:07.600 --> 00:02:09.589 align:start position:0%
+Leon Lee, L Connect, and etc. Uninstall
+if<00:02:07.840><c> possible.</c><00:02:08.479><c> Services</c><00:02:08.879><c> and</c><00:02:09.119><c> drivers</c><00:02:09.440><c> for</c>
+
+00:02:09.589 --> 00:02:09.599 align:start position:0%
+if possible. Services and drivers for
+ 
+
+00:02:09.599 --> 00:02:11.270 align:start position:0%
+if possible. Services and drivers for
+these<00:02:09.840><c> apps</c><00:02:10.080><c> still</c><00:02:10.319><c> run</c><00:02:10.560><c> even</c><00:02:10.720><c> if</c><00:02:10.879><c> the</c><00:02:11.039><c> apps</c>
+
+00:02:11.270 --> 00:02:11.280 align:start position:0%
+these apps still run even if the apps
+ 
+
+00:02:11.280 --> 00:02:13.670 align:start position:0%
+these apps still run even if the apps
+are<00:02:11.440><c> closed.</c><00:02:11.920><c> GPUZ,</c><00:02:12.560><c> hardware</c><00:02:12.879><c> info,</c><00:02:13.280><c> MSI</c>
+
+00:02:13.670 --> 00:02:13.680 align:start position:0%
+are closed. GPUZ, hardware info, MSI
+ 
+
+00:02:13.680 --> 00:02:15.350 align:start position:0%
+are closed. GPUZ, hardware info, MSI
+After<00:02:13.920><c> Burner,</c><00:02:14.160><c> and</c><00:02:14.480><c> etc.</c><00:02:14.720><c> can</c><00:02:14.959><c> cause</c><00:02:15.120><c> frame</c>
+
+00:02:15.350 --> 00:02:15.360 align:start position:0%
+After Burner, and etc. can cause frame
+ 
+
+00:02:15.360 --> 00:02:17.430 align:start position:0%
+After Burner, and etc. can cause frame
+rate<00:02:15.599><c> problems</c><00:02:16.000><c> when</c><00:02:16.239><c> logging</c><00:02:16.640><c> GPU</c><00:02:17.040><c> power.</c>
+
+00:02:17.430 --> 00:02:17.440 align:start position:0%
+rate problems when logging GPU power.
+ 
+
+00:02:17.440 --> 00:02:19.110 align:start position:0%
+rate problems when logging GPU power.
+Close<00:02:17.680><c> these</c><00:02:17.920><c> out</c><00:02:18.000><c> when</c><00:02:18.239><c> gaming</c><00:02:18.560><c> or</c><00:02:18.800><c> turn</c><00:02:18.959><c> off</c>
+
+00:02:19.110 --> 00:02:19.120 align:start position:0%
+Close these out when gaming or turn off
+ 
+
+00:02:19.120 --> 00:02:20.630 align:start position:0%
+Close these out when gaming or turn off
+GPU<00:02:19.440><c> power</c><00:02:19.680><c> logging.</c><00:02:20.000><c> If</c><00:02:20.160><c> you'd</c><00:02:20.319><c> like</c><00:02:20.400><c> your</c>
+
+00:02:20.630 --> 00:02:20.640 align:start position:0%
+GPU power logging. If you'd like your
+ 
+
+00:02:20.640 --> 00:02:23.430 align:start position:0%
+GPU power logging. If you'd like your
+BIOS,<00:02:21.120><c> game</c><00:02:21.520><c> PC,</c><00:02:22.080><c> Windows</c><00:02:22.560><c> fresh,</c><00:02:22.959><c> tuned,</c><00:02:23.280><c> and</c>
+
+00:02:23.430 --> 00:02:23.440 align:start position:0%
+BIOS, game PC, Windows fresh, tuned, and
+ 
+
+00:02:23.440 --> 00:02:25.350 align:start position:0%
+BIOS, game PC, Windows fresh, tuned, and
+optimized,<00:02:23.920><c> check</c><00:02:24.080><c> out</c><00:02:24.160><c> my</c><00:02:24.319><c> PC</c><00:02:24.720><c> service.</c><00:02:25.200><c> All</c>
+
+00:02:25.350 --> 00:02:25.360 align:start position:0%
+optimized, check out my PC service. All
+ 
+
+00:02:25.360 --> 00:02:26.710 align:start position:0%
+optimized, check out my PC service. All
+links<00:02:25.599><c> can</c><00:02:25.760><c> be</c><00:02:25.840><c> found</c><00:02:26.000><c> in</c><00:02:26.160><c> the</c><00:02:26.319><c> description</c>
+
+00:02:26.710 --> 00:02:26.720 align:start position:0%
+links can be found in the description
+ 
+
+00:02:26.720 --> 00:02:29.190 align:start position:0%
+links can be found in the description
+below.<00:02:27.040><c> Just</c><00:02:27.200><c> check</c><00:02:27.440><c> link</c><00:02:27.760><c> tree.</c><00:02:28.560><c> I</c><00:02:28.800><c> tested</c>
+
+00:02:29.190 --> 00:02:29.200 align:start position:0%
+below. Just check link tree. I tested
+ 
+
+00:02:29.200 --> 00:02:31.270 align:start position:0%
+below. Just check link tree. I tested
+frame<00:02:29.520><c> gen</c><00:02:29.760><c> two</c><00:02:30.000><c> times</c><00:02:30.160><c> and</c><00:02:30.400><c> four</c><00:02:30.640><c> times.</c><00:02:31.040><c> It</c>
+
+00:02:31.270 --> 00:02:31.280 align:start position:0%
+frame gen two times and four times. It
+ 
+
+00:02:31.280 --> 00:02:33.350 align:start position:0%
+frame gen two times and four times. It
+increases<00:02:31.680><c> our</c><00:02:31.920><c> input</c><00:02:32.239><c> lag</c><00:02:32.480><c> a</c><00:02:32.640><c> lot.</c><00:02:32.879><c> Please</c><00:02:33.120><c> do</c>
+
+00:02:33.350 --> 00:02:33.360 align:start position:0%
+increases our input lag a lot. Please do
+ 
+
+00:02:33.360 --> 00:02:36.350 align:start position:0%
+increases our input lag a lot. Please do
+not<00:02:33.519><c> use</c><00:02:33.680><c> frame</c><00:02:34.000><c> gen</c><00:02:34.239><c> for</c><00:02:34.400><c> a</c><00:02:34.640><c> multiplayer</c>
+
+00:02:36.350 --> 00:02:36.360 align:start position:0%
+not use frame gen for a multiplayer
+ 
+
+00:02:36.360 --> 00:02:39.190 align:start position:0%
+not use frame gen for a multiplayer
+title.<00:02:37.360><c> Reflex</c><00:02:37.840><c> on</c><00:02:38.080><c> versus</c><00:02:38.400><c> off.</c><00:02:38.879><c> Please</c>
+
+00:02:39.190 --> 00:02:39.200 align:start position:0%
+title. Reflex on versus off. Please
+ 
+
+00:02:39.200 --> 00:02:40.790 align:start position:0%
+title. Reflex on versus off. Please
+leave<00:02:39.360><c> it</c><00:02:39.519><c> on.</c><00:02:39.760><c> It</c><00:02:40.000><c> makes</c><00:02:40.160><c> a</c><00:02:40.400><c> really</c><00:02:40.560><c> nice</c>
+
+00:02:40.790 --> 00:02:40.800 align:start position:0%
+leave it on. It makes a really nice
+ 
+
+00:02:40.800 --> 00:02:43.110 align:start position:0%
+leave it on. It makes a really nice
+reduction<00:02:41.120><c> in</c><00:02:41.280><c> input</c><00:02:41.680><c> lag.</c><00:02:42.319><c> Only</c><00:02:42.640><c> plus</c><00:02:42.879><c> boost</c>
+
+00:02:43.110 --> 00:02:43.120 align:start position:0%
+reduction in input lag. Only plus boost
+ 
+
+00:02:43.120 --> 00:02:45.030 align:start position:0%
+reduction in input lag. Only plus boost
+if<00:02:43.280><c> you're</c><00:02:43.440><c> CPU</c><00:02:43.840><c> bound.</c><00:02:44.319><c> Nobody's</c><00:02:44.879><c> going</c><00:02:44.959><c> to</c>
+
+00:02:45.030 --> 00:02:45.040 align:start position:0%
+if you're CPU bound. Nobody's going to
+ 
+
+00:02:45.040 --> 00:02:46.910 align:start position:0%
+if you're CPU bound. Nobody's going to
+be<00:02:45.200><c> CPU</c><00:02:45.599><c> bound</c>
+
+00:02:46.910 --> 00:02:46.920 align:start position:0%
+be CPU bound
+ 
+
+00:02:46.920 --> 00:02:49.910 align:start position:0%
+be CPU bound
+here.<00:02:47.920><c> Resizable</c><00:02:48.640><c> bar</c><00:02:48.800><c> on</c><00:02:49.120><c> boosted</c><00:02:49.519><c> our</c><00:02:49.760><c> frame</c>
+
+00:02:49.910 --> 00:02:49.920 align:start position:0%
+here. Resizable bar on boosted our frame
+ 
+
+00:02:49.920 --> 00:02:52.070 align:start position:0%
+here. Resizable bar on boosted our frame
+rate.<00:02:50.319><c> Please</c><00:02:50.560><c> don't</c><00:02:50.800><c> disable</c><00:02:51.120><c> it.</c><00:02:51.519><c> If</c><00:02:51.760><c> you</c><00:02:51.840><c> do</c>
+
+00:02:52.070 --> 00:02:52.080 align:start position:0%
+rate. Please don't disable it. If you do
+ 
+
+00:02:52.080 --> 00:02:53.750 align:start position:0%
+rate. Please don't disable it. If you do
+want<00:02:52.160><c> to</c><00:02:52.319><c> test</c><00:02:52.560><c> disabling</c><00:02:53.040><c> it,</c><00:02:53.280><c> you</c><00:02:53.440><c> will</c><00:02:53.599><c> have</c>
+
+00:02:53.750 --> 00:02:53.760 align:start position:0%
+want to test disabling it, you will have
+ 
+
+00:02:53.760 --> 00:02:56.070 align:start position:0%
+want to test disabling it, you will have
+to<00:02:53.840><c> disable</c><00:02:54.239><c> it</c><00:02:54.400><c> in</c><00:02:54.640><c> BIOS</c><00:02:55.040><c> and</c><00:02:55.280><c> also</c><00:02:55.599><c> the</c><00:02:55.840><c> game</c>
+
+00:02:56.070 --> 00:02:56.080 align:start position:0%
+to disable it in BIOS and also the game
+ 
+
+00:02:56.080 --> 00:02:58.229 align:start position:0%
+to disable it in BIOS and also the game
+profile<00:02:56.480><c> in</c><00:02:56.720><c> Nvidia</c><00:02:57.200><c> Inspector</c><00:02:57.760><c> as</c><00:02:57.920><c> it</c><00:02:58.080><c> is</c>
+
+00:02:58.229 --> 00:02:58.239 align:start position:0%
+profile in Nvidia Inspector as it is
+ 
+
+00:02:58.239 --> 00:03:00.150 align:start position:0%
+profile in Nvidia Inspector as it is
+forced<00:02:58.560><c> on</c><00:02:58.800><c> or</c><00:02:58.959><c> at</c><00:02:58.959><c> least</c><00:02:59.280><c> it</c><00:02:59.440><c> was</c><00:02:59.599><c> with</c><00:02:59.920><c> my</c>
+
+00:03:00.150 --> 00:03:00.160 align:start position:0%
+forced on or at least it was with my
+ 
+
+00:03:00.160 --> 00:03:03.030 align:start position:0%
+forced on or at least it was with my
+card<00:03:00.480><c> and</c><00:03:00.800><c> my</c><00:03:01.400><c> driver.</c><00:03:02.400><c> Please</c><00:03:02.640><c> just</c><00:03:02.800><c> leave</c><00:03:02.879><c> it</c>
+
+00:03:03.030 --> 00:03:03.040 align:start position:0%
+card and my driver. Please just leave it
+ 
+
+00:03:03.040 --> 00:03:04.110 align:start position:0%
+card and my driver. Please just leave it
+on<00:03:03.200><c> for</c><00:03:03.440><c> this</c>
+
+00:03:04.110 --> 00:03:04.120 align:start position:0%
+on for this
+ 
+
+00:03:04.120 --> 00:03:07.750 align:start position:0%
+on for this
+game.<00:03:05.120><c> Testing</c><00:03:05.519><c> hyperthreading</c><00:03:06.280><c> here</c><00:03:07.280><c> off</c>
+
+00:03:07.750 --> 00:03:07.760 align:start position:0%
+game. Testing hyperthreading here off
+ 
+
+00:03:07.760 --> 00:03:10.149 align:start position:0%
+game. Testing hyperthreading here off
+completely.<00:03:08.560><c> I</c><00:03:08.800><c> did</c><00:03:09.040><c> 1080p</c><00:03:09.599><c> here</c><00:03:09.840><c> just</c><00:03:10.000><c> to</c>
+
+00:03:10.149 --> 00:03:10.159 align:start position:0%
+completely. I did 1080p here just to
+ 
+
+00:03:10.159 --> 00:03:11.990 align:start position:0%
+completely. I did 1080p here just to
+make<00:03:10.239><c> it</c><00:03:10.319><c> a</c><00:03:10.480><c> little</c><00:03:10.560><c> bit</c><00:03:10.640><c> more</c><00:03:10.800><c> CPUbound.</c><00:03:11.760><c> What</c>
+
+00:03:11.990 --> 00:03:12.000 align:start position:0%
+make it a little bit more CPUbound. What
+ 
+
+00:03:12.000 --> 00:03:13.990 align:start position:0%
+make it a little bit more CPUbound. What
+was<00:03:12.239><c> interesting</c><00:03:12.560><c> is</c><00:03:12.879><c> it</c><00:03:13.200><c> actually</c><00:03:13.519><c> did</c><00:03:13.680><c> boost</c>
+
+00:03:13.990 --> 00:03:14.000 align:start position:0%
+was interesting is it actually did boost
+ 
+
+00:03:14.000 --> 00:03:16.149 align:start position:0%
+was interesting is it actually did boost
+our<00:03:14.159><c> frames</c><00:03:14.480><c> a</c><00:03:14.640><c> little</c><00:03:14.800><c> bit</c><00:03:14.959><c> and</c><00:03:15.200><c> our</c><00:03:15.360><c> 1%</c><00:03:15.760><c> lows,</c>
+
+00:03:16.149 --> 00:03:16.159 align:start position:0%
+our frames a little bit and our 1% lows,
+ 
+
+00:03:16.159 --> 00:03:19.990 align:start position:0%
+our frames a little bit and our 1% lows,
+but<00:03:16.480><c> did</c><00:03:16.640><c> lower</c><00:03:16.959><c> our</c><00:03:17.200><c> 0.1%</c><00:03:18.280><c> lows.</c><00:03:19.280><c> So,</c><00:03:19.760><c> this</c>
+
+00:03:19.990 --> 00:03:20.000 align:start position:0%
+but did lower our 0.1% lows. So, this
+ 
+
+00:03:20.000 --> 00:03:21.509 align:start position:0%
+but did lower our 0.1% lows. So, this
+might<00:03:20.239><c> be</c><00:03:20.400><c> worth</c><00:03:20.560><c> playing</c><00:03:20.879><c> around</c><00:03:21.040><c> with</c><00:03:21.360><c> if</c>
+
+00:03:21.509 --> 00:03:21.519 align:start position:0%
+might be worth playing around with if
+ 
+
+00:03:21.519 --> 00:03:23.750 align:start position:0%
+might be worth playing around with if
+you<00:03:21.680><c> have</c><00:03:21.760><c> a</c><00:03:21.920><c> high-end</c><00:03:22.319><c> CPU.</c><00:03:23.120><c> If</c><00:03:23.360><c> most</c><00:03:23.519><c> of</c><00:03:23.599><c> you</c>
+
+00:03:23.750 --> 00:03:23.760 align:start position:0%
+you have a high-end CPU. If most of you
+ 
+
+00:03:23.760 --> 00:03:25.670 align:start position:0%
+you have a high-end CPU. If most of you
+guys<00:03:24.000><c> have</c><00:03:24.080><c> a</c><00:03:24.239><c> mid</c><00:03:24.480><c> to</c><00:03:24.640><c> lower-end</c><00:03:25.120><c> CPU,</c><00:03:25.519><c> I</c>
+
+00:03:25.670 --> 00:03:25.680 align:start position:0%
+guys have a mid to lower-end CPU, I
+ 
+
+00:03:25.680 --> 00:03:27.030 align:start position:0%
+guys have a mid to lower-end CPU, I
+would<00:03:25.840><c> definitely</c><00:03:26.239><c> would</c><00:03:26.319><c> not</c><00:03:26.560><c> recommend</c>
+
+00:03:27.030 --> 00:03:27.040 align:start position:0%
+would definitely would not recommend
+ 
+
+00:03:27.040 --> 00:03:30.149 align:start position:0%
+would definitely would not recommend
+disabling<00:03:27.680><c> hyperthreading</c><00:03:28.480><c> or</c><00:03:28.920><c> SMT.</c><00:03:29.920><c> For</c>
+
+00:03:30.149 --> 00:03:30.159 align:start position:0%
+disabling hyperthreading or SMT. For
+ 
+
+00:03:30.159 --> 00:03:32.070 align:start position:0%
+disabling hyperthreading or SMT. For
+most<00:03:30.319><c> of</c><00:03:30.400><c> you,</c><00:03:30.720><c> please</c><00:03:30.879><c> leave</c><00:03:31.040><c> it</c><00:03:31.200><c> on.</c><00:03:31.599><c> But</c><00:03:31.920><c> for</c>
+
+00:03:32.070 --> 00:03:32.080 align:start position:0%
+most of you, please leave it on. But for
+ 
+
+00:03:32.080 --> 00:03:33.430 align:start position:0%
+most of you, please leave it on. But for
+power<00:03:32.319><c> users</c><00:03:32.560><c> that</c><00:03:32.799><c> are</c><00:03:32.879><c> willing</c><00:03:33.120><c> to</c><00:03:33.280><c> test</c>
+
+00:03:33.430 --> 00:03:33.440 align:start position:0%
+power users that are willing to test
+ 
+
+00:03:33.440 --> 00:03:35.190 align:start position:0%
+power users that are willing to test
+something,<00:03:34.000><c> it</c><00:03:34.239><c> might</c><00:03:34.400><c> be</c><00:03:34.640><c> worth</c><00:03:34.879><c> turning</c>
+
+00:03:35.190 --> 00:03:35.200 align:start position:0%
+something, it might be worth turning
+ 
+
+00:03:35.200 --> 00:03:37.110 align:start position:0%
+something, it might be worth turning
+off.<00:03:35.680><c> Unfortunately,</c><00:03:36.560><c> because</c><00:03:36.799><c> of</c><00:03:36.959><c> the</c>
+
+00:03:37.110 --> 00:03:37.120 align:start position:0%
+off. Unfortunately, because of the
+ 
+
+00:03:37.120 --> 00:03:38.869 align:start position:0%
+off. Unfortunately, because of the
+antiche,<00:03:37.760><c> it</c><00:03:37.920><c> is</c><00:03:38.080><c> impossible</c><00:03:38.480><c> to</c><00:03:38.640><c> do</c><00:03:38.720><c> this</c>
+
+00:03:38.869 --> 00:03:38.879 align:start position:0%
+antiche, it is impossible to do this
+ 
+
+00:03:38.879 --> 00:03:40.550 align:start position:0%
+antiche, it is impossible to do this
+with<00:03:39.040><c> an</c><00:03:39.200><c> Infinity</c><00:03:39.680><c> script.</c><00:03:40.080><c> So,</c><00:03:40.159><c> I</c><00:03:40.319><c> had</c><00:03:40.480><c> to</c>
+
+00:03:40.550 --> 00:03:40.560 align:start position:0%
+with an Infinity script. So, I had to
+ 
+
+00:03:40.560 --> 00:03:41.869 align:start position:0%
+with an Infinity script. So, I had to
+test<00:03:40.720><c> with</c><00:03:40.959><c> BIOS</c>
+
+00:03:41.869 --> 00:03:41.879 align:start position:0%
+test with BIOS
+ 
+
+00:03:41.879 --> 00:03:44.630 align:start position:0%
+test with BIOS
+here.<00:03:42.879><c> DirectX11</c><00:03:43.680><c> launch</c><00:03:43.920><c> option</c><00:03:44.319><c> actually</c>
+
+00:03:44.630 --> 00:03:44.640 align:start position:0%
+here. DirectX11 launch option actually
+ 
+
+00:03:44.640 --> 00:03:47.390 align:start position:0%
+here. DirectX11 launch option actually
+boosts<00:03:44.959><c> our</c><00:03:45.200><c> frames</c><00:03:46.120><c> ridiculously.</c><00:03:47.120><c> And</c>
+
+00:03:47.390 --> 00:03:47.400 align:start position:0%
+boosts our frames ridiculously. And
+ 
+
+00:03:47.400 --> 00:03:49.830 align:start position:0%
+boosts our frames ridiculously. And
+unfortunately,<00:03:48.400><c> it</c><00:03:48.640><c> runs</c><00:03:48.959><c> all</c><00:03:49.200><c> fine</c><00:03:49.519><c> in</c><00:03:49.680><c> the</c>
+
+00:03:49.830 --> 00:03:49.840 align:start position:0%
+unfortunately, it runs all fine in the
+ 
+
+00:03:49.840 --> 00:03:51.910 align:start position:0%
+unfortunately, it runs all fine in the
+test<00:03:50.159><c> range.</c><00:03:50.480><c> If</c><00:03:50.640><c> you</c><00:03:50.799><c> go</c><00:03:50.959><c> play</c><00:03:51.120><c> a</c><00:03:51.360><c> real</c><00:03:51.599><c> match</c>
+
+00:03:51.910 --> 00:03:51.920 align:start position:0%
+test range. If you go play a real match
+ 
+
+00:03:51.920 --> 00:03:54.070 align:start position:0%
+test range. If you go play a real match
+with<00:03:52.159><c> DirectX11,</c><00:03:53.120><c> our</c><00:03:53.360><c> frames</c><00:03:53.760><c> actually</c>
+
+00:03:54.070 --> 00:03:54.080 align:start position:0%
+with DirectX11, our frames actually
+ 
+
+00:03:54.080 --> 00:03:55.750 align:start position:0%
+with DirectX11, our frames actually
+don't<00:03:54.319><c> see</c><00:03:54.480><c> an</c><00:03:54.879><c> increase.</c><00:03:55.519><c> And</c>
+
+00:03:55.750 --> 00:03:55.760 align:start position:0%
+don't see an increase. And
+ 
+
+00:03:55.760 --> 00:03:58.070 align:start position:0%
+don't see an increase. And
+unfortunately,<00:03:56.400><c> we</c><00:03:56.640><c> get</c><00:03:57.120><c> massive</c><00:03:57.599><c> stutters</c>
+
+00:03:58.070 --> 00:03:58.080 align:start position:0%
+unfortunately, we get massive stutters
+ 
+
+00:03:58.080 --> 00:04:00.229 align:start position:0%
+unfortunately, we get massive stutters
+in<00:03:58.319><c> game.</c><00:03:58.879><c> So,</c><00:03:59.040><c> I</c><00:03:59.200><c> think</c><00:03:59.280><c> the</c><00:03:59.439><c> game</c><00:03:59.680><c> developers</c>
+
+00:04:00.229 --> 00:04:00.239 align:start position:0%
+in game. So, I think the game developers
+ 
+
+00:04:00.239 --> 00:04:02.470 align:start position:0%
+in game. So, I think the game developers
+never<00:04:00.560><c> optimized</c><00:04:01.040><c> this</c><00:04:01.200><c> game</c><00:04:01.280><c> for</c><00:04:01.519><c> DirectX11.</c>
+
+00:04:02.470 --> 00:04:02.480 align:start position:0%
+never optimized this game for DirectX11.
+ 
+
+00:04:02.480 --> 00:04:06.149 align:start position:0%
+never optimized this game for DirectX11.
+So,<00:04:02.640><c> I</c><00:04:02.799><c> do</c><00:04:02.959><c> not</c><00:04:03.120><c> recommend</c><00:04:03.519><c> even</c><00:04:03.760><c> trying</c><00:04:04.000><c> it.</c>
+
+00:04:06.149 --> 00:04:06.159 align:start position:0%
+So, I do not recommend even trying it.
+ 
+
+00:04:06.159 --> 00:04:07.589 align:start position:0%
+So, I do not recommend even trying it.
+Capping<00:04:06.480><c> your</c><00:04:06.640><c> frames</c><00:04:06.959><c> can</c><00:04:07.120><c> get</c><00:04:07.200><c> a</c><00:04:07.439><c> little</c>
+
+00:04:07.589 --> 00:04:07.599 align:start position:0%
+Capping your frames can get a little
+ 
+
+00:04:07.599 --> 00:04:09.429 align:start position:0%
+Capping your frames can get a little
+interesting.<00:04:08.159><c> Some</c><00:04:08.400><c> game</c><00:04:08.640><c> engines</c><00:04:08.959><c> behave</c>
+
+00:04:09.429 --> 00:04:09.439 align:start position:0%
+interesting. Some game engines behave
+ 
+
+00:04:09.439 --> 00:04:11.750 align:start position:0%
+interesting. Some game engines behave
+quite<00:04:09.760><c> differently.</c><00:04:10.480><c> I</c><00:04:10.720><c> prefer</c><00:04:11.280><c> either</c><00:04:11.599><c> an</c>
+
+00:04:11.750 --> 00:04:11.760 align:start position:0%
+quite differently. I prefer either an
+ 
+
+00:04:11.760 --> 00:04:14.070 align:start position:0%
+quite differently. I prefer either an
+external<00:04:12.239><c> cap</c><00:04:12.480><c> or</c><00:04:12.720><c> an</c><00:04:12.879><c> internal</c><00:04:13.360><c> cap</c><00:04:13.840><c> or</c>
+
+00:04:14.070 --> 00:04:14.080 align:start position:0%
+external cap or an internal cap or
+ 
+
+00:04:14.080 --> 00:04:15.429 align:start position:0%
+external cap or an internal cap or
+sometimes<00:04:14.400><c> River</c><00:04:14.720><c> tuner</c><00:04:14.959><c> can</c><00:04:15.120><c> be</c><00:04:15.200><c> a</c><00:04:15.360><c> little</c>
+
+00:04:15.429 --> 00:04:15.439 align:start position:0%
+sometimes River tuner can be a little
+ 
+
+00:04:15.439 --> 00:04:18.069 align:start position:0%
+sometimes River tuner can be a little
+bit<00:04:15.599><c> better.</c><00:04:16.400><c> In</c><00:04:16.639><c> this</c><00:04:16.799><c> case,</c><00:04:17.120><c> in-game</c><00:04:17.600><c> cap</c><00:04:17.840><c> is</c>
+
+00:04:18.069 --> 00:04:18.079 align:start position:0%
+bit better. In this case, in-game cap is
+ 
+
+00:04:18.079 --> 00:04:20.229 align:start position:0%
+bit better. In this case, in-game cap is
+best<00:04:18.400><c> and</c><00:04:18.639><c> usually</c><00:04:19.040><c> in-game</c><00:04:19.519><c> cap</c><00:04:19.759><c> is</c><00:04:20.000><c> always</c>
+
+00:04:20.229 --> 00:04:20.239 align:start position:0%
+best and usually in-game cap is always
+ 
+
+00:04:20.239 --> 00:04:22.069 align:start position:0%
+best and usually in-game cap is always
+best,<00:04:20.560><c> but</c><00:04:20.799><c> I've</c><00:04:21.040><c> not</c><00:04:21.280><c> always</c><00:04:21.519><c> seen</c><00:04:21.680><c> that</c><00:04:21.840><c> for</c>
+
+00:04:22.069 --> 00:04:22.079 align:start position:0%
+best, but I've not always seen that for
+ 
+
+00:04:22.079 --> 00:04:24.310 align:start position:0%
+best, but I've not always seen that for
+every<00:04:22.320><c> game</c><00:04:22.560><c> engine,</c><00:04:22.880><c> mind</c><00:04:23.120><c> you.</c><00:04:23.840><c> Now,</c><00:04:24.080><c> keep</c>
+
+00:04:24.310 --> 00:04:24.320 align:start position:0%
+every game engine, mind you. Now, keep
+ 
+
+00:04:24.320 --> 00:04:27.030 align:start position:0%
+every game engine, mind you. Now, keep
+in<00:04:24.479><c> mind</c><00:04:25.199><c> us</c><00:04:25.520><c> capping</c><00:04:26.000><c> our</c><00:04:26.240><c> frame</c><00:04:26.479><c> rate</c><00:04:26.720><c> when</c>
+
+00:04:27.030 --> 00:04:27.040 align:start position:0%
+in mind us capping our frame rate when
+ 
+
+00:04:27.040 --> 00:04:29.189 align:start position:0%
+in mind us capping our frame rate when
+we're<00:04:27.199><c> GPU</c><00:04:27.600><c> bound,</c><00:04:27.919><c> even</c><00:04:28.160><c> with</c><00:04:28.400><c> reflex,</c><00:04:29.040><c> is</c>
+
+00:04:29.189 --> 00:04:29.199 align:start position:0%
+we're GPU bound, even with reflex, is
+ 
+
+00:04:29.199 --> 00:04:30.950 align:start position:0%
+we're GPU bound, even with reflex, is
+actually<00:04:29.520><c> lowering</c><00:04:29.919><c> our</c><00:04:30.080><c> latency</c><00:04:30.479><c> here.</c><00:04:30.800><c> I've</c>
+
+00:04:30.950 --> 00:04:30.960 align:start position:0%
+actually lowering our latency here. I've
+ 
+
+00:04:30.960 --> 00:04:32.710 align:start position:0%
+actually lowering our latency here. I've
+done<00:04:31.120><c> a</c><00:04:31.280><c> video</c><00:04:31.360><c> on</c><00:04:31.520><c> that,</c><00:04:31.840><c> my</c><00:04:32.080><c> input</c><00:04:32.400><c> lag</c>
+
+00:04:32.710 --> 00:04:32.720 align:start position:0%
+done a video on that, my input lag
+ 
+
+00:04:32.720 --> 00:04:33.990 align:start position:0%
+done a video on that, my input lag
+video.<00:04:33.040><c> You</c><00:04:33.199><c> guys</c><00:04:33.360><c> should</c><00:04:33.520><c> go</c><00:04:33.680><c> check</c><00:04:33.840><c> that</c>
+
+00:04:33.990 --> 00:04:34.000 align:start position:0%
+video. You guys should go check that
+ 
+
+00:04:34.000 --> 00:04:35.830 align:start position:0%
+video. You guys should go check that
+out.<00:04:34.479><c> But</c><00:04:34.639><c> I'm</c><00:04:34.880><c> seeing</c><00:04:35.040><c> the</c><00:04:35.280><c> same</c><00:04:35.440><c> behavior</c>
+
+00:04:35.830 --> 00:04:35.840 align:start position:0%
+out. But I'm seeing the same behavior
+ 
+
+00:04:35.840 --> 00:04:38.230 align:start position:0%
+out. But I'm seeing the same behavior
+here<00:04:36.240><c> just</c><00:04:36.400><c> as</c><00:04:36.560><c> I</c><00:04:36.720><c> did</c><00:04:36.880><c> with</c><00:04:37.040><c> Marvel</c><00:04:37.440><c> Rivals.</c>
+
+00:04:38.230 --> 00:04:38.240 align:start position:0%
+here just as I did with Marvel Rivals.
+ 
+
+00:04:38.240 --> 00:04:40.230 align:start position:0%
+here just as I did with Marvel Rivals.
+When<00:04:38.400><c> you're</c><00:04:38.560><c> GPU</c><00:04:38.960><c> bound,</c><00:04:39.280><c> even</c><00:04:39.440><c> with</c><00:04:39.680><c> Reflex,</c>
+
+00:04:40.230 --> 00:04:40.240 align:start position:0%
+When you're GPU bound, even with Reflex,
+ 
+
+00:04:40.240 --> 00:04:43.270 align:start position:0%
+When you're GPU bound, even with Reflex,
+let's<00:04:40.479><c> say</c><00:04:40.800><c> 95%</c><00:04:41.520><c> GPU</c><00:04:42.000><c> usage,</c><00:04:42.800><c> sometimes</c>
+
+00:04:43.270 --> 00:04:43.280 align:start position:0%
+let's say 95% GPU usage, sometimes
+ 
+
+00:04:43.280 --> 00:04:45.189 align:start position:0%
+let's say 95% GPU usage, sometimes
+actually<00:04:43.600><c> capping</c><00:04:44.080><c> your</c><00:04:44.320><c> frame</c><00:04:44.560><c> rate</c><00:04:44.880><c> to</c><00:04:45.040><c> get</c>
+
+00:04:45.189 --> 00:04:45.199 align:start position:0%
+actually capping your frame rate to get
+ 
+
+00:04:45.199 --> 00:04:47.110 align:start position:0%
+actually capping your frame rate to get
+a<00:04:45.360><c> value</c><00:04:45.680><c> lower</c><00:04:46.000><c> than</c><00:04:46.160><c> that</c><00:04:46.479><c> can</c><00:04:46.639><c> lower</c><00:04:46.880><c> our</c>
+
+00:04:47.110 --> 00:04:47.120 align:start position:0%
+a value lower than that can lower our
+ 
+
+00:04:47.120 --> 00:04:49.469 align:start position:0%
+a value lower than that can lower our
+latency.<00:04:47.919><c> So</c><00:04:48.160><c> yes,</c><00:04:48.400><c> I</c><00:04:48.639><c> could</c><00:04:48.720><c> run</c><00:04:48.880><c> around</c><00:04:49.120><c> with</c>
+
+00:04:49.469 --> 00:04:49.479 align:start position:0%
+latency. So yes, I could run around with
+ 
+
+00:04:49.479 --> 00:04:53.430 align:start position:0%
+latency. So yes, I could run around with
+374<00:04:50.479><c> FPS</c><00:04:51.280><c> in</c><00:04:51.520><c> the</c><00:04:51.680><c> test</c><00:04:51.919><c> range</c><00:04:52.240><c> here.</c><00:04:52.960><c> But</c><00:04:53.120><c> if</c><00:04:53.280><c> I</c>
+
+00:04:53.430 --> 00:04:53.440 align:start position:0%
+374 FPS in the test range here. But if I
+ 
+
+00:04:53.440 --> 00:04:55.990 align:start position:0%
+374 FPS in the test range here. But if I
+cap<00:04:53.680><c> my</c><00:04:53.840><c> frames</c><00:04:54.240><c> to</c><00:04:54.720><c> 235,</c><00:04:55.520><c> just</c><00:04:55.680><c> as</c><00:04:55.840><c> an</c>
+
+00:04:55.990 --> 00:04:56.000 align:start position:0%
+cap my frames to 235, just as an
+ 
+
+00:04:56.000 --> 00:04:58.310 align:start position:0%
+cap my frames to 235, just as an
+example,<00:04:56.960><c> we're</c><00:04:57.199><c> lowering</c><00:04:57.520><c> our</c><00:04:57.680><c> input</c><00:04:58.000><c> lag</c>
+
+00:04:58.310 --> 00:04:58.320 align:start position:0%
+example, we're lowering our input lag
+ 
+
+00:04:58.320 --> 00:05:00.870 align:start position:0%
+example, we're lowering our input lag
+quite<00:04:58.560><c> a</c><00:04:58.800><c> little</c><00:04:58.880><c> bit</c><00:04:59.199><c> from</c><00:04:59.520><c> 8.5</c><00:05:00.320><c> milliseconds</c>
+
+00:05:00.870 --> 00:05:00.880 align:start position:0%
+quite a little bit from 8.5 milliseconds
+ 
+
+00:05:00.880 --> 00:05:04.310 align:start position:0%
+quite a little bit from 8.5 milliseconds
+all<00:05:01.040><c> the</c><00:05:01.120><c> way</c><00:05:01.280><c> to</c><00:05:01.520><c> 7.4.</c><00:05:02.160><c> or</c><00:05:02.800><c> so</c><00:05:03.759><c> keep</c><00:05:03.919><c> that</c><00:05:04.160><c> in</c>
+
+00:05:04.310 --> 00:05:04.320 align:start position:0%
+all the way to 7.4. or so keep that in
+ 
+
+00:05:04.320 --> 00:05:06.070 align:start position:0%
+all the way to 7.4. or so keep that in
+mind.<00:05:04.639><c> You</c><00:05:04.880><c> might</c><00:05:05.040><c> actually</c><00:05:05.280><c> be</c><00:05:05.600><c> worth</c>
+
+00:05:06.070 --> 00:05:06.080 align:start position:0%
+mind. You might actually be worth
+ 
+
+00:05:06.080 --> 00:05:08.390 align:start position:0%
+mind. You might actually be worth
+capping<00:05:06.479><c> your</c><00:05:06.639><c> frame</c><00:05:06.880><c> rate</c><00:05:07.199><c> in</c><00:05:07.520><c> this</c><00:05:07.680><c> game</c><00:05:08.160><c> to</c>
+
+00:05:08.390 --> 00:05:08.400 align:start position:0%
+capping your frame rate in this game to
+ 
+
+00:05:08.400 --> 00:05:10.230 align:start position:0%
+capping your frame rate in this game to
+lower<00:05:08.639><c> your</c><00:05:08.720><c> latency</c><00:05:09.360><c> because</c><00:05:09.600><c> most</c><00:05:09.840><c> of</c><00:05:10.000><c> you</c>
+
+00:05:10.230 --> 00:05:10.240 align:start position:0%
+lower your latency because most of you
+ 
+
+00:05:10.240 --> 00:05:11.629 align:start position:0%
+lower your latency because most of you
+are<00:05:10.400><c> going</c><00:05:10.560><c> to</c><00:05:10.639><c> be</c>
+
+00:05:11.629 --> 00:05:11.639 align:start position:0%
+are going to be
+ 
+
+00:05:11.639 --> 00:05:13.670 align:start position:0%
+are going to be
+GPUbound.<00:05:12.639><c> Now,</c><00:05:12.880><c> this</c><00:05:13.039><c> might</c><00:05:13.199><c> change</c><00:05:13.440><c> when</c>
+
+00:05:13.670 --> 00:05:13.680 align:start position:0%
+GPUbound. Now, this might change when
+ 
+
+00:05:13.680 --> 00:05:15.830 align:start position:0%
+GPUbound. Now, this might change when
+Reflex<00:05:14.240><c> 2</c><00:05:14.479><c> comes</c><00:05:14.720><c> out</c><00:05:14.880><c> and</c><00:05:15.120><c> it</c><00:05:15.360><c> might</c><00:05:15.520><c> do</c><00:05:15.600><c> a</c>
+
+00:05:15.830 --> 00:05:15.840 align:start position:0%
+Reflex 2 comes out and it might do a
+ 
+
+00:05:15.840 --> 00:05:17.909 align:start position:0%
+Reflex 2 comes out and it might do a
+better<00:05:16.080><c> job,</c><00:05:16.720><c> but</c><00:05:16.960><c> for</c><00:05:17.199><c> now,</c><00:05:17.360><c> it</c><00:05:17.600><c> seems</c><00:05:17.759><c> like</c>
+
+00:05:17.909 --> 00:05:17.919 align:start position:0%
+better job, but for now, it seems like
+ 
+
+00:05:17.919 --> 00:05:20.070 align:start position:0%
+better job, but for now, it seems like
+with<00:05:18.080><c> Unreal</c><00:05:18.479><c> Engine</c><00:05:18.880><c> 5,</c><00:05:19.520><c> you're</c><00:05:19.759><c> better</c><00:05:19.919><c> off</c>
+
+00:05:20.070 --> 00:05:20.080 align:start position:0%
+with Unreal Engine 5, you're better off
+ 
+
+00:05:20.080 --> 00:05:22.310 align:start position:0%
+with Unreal Engine 5, you're better off
+using<00:05:20.320><c> an</c><00:05:20.479><c> in-game</c><00:05:20.960><c> cap</c><00:05:21.440><c> to</c><00:05:21.680><c> cap</c><00:05:21.840><c> your</c><00:05:22.080><c> frame</c>
+
+00:05:22.310 --> 00:05:22.320 align:start position:0%
+using an in-game cap to cap your frame
+ 
+
+00:05:22.320 --> 00:05:25.430 align:start position:0%
+using an in-game cap to cap your frame
+rate.<00:05:22.960><c> Just</c><00:05:23.120><c> stay</c><00:05:23.600><c> well</c><00:05:24.000><c> below,</c><00:05:24.880><c> I</c><00:05:25.120><c> would</c><00:05:25.199><c> say</c>
+
+00:05:25.430 --> 00:05:25.440 align:start position:0%
+rate. Just stay well below, I would say
+ 
+
+00:05:25.440 --> 00:05:27.909 align:start position:0%
+rate. Just stay well below, I would say
+about<00:05:26.160><c> stay</c><00:05:26.400><c> around</c><00:05:26.560><c> 90%</c><00:05:27.120><c> GPU</c><00:05:27.440><c> usage,</c><00:05:27.759><c> you'</c>
+
+00:05:27.909 --> 00:05:27.919 align:start position:0%
+about stay around 90% GPU usage, you'
+ 
+
+00:05:27.919 --> 00:05:29.990 align:start position:0%
+about stay around 90% GPU usage, you'
+probably<00:05:28.160><c> be</c><00:05:28.320><c> okay.</c><00:05:29.280><c> I'll</c><00:05:29.520><c> show</c><00:05:29.680><c> you</c><00:05:29.759><c> how</c><00:05:29.919><c> to</c>
+
+00:05:29.990 --> 00:05:30.000 align:start position:0%
+probably be okay. I'll show you how to
+ 
+
+00:05:30.000 --> 00:05:31.670 align:start position:0%
+probably be okay. I'll show you how to
+import<00:05:30.240><c> the</c><00:05:30.400><c> config</c><00:05:30.800><c> two</c><00:05:30.960><c> ways.</c><00:05:31.199><c> the</c><00:05:31.360><c> hard</c><00:05:31.520><c> way</c>
+
+00:05:31.670 --> 00:05:31.680 align:start position:0%
+import the config two ways. the hard way
+ 
+
+00:05:31.680 --> 00:05:33.710 align:start position:0%
+import the config two ways. the hard way
+and<00:05:31.840><c> the</c><00:05:32.000><c> easy</c><00:05:32.240><c> way.</c><00:05:32.560><c> Head</c><00:05:32.720><c> over</c><00:05:32.880><c> to</c><00:05:33.039><c> GitHub,</c>
+
+00:05:33.710 --> 00:05:33.720 align:start position:0%
+and the easy way. Head over to GitHub,
+ 
+
+00:05:33.720 --> 00:05:36.870 align:start position:0%
+and the easy way. Head over to GitHub,
+guys.<00:05:34.720><c> Click</c><00:05:34.960><c> on</c><00:05:35.120><c> GitHub</c><00:05:35.520><c> game</c><00:05:35.759><c> configs.</c><00:05:36.720><c> It</c>
+
+00:05:36.870 --> 00:05:36.880 align:start position:0%
+guys. Click on GitHub game configs. It
+ 
+
+00:05:36.880 --> 00:05:38.870 align:start position:0%
+guys. Click on GitHub game configs. It
+should<00:05:37.039><c> be</c><00:05:37.199><c> right</c><00:05:37.440><c> here.</c><00:05:38.400><c> Little</c><00:05:38.560><c> bit</c><00:05:38.720><c> of</c><00:05:38.800><c> an</c>
+
+00:05:38.870 --> 00:05:38.880 align:start position:0%
+should be right here. Little bit of an
+ 
+
+00:05:38.880 --> 00:05:40.629 align:start position:0%
+should be right here. Little bit of an
+about.<00:05:39.199><c> Use</c><00:05:39.440><c> these</c><00:05:39.680><c> configs</c><00:05:40.080><c> as</c><00:05:40.240><c> a</c><00:05:40.400><c> starting</c>
+
+00:05:40.629 --> 00:05:40.639 align:start position:0%
+about. Use these configs as a starting
+ 
+
+00:05:40.639 --> 00:05:42.469 align:start position:0%
+about. Use these configs as a starting
+point<00:05:40.800><c> to</c><00:05:40.960><c> improve</c><00:05:41.280><c> performance.</c><00:05:42.080><c> Adjust</c>
+
+00:05:42.469 --> 00:05:42.479 align:start position:0%
+point to improve performance. Adjust
+ 
+
+00:05:42.479 --> 00:05:44.150 align:start position:0%
+point to improve performance. Adjust
+binding<00:05:42.880><c> sensitivity,</c><00:05:43.520><c> refresh</c><00:05:43.840><c> rate,</c><00:05:44.000><c> and</c>
+
+00:05:44.150 --> 00:05:44.160 align:start position:0%
+binding sensitivity, refresh rate, and
+ 
+
+00:05:44.160 --> 00:05:45.749 align:start position:0%
+binding sensitivity, refresh rate, and
+resolution<00:05:44.560><c> to</c><00:05:44.720><c> your</c><00:05:44.960><c> preference.</c><00:05:45.440><c> Settings</c>
+
+00:05:45.749 --> 00:05:45.759 align:start position:0%
+resolution to your preference. Settings
+ 
+
+00:05:45.759 --> 00:05:47.189 align:start position:0%
+resolution to your preference. Settings
+are<00:05:45.919><c> subjective.</c><00:05:46.400><c> So,</c><00:05:46.479><c> these</c><00:05:46.639><c> configs</c><00:05:47.039><c> are</c>
+
+00:05:47.189 --> 00:05:47.199 align:start position:0%
+are subjective. So, these configs are
+ 
+
+00:05:47.199 --> 00:05:49.029 align:start position:0%
+are subjective. So, these configs are
+not<00:05:47.280><c> definitive.</c><00:05:47.919><c> High-end</c><00:05:48.320><c> GPU</c><00:05:48.639><c> owners</c><00:05:48.880><c> can</c>
+
+00:05:49.029 --> 00:05:49.039 align:start position:0%
+not definitive. High-end GPU owners can
+ 
+
+00:05:49.039 --> 00:05:50.310 align:start position:0%
+not definitive. High-end GPU owners can
+afford<00:05:49.280><c> to</c><00:05:49.520><c> experiment</c><00:05:49.840><c> with</c><00:05:50.000><c> higher</c>
+
+00:05:50.310 --> 00:05:50.320 align:start position:0%
+afford to experiment with higher
+ 
+
+00:05:50.320 --> 00:05:52.950 align:start position:0%
+afford to experiment with higher
+graphics<00:05:50.639><c> settings.</c><00:05:51.600><c> Disclaimer,</c><00:05:52.240><c> caution.</c>
+
+00:05:52.950 --> 00:05:52.960 align:start position:0%
+graphics settings. Disclaimer, caution.
+ 
+
+00:05:52.960 --> 00:05:55.029 align:start position:0%
+graphics settings. Disclaimer, caution.
+Your<00:05:53.520><c> existing</c><00:05:54.080><c> game</c><00:05:54.320><c> settings</c><00:05:54.639><c> will</c><00:05:54.880><c> be</c>
+
+00:05:55.029 --> 00:05:55.039 align:start position:0%
+Your existing game settings will be
+ 
+
+00:05:55.039 --> 00:05:56.629 align:start position:0%
+Your existing game settings will be
+removed<00:05:55.440><c> when</c><00:05:55.759><c> importing</c><00:05:56.080><c> these</c><00:05:56.320><c> configs.</c>
+
+00:05:56.629 --> 00:05:56.639 align:start position:0%
+removed when importing these configs.
+ 
+
+00:05:56.639 --> 00:05:58.150 align:start position:0%
+removed when importing these configs.
+So,<00:05:56.800><c> just</c><00:05:56.960><c> keep</c><00:05:57.120><c> that</c><00:05:57.280><c> in</c><00:05:57.440><c> mind.</c><00:05:57.759><c> So,</c><00:05:57.919><c> I'll</c>
+
+00:05:58.150 --> 00:05:58.160 align:start position:0%
+So, just keep that in mind. So, I'll
+ 
+
+00:05:58.160 --> 00:05:59.830 align:start position:0%
+So, just keep that in mind. So, I'll
+show<00:05:58.240><c> you</c><00:05:58.400><c> guys</c><00:05:58.560><c> the</c><00:05:58.720><c> hard</c><00:05:58.960><c> way</c><00:05:59.120><c> to</c><00:05:59.360><c> import</c><00:05:59.680><c> the</c>
+
+00:05:59.830 --> 00:05:59.840 align:start position:0%
+show you guys the hard way to import the
+ 
+
+00:05:59.840 --> 00:06:02.469 align:start position:0%
+show you guys the hard way to import the
+config.<00:06:00.400><c> Go</c><00:06:00.560><c> to</c><00:06:00.639><c> the</c><00:06:00.720><c> finals</c><00:06:01.240><c> folder.</c><00:06:02.240><c> Go</c><00:06:02.400><c> to</c>
+
+00:06:02.469 --> 00:06:02.479 align:start position:0%
+config. Go to the finals folder. Go to
+ 
+
+00:06:02.479 --> 00:06:06.629 align:start position:0%
+config. Go to the finals folder. Go to
+the<00:06:02.919><c> finals.zip.</c><00:06:03.919><c> Click</c><00:06:04.479><c> download</c><00:06:04.880><c> raw</c><00:06:05.639><c> file.</c>
+
+00:06:06.629 --> 00:06:06.639 align:start position:0%
+the finals.zip. Click download raw file.
+ 
+
+00:06:06.639 --> 00:06:08.390 align:start position:0%
+the finals.zip. Click download raw file.
+Go<00:06:06.800><c> to</c><00:06:06.960><c> your</c><00:06:07.120><c> downloads</c><00:06:07.520><c> folder.</c><00:06:08.080><c> Right</c>
+
+00:06:08.390 --> 00:06:08.400 align:start position:0%
+Go to your downloads folder. Right
+ 
+
+00:06:08.400 --> 00:06:12.469 align:start position:0%
+Go to your downloads folder. Right
+click.<00:06:09.039><c> Go</c><00:06:09.280><c> extract</c><00:06:09.880><c> all</c><00:06:10.880><c> and</c><00:06:11.039><c> press</c><00:06:11.479><c> extract.</c>
+
+00:06:12.469 --> 00:06:12.479 align:start position:0%
+click. Go extract all and press extract.
+ 
+
+00:06:12.479 --> 00:06:13.909 align:start position:0%
+click. Go extract all and press extract.
+It<00:06:12.720><c> should</c><00:06:12.880><c> open</c><00:06:13.120><c> this.</c><00:06:13.360><c> These</c><00:06:13.520><c> are</c><00:06:13.680><c> the</c><00:06:13.759><c> two</c>
+
+00:06:13.909 --> 00:06:13.919 align:start position:0%
+It should open this. These are the two
+ 
+
+00:06:13.919 --> 00:06:15.590 align:start position:0%
+It should open this. These are the two
+files<00:06:14.080><c> we</c><00:06:14.319><c> need</c><00:06:14.400><c> to</c><00:06:14.479><c> put</c><00:06:14.639><c> in</c><00:06:14.800><c> a</c><00:06:14.880><c> certain</c><00:06:15.120><c> place.</c>
+
+00:06:15.590 --> 00:06:15.600 align:start position:0%
+files we need to put in a certain place.
+ 
+
+00:06:15.600 --> 00:06:17.270 align:start position:0%
+files we need to put in a certain place.
+For<00:06:15.759><c> most</c><00:06:15.919><c> of</c><00:06:16.080><c> you,</c><00:06:16.319><c> right</c><00:06:16.560><c> click</c><00:06:16.800><c> the</c><00:06:16.960><c> file.</c>
+
+00:06:17.270 --> 00:06:17.280 align:start position:0%
+For most of you, right click the file.
+ 
+
+00:06:17.280 --> 00:06:19.110 align:start position:0%
+For most of you, right click the file.
+Go<00:06:17.440><c> to</c><00:06:17.600><c> properties.</c><00:06:18.240><c> Down</c><00:06:18.479><c> the</c><00:06:18.639><c> bottom.</c><00:06:18.880><c> Click</c>
+
+00:06:19.110 --> 00:06:19.120 align:start position:0%
+Go to properties. Down the bottom. Click
+ 
+
+00:06:19.120 --> 00:06:21.110 align:start position:0%
+Go to properties. Down the bottom. Click
+unblock.<00:06:19.600><c> Apply.</c><00:06:20.080><c> Okay.</c><00:06:20.479><c> And</c><00:06:20.560><c> then</c><00:06:20.720><c> the</c><00:06:20.960><c> next</c>
+
+00:06:21.110 --> 00:06:21.120 align:start position:0%
+unblock. Apply. Okay. And then the next
+ 
+
+00:06:21.120 --> 00:06:24.309 align:start position:0%
+unblock. Apply. Okay. And then the next
+one.<00:06:21.360><c> Click</c><00:06:21.880><c> properties.</c><00:06:22.880><c> Unblock.</c><00:06:23.759><c> Apply.</c>
+
+00:06:24.309 --> 00:06:24.319 align:start position:0%
+one. Click properties. Unblock. Apply.
+ 
+
+00:06:24.319 --> 00:06:26.710 align:start position:0%
+one. Click properties. Unblock. Apply.
+Okay.<00:06:24.960><c> So</c><00:06:25.120><c> the</c><00:06:25.280><c> files</c><00:06:25.520><c> are</c><00:06:25.600><c> unblocked.</c><00:06:26.319><c> Now</c><00:06:26.560><c> we</c>
+
+00:06:26.710 --> 00:06:26.720 align:start position:0%
+Okay. So the files are unblocked. Now we
+ 
+
+00:06:26.720 --> 00:06:28.950 align:start position:0%
+Okay. So the files are unblocked. Now we
+need<00:06:26.800><c> to</c><00:06:26.880><c> put</c><00:06:27.039><c> these</c><00:06:27.199><c> files</c><00:06:27.440><c> in</c><00:06:27.600><c> two</c><00:06:27.840><c> places.</c><00:06:28.800><c> I</c>
+
+00:06:28.950 --> 00:06:28.960 align:start position:0%
+need to put these files in two places. I
+ 
+
+00:06:28.960 --> 00:06:31.110 align:start position:0%
+need to put these files in two places. I
+want<00:06:29.039><c> you</c><00:06:29.199><c> to</c><00:06:29.280><c> press</c><00:06:29.440><c> Windows</c><00:06:29.759><c> key</c><00:06:30.000><c> R</c><00:06:30.639><c> and</c><00:06:30.880><c> type</c>
+
+00:06:31.110 --> 00:06:31.120 align:start position:0%
+want you to press Windows key R and type
+ 
+
+00:06:31.120 --> 00:06:35.629 align:start position:0%
+want you to press Windows key R and type
+app<00:06:31.639><c> data</c><00:06:32.639><c> then</c><00:06:32.880><c> press</c>
+
+00:06:35.629 --> 00:06:35.639 align:start position:0%
+ 
+ 
+
+00:06:35.639 --> 00:06:38.430 align:start position:0%
+ 
+enter.<00:06:36.639><c> I</c><00:06:36.720><c> want</c><00:06:36.880><c> you</c><00:06:36.960><c> to</c><00:06:37.120><c> go</c><00:06:37.199><c> to</c>
+
+00:06:38.430 --> 00:06:38.440 align:start position:0%
+enter. I want you to go to
+ 
+
+00:06:38.440 --> 00:06:40.270 align:start position:0%
+enter. I want you to go to
+local
+
+00:06:40.270 --> 00:06:40.280 align:start position:0%
+local
+ 
+
+00:06:40.280 --> 00:06:42.510 align:start position:0%
+local
+discovery
+
+00:06:42.510 --> 00:06:42.520 align:start position:0%
+discovery
+ 
+
+00:06:42.520 --> 00:06:46.870 align:start position:0%
+discovery
+saved<00:06:43.800><c> config</c><00:06:44.800><c> Windows</c><00:06:45.240><c> client</c><00:06:46.240><c> game</c><00:06:46.560><c> user</c>
+
+00:06:46.870 --> 00:06:46.880 align:start position:0%
+saved config Windows client game user
+ 
+
+00:06:46.880 --> 00:06:48.390 align:start position:0%
+saved config Windows client game user
+settings<00:06:47.199><c> needs</c><00:06:47.360><c> to</c><00:06:47.520><c> go</c><00:06:47.680><c> to</c><00:06:47.840><c> game</c><00:06:48.080><c> user</c>
+
+00:06:48.390 --> 00:06:48.400 align:start position:0%
+settings needs to go to game user
+ 
+
+00:06:48.400 --> 00:06:51.870 align:start position:0%
+settings needs to go to game user
+settings.<00:06:48.880><c> So</c><00:06:49.039><c> you</c><00:06:49.199><c> could</c><00:06:49.360><c> copy</c><00:06:49.759><c> and</c><00:06:50.080><c> paste</c>
+
+00:06:51.870 --> 00:06:51.880 align:start position:0%
+settings. So you could copy and paste
+ 
+
+00:06:51.880 --> 00:06:54.790 align:start position:0%
+settings. So you could copy and paste
+replace.<00:06:52.880><c> Then</c><00:06:53.120><c> the</c><00:06:53.360><c> other</c><00:06:53.759><c> file</c><00:06:54.319><c> needs</c><00:06:54.560><c> to</c><00:06:54.720><c> go</c>
+
+00:06:54.790 --> 00:06:54.800 align:start position:0%
+replace. Then the other file needs to go
+ 
+
+00:06:54.800 --> 00:06:57.230 align:start position:0%
+replace. Then the other file needs to go
+to<00:06:55.039><c> save</c>
+
+00:06:57.230 --> 00:06:57.240 align:start position:0%
+to save
+ 
+
+00:06:57.240 --> 00:07:00.790 align:start position:0%
+to save
+games.<00:06:58.360><c> Copy</c><00:06:59.360><c> paste.</c><00:07:00.160><c> So</c><00:07:00.319><c> that</c><00:07:00.479><c> is</c><00:07:00.639><c> a</c>
+
+00:07:00.790 --> 00:07:00.800 align:start position:0%
+games. Copy paste. So that is a
+ 
+
+00:07:00.800 --> 00:07:02.309 align:start position:0%
+games. Copy paste. So that is a
+difficult<00:07:01.120><c> way</c><00:07:01.199><c> to</c><00:07:01.440><c> do</c><00:07:01.520><c> it</c><00:07:01.680><c> and</c><00:07:01.919><c> I'd</c><00:07:02.080><c> rather</c>
+
+00:07:02.309 --> 00:07:02.319 align:start position:0%
+difficult way to do it and I'd rather
+ 
+
+00:07:02.319 --> 00:07:04.550 align:start position:0%
+difficult way to do it and I'd rather
+you<00:07:02.560><c> guys</c><00:07:02.720><c> not.</c><00:07:03.680><c> Also</c><00:07:04.000><c> I'll</c><00:07:04.160><c> let</c><00:07:04.319><c> you</c><00:07:04.400><c> guys</c>
+
+00:07:04.550 --> 00:07:04.560 align:start position:0%
+you guys not. Also I'll let you guys
+ 
+
+00:07:04.560 --> 00:07:05.589 align:start position:0%
+you guys not. Also I'll let you guys
+know<00:07:04.639><c> if</c><00:07:04.800><c> you're</c><00:07:04.960><c> doing</c><00:07:05.039><c> it</c><00:07:05.199><c> the</c><00:07:05.360><c> difficult</c>
+
+00:07:05.589 --> 00:07:05.599 align:start position:0%
+know if you're doing it the difficult
+ 
+
+00:07:05.599 --> 00:07:07.029 align:start position:0%
+know if you're doing it the difficult
+way<00:07:05.759><c> and</c><00:07:05.919><c> you</c><00:07:06.000><c> want</c><00:07:06.080><c> to</c><00:07:06.160><c> reload</c><00:07:06.479><c> your</c><00:07:06.639><c> shaders,</c>
+
+00:07:07.029 --> 00:07:07.039 align:start position:0%
+way and you want to reload your shaders,
+ 
+
+00:07:07.039 --> 00:07:08.430 align:start position:0%
+way and you want to reload your shaders,
+you<00:07:07.199><c> can</c><00:07:07.280><c> delete</c><00:07:07.440><c> these</c><00:07:07.680><c> two</c>
+
+00:07:08.430 --> 00:07:08.440 align:start position:0%
+you can delete these two
+ 
+
+00:07:08.440 --> 00:07:11.589 align:start position:0%
+you can delete these two
+files.<00:07:09.520><c> Now</c><00:07:09.759><c> the</c><00:07:10.000><c> smart</c><00:07:10.319><c> option</c><00:07:10.560><c> is</c><00:07:11.280><c> scroll</c>
+
+00:07:11.589 --> 00:07:11.599 align:start position:0%
+files. Now the smart option is scroll
+ 
+
+00:07:11.599 --> 00:07:16.870 align:start position:0%
+files. Now the smart option is scroll
+down,<00:07:12.240><c> use</c><00:07:12.479><c> the</c><00:07:12.759><c> IWR,</c><00:07:13.759><c> pick</c><00:07:14.160><c> copy</c><00:07:14.599><c> code,</c><00:07:15.880><c> copy,</c>
+
+00:07:16.870 --> 00:07:16.880 align:start position:0%
+down, use the IWR, pick copy code, copy,
+ 
+
+00:07:16.880 --> 00:07:18.950 align:start position:0%
+down, use the IWR, pick copy code, copy,
+type<00:07:17.199><c> PowerShell</c><00:07:17.759><c> in</c><00:07:17.919><c> your</c><00:07:18.080><c> start</c><00:07:18.240><c> menu,</c>
+
+00:07:18.950 --> 00:07:18.960 align:start position:0%
+type PowerShell in your start menu,
+ 
+
+00:07:18.960 --> 00:07:21.629 align:start position:0%
+type PowerShell in your start menu,
+right<00:07:19.199><c> click</c><00:07:19.440><c> PowerShell,</c><00:07:20.240><c> run</c><00:07:20.479><c> as</c>
+
+00:07:21.629 --> 00:07:21.639 align:start position:0%
+right click PowerShell, run as
+ 
+
+00:07:21.639 --> 00:07:24.309 align:start position:0%
+right click PowerShell, run as
+administrator,<00:07:22.639><c> Ctrl</c><00:07:22.880><c> +V</c><00:07:23.199><c> to</c><00:07:23.440><c> paste,</c><00:07:24.000><c> press</c>
+
+00:07:24.309 --> 00:07:24.319 align:start position:0%
+administrator, Ctrl +V to paste, press
+ 
+
+00:07:24.319 --> 00:07:26.629 align:start position:0%
+administrator, Ctrl +V to paste, press
+enter.<00:07:25.199><c> I</c><00:07:25.360><c> have</c><00:07:25.520><c> a</c><00:07:25.680><c> nice</c><00:07:25.840><c> little</c><00:07:26.000><c> list</c><00:07:26.240><c> here.</c>
+
+00:07:26.629 --> 00:07:26.639 align:start position:0%
+enter. I have a nice little list here.
+ 
+
+00:07:26.639 --> 00:07:28.309 align:start position:0%
+enter. I have a nice little list here.
+At<00:07:26.880><c> the</c><00:07:26.960><c> moment,</c><00:07:27.280><c> the</c><00:07:27.440><c> finals</c><00:07:27.759><c> is</c><00:07:27.919><c> at</c><00:07:28.160><c> number</c>
+
+00:07:28.309 --> 00:07:28.319 align:start position:0%
+At the moment, the finals is at number
+ 
+
+00:07:28.319 --> 00:07:30.469 align:start position:0%
+At the moment, the finals is at number
+six,<00:07:28.720><c> so</c><00:07:28.960><c> press</c><00:07:29.199><c> number</c><00:07:29.440><c> six</c><00:07:29.840><c> and</c><00:07:30.080><c> then</c><00:07:30.240><c> press</c>
+
+00:07:30.469 --> 00:07:30.479 align:start position:0%
+six, so press number six and then press
+ 
+
+00:07:30.479 --> 00:07:32.550 align:start position:0%
+six, so press number six and then press
+enter.<00:07:31.360><c> That</c><00:07:31.520><c> will</c><00:07:31.759><c> actually</c><00:07:32.080><c> delete</c><00:07:32.319><c> the</c>
+
+00:07:32.550 --> 00:07:32.560 align:start position:0%
+enter. That will actually delete the
+ 
+
+00:07:32.560 --> 00:07:34.390 align:start position:0%
+enter. That will actually delete the
+folder<00:07:32.880><c> entirely</c><00:07:33.360><c> and</c><00:07:33.599><c> import</c><00:07:33.919><c> the</c><00:07:34.160><c> fresh</c>
+
+00:07:34.390 --> 00:07:34.400 align:start position:0%
+folder entirely and import the fresh
+ 
+
+00:07:34.400 --> 00:07:36.150 align:start position:0%
+folder entirely and import the fresh
+config,<00:07:35.039><c> including</c><00:07:35.360><c> deleting</c><00:07:35.680><c> the</c><00:07:35.840><c> shader</c>
+
+00:07:36.150 --> 00:07:36.160 align:start position:0%
+config, including deleting the shader
+ 
+
+00:07:36.160 --> 00:07:37.909 align:start position:0%
+config, including deleting the shader
+cache<00:07:36.400><c> files,</c><00:07:36.720><c> so</c><00:07:36.960><c> your</c><00:07:37.120><c> shaders</c><00:07:37.520><c> will</c><00:07:37.680><c> reload</c>
+
+00:07:37.909 --> 00:07:37.919 align:start position:0%
+cache files, so your shaders will reload
+ 
+
+00:07:37.919 --> 00:07:39.510 align:start position:0%
+cache files, so your shaders will reload
+when<00:07:38.080><c> you</c><00:07:38.240><c> boot</c><00:07:38.400><c> the</c><00:07:38.560><c> game.</c>
+
+00:07:39.510 --> 00:07:39.520 align:start position:0%
+when you boot the game.
+ 
+
+00:07:39.520 --> 00:07:41.710 align:start position:0%
+when you boot the game.
+You<00:07:39.759><c> can</c><00:07:39.840><c> press</c><00:07:40.000><c> any</c><00:07:40.240><c> key</c><00:07:40.479><c> here.</c><00:07:40.880><c> Exit</c><00:07:41.199><c> this</c>
+
+00:07:41.710 --> 00:07:41.720 align:start position:0%
+You can press any key here. Exit this
+ 
+
+00:07:41.720 --> 00:07:44.390 align:start position:0%
+You can press any key here. Exit this
+here.<00:07:42.720><c> Let's</c><00:07:42.960><c> go</c><00:07:43.120><c> boot</c><00:07:43.280><c> up</c><00:07:43.440><c> the</c><00:07:43.599><c> game.</c><00:07:44.080><c> Now,</c><00:07:44.240><c> if</c>
+
+00:07:44.390 --> 00:07:44.400 align:start position:0%
+here. Let's go boot up the game. Now, if
+ 
+
+00:07:44.400 --> 00:07:45.830 align:start position:0%
+here. Let's go boot up the game. Now, if
+you<00:07:44.479><c> ever</c><00:07:44.639><c> see</c><00:07:44.720><c> this</c><00:07:44.960><c> cuz</c><00:07:45.120><c> you've</c><00:07:45.280><c> imported</c><00:07:45.680><c> a</c>
+
+00:07:45.830 --> 00:07:45.840 align:start position:0%
+you ever see this cuz you've imported a
+ 
+
+00:07:45.840 --> 00:07:47.550 align:start position:0%
+you ever see this cuz you've imported a
+new<00:07:46.000><c> config,</c><00:07:46.400><c> just</c><00:07:46.560><c> press</c>
+
+00:07:47.550 --> 00:07:47.560 align:start position:0%
+new config, just press
+ 
+
+00:07:47.560 --> 00:07:50.110 align:start position:0%
+new config, just press
+skip.<00:07:48.560><c> It</c><00:07:48.800><c> should</c><00:07:48.960><c> reload</c><00:07:49.360><c> shaders</c><00:07:49.759><c> from</c>
+
+00:07:50.110 --> 00:07:50.120 align:start position:0%
+skip. It should reload shaders from
+ 
+
+00:07:50.120 --> 00:07:52.309 align:start position:0%
+skip. It should reload shaders from
+scratch.<00:07:51.120><c> Okay,</c><00:07:51.360><c> we're</c><00:07:51.520><c> in</c><00:07:51.680><c> the</c><00:07:51.759><c> game.</c><00:07:52.080><c> Go</c><00:07:52.240><c> to</c>
+
+00:07:52.309 --> 00:07:52.319 align:start position:0%
+scratch. Okay, we're in the game. Go to
+ 
+
+00:07:52.319 --> 00:07:53.869 align:start position:0%
+scratch. Okay, we're in the game. Go to
+settings.<00:07:52.639><c> Just</c><00:07:52.800><c> go</c><00:07:52.960><c> up</c>
+
+00:07:53.869 --> 00:07:53.879 align:start position:0%
+settings. Just go up
+ 
+
+00:07:53.879 --> 00:07:56.070 align:start position:0%
+settings. Just go up
+here.<00:07:54.879><c> Now,</c><00:07:55.039><c> if</c><00:07:55.199><c> the</c><00:07:55.280><c> config</c><00:07:55.599><c> imported</c>
+
+00:07:56.070 --> 00:07:56.080 align:start position:0%
+here. Now, if the config imported
+ 
+
+00:07:56.080 --> 00:07:57.589 align:start position:0%
+here. Now, if the config imported
+properly,<00:07:56.479><c> settings</c><00:07:56.800><c> should</c><00:07:57.120><c> sort</c><00:07:57.280><c> of</c><00:07:57.440><c> look</c>
+
+00:07:57.589 --> 00:07:57.599 align:start position:0%
+properly, settings should sort of look
+ 
+
+00:07:57.599 --> 00:08:00.029 align:start position:0%
+properly, settings should sort of look
+like
+
+00:08:00.029 --> 00:08:00.039 align:start position:0%
+ 
+ 
+
+00:08:00.039 --> 00:08:02.790 align:start position:0%
+ 
+this.<00:08:01.039><c> Now,</c><00:08:01.280><c> keep</c><00:08:01.440><c> in</c><00:08:01.599><c> mind</c><00:08:02.160><c> the</c><00:08:02.400><c> config</c><00:08:02.639><c> is</c>
+
+00:08:02.790 --> 00:08:02.800 align:start position:0%
+this. Now, keep in mind the config is
+ 
+
+00:08:02.800 --> 00:08:04.309 align:start position:0%
+this. Now, keep in mind the config is
+set<00:08:02.960><c> to</c><00:08:03.120><c> maximize</c><00:08:03.520><c> frames.</c><00:08:03.919><c> If</c><00:08:04.080><c> you</c><00:08:04.240><c> don't</c>
+
+00:08:04.309 --> 00:08:04.319 align:start position:0%
+set to maximize frames. If you don't
+ 
+
+00:08:04.319 --> 00:08:06.469 align:start position:0%
+set to maximize frames. If you don't
+mind<00:08:04.560><c> have</c><00:08:04.639><c> a</c><00:08:04.800><c> bit</c><00:08:04.879><c> of</c><00:08:04.960><c> an</c><00:08:05.120><c> FPS</c><00:08:05.599><c> hit</c><00:08:06.080><c> and</c><00:08:06.319><c> you</c>
+
+00:08:06.469 --> 00:08:06.479 align:start position:0%
+mind have a bit of an FPS hit and you
+ 
+
+00:08:06.479 --> 00:08:08.550 align:start position:0%
+mind have a bit of an FPS hit and you
+want<00:08:06.560><c> your</c><00:08:06.720><c> game</c><00:08:06.879><c> to</c><00:08:07.039><c> look</c><00:08:07.280><c> better,</c><00:08:08.080><c> my</c><00:08:08.319><c> advice</c>
+
+00:08:08.550 --> 00:08:08.560 align:start position:0%
+want your game to look better, my advice
+ 
+
+00:08:08.560 --> 00:08:10.350 align:start position:0%
+want your game to look better, my advice
+there<00:08:08.720><c> would</c><00:08:08.879><c> be</c><00:08:09.039><c> go</c><00:08:09.199><c> ahead</c><00:08:09.280><c> and</c><00:08:09.440><c> turn</c><00:08:09.599><c> up</c><00:08:09.759><c> your</c>
+
+00:08:10.350 --> 00:08:10.360 align:start position:0%
+there would be go ahead and turn up your
+ 
+
+00:08:10.360 --> 00:08:12.469 align:start position:0%
+there would be go ahead and turn up your
+textures.<00:08:11.360><c> Now,</c><00:08:11.440><c> if</c><00:08:11.680><c> you're</c><00:08:11.840><c> super</c><00:08:12.080><c> GPU</c>
+
+00:08:12.469 --> 00:08:12.479 align:start position:0%
+textures. Now, if you're super GPU
+ 
+
+00:08:12.479 --> 00:08:13.670 align:start position:0%
+textures. Now, if you're super GPU
+limited,<00:08:12.879><c> you</c><00:08:12.960><c> don't</c><00:08:13.039><c> have</c><00:08:13.199><c> the</c><00:08:13.360><c> fastest</c>
+
+00:08:13.670 --> 00:08:13.680 align:start position:0%
+limited, you don't have the fastest
+ 
+
+00:08:13.680 --> 00:08:15.270 align:start position:0%
+limited, you don't have the fastest
+card,<00:08:13.919><c> and</c><00:08:14.080><c> you</c><00:08:14.240><c> think</c><00:08:14.400><c> your</c><00:08:14.560><c> CPU</c><00:08:14.879><c> can</c><00:08:15.039><c> spit</c>
+
+00:08:15.270 --> 00:08:15.280 align:start position:0%
+card, and you think your CPU can spit
+ 
+
+00:08:15.280 --> 00:08:17.430 align:start position:0%
+card, and you think your CPU can spit
+out<00:08:15.440><c> more</c><00:08:15.599><c> frames,</c><00:08:16.400><c> consider</c><00:08:16.879><c> running</c><00:08:17.199><c> either</c>
+
+00:08:17.430 --> 00:08:17.440 align:start position:0%
+out more frames, consider running either
+ 
+
+00:08:17.440 --> 00:08:18.589 align:start position:0%
+out more frames, consider running either
+a<00:08:17.680><c> lower</c>
+
+00:08:18.589 --> 00:08:18.599 align:start position:0%
+a lower
+ 
+
+00:08:18.599 --> 00:08:20.790 align:start position:0%
+a lower
+resolution<00:08:19.599><c> or</c><00:08:19.840><c> playing</c><00:08:20.080><c> around</c><00:08:20.240><c> with</c><00:08:20.560><c> some</c>
+
+00:08:20.790 --> 00:08:20.800 align:start position:0%
+resolution or playing around with some
+ 
+
+00:08:20.800 --> 00:08:22.230 align:start position:0%
+resolution or playing around with some
+some<00:08:20.960><c> of</c><00:08:21.039><c> these</c><00:08:21.280><c> resolution</c><00:08:21.759><c> scaling</c>
+
+00:08:22.230 --> 00:08:22.240 align:start position:0%
+some of these resolution scaling
+ 
+
+00:08:22.240 --> 00:08:26.869 align:start position:0%
+some of these resolution scaling
+methods.<00:08:23.000><c> Okay,</c><00:08:24.000><c> Nvidia</c><00:08:24.440><c> DLSS</c><00:08:25.440><c> or</c><00:08:25.680><c> AMD</c><00:08:26.080><c> FSR,</c>
+
+00:08:26.869 --> 00:08:26.879 align:start position:0%
+methods. Okay, Nvidia DLSS or AMD FSR,
+ 
+
+00:08:26.879 --> 00:08:28.469 align:start position:0%
+methods. Okay, Nvidia DLSS or AMD FSR,
+they<00:08:27.120><c> might</c><00:08:27.280><c> be</c><00:08:27.360><c> worth</c><00:08:27.599><c> playing</c><00:08:27.840><c> around</c><00:08:28.080><c> with</c>
+
+00:08:28.469 --> 00:08:28.479 align:start position:0%
+they might be worth playing around with
+ 
+
+00:08:28.479 --> 00:08:31.749 align:start position:0%
+they might be worth playing around with
+if<00:08:28.960><c> you</c><00:08:29.199><c> don't</c><00:08:29.360><c> mind</c><00:08:30.000><c> the</c><00:08:30.639><c> slightly</c><00:08:31.120><c> visual</c><00:08:31.599><c> or</c>
+
+00:08:31.749 --> 00:08:31.759 align:start position:0%
+if you don't mind the slightly visual or
+ 
+
+00:08:31.759 --> 00:08:33.430 align:start position:0%
+if you don't mind the slightly visual or
+I<00:08:31.919><c> would</c><00:08:32.080><c> say</c><00:08:32.240><c> massively</c><00:08:32.719><c> visual</c><00:08:33.120><c> quality</c>
+
+00:08:33.430 --> 00:08:33.440 align:start position:0%
+I would say massively visual quality
+ 
+
+00:08:33.440 --> 00:08:35.269 align:start position:0%
+I would say massively visual quality
+loss,<00:08:34.080><c> but</c><00:08:34.240><c> it</c><00:08:34.399><c> will</c><00:08:34.560><c> boost</c><00:08:34.800><c> your</c><00:08:34.959><c> frames</c><00:08:35.200><c> if</c>
+
+00:08:35.269 --> 00:08:35.279 align:start position:0%
+loss, but it will boost your frames if
+ 
+
+00:08:35.279 --> 00:08:37.190 align:start position:0%
+loss, but it will boost your frames if
+your<00:08:35.440><c> CPU</c><00:08:35.760><c> can</c><00:08:35.919><c> spit</c><00:08:36.159><c> out</c><00:08:36.320><c> more.</c><00:08:36.880><c> There's</c><00:08:37.120><c> not</c>
+
+00:08:37.190 --> 00:08:37.200 align:start position:0%
+your CPU can spit out more. There's not
+ 
+
+00:08:37.200 --> 00:08:38.709 align:start position:0%
+your CPU can spit out more. There's not
+much<00:08:37.360><c> else</c><00:08:37.519><c> to</c><00:08:37.760><c> talk</c><00:08:37.839><c> about</c><00:08:38.080><c> apart</c><00:08:38.399><c> from</c><00:08:38.560><c> the</c>
+
+00:08:38.709 --> 00:08:38.719 align:start position:0%
+much else to talk about apart from the
+ 
+
+00:08:38.719 --> 00:08:40.070 align:start position:0%
+much else to talk about apart from the
+graphics<00:08:39.039><c> in</c><00:08:39.200><c> here.</c><00:08:39.440><c> It's</c><00:08:39.599><c> all</c><00:08:39.760><c> pretty</c>
+
+00:08:40.070 --> 00:08:40.080 align:start position:0%
+graphics in here. It's all pretty
+ 
+
+00:08:40.080 --> 00:08:42.230 align:start position:0%
+graphics in here. It's all pretty
+standard.<00:08:40.800><c> Um,</c><00:08:41.039><c> as</c><00:08:41.279><c> far</c><00:08:41.360><c> as</c><00:08:41.440><c> the</c><00:08:41.599><c> audio,</c><00:08:41.919><c> I</c><00:08:42.080><c> did</c>
+
+00:08:42.230 --> 00:08:42.240 align:start position:0%
+standard. Um, as far as the audio, I did
+ 
+
+00:08:42.240 --> 00:08:43.829 align:start position:0%
+standard. Um, as far as the audio, I did
+notice<00:08:42.560><c> something</c><00:08:42.719><c> pretty</c><00:08:42.959><c> cool.</c><00:08:43.360><c> Night</c><00:08:43.599><c> mode</c>
+
+00:08:43.829 --> 00:08:43.839 align:start position:0%
+notice something pretty cool. Night mode
+ 
+
+00:08:43.839 --> 00:08:45.829 align:start position:0%
+notice something pretty cool. Night mode
+is<00:08:44.080><c> very</c><00:08:44.399><c> similar</c><00:08:44.720><c> to</c><00:08:44.880><c> loudness</c><00:08:45.279><c> EQ</c><00:08:45.600><c> in</c>
+
+00:08:45.829 --> 00:08:45.839 align:start position:0%
+is very similar to loudness EQ in
+ 
+
+00:08:45.839 --> 00:08:48.710 align:start position:0%
+is very similar to loudness EQ in
+Windows,<00:08:46.800><c> so</c><00:08:46.959><c> I've</c><00:08:47.200><c> left</c><00:08:47.360><c> that</c><00:08:47.519><c> on.</c><00:08:48.480><c> So,</c>
+
+00:08:48.710 --> 00:08:48.720 align:start position:0%
+Windows, so I've left that on. So,
+ 
+
+00:08:48.720 --> 00:08:49.990 align:start position:0%
+Windows, so I've left that on. So,
+hopefully<00:08:48.959><c> this</c><00:08:49.120><c> config</c><00:08:49.519><c> will</c><00:08:49.680><c> get</c><00:08:49.760><c> you</c><00:08:49.920><c> guys</c>
+
+00:08:49.990 --> 00:08:50.000 align:start position:0%
+hopefully this config will get you guys
+ 
+
+00:08:50.000 --> 00:08:51.910 align:start position:0%
+hopefully this config will get you guys
+out<00:08:50.240><c> of</c><00:08:50.320><c> trouble</c><00:08:50.560><c> and</c><00:08:50.720><c> help</c><00:08:50.959><c> out</c><00:08:51.120><c> a</c><00:08:51.279><c> lot.</c><00:08:51.680><c> If</c>
+
+00:08:51.910 --> 00:08:51.920 align:start position:0%
+out of trouble and help out a lot. If
+ 
+
+00:08:51.920 --> 00:08:54.150 align:start position:0%
+out of trouble and help out a lot. If
+any<00:08:52.080><c> of</c><00:08:52.160><c> you</c><00:08:52.399><c> are</c><00:08:52.720><c> curious</c><00:08:53.040><c> on</c><00:08:53.279><c> how</c><00:08:53.519><c> to</c><00:08:53.680><c> try</c><00:08:53.920><c> the</c>
+
+00:08:54.150 --> 00:08:54.160 align:start position:0%
+any of you are curious on how to try the
+ 
+
+00:08:54.160 --> 00:08:55.990 align:start position:0%
+any of you are curious on how to try the
+DirectX11<00:08:54.959><c> launch</c><00:08:55.200><c> option,</c><00:08:55.519><c> even</c><00:08:55.680><c> though</c><00:08:55.839><c> I</c>
+
+00:08:55.990 --> 00:08:56.000 align:start position:0%
+DirectX11 launch option, even though I
+ 
+
+00:08:56.000 --> 00:08:57.829 align:start position:0%
+DirectX11 launch option, even though I
+really<00:08:56.240><c> don't</c><00:08:56.399><c> recommend</c><00:08:56.720><c> it,</c><00:08:57.200><c> in</c><00:08:57.440><c> Steam,</c>
+
+00:08:57.829 --> 00:08:57.839 align:start position:0%
+really don't recommend it, in Steam,
+ 
+
+00:08:57.839 --> 00:09:00.389 align:start position:0%
+really don't recommend it, in Steam,
+right<00:08:58.080><c> click</c><00:08:58.399><c> Finals,</c><00:08:58.959><c> go</c><00:08:59.200><c> properties,</c><00:09:00.080><c> in</c>
+
+00:09:00.389 --> 00:09:00.399 align:start position:0%
+right click Finals, go properties, in
+ 
+
+00:09:00.399 --> 00:09:03.630 align:start position:0%
+right click Finals, go properties, in
+launch<00:09:00.640><c> options</c><00:09:01.279><c> in</c><00:09:01.560><c> general,</c><00:09:02.560><c> click</c><00:09:02.800><c> this,</c>
+
+00:09:03.630 --> 00:09:03.640 align:start position:0%
+launch options in general, click this,
+ 
+
+00:09:03.640 --> 00:09:05.710 align:start position:0%
+launch options in general, click this,
+type
+
+00:09:05.710 --> 00:09:05.720 align:start position:0%
+type
+ 
+
+00:09:05.720 --> 00:09:08.790 align:start position:0%
+type
+DX11.<00:09:06.720><c> That</c><00:09:06.880><c> is</c><00:09:07.040><c> it.</c><00:09:07.839><c> You</c><00:09:08.080><c> can</c><00:09:08.160><c> go</c><00:09:08.240><c> back</c><00:09:08.399><c> in</c><00:09:08.640><c> and</c>
+
+00:09:08.790 --> 00:09:08.800 align:start position:0%
+DX11. That is it. You can go back in and
+ 
+
+00:09:08.800 --> 00:09:10.230 align:start position:0%
+DX11. That is it. You can go back in and
+check<00:09:08.880><c> that</c><00:09:09.120><c> it's</c><00:09:09.360><c> on.</c><00:09:09.600><c> And</c><00:09:09.760><c> if</c><00:09:09.920><c> you</c><00:09:10.080><c> want</c><00:09:10.160><c> to</c>
+
+00:09:10.230 --> 00:09:10.240 align:start position:0%
+check that it's on. And if you want to
+ 
+
+00:09:10.240 --> 00:09:11.670 align:start position:0%
+check that it's on. And if you want to
+remove<00:09:10.480><c> it,</c><00:09:10.720><c> you</c><00:09:10.880><c> can</c><00:09:10.959><c> actually</c><00:09:11.120><c> just</c><00:09:11.360><c> delete</c>
+
+00:09:11.670 --> 00:09:11.680 align:start position:0%
+remove it, you can actually just delete
+ 
+
+00:09:11.680 --> 00:09:14.389 align:start position:0%
+remove it, you can actually just delete
+this<00:09:12.200><c> here.</c><00:09:13.200><c> I'll</c><00:09:13.440><c> launch</c><00:09:13.680><c> the</c><00:09:13.920><c> game</c><00:09:14.080><c> and</c><00:09:14.320><c> show</c>
+
+00:09:14.389 --> 00:09:14.399 align:start position:0%
+this here. I'll launch the game and show
+ 
+
+00:09:14.399 --> 00:09:15.670 align:start position:0%
+this here. I'll launch the game and show
+you<00:09:14.560><c> that</c><00:09:14.720><c> it's</c><00:09:14.959><c> actually</c><00:09:15.200><c> working</c><00:09:15.440><c> in</c>
+
+00:09:15.670 --> 00:09:15.680 align:start position:0%
+you that it's actually working in
+ 
+
+00:09:15.680 --> 00:09:18.550 align:start position:0%
+you that it's actually working in
+DirectX11.
+
+00:09:18.550 --> 00:09:18.560 align:start position:0%
+DirectX11.
+ 
+
+00:09:18.560 --> 00:09:20.070 align:start position:0%
+DirectX11.
+As<00:09:18.800><c> you</c><00:09:18.880><c> guys</c><00:09:19.040><c> can</c><00:09:19.200><c> see</c><00:09:19.360><c> here,</c><00:09:19.600><c> I've</c><00:09:19.839><c> launched</c>
+
+00:09:20.070 --> 00:09:20.080 align:start position:0%
+As you guys can see here, I've launched
+ 
+
+00:09:20.080 --> 00:09:22.310 align:start position:0%
+As you guys can see here, I've launched
+the<00:09:20.240><c> game</c><00:09:20.399><c> successfully</c><00:09:21.200><c> and</c><00:09:21.600><c> Rivet</c><00:09:21.920><c> Shoot</c><00:09:22.160><c> is</c>
+
+00:09:22.310 --> 00:09:22.320 align:start position:0%
+the game successfully and Rivet Shoot is
+ 
+
+00:09:22.320 --> 00:09:24.190 align:start position:0%
+the game successfully and Rivet Shoot is
+telling<00:09:22.480><c> me</c><00:09:22.640><c> that</c><00:09:22.800><c> we</c><00:09:23.040><c> are</c><00:09:23.279><c> indeed</c><00:09:23.600><c> in</c>
+
+00:09:24.190 --> 00:09:24.200 align:start position:0%
+telling me that we are indeed in
+ 
+
+00:09:24.200 --> 00:09:26.470 align:start position:0%
+telling me that we are indeed in
+DirectX11.<00:09:25.200><c> But</c><00:09:25.360><c> unfortunately,</c><00:09:26.000><c> the</c><00:09:26.240><c> game</c>
+
+00:09:26.470 --> 00:09:26.480 align:start position:0%
+DirectX11. But unfortunately, the game
+ 
+
+00:09:26.480 --> 00:09:28.949 align:start position:0%
+DirectX11. But unfortunately, the game
+runs<00:09:26.800><c> horrible</c><00:09:27.279><c> with</c><00:09:27.440><c> it.</c><00:09:27.920><c> So,</c><00:09:28.480><c> I</c><00:09:28.640><c> can't</c><00:09:28.800><c> see</c>
+
+00:09:28.949 --> 00:09:28.959 align:start position:0%
+runs horrible with it. So, I can't see
+ 
+
+00:09:28.959 --> 00:09:30.949 align:start position:0%
+runs horrible with it. So, I can't see
+the<00:09:29.200><c> developers</c><00:09:29.760><c> fixing</c><00:09:30.000><c> that</c><00:09:30.320><c> anytime</c><00:09:30.800><c> at</c>
+
+00:09:30.949 --> 00:09:30.959 align:start position:0%
+the developers fixing that anytime at
+ 
+
+00:09:30.959 --> 00:09:33.670 align:start position:0%
+the developers fixing that anytime at
+all.<00:09:31.839><c> Hope</c><00:09:32.000><c> you</c><00:09:32.160><c> enjoyed</c><00:09:32.399><c> the</c><00:09:32.560><c> video,</c><00:09:32.800><c> guys.</c>
+
+00:09:33.670 --> 00:09:33.680 align:start position:0%
+all. Hope you enjoyed the video, guys.
+ 
+
+00:09:33.680 --> 00:09:35.110 align:start position:0%
+all. Hope you enjoyed the video, guys.
+Take<00:09:33.920><c> care</c><00:09:34.080><c> and</c><00:09:34.320><c> I'll</c><00:09:34.480><c> see</c><00:09:34.560><c> you</c><00:09:34.640><c> guys</c><00:09:34.800><c> real</c>
+
+00:09:35.110 --> 00:09:35.120 align:start position:0%
+Take care and I'll see you guys real
+ 
+
+00:09:35.120 --> 00:09:38.320 align:start position:0%
+Take care and I'll see you guys real
+soon.<00:09:35.440><c> Bye.</c>
+

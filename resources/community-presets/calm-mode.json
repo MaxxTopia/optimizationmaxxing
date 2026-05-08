@@ -1,0 +1,22 @@
+{
+  "name": "Calm Mode",
+  "glyph": "🌙",
+  "tagline": "Quiet OS · no popups · no ads · no ghost processes",
+  "description": "Strips every modern-Windows annoyance: lock-screen ads, Bing-in-Start, Recall AI snapshots, Sticky-Keys popup, taskbar search box, transparency effects. Plus Edge / OneDrive / Discord / Steam auto-launch kills. Vanilla Windows feels reborn.",
+  "tweakIds": [
+    "ui.sticky-keys.disable",
+    "ui.taskbar-search.minimize",
+    "ui.win11.transparency.disable",
+    "ui.win11.widgets.disable",
+    "ui.taskbar.chat-icon.hide",
+    "privacy.windows-spotlight.disable",
+    "privacy.win11.recall.disable",
+    "privacy.start-bing-search.disable",
+    "privacy.activity-history.disable",
+    "process.edge.background-disable",
+    "process.onedrive.autostart-disable",
+    "process.discord.autostart-disable",
+    "process.steam.autostart-disable",
+    "audio.system-sounds.none"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Tournament FPS",
+  "glyph": "⚔",
+  "tagline": "Deepest-impact latency stack · pro-tier · measurable wins",
+  "description": "The six tweaks pros run that paragontweaks/hone.gg don't ship: NIC interrupt moderation off, flow control off, RSS forced on, PCIe ASPM off, USB-3 link power off, core parking disabled. Every entry is a verified low-latency win documented in our Discord corpus, audited against Microsoft + community sources. NOT for laptops — the power tweaks here will eat battery hard. Pair with the regular Frame Pacing preset for kernel-timer coverage. Reboot recommended.",
+  "tweakIds": [
+    "net.nic.interrupt-moderation.disable",
+    "net.nic.flow-control.disable",
+    "net.nic.rss.enable",
+    "process.core-parking.disable",
+    "power.pcie.link-state.off",
+    "power.usb3.link-power.disable"
+  ]
+}

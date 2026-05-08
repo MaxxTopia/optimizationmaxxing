@@ -1,0 +1,235 @@
+{
+  "version": "v1.0.0-pilot",
+  "generated_at": "2026-05-06",
+  "source": "Hand-curated from Buildzoid timing DB + Hynix/Samsung/Micron die-decode references. PartNumber match is substring-based (case-insensitive).",
+  "kits": [
+    {
+      "match": "F5-6400J3239",
+      "brand": "G.Skill",
+      "model": "Trident Z5 RGB 6400 CL32",
+      "family": "DDR5",
+      "die_inferred": "Hynix M-die",
+      "rated_speed_mts": 6400,
+      "rated_timings": "32-39-39-102",
+      "rated_voltage_v": 1.4,
+      "tunable_targets": [
+        { "speed_mts": 6400, "timings": "30-38-38-30", "voltage_v": 1.45, "platform": "Z790 / X670E", "difficulty": "Easy", "notes": "Tighten primaries, leave secondaries on auto" },
+        { "speed_mts": 6800, "timings": "32-40-40-30", "voltage_v": 1.5, "platform": "Z790", "difficulty": "Medium", "notes": "Stable on most Z790 boards with 1:1 IMC" }
+      ],
+      "tm5_config": "BZ_DDR5 / Anta777 Extreme",
+      "notes": "M-die loves subtimings. Try tRDWR=20, tWRRD=10. Use 1:1 UCLK on AMD."
+    },
+    {
+      "match": "F5-6000J3038",
+      "brand": "G.Skill",
+      "model": "Trident Z5 Neo 6000 CL30",
+      "family": "DDR5",
+      "die_inferred": "Hynix A-die",
+      "rated_speed_mts": 6000,
+      "rated_timings": "30-38-38-96",
+      "rated_voltage_v": 1.4,
+      "tunable_targets": [
+        { "speed_mts": 6000, "timings": "28-36-36-28", "voltage_v": 1.45, "platform": "X670E (AM5 sweet spot)", "difficulty": "Easy", "notes": "AM5 1:1 UCLK at 6000 = goat tier" },
+        { "speed_mts": 6400, "timings": "30-38-38-30", "voltage_v": 1.45, "platform": "Z790", "difficulty": "Medium", "notes": "Past 6000 on AM5 drops to 2:1 — Intel only above this" }
+      ],
+      "tm5_config": "BZ_DDR5 / Anta777 Extreme",
+      "notes": "Neo SKU is AM5-binned. A-die scales better with voltage than M-die."
+    },
+    {
+      "match": "F4-3200C14",
+      "brand": "G.Skill",
+      "model": "Trident Z RGB 3200 CL14",
+      "family": "DDR4",
+      "die_inferred": "Samsung B-die",
+      "rated_speed_mts": 3200,
+      "rated_timings": "14-14-14-34",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 3600, "timings": "14-14-14-28", "voltage_v": 1.45, "platform": "Z690 / Z790 / X570", "difficulty": "Easy", "notes": "B-die gold standard. tRC=42 for tightness" },
+        { "speed_mts": 4000, "timings": "15-16-16-28", "voltage_v": 1.5, "platform": "Z790 (1:1 IMC)", "difficulty": "Medium", "notes": "Best DDR4 IMC required" }
+      ],
+      "tm5_config": "BZ_4 / Anta777 Extreme",
+      "notes": "Samsung B-die — the legend. Likes voltage, hates loose tFAW."
+    },
+    {
+      "match": "F4-3600C16",
+      "brand": "G.Skill",
+      "model": "Trident Z RGB 3600 CL16",
+      "family": "DDR4",
+      "die_inferred": "Samsung B-die",
+      "rated_speed_mts": 3600,
+      "rated_timings": "16-19-19-39",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 3600, "timings": "14-15-15-30", "voltage_v": 1.45, "platform": "Z690 / X570", "difficulty": "Easy", "notes": "Re-tune as if it's the C14 kit — usually drops right in" }
+      ],
+      "tm5_config": "BZ_4 / Anta777 Extreme",
+      "notes": "Often Samsung B-die under loose XMP. Aggressive manual tune unlocks the silicon."
+    },
+    {
+      "match": "F4-3200C16",
+      "brand": "G.Skill",
+      "model": "Ripjaws V / Trident Z 3200 CL16",
+      "family": "DDR4",
+      "die_inferred": "Hynix CJR / Samsung E-die (lottery)",
+      "rated_speed_mts": 3200,
+      "rated_timings": "16-18-18-38",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 3600, "timings": "16-18-18-36", "voltage_v": 1.4, "platform": "Z690 / X570", "difficulty": "Medium", "notes": "Run Thaiphoon Burner first to confirm die. CJR != E-die tuning" }
+      ],
+      "tm5_config": "BZ_4",
+      "notes": "Lottery kit. Decode SPD before tuning blind."
+    },
+    {
+      "match": "CMK32GX5M2B6000C30",
+      "brand": "Corsair",
+      "model": "Vengeance DDR5 6000 CL30",
+      "family": "DDR5",
+      "die_inferred": "Hynix M-die",
+      "rated_speed_mts": 6000,
+      "rated_timings": "30-36-36-76",
+      "rated_voltage_v": 1.4,
+      "tunable_targets": [
+        { "speed_mts": 6000, "timings": "28-34-34-28", "voltage_v": 1.45, "platform": "AM5 (1:1) / Z790", "difficulty": "Easy", "notes": "Pre-binned for AM5 EXPO — drops in at lower CL" }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "Corsair's AM5-friendly kit. Same Hynix M-die as G.Skill 6000."
+    },
+    {
+      "match": "CMK32GX5M2B6400C32",
+      "brand": "Corsair",
+      "model": "Vengeance DDR5 6400 CL32",
+      "family": "DDR5",
+      "die_inferred": "Hynix M-die",
+      "rated_speed_mts": 6400,
+      "rated_timings": "32-39-39-84",
+      "rated_voltage_v": 1.4,
+      "tunable_targets": [
+        { "speed_mts": 6400, "timings": "30-38-38-30", "voltage_v": 1.45, "platform": "Z790", "difficulty": "Easy", "notes": "Intel-binned; AM5 will need 2:1 above 6000" }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "Same silicon as G.Skill 6400 C32 — different XMP profile."
+    },
+    {
+      "match": "CMK16GX4M2B3200C16",
+      "brand": "Corsair",
+      "model": "Vengeance LPX 3200 CL16",
+      "family": "DDR4",
+      "die_inferred": "Hynix CJR (post-2020) / Samsung E-die (early)",
+      "rated_speed_mts": 3200,
+      "rated_timings": "16-18-18-36",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 3600, "timings": "18-20-20-38", "voltage_v": 1.4, "platform": "Z490+ / X570", "difficulty": "Medium", "notes": "Decode SPD first — CJR vs E-die diverge after this" }
+      ],
+      "tm5_config": "BZ_4",
+      "notes": "Budget tier — IC lottery applies."
+    },
+    {
+      "match": "CMW32GX5M2X7200C34",
+      "brand": "Corsair",
+      "model": "Dominator Platinum DDR5 7200 CL34",
+      "family": "DDR5",
+      "die_inferred": "Hynix A-die",
+      "rated_speed_mts": 7200,
+      "rated_timings": "34-46-46-96",
+      "rated_voltage_v": 1.4,
+      "tunable_targets": [
+        { "speed_mts": 7200, "timings": "32-44-44-32", "voltage_v": 1.45, "platform": "Z790 (top-tier IMC)", "difficulty": "Hard", "notes": "Past 7200 needs CUDIMM or 14th-gen + tier-S board" }
+      ],
+      "tm5_config": "BZ_DDR5 / Anta777 Extreme",
+      "notes": "A-die top bin. CL is loose at XMP — manual unlocks 32-44 easily."
+    },
+    {
+      "match": "BL16G36C16U4",
+      "brand": "Crucial",
+      "model": "Ballistix 3600 CL16",
+      "family": "DDR4",
+      "die_inferred": "Micron Rev E",
+      "rated_speed_mts": 3600,
+      "rated_timings": "16-18-18-38",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 4000, "timings": "16-18-18-32", "voltage_v": 1.45, "platform": "Z690 (1:1 IMC)", "difficulty": "Medium", "notes": "Micron E loves voltage. Push tRFC = ~280 for clean stability" }
+      ],
+      "tm5_config": "BZ_4",
+      "notes": "Micron Rev E — a B-die alternative. Tight subtimings respond well."
+    },
+    {
+      "match": "CT16G56C46U5",
+      "brand": "Crucial",
+      "model": "DDR5 5600 CL46",
+      "family": "DDR5",
+      "die_inferred": "Micron 1Bnm",
+      "rated_speed_mts": 5600,
+      "rated_timings": "46-45-45-90",
+      "rated_voltage_v": 1.1,
+      "tunable_targets": [
+        { "speed_mts": 6000, "timings": "38-40-40-80", "voltage_v": 1.35, "platform": "Z790 / AM5", "difficulty": "Medium", "notes": "JEDEC kit — tighten with patience. Micron DDR5 caps lower than Hynix" }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "JEDEC vendor kit. Decent ceiling but won't hit Hynix bins."
+    },
+    {
+      "match": "KF560C36BB",
+      "brand": "Kingston",
+      "model": "Fury Beast DDR5 6000 CL36",
+      "family": "DDR5",
+      "die_inferred": "Hynix M-die",
+      "rated_speed_mts": 6000,
+      "rated_timings": "36-38-38-80",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 6000, "timings": "30-36-36-30", "voltage_v": 1.4, "platform": "AM5 / Z790", "difficulty": "Easy", "notes": "Kingston's binning is conservative — manual easily lowers CL" }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "Underrated value kit — Hynix M-die at Crucial-tier pricing."
+    },
+    {
+      "match": "KF436C16BB",
+      "brand": "Kingston",
+      "model": "Fury Beast DDR4 3600 CL16",
+      "family": "DDR4",
+      "die_inferred": "Hynix CJR",
+      "rated_speed_mts": 3600,
+      "rated_timings": "16-20-20-38",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 3600, "timings": "16-19-19-36", "voltage_v": 1.4, "platform": "Z690 / X570", "difficulty": "Easy", "notes": "Tighten primaries first; CJR likes 1.4-1.45V" }
+      ],
+      "tm5_config": "BZ_4",
+      "notes": "Hynix CJR — solid mid-tier silicon."
+    },
+    {
+      "match": "TF8D532G6000HC30CDC01",
+      "brand": "TeamGroup",
+      "model": "T-Force Delta RGB DDR5 6000 CL30",
+      "family": "DDR5",
+      "die_inferred": "Hynix M-die",
+      "rated_speed_mts": 6000,
+      "rated_timings": "30-38-38-78",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 6000, "timings": "28-36-36-28", "voltage_v": 1.4, "platform": "AM5 (1:1) / Z790", "difficulty": "Easy", "notes": "Same Hynix M-die. AM5 EXPO ready" }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "TeamGroup's Hynix bin is on par with G.Skill at lower price."
+    },
+    {
+      "match": "F4-3200C14D-32GTZN",
+      "brand": "G.Skill",
+      "model": "Trident Z Neo 3200 CL14",
+      "family": "DDR4",
+      "die_inferred": "Samsung B-die",
+      "rated_speed_mts": 3200,
+      "rated_timings": "14-14-14-34",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 3800, "timings": "14-15-15-30", "voltage_v": 1.45, "platform": "X570 (1:1 with FCLK 1900)", "difficulty": "Easy", "notes": "Ryzen 5xxx 1:1 sweet spot" }
+      ],
+      "tm5_config": "BZ_4 / Anta777 Extreme",
+      "notes": "Neo = AMD-binned B-die. The Ryzen DDR4 GOAT."
+    }
+  ]
+}

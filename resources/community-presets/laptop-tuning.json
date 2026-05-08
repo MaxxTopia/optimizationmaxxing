@@ -1,0 +1,22 @@
+{
+  "name": "Laptop Tuning",
+  "glyph": "🔋",
+  "tagline": "Battery-friendly · skip the timer-fry tweaks",
+  "description": "Tweaks that help laptops without trashing battery life or thermals. Skips HPET-disable / dynamic-tick / TSC tricks that fight the laptop's power management. Focuses on background-process kills + UI overhead removal.",
+  "tweakIds": [
+    "ui.gamedvr.disable",
+    "ui.gamedvr.appcapture.disable",
+    "ui.fse.disable-global",
+    "ui.mouse.disable-acceleration",
+    "ui.visualfx.best-performance",
+    "ui.startup.delay-disable",
+    "ui.menu-show-delay.zero",
+    "privacy.telemetry.disable",
+    "privacy.cortana.disable",
+    "privacy.activity-history.disable",
+    "process.windows-search.disable",
+    "process.edge.background-disable",
+    "process.onedrive.autostart-disable",
+    "audio.system-sounds.none"
+  ]
+}

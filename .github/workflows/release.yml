@@ -1,0 +1,90 @@
+name: Release
+
+# Builds the Tauri app on every `v*` tag push, creates a GitHub release with
+# the NSIS installer attached, and dispatches `optimizationmaxxing-released`
+# to dtman-gif/maxxtopia so the Download CTA on the site auto-updates.
+
+on:
+    push:
+        tags:
+            - "v*"
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    publish:
+        runs-on: windows-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Use Node.js 20
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: "npm"
+
+            - name: Install Rust toolchain
+              uses: dtolnay/rust-toolchain@stable
+
+            - name: Cache cargo
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      src-tauri/target
+                  key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', 'src-tauri/Cargo.toml') }}
+
+            - name: Install npm dependencies
+              run: npm ci
+
+            # tauri-action handles: tauri build (npm script wraps), bundle the
+            # NSIS installer, optionally sign, create a draft GitHub release
+            # for the matching tag, and upload all bundled artifacts to it.
+            - name: Build + Release
+              uses: tauri-apps/tauri-action@v0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tagName: ${{ github.ref_name }}
+                  releaseName: "Optimizationmaxxing ${{ github.ref_name }}"
+                  releaseBody: |
+                      Auto-built by CI from tag `${{ github.ref_name }}`.
+                      Download `optimizationmaxxing_${{ github.ref_name }}_x64-setup.exe` below.
+
+                      Windows SmartScreen will warn (unsigned for v0.1) — More info -> Run anyway.
+                  releaseDraft: true
+                  prerelease: false
+
+            # Cross-repo: notify maxxtopia.com so the Download CTA on
+            # /optimizationmaxxing updates to the new installer. Listener
+            # workflow on the other side rewrites
+            # src/data/optimizationmaxxing-release.json, commits, and
+            # Cloudflare Pages auto-deploys.
+            #
+            # Requires repo secret `MAXXTOPIA_DISPATCH_PAT` — a fine-grained
+            # PAT with Contents:Read+Write + Metadata:Read on
+            # dtman-gif/maxxtopia.  Skips silently if missing so the build
+            # itself still ships.
+            - name: Notify maxxtopia of new release
+              if: success() && startsWith(github.ref, 'refs/tags/v') && env.HAS_PAT == 'true'
+              shell: bash
+              env:
+                  PAT: ${{ secrets.MAXXTOPIA_DISPATCH_PAT }}
+                  HAS_PAT: ${{ secrets.MAXXTOPIA_DISPATCH_PAT != '' }}
+              run: |
+                  TAG="${GITHUB_REF_NAME}"
+                  VERSION="${TAG#v}"
+                  curl --fail-with-body -X POST \
+                       -H "Accept: application/vnd.github+json" \
+                       -H "Authorization: Bearer ${PAT}" \
+                       -H "X-GitHub-Api-Version: 2022-11-28" \
+                       https://api.github.com/repos/dtman-gif/maxxtopia/dispatches \
+                       -d "$(jq -n \
+                           --arg version "${TAG}" \
+                           --arg installerUrl "https://github.com/dtman-gif/optimizationmaxxing/releases/download/${TAG}/optimizationmaxxing_${VERSION}_x64-setup.exe" \
+                           --arg releasePageUrl "https://github.com/dtman-gif/optimizationmaxxing/releases/tag/${TAG}" \
+                           '{event_type: "optimizationmaxxing-released", client_payload: {version: $version, installerUrl: $installerUrl, releasePageUrl: $releasePageUrl}}')"

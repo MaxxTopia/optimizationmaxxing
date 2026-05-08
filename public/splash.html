@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>optimizationmaxxing</title>
+<style>
+  /* Transparent body so the squircle floats on the desktop. */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+  }
+  .stage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Drop-in fade so the splash doesn't pop in harshly. */
+    animation: stage-in 200ms ease-out;
+  }
+  @keyframes stage-in {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  /* Subtle pulse on the squircle itself — feels alive. */
+  .icon {
+    width: 320px;
+    height: 320px;
+    animation: icon-pulse 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 18px 40px rgba(15, 0, 50, 0.55));
+  }
+  @keyframes icon-pulse {
+    0%, 100% { transform: scale(1.0); }
+    50%      { transform: scale(1.03); }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+    <defs>
+      <!-- Squircle background gradient (matches icon.svg). -->
+      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#f37bff"/>
+        <stop offset="35%"  stop-color="#e25bff"/>
+        <stop offset="70%"  stop-color="#7d51f7"/>
+        <stop offset="100%" stop-color="#4c51f7"/>
+      </linearGradient>
+      <linearGradient id="hi" x1="50%" y1="0%" x2="50%" y2="55%">
+        <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.32"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="bottomShade" x1="50%" y1="60%" x2="50%" y2="100%">
+        <stop offset="0%"   stop-color="#000000" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
+      </linearGradient>
+
+      <!-- White bolt fill, faintly tinted at the bottom. -->
+      <linearGradient id="boltFill" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="0%"   stop-color="#ffffff"/>
+        <stop offset="55%"  stop-color="#ffffff"/>
+        <stop offset="100%" stop-color="#fbe8ff"/>
+      </linearGradient>
+
+      <!-- THE NEON BLUE RIPPLE — animated linearGradient.
+           Three stops form a tight bright band that travels top-to-bottom
+           through the bolt. The band is ~15% tall. The animation drags
+           all three stop offsets in lockstep from -0.2 to 1.2 over 1.2s,
+           so the band enters above and exits below the path. -->
+      <linearGradient id="ripple" x1="50%" y1="0%" x2="50%" y2="100%">
+        <stop offset="-0.20" stop-color="#00d4ff" stop-opacity="0">
+          <animate attributeName="offset" values="-0.20;1.20" dur="1.2s" repeatCount="indefinite"/>
+        </stop>
+        <stop offset="-0.10" stop-color="#00d4ff" stop-opacity="1">
+          <animate attributeName="offset" values="-0.10;1.30" dur="1.2s" repeatCount="indefinite"/>
+        </stop>
+        <stop offset="0.00" stop-color="#7df9ff" stop-opacity="1">
+          <animate attributeName="offset" values="0.00;1.40" dur="1.2s" repeatCount="indefinite"/>
+        </stop>
+        <stop offset="0.10" stop-color="#00d4ff" stop-opacity="0">
+          <animate attributeName="offset" values="0.10;1.50" dur="1.2s" repeatCount="indefinite"/>
+        </stop>
+      </linearGradient>
+
+      <filter id="boltShadow" x="-15%" y="-15%" width="130%" height="130%">
+        <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#1a0028" flood-opacity="0.4"/>
+      </filter>
+      <!-- Outer neon glow on the ripple band itself. -->
+      <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="8" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+
+      <clipPath id="boltClip">
+        <path d="M 595 232 L 384 540 L 510 540 L 426 792 L 642 484 L 522 484 Z"/>
+      </clipPath>
+    </defs>
+
+    <!-- Squircle face (transparent canvas around it). -->
+    <rect x="64" y="64" width="896" height="896" rx="220" ry="220" fill="url(#bg)"/>
+    <rect x="64" y="64" width="896" height="896" rx="220" ry="220" fill="url(#hi)"/>
+    <rect x="64" y="64" width="896" height="896" rx="220" ry="220" fill="url(#bottomShade)"/>
+    <rect x="65" y="65" width="894" height="894" rx="219" ry="219" fill="none" stroke="#ffffff" stroke-opacity="0.20" stroke-width="2"/>
+
+    <!-- Speed accent lines top-right (from icon.svg). -->
+    <g stroke="#ffffff" stroke-opacity="0.22" stroke-linecap="round" fill="none">
+      <line x1="772" y1="208" x2="868" y2="252" stroke-width="14"/>
+      <line x1="792" y1="288" x2="864" y2="320" stroke-width="11"/>
+      <line x1="810" y1="356" x2="858" y2="378" stroke-width="9"/>
+    </g>
+
+    <!-- Base white bolt with shadow. -->
+    <g filter="url(#boltShadow)">
+      <path d="M 595 232 L 384 540 L 510 540 L 426 792 L 642 484 L 522 484 Z"
+            fill="url(#boltFill)"/>
+    </g>
+
+    <!-- Neon blue ripple — same path filled with the animated gradient,
+         clipped to the bolt shape, glowed with Gaussian blur. -->
+    <g clip-path="url(#boltClip)" filter="url(#neonGlow)">
+      <path d="M 595 232 L 384 540 L 510 540 L 426 792 L 642 484 L 522 484 Z"
+            fill="url(#ripple)"/>
+    </g>
+  </svg>
+</div>
+
+<script>
+  // Bridge to the Tauri main window readiness signal. The React app calls
+  // close_splashscreen() on first mount, which Rust handles by closing this
+  // window and showing the main one. If for some reason the React app
+  // never mounts (build broken / dev-server down), the splash still
+  // self-closes after 5s so the user isn't stuck staring at it.
+  setTimeout(() => {
+    try { window.close() } catch (_) {}
+  }, 5000)
+</script>
+</body>
+</html>

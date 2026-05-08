@@ -1,0 +1,45 @@
+[package]
+name = "optimizationmaxxing"
+version = "0.1.37"
+description = "PC optimization tool for competitive gamers"
+authors = ["Diggy"]
+edition = "2021"
+rust-version = "1.77"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "optimizationmaxxing_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+anyhow = "1"
+thiserror = "1"
+chrono = { version = "0.4", features = ["serde"] }
+
+# Phase 3 — spec detection
+wmi = "0.14"
+raw-cpuid = "11"
+winreg = "0.55"
+windows = { version = "0.61", features = ["Wdk_System_SystemServices", "Win32_System_SystemInformation"] }
+
+# Phase 4 — engine + snapshot store
+rusqlite = { version = "0.31", features = ["bundled"] }
+parking_lot = "0.12"
+
+# Live system metrics for dashboard ring gauges
+sysinfo = "0.32"
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

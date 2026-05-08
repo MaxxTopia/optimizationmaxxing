@@ -1,0 +1,2512 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.240 --> 00:00:01.670 align:start position:0%
+ 
+If<00:00:00.400><c> you're</c><00:00:00.560><c> not</c><00:00:00.719><c> getting</c><00:00:00.800><c> the</c><00:00:00.960><c> FPS</c><00:00:01.360><c> you</c><00:00:01.520><c> want</c>
+
+00:00:01.670 --> 00:00:01.680 align:start position:0%
+If you're not getting the FPS you want
+ 
+
+00:00:01.680 --> 00:00:03.669 align:start position:0%
+If you're not getting the FPS you want
+in<00:00:01.920><c> Black</c><00:00:02.080><c> Ops</c><00:00:02.399><c> 7,</c><00:00:02.800><c> you're</c><00:00:03.040><c> probably</c><00:00:03.280><c> missing</c>
+
+00:00:03.669 --> 00:00:03.679 align:start position:0%
+in Black Ops 7, you're probably missing
+ 
+
+00:00:03.679 --> 00:00:05.590 align:start position:0%
+in Black Ops 7, you're probably missing
+critical<00:00:04.080><c> optimizations</c><00:00:04.799><c> that</c><00:00:05.120><c> you</c><00:00:05.279><c> haven't</c>
+
+00:00:05.590 --> 00:00:05.600 align:start position:0%
+critical optimizations that you haven't
+ 
+
+00:00:05.600 --> 00:00:07.510 align:start position:0%
+critical optimizations that you haven't
+done.<00:00:06.240><c> I'm</c><00:00:06.400><c> going</c><00:00:06.480><c> to</c><00:00:06.560><c> show</c><00:00:06.720><c> you</c><00:00:06.879><c> the</c><00:00:07.120><c> exact</c>
+
+00:00:07.510 --> 00:00:07.520 align:start position:0%
+done. I'm going to show you the exact
+ 
+
+00:00:07.520 --> 00:00:09.669 align:start position:0%
+done. I'm going to show you the exact
+configuration<00:00:08.240><c> files,</c><00:00:08.880><c> GPU</c><00:00:09.280><c> driver</c>
+
+00:00:09.669 --> 00:00:09.679 align:start position:0%
+configuration files, GPU driver
+ 
+
+00:00:09.679 --> 00:00:11.830 align:start position:0%
+configuration files, GPU driver
+versions,<00:00:10.160><c> and</c><00:00:10.400><c> nuanced</c><00:00:10.960><c> in-game</c><00:00:11.440><c> settings</c>
+
+00:00:11.830 --> 00:00:11.840 align:start position:0%
+versions, and nuanced in-game settings
+ 
+
+00:00:11.840 --> 00:00:13.749 align:start position:0%
+versions, and nuanced in-game settings
+that<00:00:12.160><c> actually</c><00:00:12.480><c> matter</c><00:00:12.800><c> for</c><00:00:13.040><c> your</c><00:00:13.360><c> hardware</c>
+
+00:00:13.749 --> 00:00:13.759 align:start position:0%
+that actually matter for your hardware
+ 
+
+00:00:13.759 --> 00:00:16.070 align:start position:0%
+that actually matter for your hardware
+configuration.<00:00:14.880><c> This</c><00:00:15.120><c> isn't</c><00:00:15.360><c> some</c><00:00:15.599><c> generic</c>
+
+00:00:16.070 --> 00:00:16.080 align:start position:0%
+configuration. This isn't some generic
+ 
+
+00:00:16.080 --> 00:00:17.590 align:start position:0%
+configuration. This isn't some generic
+turn<00:00:16.320><c> everything</c><00:00:16.720><c> to</c><00:00:16.880><c> low</c><00:00:17.119><c> guide.</c><00:00:17.440><c> We're</c>
+
+00:00:17.590 --> 00:00:17.600 align:start position:0%
+turn everything to low guide. We're
+ 
+
+00:00:17.600 --> 00:00:19.429 align:start position:0%
+turn everything to low guide. We're
+going<00:00:17.840><c> deep</c><00:00:18.080><c> on</c><00:00:18.240><c> what</c><00:00:18.560><c> actually</c><00:00:18.880><c> impacts</c>
+
+00:00:19.429 --> 00:00:19.439 align:start position:0%
+going deep on what actually impacts
+ 
+
+00:00:19.439 --> 00:00:21.590 align:start position:0%
+going deep on what actually impacts
+performance.<00:00:20.080><c> Let's</c><00:00:20.400><c> get</c><00:00:20.560><c> right</c><00:00:20.720><c> into</c><00:00:20.960><c> it.</c>
+
+00:00:21.590 --> 00:00:21.600 align:start position:0%
+performance. Let's get right into it.
+ 
+
+00:00:21.600 --> 00:00:23.830 align:start position:0%
+performance. Let's get right into it.
+First,<00:00:22.160><c> configuration</c><00:00:22.800><c> files.</c><00:00:23.199><c> Black</c><00:00:23.359><c> Ops</c><00:00:23.600><c> 7</c>
+
+00:00:23.830 --> 00:00:23.840 align:start position:0%
+First, configuration files. Black Ops 7
+ 
+
+00:00:23.840 --> 00:00:25.830 align:start position:0%
+First, configuration files. Black Ops 7
+stores<00:00:24.160><c> its</c><00:00:24.480><c> configuration</c><00:00:25.119><c> in</c><00:00:25.359><c> your</c><00:00:25.519><c> local</c>
+
+00:00:25.830 --> 00:00:25.840 align:start position:0%
+stores its configuration in your local
+ 
+
+00:00:25.840 --> 00:00:27.750 align:start position:0%
+stores its configuration in your local
+app<00:00:26.160><c> data</c><00:00:26.480><c> folder.</c><00:00:26.960><c> So,</c><00:00:27.119><c> the</c><00:00:27.279><c> fastest</c><00:00:27.599><c> way</c><00:00:27.680><c> to</c>
+
+00:00:27.750 --> 00:00:27.760 align:start position:0%
+app data folder. So, the fastest way to
+ 
+
+00:00:27.760 --> 00:00:29.429 align:start position:0%
+app data folder. So, the fastest way to
+get<00:00:27.920><c> there</c><00:00:28.080><c> is</c><00:00:28.320><c> press</c><00:00:28.560><c> your</c><00:00:28.720><c> Windows</c><00:00:29.039><c> key</c><00:00:29.279><c> and</c>
+
+00:00:29.429 --> 00:00:29.439 align:start position:0%
+get there is press your Windows key and
+ 
+
+00:00:29.439 --> 00:00:32.950 align:start position:0%
+get there is press your Windows key and
+R,<00:00:30.000><c> type</c><00:00:30.400><c> percent</c><00:00:31.039><c> local</c><00:00:31.439><c> app</c><00:00:31.760><c> data,</c><00:00:32.480><c> then</c><00:00:32.719><c> hit</c>
+
+00:00:32.950 --> 00:00:32.960 align:start position:0%
+R, type percent local app data, then hit
+ 
+
+00:00:32.960 --> 00:00:34.389 align:start position:0%
+R, type percent local app data, then hit
+enter.<00:00:33.360><c> Then</c><00:00:33.520><c> you</c><00:00:33.680><c> need</c><00:00:33.760><c> to</c><00:00:33.920><c> double</c><00:00:34.079><c> click</c>
+
+00:00:34.389 --> 00:00:34.399 align:start position:0%
+enter. Then you need to double click
+ 
+
+00:00:34.399 --> 00:00:36.150 align:start position:0%
+enter. Then you need to double click
+Activision<00:00:34.960><c> folder,</c><00:00:35.440><c> double</c><00:00:35.680><c> click</c><00:00:35.840><c> Call</c><00:00:36.000><c> of</c>
+
+00:00:36.150 --> 00:00:36.160 align:start position:0%
+Activision folder, double click Call of
+ 
+
+00:00:36.160 --> 00:00:38.709 align:start position:0%
+Activision folder, double click Call of
+Duty,<00:00:36.640><c> then</c><00:00:36.880><c> double</c><00:00:37.040><c> click</c><00:00:37.360><c> players.</c><00:00:38.399><c> Now,</c>
+
+00:00:38.709 --> 00:00:38.719 align:start position:0%
+Duty, then double click players. Now,
+ 
+
+00:00:38.719 --> 00:00:40.310 align:start position:0%
+Duty, then double click players. Now,
+instead<00:00:39.040><c> of</c><00:00:39.120><c> manually</c><00:00:39.520><c> editing</c><00:00:39.840><c> all</c><00:00:40.000><c> these</c>
+
+00:00:40.310 --> 00:00:40.320 align:start position:0%
+instead of manually editing all these
+ 
+
+00:00:40.320 --> 00:00:41.830 align:start position:0%
+instead of manually editing all these
+settings,<00:00:40.960><c> you're</c><00:00:41.280><c> pretty</c><00:00:41.440><c> much</c><00:00:41.600><c> just</c><00:00:41.760><c> going</c>
+
+00:00:41.830 --> 00:00:41.840 align:start position:0%
+settings, you're pretty much just going
+ 
+
+00:00:41.840 --> 00:00:43.430 align:start position:0%
+settings, you're pretty much just going
+to<00:00:41.920><c> use</c><00:00:42.079><c> the</c><00:00:42.160><c> pre-optimized</c><00:00:42.879><c> configuration</c>
+
+00:00:43.430 --> 00:00:43.440 align:start position:0%
+to use the pre-optimized configuration
+ 
+
+00:00:43.440 --> 00:00:44.790 align:start position:0%
+to use the pre-optimized configuration
+files<00:00:43.760><c> that</c><00:00:44.000><c> are</c><00:00:44.160><c> linked</c><00:00:44.480><c> in</c><00:00:44.640><c> the</c>
+
+00:00:44.790 --> 00:00:44.800 align:start position:0%
+files that are linked in the
+ 
+
+00:00:44.800 --> 00:00:47.590 align:start position:0%
+files that are linked in the
+description.<00:00:45.840><c> Simply</c><00:00:46.160><c> just</c><00:00:46.399><c> drag</c><00:00:46.719><c> them</c><00:00:46.960><c> over</c>
+
+00:00:47.590 --> 00:00:47.600 align:start position:0%
+description. Simply just drag them over
+ 
+
+00:00:47.600 --> 00:00:49.350 align:start position:0%
+description. Simply just drag them over
+from<00:00:48.000><c> the</c><00:00:48.320><c> downloads</c><00:00:48.719><c> folder</c><00:00:49.039><c> to</c><00:00:49.200><c> your</c>
+
+00:00:49.350 --> 00:00:49.360 align:start position:0%
+from the downloads folder to your
+ 
+
+00:00:49.360 --> 00:00:51.110 align:start position:0%
+from the downloads folder to your
+players<00:00:49.680><c> folder,</c><00:00:50.000><c> and</c><00:00:50.160><c> it</c><00:00:50.399><c> will</c><00:00:50.559><c> replace</c><00:00:50.879><c> the</c>
+
+00:00:51.110 --> 00:00:51.120 align:start position:0%
+players folder, and it will replace the
+ 
+
+00:00:51.120 --> 00:00:52.709 align:start position:0%
+players folder, and it will replace the
+existing<00:00:51.520><c> one.</c><00:00:51.920><c> And</c><00:00:52.079><c> that's</c><00:00:52.239><c> it</c><00:00:52.399><c> for</c><00:00:52.559><c> the</c>
+
+00:00:52.709 --> 00:00:52.719 align:start position:0%
+existing one. And that's it for the
+ 
+
+00:00:52.719 --> 00:00:54.709 align:start position:0%
+existing one. And that's it for the
+configuration<00:00:53.280><c> files.</c><00:00:53.840><c> Simple,</c><00:00:54.239><c> fast,</c><00:00:54.480><c> and</c>
+
+00:00:54.709 --> 00:00:54.719 align:start position:0%
+configuration files. Simple, fast, and
+ 
+
+00:00:54.719 --> 00:00:56.950 align:start position:0%
+configuration files. Simple, fast, and
+it's<00:00:54.879><c> optimized.</c><00:00:55.440><c> Now,</c><00:00:55.760><c> now</c><00:00:55.920><c> for</c><00:00:56.160><c> GPU</c><00:00:56.640><c> drivers</c>
+
+00:00:56.950 --> 00:00:56.960 align:start position:0%
+it's optimized. Now, now for GPU drivers
+ 
+
+00:00:56.960 --> 00:00:58.869 align:start position:0%
+it's optimized. Now, now for GPU drivers
+and<00:00:57.199><c> settings,</c><00:00:57.680><c> this</c><00:00:57.840><c> is</c><00:00:58.000><c> very</c><00:00:58.239><c> important.</c>
+
+00:00:58.869 --> 00:00:58.879 align:start position:0%
+and settings, this is very important.
+ 
+
+00:00:58.879 --> 00:01:02.790 align:start position:0%
+and settings, this is very important.
+You<00:00:59.039><c> want</c><00:00:59.120><c> to</c><00:00:59.280><c> use</c><00:00:59.440><c> the</c><00:00:59.760><c> GPU</c><00:01:00.239><c> driver</c><00:01:00.800><c> 581.94.</c>
+
+00:01:02.790 --> 00:01:02.800 align:start position:0%
+You want to use the GPU driver 581.94.
+ 
+
+00:01:02.800 --> 00:01:04.789 align:start position:0%
+You want to use the GPU driver 581.94.
+This<00:01:02.960><c> is</c><00:01:03.039><c> the</c><00:01:03.199><c> hot</c><00:01:03.440><c> fix</c><00:01:03.680><c> driver</c><00:01:03.920><c> that</c><00:01:04.239><c> fixes</c>
+
+00:01:04.789 --> 00:01:04.799 align:start position:0%
+This is the hot fix driver that fixes
+ 
+
+00:01:04.799 --> 00:01:07.030 align:start position:0%
+This is the hot fix driver that fixes
+resizable<00:01:05.439><c> bar</c><00:01:05.680><c> support</c><00:01:05.920><c> for</c><00:01:06.159><c> Black</c><00:01:06.320><c> Ops</c><00:01:06.640><c> 7,</c>
+
+00:01:07.030 --> 00:01:07.040 align:start position:0%
+resizable bar support for Black Ops 7,
+ 
+
+00:01:07.040 --> 00:01:08.950 align:start position:0%
+resizable bar support for Black Ops 7,
+as<00:01:07.280><c> well</c><00:01:07.360><c> as</c><00:01:07.600><c> fix</c><00:01:07.920><c> some</c><00:01:08.080><c> performance</c><00:01:08.560><c> issues</c>
+
+00:01:08.950 --> 00:01:08.960 align:start position:0%
+as well as fix some performance issues
+ 
+
+00:01:08.960 --> 00:01:10.710 align:start position:0%
+as well as fix some performance issues
+that<00:01:09.200><c> were</c><00:01:09.360><c> caused</c><00:01:09.680><c> by</c><00:01:10.000><c> previous</c><00:01:10.320><c> Windows</c>
+
+00:01:10.710 --> 00:01:10.720 align:start position:0%
+that were caused by previous Windows
+ 
+
+00:01:10.720 --> 00:01:12.390 align:start position:0%
+that were caused by previous Windows
+update<00:01:11.119><c> if</c><00:01:11.280><c> you've</c><00:01:11.520><c> done</c><00:01:11.680><c> Windows</c><00:01:12.000><c> updates</c>
+
+00:01:12.390 --> 00:01:12.400 align:start position:0%
+update if you've done Windows updates
+ 
+
+00:01:12.400 --> 00:01:14.149 align:start position:0%
+update if you've done Windows updates
+recently.<00:01:13.119><c> And</c><00:01:13.280><c> this</c><00:01:13.439><c> is</c><00:01:13.600><c> very</c><00:01:13.760><c> important.</c>
+
+00:01:14.149 --> 00:01:14.159 align:start position:0%
+recently. And this is very important.
+ 
+
+00:01:14.159 --> 00:01:15.670 align:start position:0%
+recently. And this is very important.
+Older<00:01:14.479><c> drivers</c><00:01:14.880><c> have</c><00:01:15.119><c> issues</c><00:01:15.360><c> with</c><00:01:15.520><c> the</c>
+
+00:01:15.670 --> 00:01:15.680 align:start position:0%
+Older drivers have issues with the
+ 
+
+00:01:15.680 --> 00:01:19.990 align:start position:0%
+Older drivers have issues with the
+resizable<00:01:16.240><c> bar</c><00:01:16.720><c> and</c><00:01:17.040><c> lower</c><00:01:17.280><c> FPS.</c><00:01:18.240><c> 581.94</c>
+
+00:01:19.990 --> 00:01:20.000 align:start position:0%
+resizable bar and lower FPS. 581.94
+ 
+
+00:01:20.000 --> 00:01:22.070 align:start position:0%
+resizable bar and lower FPS. 581.94
+fixed<00:01:20.320><c> it.</c><00:01:20.640><c> And</c><00:01:20.799><c> you</c><00:01:20.960><c> should</c><00:01:21.200><c> absolutely</c><00:01:21.840><c> be</c>
+
+00:01:22.070 --> 00:01:22.080 align:start position:0%
+fixed it. And you should absolutely be
+ 
+
+00:01:22.080 --> 00:01:24.950 align:start position:0%
+fixed it. And you should absolutely be
+using<00:01:22.400><c> resizable</c><00:01:23.040><c> bar</c><00:01:23.520><c> now</c><00:01:23.759><c> in</c><00:01:24.000><c> this</c><00:01:24.159><c> game.</c><00:01:24.720><c> So</c>
+
+00:01:24.950 --> 00:01:24.960 align:start position:0%
+using resizable bar now in this game. So
+ 
+
+00:01:24.960 --> 00:01:27.670 align:start position:0%
+using resizable bar now in this game. So
+download<00:01:25.360><c> 581.94,</c><00:01:26.799><c> run</c><00:01:27.119><c> display</c><00:01:27.439><c> driver</c>
+
+00:01:27.670 --> 00:01:27.680 align:start position:0%
+download 581.94, run display driver
+ 
+
+00:01:27.680 --> 00:01:29.510 align:start position:0%
+download 581.94, run display driver
+uninstaller<00:01:28.400><c> and</c><00:01:28.560><c> then</c><00:01:28.720><c> just</c><00:01:28.880><c> clean</c><00:01:29.200><c> install</c>
+
+00:01:29.510 --> 00:01:29.520 align:start position:0%
+uninstaller and then just clean install
+ 
+
+00:01:29.520 --> 00:01:31.190 align:start position:0%
+uninstaller and then just clean install
+this<00:01:29.680><c> driver.</c><00:01:30.080><c> Then</c><00:01:30.240><c> once</c><00:01:30.560><c> installed,</c><00:01:31.040><c> just</c>
+
+00:01:31.190 --> 00:01:31.200 align:start position:0%
+this driver. Then once installed, just
+ 
+
+00:01:31.200 --> 00:01:33.030 align:start position:0%
+this driver. Then once installed, just
+open<00:01:31.280><c> up</c><00:01:31.439><c> your</c><00:01:31.520><c> Nvidia</c><00:01:32.000><c> control</c><00:01:32.240><c> panel,</c><00:01:32.720><c> go</c><00:01:32.880><c> to</c>
+
+00:01:33.030 --> 00:01:33.040 align:start position:0%
+open up your Nvidia control panel, go to
+ 
+
+00:01:33.040 --> 00:01:34.710 align:start position:0%
+open up your Nvidia control panel, go to
+manage<00:01:33.360><c> 3D</c><00:01:33.680><c> settings,</c><00:01:34.079><c> and</c><00:01:34.240><c> then</c><00:01:34.400><c> click</c>
+
+00:01:34.710 --> 00:01:34.720 align:start position:0%
+manage 3D settings, and then click
+ 
+
+00:01:34.720 --> 00:01:36.950 align:start position:0%
+manage 3D settings, and then click
+program<00:01:35.119><c> settings.</c><00:01:35.680><c> Click</c><00:01:35.920><c> add,</c><00:01:36.400><c> and</c><00:01:36.640><c> then</c>
+
+00:01:36.950 --> 00:01:36.960 align:start position:0%
+program settings. Click add, and then
+ 
+
+00:01:36.960 --> 00:01:38.550 align:start position:0%
+program settings. Click add, and then
+just<00:01:37.200><c> choose</c><00:01:37.439><c> Black</c><00:01:37.680><c> Ops</c><00:01:37.920><c> 7</c><00:01:38.159><c> from</c><00:01:38.320><c> the</c><00:01:38.400><c> drop-</c>
+
+00:01:38.550 --> 00:01:38.560 align:start position:0%
+just choose Black Ops 7 from the drop-
+ 
+
+00:01:38.560 --> 00:01:40.630 align:start position:0%
+just choose Black Ops 7 from the drop-
+down<00:01:38.799><c> menu.</c><00:01:39.280><c> If</c><00:01:39.439><c> you</c><00:01:39.520><c> don't</c><00:01:39.680><c> see</c><00:01:39.840><c> Black</c><00:01:40.079><c> Ops</c><00:01:40.320><c> 7,</c>
+
+00:01:40.630 --> 00:01:40.640 align:start position:0%
+down menu. If you don't see Black Ops 7,
+ 
+
+00:01:40.640 --> 00:01:42.630 align:start position:0%
+down menu. If you don't see Black Ops 7,
+just<00:01:40.799><c> launch</c><00:01:41.040><c> Black</c><00:01:41.200><c> Ops</c><00:01:41.520><c> 7</c><00:01:41.759><c> real</c><00:01:42.079><c> quickly,</c>
+
+00:01:42.630 --> 00:01:42.640 align:start position:0%
+just launch Black Ops 7 real quickly,
+ 
+
+00:01:42.640 --> 00:01:44.149 align:start position:0%
+just launch Black Ops 7 real quickly,
+then<00:01:42.880><c> close</c><00:01:43.040><c> it.</c><00:01:43.280><c> The</c><00:01:43.439><c> next</c><00:01:43.600><c> time</c><00:01:43.759><c> you</c><00:01:43.840><c> open</c><00:01:44.000><c> up</c>
+
+00:01:44.149 --> 00:01:44.159 align:start position:0%
+then close it. The next time you open up
+ 
+
+00:01:44.159 --> 00:01:45.749 align:start position:0%
+then close it. The next time you open up
+Nate<00:01:44.560><c> Control</c><00:01:44.799><c> Panel</c><00:01:45.040><c> and</c><00:01:45.200><c> click</c><00:01:45.439><c> program</c>
+
+00:01:45.749 --> 00:01:45.759 align:start position:0%
+Nate Control Panel and click program
+ 
+
+00:01:45.759 --> 00:01:47.510 align:start position:0%
+Nate Control Panel and click program
+settings,<00:01:46.159><c> then</c><00:01:46.320><c> click</c><00:01:46.560><c> add,</c><00:01:47.040><c> you</c><00:01:47.119><c> should</c><00:01:47.280><c> see</c>
+
+00:01:47.510 --> 00:01:47.520 align:start position:0%
+settings, then click add, you should see
+ 
+
+00:01:47.520 --> 00:01:49.030 align:start position:0%
+settings, then click add, you should see
+Black<00:01:47.759><c> Ops</c><00:01:48.000><c> 7.</c><00:01:48.320><c> Then</c><00:01:48.479><c> you're</c><00:01:48.640><c> going</c><00:01:48.640><c> to</c><00:01:48.799><c> do</c><00:01:48.880><c> the</c>
+
+00:01:49.030 --> 00:01:49.040 align:start position:0%
+Black Ops 7. Then you're going to do the
+ 
+
+00:01:49.040 --> 00:01:50.630 align:start position:0%
+Black Ops 7. Then you're going to do the
+following.<00:01:49.520><c> Power</c><00:01:49.759><c> management</c><00:01:50.159><c> mode,</c><00:01:50.479><c> set</c>
+
+00:01:50.630 --> 00:01:50.640 align:start position:0%
+following. Power management mode, set
+ 
+
+00:01:50.640 --> 00:01:52.389 align:start position:0%
+following. Power management mode, set
+that<00:01:50.880><c> to</c><00:01:51.040><c> prefer</c><00:01:51.360><c> maximum</c><00:01:51.759><c> performance.</c>
+
+00:01:52.389 --> 00:01:52.399 align:start position:0%
+that to prefer maximum performance.
+ 
+
+00:01:52.399 --> 00:01:54.310 align:start position:0%
+that to prefer maximum performance.
+texture<00:01:52.720><c> filtering</c><00:01:53.119><c> quality</c><00:01:53.680><c> performance</c>
+
+00:01:54.310 --> 00:01:54.320 align:start position:0%
+texture filtering quality performance
+ 
+
+00:01:54.320 --> 00:01:55.429 align:start position:0%
+texture filtering quality performance
+and<00:01:54.479><c> then</c><00:01:54.640><c> just</c><00:01:54.799><c> make</c><00:01:54.880><c> sure</c><00:01:55.040><c> thread</c>
+
+00:01:55.429 --> 00:01:55.439 align:start position:0%
+and then just make sure thread
+ 
+
+00:01:55.439 --> 00:01:58.069 align:start position:0%
+and then just make sure thread
+optimization<00:01:56.000><c> is</c><00:01:56.320><c> on</c><00:01:56.720><c> auto.</c><00:01:57.360><c> Then</c><00:01:57.759><c> make</c><00:01:57.920><c> sure</c>
+
+00:01:58.069 --> 00:01:58.079 align:start position:0%
+optimization is on auto. Then make sure
+ 
+
+00:01:58.079 --> 00:02:00.310 align:start position:0%
+optimization is on auto. Then make sure
+also<00:01:58.479><c> vertical</c><00:01:58.880><c> sync</c><00:01:59.200><c> is</c><00:01:59.439><c> off</c><00:01:59.759><c> if</c><00:02:00.000><c> you</c><00:02:00.159><c> don't</c>
+
+00:02:00.310 --> 00:02:00.320 align:start position:0%
+also vertical sync is off if you don't
+ 
+
+00:02:00.320 --> 00:02:02.389 align:start position:0%
+also vertical sync is off if you don't
+use<00:02:00.640><c> VSYNC</c><00:02:01.119><c> or</c><00:02:01.280><c> G-Sync.</c><00:02:01.840><c> Notice</c><00:02:02.079><c> I'm</c><00:02:02.320><c> not</c>
+
+00:02:02.389 --> 00:02:02.399 align:start position:0%
+use VSYNC or G-Sync. Notice I'm not
+ 
+
+00:02:02.399 --> 00:02:04.149 align:start position:0%
+use VSYNC or G-Sync. Notice I'm not
+setting<00:02:02.560><c> a</c><00:02:02.799><c> max</c><00:02:03.040><c> frame</c><00:02:03.280><c> rate</c><00:02:03.439><c> here.</c><00:02:03.840><c> Let</c><00:02:04.000><c> the</c>
+
+00:02:04.149 --> 00:02:04.159 align:start position:0%
+setting a max frame rate here. Let the
+ 
+
+00:02:04.159 --> 00:02:05.990 align:start position:0%
+setting a max frame rate here. Let the
+game<00:02:04.399><c> run</c><00:02:04.560><c> unlimited</c><00:02:05.040><c> will</c><00:02:05.280><c> control</c><00:02:05.600><c> frame</c>
+
+00:02:05.990 --> 00:02:06.000 align:start position:0%
+game run unlimited will control frame
+ 
+
+00:02:06.000 --> 00:02:07.910 align:start position:0%
+game run unlimited will control frame
+pacing<00:02:06.399><c> through</c><00:02:06.640><c> other</c><00:02:06.880><c> methods.</c><00:02:07.520><c> Now</c>
+
+00:02:07.910 --> 00:02:07.920 align:start position:0%
+pacing through other methods. Now
+ 
+
+00:02:07.920 --> 00:02:10.070 align:start position:0%
+pacing through other methods. Now
+resizable<00:02:08.640><c> bar.</c><00:02:09.200><c> You</c><00:02:09.360><c> need</c><00:02:09.440><c> to</c><00:02:09.599><c> enable</c><00:02:09.840><c> this</c>
+
+00:02:10.070 --> 00:02:10.080 align:start position:0%
+resizable bar. You need to enable this
+ 
+
+00:02:10.080 --> 00:02:11.830 align:start position:0%
+resizable bar. You need to enable this
+in<00:02:10.239><c> your</c><00:02:10.399><c> BIOS.</c><00:02:10.879><c> It's</c><00:02:11.120><c> critical</c><00:02:11.440><c> for</c><00:02:11.599><c> Black</c>
+
+00:02:11.830 --> 00:02:11.840 align:start position:0%
+in your BIOS. It's critical for Black
+ 
+
+00:02:11.840 --> 00:02:15.430 align:start position:0%
+in your BIOS. It's critical for Black
+Ops<00:02:12.080><c> 7</c><00:02:12.400><c> performance</c><00:02:12.800><c> with</c><00:02:13.040><c> driver</c><00:02:13.520><c> 581.94.</c>
+
+00:02:15.430 --> 00:02:15.440 align:start position:0%
+Ops 7 performance with driver 581.94.
+ 
+
+00:02:15.440 --> 00:02:17.430 align:start position:0%
+Ops 7 performance with driver 581.94.
+Go<00:02:15.599><c> into</c><00:02:15.840><c> your</c><00:02:16.000><c> BIOS</c><00:02:16.480><c> usually</c><00:02:16.800><c> by</c><00:02:17.120><c> pressing</c>
+
+00:02:17.430 --> 00:02:17.440 align:start position:0%
+Go into your BIOS usually by pressing
+ 
+
+00:02:17.440 --> 00:02:20.150 align:start position:0%
+Go into your BIOS usually by pressing
+delete<00:02:17.760><c> or</c><00:02:18.000><c> F2</c><00:02:18.480><c> during</c><00:02:18.720><c> a</c><00:02:18.959><c> restart.</c><00:02:19.760><c> Look</c><00:02:20.000><c> for</c>
+
+00:02:20.150 --> 00:02:20.160 align:start position:0%
+delete or F2 during a restart. Look for
+ 
+
+00:02:20.160 --> 00:02:22.869 align:start position:0%
+delete or F2 during a restart. Look for
+resizable<00:02:20.800><c> bar</c><00:02:21.040><c> or</c><00:02:21.280><c> resize</c><00:02:21.760><c> bar</c><00:02:22.000><c> support</c><00:02:22.560><c> and</c>
+
+00:02:22.869 --> 00:02:22.879 align:start position:0%
+resizable bar or resize bar support and
+ 
+
+00:02:22.879 --> 00:02:25.190 align:start position:0%
+resizable bar or resize bar support and
+above<00:02:23.280><c> 4G</c><00:02:23.680><c> decoding/memory.</c><00:02:24.959><c> Different</c>
+
+00:02:25.190 --> 00:02:25.200 align:start position:0%
+above 4G decoding/memory. Different
+ 
+
+00:02:25.200 --> 00:02:26.630 align:start position:0%
+above 4G decoding/memory. Different
+motherboards<00:02:25.599><c> call</c><00:02:25.840><c> it</c><00:02:26.000><c> different</c><00:02:26.160><c> things.</c>
+
+00:02:26.630 --> 00:02:26.640 align:start position:0%
+motherboards call it different things.
+ 
+
+00:02:26.640 --> 00:02:28.070 align:start position:0%
+motherboards call it different things.
+Just<00:02:26.800><c> enable</c><00:02:27.200><c> both</c><00:02:27.360><c> of</c><00:02:27.520><c> those</c><00:02:27.680><c> settings</c><00:02:27.920><c> and</c>
+
+00:02:28.070 --> 00:02:28.080 align:start position:0%
+Just enable both of those settings and
+ 
+
+00:02:28.080 --> 00:02:29.750 align:start position:0%
+Just enable both of those settings and
+then<00:02:28.239><c> save</c><00:02:28.480><c> and</c><00:02:28.640><c> exit.</c><00:02:28.959><c> Now</c><00:02:29.200><c> to</c><00:02:29.360><c> verify</c><00:02:29.599><c> that</c>
+
+00:02:29.750 --> 00:02:29.760 align:start position:0%
+then save and exit. Now to verify that
+ 
+
+00:02:29.760 --> 00:02:31.030 align:start position:0%
+then save and exit. Now to verify that
+it<00:02:30.000><c> is</c><00:02:30.160><c> working,</c><00:02:30.480><c> you're</c><00:02:30.640><c> going</c><00:02:30.640><c> to</c><00:02:30.800><c> download</c>
+
+00:02:31.030 --> 00:02:31.040 align:start position:0%
+it is working, you're going to download
+ 
+
+00:02:31.040 --> 00:02:33.030 align:start position:0%
+it is working, you're going to download
+something<00:02:31.280><c> called</c><00:02:31.599><c> GPUZ</c><00:02:32.239><c> and</c><00:02:32.400><c> then</c><00:02:32.640><c> open</c><00:02:32.800><c> it.</c>
+
+00:02:33.030 --> 00:02:33.040 align:start position:0%
+something called GPUZ and then open it.
+ 
+
+00:02:33.040 --> 00:02:34.470 align:start position:0%
+something called GPUZ and then open it.
+You're<00:02:33.200><c> going</c><00:02:33.280><c> to</c><00:02:33.360><c> look</c><00:02:33.519><c> for</c><00:02:33.680><c> resizable</c><00:02:34.319><c> bar</c>
+
+00:02:34.470 --> 00:02:34.480 align:start position:0%
+You're going to look for resizable bar
+ 
+
+00:02:34.480 --> 00:02:36.470 align:start position:0%
+You're going to look for resizable bar
+under<00:02:34.720><c> the</c><00:02:34.879><c> advanced</c><00:02:35.200><c> tab</c><00:02:35.519><c> and</c><00:02:35.680><c> it</c><00:02:35.920><c> should</c><00:02:36.160><c> say</c>
+
+00:02:36.470 --> 00:02:36.480 align:start position:0%
+under the advanced tab and it should say
+ 
+
+00:02:36.480 --> 00:02:38.710 align:start position:0%
+under the advanced tab and it should say
+enabled.<00:02:37.120><c> Now</c><00:02:37.440><c> while</c><00:02:37.680><c> we're</c><00:02:37.920><c> also</c><00:02:38.319><c> in</c><00:02:38.560><c> this</c>
+
+00:02:38.710 --> 00:02:38.720 align:start position:0%
+enabled. Now while we're also in this
+ 
+
+00:02:38.720 --> 00:02:40.790 align:start position:0%
+enabled. Now while we're also in this
+program,<00:02:39.360><c> we're</c><00:02:39.519><c> going</c><00:02:39.599><c> to</c><00:02:39.680><c> check</c><00:02:39.920><c> our</c><00:02:40.160><c> PCI</c>
+
+00:02:40.790 --> 00:02:40.800 align:start position:0%
+program, we're going to check our PCI
+ 
+
+00:02:40.800 --> 00:02:42.630 align:start position:0%
+program, we're going to check our PCI
+Express<00:02:41.200><c> interface.</c><00:02:41.920><c> It</c><00:02:42.080><c> should</c><00:02:42.239><c> show</c><00:02:42.400><c> that</c>
+
+00:02:42.630 --> 00:02:42.640 align:start position:0%
+Express interface. It should show that
+ 
+
+00:02:42.640 --> 00:02:45.030 align:start position:0%
+Express interface. It should show that
+your<00:02:42.800><c> GPU</c><00:02:43.200><c> is</c><00:02:43.440><c> running</c><00:02:43.599><c> at</c><00:02:43.840><c> its</c><00:02:44.080><c> maximum</c><00:02:44.400><c> PCIe</c>
+
+00:02:45.030 --> 00:02:45.040 align:start position:0%
+your GPU is running at its maximum PCIe
+ 
+
+00:02:45.040 --> 00:02:46.550 align:start position:0%
+your GPU is running at its maximum PCIe
+speed<00:02:45.280><c> and</c><00:02:45.360><c> generation.</c><00:02:46.000><c> For</c><00:02:46.080><c> example,</c><00:02:46.400><c> if</c>
+
+00:02:46.550 --> 00:02:46.560 align:start position:0%
+speed and generation. For example, if
+ 
+
+00:02:46.560 --> 00:02:49.670 align:start position:0%
+speed and generation. For example, if
+you<00:02:46.720><c> have</c><00:02:46.720><c> a</c><00:02:46.879><c> 5090,</c><00:02:47.599><c> it</c><00:02:47.760><c> should</c><00:02:47.920><c> show</c><00:02:48.239><c> PCIe</c><00:02:48.959><c> x16</c>
+
+00:02:49.670 --> 00:02:49.680 align:start position:0%
+you have a 5090, it should show PCIe x16
+ 
+
+00:02:49.680 --> 00:02:53.750 align:start position:0%
+you have a 5090, it should show PCIe x16
+5.0<00:02:50.400><c> at</c><00:02:50.800><c> x16</c><00:02:51.519><c> 5.0.</c><00:02:52.080><c> If</c><00:02:52.239><c> it's</c><00:02:52.480><c> showing</c><00:02:52.959><c> x8</c><00:02:53.440><c> or</c><00:02:53.599><c> a</c>
+
+00:02:53.750 --> 00:02:53.760 align:start position:0%
+5.0 at x16 5.0. If it's showing x8 or a
+ 
+
+00:02:53.760 --> 00:02:55.430 align:start position:0%
+5.0 at x16 5.0. If it's showing x8 or a
+lower<00:02:54.000><c> generation,</c><00:02:54.800><c> you</c><00:02:54.959><c> might</c><00:02:55.120><c> have</c><00:02:55.280><c> your</c>
+
+00:02:55.430 --> 00:02:55.440 align:start position:0%
+lower generation, you might have your
+ 
+
+00:02:55.440 --> 00:02:57.910 align:start position:0%
+lower generation, you might have your
+GPU<00:02:55.760><c> in</c><00:02:55.920><c> the</c><00:02:56.080><c> wrong</c><00:02:56.239><c> slot</c><00:02:56.640><c> or</c><00:02:56.879><c> your</c><00:02:57.040><c> BIOS</c><00:02:57.519><c> isn't</c>
+
+00:02:57.910 --> 00:02:57.920 align:start position:0%
+GPU in the wrong slot or your BIOS isn't
+ 
+
+00:02:57.920 --> 00:02:59.830 align:start position:0%
+GPU in the wrong slot or your BIOS isn't
+configured<00:02:58.480><c> correctly</c><00:02:58.879><c> for</c><00:02:59.040><c> the</c><00:02:59.200><c> PCIe</c>
+
+00:02:59.830 --> 00:02:59.840 align:start position:0%
+configured correctly for the PCIe
+ 
+
+00:02:59.840 --> 00:03:01.670 align:start position:0%
+configured correctly for the PCIe
+bifurcation.<00:03:00.560><c> Hardware</c><00:03:00.879><c> accelerated</c><00:03:01.360><c> GPU</c>
+
+00:03:01.670 --> 00:03:01.680 align:start position:0%
+bifurcation. Hardware accelerated GPU
+ 
+
+00:03:01.680 --> 00:03:03.589 align:start position:0%
+bifurcation. Hardware accelerated GPU
+scheduling.<00:03:02.239><c> You</c><00:03:02.319><c> need</c><00:03:02.400><c> to</c><00:03:02.560><c> have</c><00:03:02.720><c> this</c><00:03:02.959><c> on.</c><00:03:03.440><c> It</c>
+
+00:03:03.589 --> 00:03:03.599 align:start position:0%
+scheduling. You need to have this on. It
+ 
+
+00:03:03.599 --> 00:03:06.390 align:start position:0%
+scheduling. You need to have this on. It
+does<00:03:03.760><c> boost</c><00:03:04.159><c> FPS</c><00:03:04.640><c> in</c><00:03:05.040><c> Black</c><00:03:05.280><c> Ops</c><00:03:05.599><c> 7.</c><00:03:05.920><c> So,</c><00:03:06.159><c> go</c><00:03:06.239><c> to</c>
+
+00:03:06.390 --> 00:03:06.400 align:start position:0%
+does boost FPS in Black Ops 7. So, go to
+ 
+
+00:03:06.400 --> 00:03:08.470 align:start position:0%
+does boost FPS in Black Ops 7. So, go to
+Windows<00:03:06.720><c> settings,</c><00:03:07.280><c> system,</c><00:03:07.760><c> display,</c>
+
+00:03:08.470 --> 00:03:08.480 align:start position:0%
+Windows settings, system, display,
+ 
+
+00:03:08.480 --> 00:03:10.229 align:start position:0%
+Windows settings, system, display,
+graphics,<00:03:09.120><c> change</c><00:03:09.360><c> default</c><00:03:09.840><c> graphics</c>
+
+00:03:10.229 --> 00:03:10.239 align:start position:0%
+graphics, change default graphics
+ 
+
+00:03:10.239 --> 00:03:12.869 align:start position:0%
+graphics, change default graphics
+settings,<00:03:10.640><c> and</c><00:03:10.959><c> ensure</c><00:03:11.360><c> hard</c><00:03:11.599><c> red</c><00:03:12.480><c> scheduling</c>
+
+00:03:12.869 --> 00:03:12.879 align:start position:0%
+settings, and ensure hard red scheduling
+ 
+
+00:03:12.879 --> 00:03:14.550 align:start position:0%
+settings, and ensure hard red scheduling
+is<00:03:13.120><c> on.</c><00:03:13.360><c> Then</c><00:03:13.519><c> just</c><00:03:13.680><c> restart</c><00:03:14.000><c> after</c><00:03:14.239><c> enabling</c>
+
+00:03:14.550 --> 00:03:14.560 align:start position:0%
+is on. Then just restart after enabling
+ 
+
+00:03:14.560 --> 00:03:16.309 align:start position:0%
+is on. Then just restart after enabling
+this.<00:03:14.720><c> It</c><00:03:14.879><c> reduces</c><00:03:15.200><c> latency</c><00:03:15.599><c> by</c><00:03:15.760><c> offloading</c>
+
+00:03:16.309 --> 00:03:16.319 align:start position:0%
+this. It reduces latency by offloading
+ 
+
+00:03:16.319 --> 00:03:18.070 align:start position:0%
+this. It reduces latency by offloading
+frame<00:03:16.640><c> scheduling</c><00:03:17.040><c> to</c><00:03:17.280><c> your</c><00:03:17.440><c> graphics</c><00:03:17.760><c> card</c>
+
+00:03:18.070 --> 00:03:18.080 align:start position:0%
+frame scheduling to your graphics card
+ 
+
+00:03:18.080 --> 00:03:19.589 align:start position:0%
+frame scheduling to your graphics card
+and<00:03:18.239><c> this</c><00:03:18.400><c> is</c><00:03:18.480><c> very</c><00:03:18.800><c> essential</c><00:03:19.120><c> for</c><00:03:19.360><c> most</c>
+
+00:03:19.589 --> 00:03:19.599 align:start position:0%
+and this is very essential for most
+ 
+
+00:03:19.599 --> 00:03:21.430 align:start position:0%
+and this is very essential for most
+competitive<00:03:20.080><c> games</c><00:03:20.319><c> out</c><00:03:20.480><c> there.</c><00:03:20.720><c> Now</c><00:03:20.959><c> for</c><00:03:21.120><c> AMD</c>
+
+00:03:21.430 --> 00:03:21.440 align:start position:0%
+competitive games out there. Now for AMD
+ 
+
+00:03:21.440 --> 00:03:23.030 align:start position:0%
+competitive games out there. Now for AMD
+users,<00:03:21.840><c> use</c><00:03:22.000><c> the</c><00:03:22.159><c> latest</c><00:03:22.400><c> adrenaline</c>
+
+00:03:23.030 --> 00:03:23.040 align:start position:0%
+users, use the latest adrenaline
+ 
+
+00:03:23.040 --> 00:03:24.630 align:start position:0%
+users, use the latest adrenaline
+software<00:03:23.680><c> and</c><00:03:23.840><c> that's</c><00:03:24.000><c> all</c><00:03:24.159><c> you</c><00:03:24.319><c> need</c><00:03:24.400><c> to</c><00:03:24.480><c> do</c>
+
+00:03:24.630 --> 00:03:24.640 align:start position:0%
+software and that's all you need to do
+ 
+
+00:03:24.640 --> 00:03:26.550 align:start position:0%
+software and that's all you need to do
+for<00:03:24.800><c> Black</c><00:03:25.040><c> Ops</c><00:03:25.280><c> 7</c><00:03:25.599><c> because</c><00:03:25.840><c> it's</c><00:03:26.080><c> solid</c><00:03:26.400><c> with</c>
+
+00:03:26.550 --> 00:03:26.560 align:start position:0%
+for Black Ops 7 because it's solid with
+ 
+
+00:03:26.560 --> 00:03:27.910 align:start position:0%
+for Black Ops 7 because it's solid with
+the<00:03:26.720><c> current</c><00:03:26.959><c> versions.</c><00:03:27.280><c> And</c><00:03:27.440><c> then</c><00:03:27.599><c> just</c><00:03:27.760><c> open</c>
+
+00:03:27.910 --> 00:03:27.920 align:start position:0%
+the current versions. And then just open
+ 
+
+00:03:27.920 --> 00:03:30.149 align:start position:0%
+the current versions. And then just open
+up<00:03:28.080><c> AMD</c><00:03:28.560><c> software,</c><00:03:29.120><c> go</c><00:03:29.280><c> to</c><00:03:29.440><c> gaming</c><00:03:29.840><c> and</c><00:03:30.000><c> then</c>
+
+00:03:30.149 --> 00:03:30.159 align:start position:0%
+up AMD software, go to gaming and then
+ 
+
+00:03:30.159 --> 00:03:31.750 align:start position:0%
+up AMD software, go to gaming and then
+Black<00:03:30.319><c> Op.</c><00:03:31.040><c> And</c><00:03:31.120><c> then</c><00:03:31.280><c> just</c><00:03:31.440><c> make</c><00:03:31.599><c> sure</c>
+
+00:03:31.750 --> 00:03:31.760 align:start position:0%
+Black Op. And then just make sure
+ 
+
+00:03:31.760 --> 00:03:33.509 align:start position:0%
+Black Op. And then just make sure
+anti-lag<00:03:32.400><c> is</c><00:03:32.560><c> off.</c><00:03:32.799><c> You</c><00:03:32.959><c> can</c><00:03:33.040><c> try</c><00:03:33.280><c> turning</c>
+
+00:03:33.509 --> 00:03:33.519 align:start position:0%
+anti-lag is off. You can try turning
+ 
+
+00:03:33.519 --> 00:03:35.509 align:start position:0%
+anti-lag is off. You can try turning
+this<00:03:33.680><c> on.</c><00:03:34.000><c> However,</c><00:03:34.319><c> whenever</c><00:03:34.560><c> I</c><00:03:34.720><c> had</c><00:03:34.799><c> my</c><00:03:34.959><c> 970</c>
+
+00:03:35.509 --> 00:03:35.519 align:start position:0%
+this on. However, whenever I had my 970
+ 
+
+00:03:35.519 --> 00:03:37.270 align:start position:0%
+this on. However, whenever I had my 970
+XT,<00:03:36.000><c> there</c><00:03:36.080><c> was</c><00:03:36.159><c> a</c><00:03:36.319><c> lot</c><00:03:36.400><c> of</c><00:03:36.560><c> problems</c><00:03:36.799><c> with</c><00:03:36.959><c> on.</c>
+
+00:03:37.270 --> 00:03:37.280 align:start position:0%
+XT, there was a lot of problems with on.
+ 
+
+00:03:37.280 --> 00:03:40.309 align:start position:0%
+XT, there was a lot of problems with on.
+It<00:03:37.519><c> was</c><00:03:37.840><c> reducing</c><00:03:38.159><c> my</c><00:03:38.319><c> FPS.</c><00:03:38.879><c> Radon</c><00:03:39.360><c> boost</c><00:03:39.840><c> off.</c>
+
+00:03:40.309 --> 00:03:40.319 align:start position:0%
+It was reducing my FPS. Radon boost off.
+ 
+
+00:03:40.319 --> 00:03:42.550 align:start position:0%
+It was reducing my FPS. Radon boost off.
+Radon<00:03:40.720><c> chill</c><00:03:41.120><c> off.</c><00:03:41.360><c> Enhancing</c><00:03:42.000><c> off.</c><00:03:42.319><c> Texture</c>
+
+00:03:42.550 --> 00:03:42.560 align:start position:0%
+Radon chill off. Enhancing off. Texture
+ 
+
+00:03:42.560 --> 00:03:43.830 align:start position:0%
+Radon chill off. Enhancing off. Texture
+filtering<00:03:42.959><c> quality.</c><00:03:43.200><c> Set</c><00:03:43.440><c> that</c><00:03:43.599><c> to</c>
+
+00:03:43.830 --> 00:03:43.840 align:start position:0%
+filtering quality. Set that to
+ 
+
+00:03:43.840 --> 00:03:45.830 align:start position:0%
+filtering quality. Set that to
+performance<00:03:44.480><c> and</c><00:03:44.640><c> then</c><00:03:44.799><c> image</c><00:03:45.120><c> sharpening.</c>
+
+00:03:45.830 --> 00:03:45.840 align:start position:0%
+performance and then image sharpening.
+ 
+
+00:03:45.840 --> 00:03:47.750 align:start position:0%
+performance and then image sharpening.
+You<00:03:46.000><c> can</c><00:03:46.159><c> turn</c><00:03:46.319><c> this</c><00:03:46.480><c> on</c><00:03:46.640><c> for</c><00:03:46.799><c> Black</c><00:03:47.040><c> Ops</c><00:03:47.280><c> 7.</c><00:03:47.599><c> It</c>
+
+00:03:47.750 --> 00:03:47.760 align:start position:0%
+You can turn this on for Black Ops 7. It
+ 
+
+00:03:47.760 --> 00:03:49.670 align:start position:0%
+You can turn this on for Black Ops 7. It
+will<00:03:47.920><c> look</c><00:03:48.159><c> a</c><00:03:48.400><c> lot</c><00:03:48.560><c> better</c><00:03:48.720><c> in</c><00:03:48.959><c> game</c><00:03:49.280><c> and</c><00:03:49.519><c> it</c>
+
+00:03:49.670 --> 00:03:49.680 align:start position:0%
+will look a lot better in game and it
+ 
+
+00:03:49.680 --> 00:03:51.430 align:start position:0%
+will look a lot better in game and it
+will<00:03:49.840><c> make</c><00:03:50.159><c> no</c><00:03:50.640><c> performance</c><00:03:51.120><c> cost</c>
+
+00:03:51.430 --> 00:03:51.440 align:start position:0%
+will make no performance cost
+ 
+
+00:03:51.440 --> 00:03:53.750 align:start position:0%
+will make no performance cost
+whatsoever.<00:03:52.159><c> Then</c><00:03:52.400><c> go</c><00:03:52.560><c> to</c><00:03:52.720><c> power</c><00:03:52.959><c> tuning</c><00:03:53.360><c> tab</c>
+
+00:03:53.750 --> 00:03:53.760 align:start position:0%
+whatsoever. Then go to power tuning tab
+ 
+
+00:03:53.760 --> 00:03:55.750 align:start position:0%
+whatsoever. Then go to power tuning tab
+on<00:03:54.000><c> the</c><00:03:54.159><c> top.</c><00:03:54.480><c> It's</c><00:03:54.640><c> just</c><00:03:54.879><c> under</c><00:03:55.120><c> performance.</c>
+
+00:03:55.750 --> 00:03:55.760 align:start position:0%
+on the top. It's just under performance.
+ 
+
+00:03:55.760 --> 00:03:57.110 align:start position:0%
+on the top. It's just under performance.
+You<00:03:55.840><c> can</c><00:03:56.080><c> increase</c><00:03:56.239><c> your</c><00:03:56.400><c> power</c><00:03:56.640><c> limit</c><00:03:56.879><c> for</c>
+
+00:03:57.110 --> 00:03:57.120 align:start position:0%
+You can increase your power limit for
+ 
+
+00:03:57.120 --> 00:03:59.750 align:start position:0%
+You can increase your power limit for
+more<00:03:57.280><c> FPS</c><00:03:58.000><c> on</c><00:03:58.319><c> Radeon</c><00:03:58.879><c> graphics</c><00:03:59.200><c> cards.</c><00:03:59.599><c> So</c>
+
+00:03:59.750 --> 00:03:59.760 align:start position:0%
+more FPS on Radeon graphics cards. So
+ 
+
+00:03:59.760 --> 00:04:01.910 align:start position:0%
+more FPS on Radeon graphics cards. So
+move<00:03:59.920><c> the</c><00:04:00.080><c> power</c><00:04:00.319><c> tuning</c><00:04:00.640><c> slider</c><00:04:00.959><c> up</c><00:04:01.120><c> to</c><00:04:01.360><c> 15%</c>
+
+00:04:01.910 --> 00:04:01.920 align:start position:0%
+move the power tuning slider up to 15%
+ 
+
+00:04:01.920 --> 00:04:03.670 align:start position:0%
+move the power tuning slider up to 15%
+or<00:04:02.239><c> 20%,</c><00:04:02.720><c> whichever</c><00:04:03.040><c> your</c><00:04:03.200><c> graphics</c><00:04:03.439><c> card</c>
+
+00:04:03.670 --> 00:04:03.680 align:start position:0%
+or 20%, whichever your graphics card
+ 
+
+00:04:03.680 --> 00:04:05.110 align:start position:0%
+or 20%, whichever your graphics card
+allows<00:04:03.920><c> you.</c><00:04:04.159><c> This</c><00:04:04.400><c> allows</c><00:04:04.640><c> your</c><00:04:04.799><c> graphics</c>
+
+00:04:05.110 --> 00:04:05.120 align:start position:0%
+allows you. This allows your graphics
+ 
+
+00:04:05.120 --> 00:04:06.949 align:start position:0%
+allows you. This allows your graphics
+card<00:04:05.360><c> to</c><00:04:05.519><c> maintain</c><00:04:06.000><c> higher</c><00:04:06.319><c> boost</c><00:04:06.640><c> clocks,</c>
+
+00:04:06.949 --> 00:04:06.959 align:start position:0%
+card to maintain higher boost clocks,
+ 
+
+00:04:06.959 --> 00:04:08.309 align:start position:0%
+card to maintain higher boost clocks,
+but<00:04:07.200><c> obviously</c><00:04:07.519><c> it's</c><00:04:07.680><c> going</c><00:04:07.760><c> to</c><00:04:07.840><c> pull</c><00:04:08.080><c> more</c>
+
+00:04:08.309 --> 00:04:08.319 align:start position:0%
+but obviously it's going to pull more
+ 
+
+00:04:08.319 --> 00:04:09.509 align:start position:0%
+but obviously it's going to pull more
+power.<00:04:08.799><c> It's</c><00:04:08.959><c> pretty</c><00:04:09.120><c> much</c><00:04:09.280><c> free</c>
+
+00:04:09.509 --> 00:04:09.519 align:start position:0%
+power. It's pretty much free
+ 
+
+00:04:09.519 --> 00:04:11.110 align:start position:0%
+power. It's pretty much free
+performance,<00:04:09.920><c> so</c><00:04:10.159><c> you</c><00:04:10.319><c> should</c><00:04:10.480><c> use</c><00:04:10.640><c> it.</c><00:04:10.879><c> Now,</c>
+
+00:04:11.110 --> 00:04:11.120 align:start position:0%
+performance, so you should use it. Now,
+ 
+
+00:04:11.120 --> 00:04:13.350 align:start position:0%
+performance, so you should use it. Now,
+resize<00:04:11.599><c> bar</c><00:04:11.840><c> support</c><00:04:12.080><c> on</c><00:04:12.319><c> AMD.</c><00:04:12.959><c> This</c><00:04:13.120><c> one's</c>
+
+00:04:13.350 --> 00:04:13.360 align:start position:0%
+resize bar support on AMD. This one's
+ 
+
+00:04:13.360 --> 00:04:15.429 align:start position:0%
+resize bar support on AMD. This one's
+nuanced.<00:04:13.920><c> AMD</c><00:04:14.319><c> calls</c><00:04:14.480><c> it</c><00:04:14.720><c> smart</c><00:04:15.040><c> access</c>
+
+00:04:15.429 --> 00:04:15.439 align:start position:0%
+nuanced. AMD calls it smart access
+ 
+
+00:04:15.439 --> 00:04:17.189 align:start position:0%
+nuanced. AMD calls it smart access
+memory.<00:04:15.840><c> Enable</c><00:04:16.079><c> it</c><00:04:16.239><c> in</c><00:04:16.400><c> your</c><00:04:16.479><c> BIOS</c><00:04:16.880><c> just</c><00:04:17.040><c> like</c>
+
+00:04:17.189 --> 00:04:17.199 align:start position:0%
+memory. Enable it in your BIOS just like
+ 
+
+00:04:17.199 --> 00:04:19.909 align:start position:0%
+memory. Enable it in your BIOS just like
+Nvidia,<00:04:17.919><c> but</c><00:04:18.160><c> I've</c><00:04:18.400><c> tested</c><00:04:18.639><c> the</c><00:04:18.880><c> 9070</c><00:04:19.359><c> XT</c>
+
+00:04:19.909 --> 00:04:19.919 align:start position:0%
+Nvidia, but I've tested the 9070 XT
+ 
+
+00:04:19.919 --> 00:04:22.150 align:start position:0%
+Nvidia, but I've tested the 9070 XT
+specifically,<00:04:20.639><c> and</c><00:04:20.959><c> there</c><00:04:21.199><c> was</c><00:04:21.359><c> lower</c><00:04:21.680><c> FPS</c>
+
+00:04:22.150 --> 00:04:22.160 align:start position:0%
+specifically, and there was lower FPS
+ 
+
+00:04:22.160 --> 00:04:24.469 align:start position:0%
+specifically, and there was lower FPS
+with<00:04:22.400><c> the</c><00:04:22.560><c> resizable</c><00:04:23.120><c> bar</c><00:04:23.520><c> enabled</c><00:04:24.000><c> in</c><00:04:24.240><c> Black</c>
+
+00:04:24.469 --> 00:04:24.479 align:start position:0%
+with the resizable bar enabled in Black
+ 
+
+00:04:24.479 --> 00:04:27.830 align:start position:0%
+with the resizable bar enabled in Black
+Ops<00:04:24.720><c> 7.</c><00:04:25.120><c> So,</c><00:04:25.199><c> if</c><00:04:25.360><c> you're</c><00:04:25.520><c> on</c><00:04:25.759><c> RDNA</c><00:04:26.639><c> 3</c><00:04:26.960><c> or</c><00:04:27.280><c> newer,</c>
+
+00:04:27.830 --> 00:04:27.840 align:start position:0%
+Ops 7. So, if you're on RDNA 3 or newer,
+ 
+
+00:04:27.840 --> 00:04:29.830 align:start position:0%
+Ops 7. So, if you're on RDNA 3 or newer,
+test<00:04:28.080><c> with</c><00:04:28.240><c> it</c><00:04:28.479><c> on</c><00:04:28.639><c> and</c><00:04:28.880><c> off.</c><00:04:29.280><c> Monitor</c><00:04:29.680><c> your</c>
+
+00:04:29.830 --> 00:04:29.840 align:start position:0%
+test with it on and off. Monitor your
+ 
+
+00:04:29.840 --> 00:04:31.590 align:start position:0%
+test with it on and off. Monitor your
+frame<00:04:30.160><c> times.</c><00:04:30.639><c> If</c><00:04:30.800><c> you</c><00:04:30.880><c> see</c><00:04:31.040><c> inconsistent</c>
+
+00:04:31.590 --> 00:04:31.600 align:start position:0%
+frame times. If you see inconsistent
+ 
+
+00:04:31.600 --> 00:04:32.950 align:start position:0%
+frame times. If you see inconsistent
+frame<00:04:31.840><c> pacing,</c><00:04:32.240><c> just</c><00:04:32.400><c> put</c><00:04:32.479><c> it</c><00:04:32.639><c> back</c><00:04:32.800><c> to</c>
+
+00:04:32.950 --> 00:04:32.960 align:start position:0%
+frame pacing, just put it back to
+ 
+
+00:04:32.960 --> 00:04:35.670 align:start position:0%
+frame pacing, just put it back to
+disabled.<00:04:33.360><c> For</c><00:04:33.600><c> RDNA2</c><00:04:34.479><c> cards,</c><00:04:34.720><c> like</c><00:04:34.880><c> the</c><00:04:35.040><c> 6700</c>
+
+00:04:35.670 --> 00:04:35.680 align:start position:0%
+disabled. For RDNA2 cards, like the 6700
+ 
+
+00:04:35.680 --> 00:04:38.870 align:start position:0%
+disabled. For RDNA2 cards, like the 6700
+XT<00:04:36.160><c> or</c><00:04:36.479><c> 6800</c><00:04:37.120><c> XT,</c><00:04:37.600><c> it</c><00:04:37.840><c> generally</c><00:04:38.240><c> works</c><00:04:38.479><c> fine.</c>
+
+00:04:38.870 --> 00:04:38.880 align:start position:0%
+XT or 6800 XT, it generally works fine.
+ 
+
+00:04:38.880 --> 00:04:39.990 align:start position:0%
+XT or 6800 XT, it generally works fine.
+Same<00:04:39.040><c> as</c><00:04:39.199><c> in</c><00:04:39.280><c> the</c><00:04:39.360><c> video,</c><00:04:39.600><c> you</c><00:04:39.759><c> could</c><00:04:39.840><c> just</c>
+
+00:04:39.990 --> 00:04:40.000 align:start position:0%
+Same as in the video, you could just
+ 
+
+00:04:40.000 --> 00:04:41.830 align:start position:0%
+Same as in the video, you could just
+pretty<00:04:40.160><c> much</c><00:04:40.400><c> check</c><00:04:40.720><c> your</c><00:04:41.120><c> resize</c><00:04:41.600><c> bar</c>
+
+00:04:41.830 --> 00:04:41.840 align:start position:0%
+pretty much check your resize bar
+ 
+
+00:04:41.840 --> 00:04:44.070 align:start position:0%
+pretty much check your resize bar
+support<00:04:42.160><c> with</c><00:04:42.400><c> GPU</c><00:04:42.960><c> Z</c><00:04:43.360><c> and</c><00:04:43.520><c> you</c><00:04:43.680><c> could</c><00:04:43.840><c> also</c>
+
+00:04:44.070 --> 00:04:44.080 align:start position:0%
+support with GPU Z and you could also
+ 
+
+00:04:44.080 --> 00:04:45.990 align:start position:0%
+support with GPU Z and you could also
+verify<00:04:44.400><c> that</c><00:04:44.560><c> your</c><00:04:44.720><c> PCIe</c><00:04:45.280><c> interface</c><00:04:45.680><c> is</c>
+
+00:04:45.990 --> 00:04:46.000 align:start position:0%
+verify that your PCIe interface is
+ 
+
+00:04:46.000 --> 00:04:47.430 align:start position:0%
+verify that your PCIe interface is
+running<00:04:46.160><c> at</c><00:04:46.400><c> full</c><00:04:46.639><c> speed.</c><00:04:46.960><c> You</c><00:04:47.120><c> should</c><00:04:47.199><c> see</c>
+
+00:04:47.430 --> 00:04:47.440 align:start position:0%
+running at full speed. You should see
+ 
+
+00:04:47.440 --> 00:04:49.749 align:start position:0%
+running at full speed. You should see
+PCI<00:04:47.919><c> X16</c><00:04:48.479><c> at</c><00:04:48.639><c> your</c><00:04:48.800><c> card's</c><00:04:49.360><c> maximum</c>
+
+00:04:49.749 --> 00:04:49.759 align:start position:0%
+PCI X16 at your card's maximum
+ 
+
+00:04:49.759 --> 00:04:52.070 align:start position:0%
+PCI X16 at your card's maximum
+generation<00:04:50.240><c> and</c><00:04:50.479><c> Gen</c><00:04:50.720><c> 4</c><00:04:51.120><c> to</c><00:04:51.280><c> Gen</c><00:04:51.520><c> 5</c><00:04:51.759><c> is</c><00:04:51.919><c> the</c>
+
+00:04:52.070 --> 00:04:52.080 align:start position:0%
+generation and Gen 4 to Gen 5 is the
+ 
+
+00:04:52.080 --> 00:04:54.150 align:start position:0%
+generation and Gen 4 to Gen 5 is the
+normal<00:04:52.320><c> for</c><00:04:52.560><c> most</c><00:04:52.800><c> modern</c><00:04:53.120><c> AMD</c><00:04:53.600><c> cards.</c><00:04:54.000><c> Now,</c>
+
+00:04:54.150 --> 00:04:54.160 align:start position:0%
+normal for most modern AMD cards. Now,
+ 
+
+00:04:54.160 --> 00:04:56.070 align:start position:0%
+normal for most modern AMD cards. Now,
+same<00:04:54.320><c> as</c><00:04:54.479><c> Nvidia,</c><00:04:55.040><c> make</c><00:04:55.199><c> sure</c><00:04:55.440><c> that</c><00:04:55.759><c> hardware</c>
+
+00:04:56.070 --> 00:04:56.080 align:start position:0%
+same as Nvidia, make sure that hardware
+ 
+
+00:04:56.080 --> 00:04:58.150 align:start position:0%
+same as Nvidia, make sure that hardware
+accelerate<00:04:56.479><c> GPU</c><00:04:56.800><c> scheduling</c><00:04:57.280><c> is</c><00:04:57.600><c> turned</c><00:04:57.919><c> on</c>
+
+00:04:58.150 --> 00:04:58.160 align:start position:0%
+accelerate GPU scheduling is turned on
+ 
+
+00:04:58.160 --> 00:04:59.830 align:start position:0%
+accelerate GPU scheduling is turned on
+and<00:04:58.400><c> then</c><00:04:58.560><c> just</c><00:04:58.720><c> restart</c><00:04:59.040><c> after</c><00:04:59.280><c> enabling</c><00:04:59.600><c> it.</c>
+
+00:04:59.830 --> 00:04:59.840 align:start position:0%
+and then just restart after enabling it.
+ 
+
+00:04:59.840 --> 00:05:01.270 align:start position:0%
+and then just restart after enabling it.
+Now,<00:04:59.919><c> for</c><00:05:00.080><c> in-game</c><00:05:00.479><c> settings,</c><00:05:00.720><c> the</c><00:05:00.960><c> config</c>
+
+00:05:01.270 --> 00:05:01.280 align:start position:0%
+Now, for in-game settings, the config
+ 
+
+00:05:01.280 --> 00:05:03.110 align:start position:0%
+Now, for in-game settings, the config
+file<00:05:01.600><c> we</c><00:05:01.759><c> installed</c><00:05:02.160><c> gives</c><00:05:02.400><c> you</c><00:05:02.720><c> basically</c>
+
+00:05:03.110 --> 00:05:03.120 align:start position:0%
+file we installed gives you basically
+ 
+
+00:05:03.120 --> 00:05:04.790 align:start position:0%
+file we installed gives you basically
+everything<00:05:03.360><c> that</c><00:05:03.600><c> you</c><00:05:03.680><c> need</c><00:05:03.840><c> for</c><00:05:04.080><c> performance</c>
+
+00:05:04.790 --> 00:05:04.800 align:start position:0%
+everything that you need for performance
+ 
+
+00:05:04.800 --> 00:05:06.550 align:start position:0%
+everything that you need for performance
+and<00:05:04.960><c> the</c><00:05:05.120><c> base</c><00:05:05.360><c> config</c><00:05:05.680><c> is</c><00:05:05.840><c> set</c><00:05:06.000><c> for</c><00:05:06.160><c> maximum</c>
+
+00:05:06.550 --> 00:05:06.560 align:start position:0%
+and the base config is set for maximum
+ 
+
+00:05:06.560 --> 00:05:08.390 align:start position:0%
+and the base config is set for maximum
+performance<00:05:07.039><c> with</c><00:05:07.440><c> competitive</c><00:05:07.919><c> clarity.</c>
+
+00:05:08.390 --> 00:05:08.400 align:start position:0%
+performance with competitive clarity.
+ 
+
+00:05:08.400 --> 00:05:10.790 align:start position:0%
+performance with competitive clarity.
+That's<00:05:08.560><c> why</c><00:05:08.800><c> Fidelity</c><00:05:09.280><c> FXCAS</c><00:05:10.080><c> is</c><00:05:10.240><c> turned</c><00:05:10.479><c> on.</c>
+
+00:05:10.790 --> 00:05:10.800 align:start position:0%
+That's why Fidelity FXCAS is turned on.
+ 
+
+00:05:10.800 --> 00:05:11.990 align:start position:0%
+That's why Fidelity FXCAS is turned on.
+But<00:05:10.960><c> if</c><00:05:11.039><c> you</c><00:05:11.120><c> have</c><00:05:11.199><c> a</c><00:05:11.280><c> higherend</c><00:05:11.680><c> graphics</c>
+
+00:05:11.990 --> 00:05:12.000 align:start position:0%
+But if you have a higherend graphics
+ 
+
+00:05:12.000 --> 00:05:14.950 align:start position:0%
+But if you have a higherend graphics
+card<00:05:12.160><c> like</c><00:05:12.240><c> a</c><00:05:12.400><c> 4080</c><00:05:13.120><c> or</c><00:05:13.440><c> above</c><00:05:13.759><c> or</c><00:05:13.919><c> a</c><00:05:14.080><c> 7800</c><00:05:14.560><c> XT</c>
+
+00:05:14.950 --> 00:05:14.960 align:start position:0%
+card like a 4080 or above or a 7800 XT
+ 
+
+00:05:14.960 --> 00:05:16.629 align:start position:0%
+card like a 4080 or above or a 7800 XT
+and<00:05:15.199><c> above,</c><00:05:15.680><c> you</c><00:05:15.840><c> can</c><00:05:16.000><c> increase</c><00:05:16.240><c> some</c><00:05:16.400><c> of</c><00:05:16.479><c> the</c>
+
+00:05:16.629 --> 00:05:16.639 align:start position:0%
+and above, you can increase some of the
+ 
+
+00:05:16.639 --> 00:05:18.070 align:start position:0%
+and above, you can increase some of the
+settings<00:05:16.880><c> for</c><00:05:17.120><c> better</c><00:05:17.440><c> visuals</c><00:05:17.759><c> without</c>
+
+00:05:18.070 --> 00:05:18.080 align:start position:0%
+settings for better visuals without
+ 
+
+00:05:18.080 --> 00:05:20.150 align:start position:0%
+settings for better visuals without
+sacrificing<00:05:18.800><c> much</c><00:05:19.039><c> performance.</c><00:05:19.520><c> So</c><00:05:19.600><c> texture</c>
+
+00:05:20.150 --> 00:05:20.160 align:start position:0%
+sacrificing much performance. So texture
+ 
+
+00:05:20.160 --> 00:05:22.310 align:start position:0%
+sacrificing much performance. So texture
+quality,<00:05:20.720><c> you</c><00:05:20.880><c> can</c><00:05:20.960><c> set</c><00:05:21.120><c> it</c><00:05:21.199><c> to</c><00:05:21.360><c> higher</c><00:05:21.840><c> or</c>
+
+00:05:22.310 --> 00:05:22.320 align:start position:0%
+quality, you can set it to higher or
+ 
+
+00:05:22.320 --> 00:05:23.990 align:start position:0%
+quality, you can set it to higher or
+ultra.<00:05:22.880><c> And</c><00:05:22.960><c> then</c><00:05:23.199><c> model</c><00:05:23.520><c> quality,</c><00:05:23.840><c> you</c><00:05:23.919><c> can</c>
+
+00:05:23.990 --> 00:05:24.000 align:start position:0%
+ultra. And then model quality, you can
+ 
+
+00:05:24.000 --> 00:05:25.749 align:start position:0%
+ultra. And then model quality, you can
+do<00:05:24.160><c> the</c><00:05:24.320><c> same</c><00:05:24.479><c> thing.</c><00:05:25.039><c> And</c><00:05:25.199><c> then</c><00:05:25.440><c> texture</c>
+
+00:05:25.749 --> 00:05:25.759 align:start position:0%
+do the same thing. And then texture
+ 
+
+00:05:25.759 --> 00:05:27.110 align:start position:0%
+do the same thing. And then texture
+filtering<00:05:26.160><c> quality,</c><00:05:26.479><c> you</c><00:05:26.639><c> can</c><00:05:26.800><c> set</c><00:05:26.880><c> it</c><00:05:26.960><c> to</c>
+
+00:05:27.110 --> 00:05:27.120 align:start position:0%
+filtering quality, you can set it to
+ 
+
+00:05:27.120 --> 00:05:28.950 align:start position:0%
+filtering quality, you can set it to
+high.<00:05:27.680><c> Everyone</c><00:05:28.080><c> else</c><00:05:28.320><c> should</c><00:05:28.479><c> stay</c><00:05:28.639><c> at</c><00:05:28.800><c> the</c>
+
+00:05:28.950 --> 00:05:28.960 align:start position:0%
+high. Everyone else should stay at the
+ 
+
+00:05:28.960 --> 00:05:30.710 align:start position:0%
+high. Everyone else should stay at the
+optimized<00:05:29.360><c> settings</c><00:05:29.600><c> from</c><00:05:29.759><c> the</c><00:05:29.919><c> config</c><00:05:30.320><c> file.</c>
+
+00:05:30.710 --> 00:05:30.720 align:start position:0%
+optimized settings from the config file.
+ 
+
+00:05:30.720 --> 00:05:33.110 align:start position:0%
+optimized settings from the config file.
+And<00:05:30.880><c> then</c><00:05:31.039><c> field</c><00:05:31.280><c> of</c><00:05:31.520><c> view,</c><00:05:32.080><c> set</c><00:05:32.320><c> this</c><00:05:32.479><c> to</c><00:05:32.800><c> 100</c>
+
+00:05:33.110 --> 00:05:33.120 align:start position:0%
+And then field of view, set this to 100
+ 
+
+00:05:33.120 --> 00:05:35.189 align:start position:0%
+And then field of view, set this to 100
+to<00:05:33.520><c> 120</c><00:05:33.919><c> depending</c><00:05:34.240><c> on</c><00:05:34.400><c> what</c><00:05:34.560><c> you</c><00:05:34.720><c> want.</c><00:05:35.039><c> It</c>
+
+00:05:35.189 --> 00:05:35.199 align:start position:0%
+to 120 depending on what you want. It
+ 
+
+00:05:35.199 --> 00:05:36.790 align:start position:0%
+to 120 depending on what you want. It
+just<00:05:35.360><c> makes</c><00:05:35.520><c> the</c><00:05:35.680><c> field</c><00:05:35.840><c> of</c><00:05:35.919><c> view</c><00:05:36.160><c> higher.</c><00:05:36.639><c> And</c>
+
+00:05:36.790 --> 00:05:36.800 align:start position:0%
+just makes the field of view higher. And
+ 
+
+00:05:36.800 --> 00:05:38.150 align:start position:0%
+just makes the field of view higher. And
+obviously<00:05:37.280><c> you</c><00:05:37.520><c> are</c><00:05:37.680><c> going</c><00:05:37.759><c> to</c><00:05:37.840><c> lose</c><00:05:38.000><c> a</c><00:05:38.080><c> little</c>
+
+00:05:38.150 --> 00:05:38.160 align:start position:0%
+obviously you are going to lose a little
+ 
+
+00:05:38.160 --> 00:05:39.909 align:start position:0%
+obviously you are going to lose a little
+bit<00:05:38.320><c> of</c><00:05:38.479><c> performance</c><00:05:38.960><c> but</c><00:05:39.360><c> the</c><00:05:39.520><c> competitive</c>
+
+00:05:39.909 --> 00:05:39.919 align:start position:0%
+bit of performance but the competitive
+ 
+
+00:05:39.919 --> 00:05:41.430 align:start position:0%
+bit of performance but the competitive
+advantage<00:05:40.240><c> is</c><00:05:40.400><c> just</c><00:05:40.560><c> there.</c><00:05:40.800><c> Now</c><00:05:41.039><c> frame</c><00:05:41.199><c> rate</c>
+
+00:05:41.430 --> 00:05:41.440 align:start position:0%
+advantage is just there. Now frame rate
+ 
+
+00:05:41.440 --> 00:05:42.629 align:start position:0%
+advantage is just there. Now frame rate
+limit<00:05:41.680><c> I</c><00:05:41.840><c> would</c><00:05:41.919><c> recommend</c><00:05:42.160><c> setting</c><00:05:42.400><c> this</c><00:05:42.560><c> to</c>
+
+00:05:42.629 --> 00:05:42.639 align:start position:0%
+limit I would recommend setting this to
+ 
+
+00:05:42.639 --> 00:05:45.110 align:start position:0%
+limit I would recommend setting this to
+unlimited<00:05:43.440><c> in</c><00:05:43.680><c> game</c><00:05:43.919><c> or</c><00:05:44.160><c> just</c><00:05:44.320><c> cap</c><00:05:44.639><c> your</c><00:05:44.880><c> Mars</c>
+
+00:05:45.110 --> 00:05:45.120 align:start position:0%
+unlimited in game or just cap your Mars
+ 
+
+00:05:45.120 --> 00:05:46.710 align:start position:0%
+unlimited in game or just cap your Mars
+refresh<00:05:45.440><c> rate</c><00:05:45.600><c> for</c><00:05:45.840><c> max</c><00:05:46.160><c> smoothness.</c>
+
+00:05:46.710 --> 00:05:46.720 align:start position:0%
+refresh rate for max smoothness.
+ 
+
+00:05:46.720 --> 00:05:49.029 align:start position:0%
+refresh rate for max smoothness.
+Alternatively<00:05:47.360><c> for</c><00:05:47.680><c> Black</c><00:05:47.919><c> Ops</c><00:05:48.160><c> 7</c><00:05:48.560><c> you</c><00:05:48.720><c> can</c>
+
+00:05:49.029 --> 00:05:49.039 align:start position:0%
+Alternatively for Black Ops 7 you can
+ 
+
+00:05:49.039 --> 00:05:51.110 align:start position:0%
+Alternatively for Black Ops 7 you can
+use<00:05:49.360><c> G-Sync</c><00:05:49.840><c> if</c><00:05:50.000><c> you</c><00:05:50.080><c> have</c><00:05:50.160><c> a</c><00:05:50.320><c> modern</c><00:05:50.639><c> G-sync</c>
+
+00:05:51.110 --> 00:05:51.120 align:start position:0%
+use G-Sync if you have a modern G-sync
+ 
+
+00:05:51.120 --> 00:05:53.110 align:start position:0%
+use G-Sync if you have a modern G-sync
+monitor.<00:05:51.680><c> Nowadays</c><00:05:52.160><c> G-Sync</c><00:05:52.639><c> doesn't</c><00:05:52.800><c> add</c><00:05:52.880><c> as</c>
+
+00:05:53.110 --> 00:05:53.120 align:start position:0%
+monitor. Nowadays G-Sync doesn't add as
+ 
+
+00:05:53.120 --> 00:05:54.629 align:start position:0%
+monitor. Nowadays G-Sync doesn't add as
+much<00:05:53.199><c> latency</c><00:05:53.600><c> as</c><00:05:53.759><c> it</c><00:05:53.840><c> used</c><00:05:54.000><c> to</c><00:05:54.160><c> back</c><00:05:54.320><c> in</c><00:05:54.560><c> the</c>
+
+00:05:54.629 --> 00:05:54.639 align:start position:0%
+much latency as it used to back in the
+ 
+
+00:05:54.639 --> 00:05:56.710 align:start position:0%
+much latency as it used to back in the
+past.<00:05:55.120><c> So</c><00:05:55.280><c> it's</c><00:05:55.600><c> viable</c><00:05:56.000><c> option</c><00:05:56.320><c> for</c><00:05:56.560><c> most</c>
+
+00:05:56.710 --> 00:05:56.720 align:start position:0%
+past. So it's viable option for most
+ 
+
+00:05:56.720 --> 00:05:58.150 align:start position:0%
+past. So it's viable option for most
+people<00:05:56.880><c> that</c><00:05:57.120><c> just</c><00:05:57.280><c> want</c><00:05:57.440><c> to</c><00:05:57.520><c> look</c><00:05:57.680><c> for</c><00:05:57.840><c> no</c>
+
+00:05:58.150 --> 00:05:58.160 align:start position:0%
+people that just want to look for no
+ 
+
+00:05:58.160 --> 00:06:00.150 align:start position:0%
+people that just want to look for no
+screen<00:05:58.400><c> tearing</c><00:05:58.800><c> and</c><00:05:59.120><c> maximum</c><00:05:59.680><c> smoothness.</c>
+
+00:06:00.150 --> 00:06:00.160 align:start position:0%
+screen tearing and maximum smoothness.
+ 
+
+00:06:00.160 --> 00:06:01.749 align:start position:0%
+screen tearing and maximum smoothness.
+Now<00:06:00.320><c> a</c><00:06:00.479><c> couple</c><00:06:00.639><c> more</c><00:06:00.880><c> window</c><00:06:01.199><c> settings</c><00:06:01.520><c> that</c>
+
+00:06:01.749 --> 00:06:01.759 align:start position:0%
+Now a couple more window settings that
+ 
+
+00:06:01.759 --> 00:06:03.590 align:start position:0%
+Now a couple more window settings that
+matter.<00:06:02.240><c> Xbox</c><00:06:02.639><c> Game</c><00:06:02.960><c> Bar,</c><00:06:03.199><c> you</c><00:06:03.360><c> want</c><00:06:03.520><c> to</c>
+
+00:06:03.590 --> 00:06:03.600 align:start position:0%
+matter. Xbox Game Bar, you want to
+ 
+
+00:06:03.600 --> 00:06:06.070 align:start position:0%
+matter. Xbox Game Bar, you want to
+disable<00:06:03.919><c> it</c><00:06:04.240><c> unless</c><00:06:04.639><c> you</c><00:06:04.800><c> have</c><00:06:04.880><c> a</c><00:06:05.039><c> dual</c><00:06:05.360><c> CCD</c>
+
+00:06:06.070 --> 00:06:06.080 align:start position:0%
+disable it unless you have a dual CCD
+ 
+
+00:06:06.080 --> 00:06:08.950 align:start position:0%
+disable it unless you have a dual CCD
+processor<00:06:06.560><c> like</c><00:06:06.720><c> a</c><00:06:06.960><c> 9950</c><00:06:07.680><c> X3D</c><00:06:08.479><c> and</c><00:06:08.720><c> you</c>
+
+00:06:08.950 --> 00:06:08.960 align:start position:0%
+processor like a 9950 X3D and you
+ 
+
+00:06:08.960 --> 00:06:11.350 align:start position:0%
+processor like a 9950 X3D and you
+haven't<00:06:09.360><c> disabled</c><00:06:09.840><c> the</c><00:06:10.000><c> second</c><00:06:10.479><c> CCD.</c><00:06:11.199><c> This</c>
+
+00:06:11.350 --> 00:06:11.360 align:start position:0%
+haven't disabled the second CCD. This
+ 
+
+00:06:11.360 --> 00:06:13.270 align:start position:0%
+haven't disabled the second CCD. This
+overlay<00:06:11.840><c> obviously</c><00:06:12.240><c> causes</c><00:06:12.560><c> input</c><00:06:12.880><c> lag</c><00:06:13.120><c> in</c>
+
+00:06:13.270 --> 00:06:13.280 align:start position:0%
+overlay obviously causes input lag in
+ 
+
+00:06:13.280 --> 00:06:14.950 align:start position:0%
+overlay obviously causes input lag in
+Black<00:06:13.440><c> Ops.</c>
+
+00:06:14.950 --> 00:06:14.960 align:start position:0%
+Black Ops.
+ 
+
+00:06:14.960 --> 00:06:17.029 align:start position:0%
+Black Ops.
+So<00:06:15.199><c> just</c><00:06:15.280><c> go</c><00:06:15.440><c> to</c><00:06:15.600><c> press</c><00:06:15.919><c> Windows</c><00:06:16.240><c> key</c><00:06:16.400><c> and</c><00:06:16.560><c> R,</c>
+
+00:06:17.029 --> 00:06:17.039 align:start position:0%
+So just go to press Windows key and R,
+ 
+
+00:06:17.039 --> 00:06:20.790 align:start position:0%
+So just go to press Windows key and R,
+type<00:06:17.600><c> reggedit,</c><00:06:18.720><c> press</c><00:06:19.039><c> okay,</c><00:06:19.840><c> go</c><00:06:20.080><c> to</c><00:06:20.319><c> HQ</c>
+
+00:06:20.790 --> 00:06:20.800 align:start position:0%
+type reggedit, press okay, go to HQ
+ 
+
+00:06:20.800 --> 00:06:24.629 align:start position:0%
+type reggedit, press okay, go to HQ
+current<00:06:21.120><c> user,</c><00:06:22.080><c> expand</c><00:06:22.639><c> system,</c><00:06:23.600><c> click</c><00:06:24.240><c> game</c>
+
+00:06:24.629 --> 00:06:24.639 align:start position:0%
+current user, expand system, click game
+ 
+
+00:06:24.639 --> 00:06:27.110 align:start position:0%
+current user, expand system, click game
+config<00:06:25.199><c> store,</c><00:06:25.919><c> and</c><00:06:26.080><c> then</c><00:06:26.319><c> on</c><00:06:26.479><c> the</c><00:06:26.639><c> right</c>
+
+00:06:27.110 --> 00:06:27.120 align:start position:0%
+config store, and then on the right
+ 
+
+00:06:27.120 --> 00:06:29.909 align:start position:0%
+config store, and then on the right
+double<00:06:27.360><c> click</c><00:06:27.680><c> game</c><00:06:28.080><c> DVR</c><00:06:28.720><c> enabled</c><00:06:29.440><c> and</c><00:06:29.759><c> set</c>
+
+00:06:29.909 --> 00:06:29.919 align:start position:0%
+double click game DVR enabled and set
+ 
+
+00:06:29.919 --> 00:06:32.309 align:start position:0%
+double click game DVR enabled and set
+that<00:06:30.160><c> to</c><00:06:30.479><c> simply</c><00:06:30.960><c> zero.</c><00:06:31.520><c> and</c><00:06:31.759><c> then</c><00:06:31.919><c> press</c>
+
+00:06:32.309 --> 00:06:32.319 align:start position:0%
+that to simply zero. and then press
+ 
+
+00:06:32.319 --> 00:06:34.629 align:start position:0%
+that to simply zero. and then press
+okay.<00:06:33.360><c> Now,</c><00:06:33.680><c> Windows</c><00:06:34.000><c> Power</c><00:06:34.240><c> Plan,</c><00:06:34.479><c> you</c><00:06:34.560><c> want</c>
+
+00:06:34.629 --> 00:06:34.639 align:start position:0%
+okay. Now, Windows Power Plan, you want
+ 
+
+00:06:34.639 --> 00:06:35.830 align:start position:0%
+okay. Now, Windows Power Plan, you want
+to<00:06:34.720><c> set</c><00:06:34.800><c> this</c><00:06:34.960><c> to</c><00:06:35.039><c> high</c><00:06:35.280><c> performance</c><00:06:35.520><c> or</c>
+
+00:06:35.830 --> 00:06:35.840 align:start position:0%
+to set this to high performance or
+ 
+
+00:06:35.840 --> 00:06:37.670 align:start position:0%
+to set this to high performance or
+ultimate<00:06:36.080><c> performance</c><00:06:36.560><c> if</c><00:06:36.880><c> available.</c><00:06:37.520><c> So,</c>
+
+00:06:37.670 --> 00:06:37.680 align:start position:0%
+ultimate performance if available. So,
+ 
+
+00:06:37.680 --> 00:06:39.510 align:start position:0%
+ultimate performance if available. So,
+just<00:06:37.840><c> go</c><00:06:37.919><c> to</c><00:06:38.080><c> control</c><00:06:38.400><c> panel,</c><00:06:38.880><c> power</c><00:06:39.199><c> options,</c>
+
+00:06:39.510 --> 00:06:39.520 align:start position:0%
+just go to control panel, power options,
+ 
+
+00:06:39.520 --> 00:06:41.029 align:start position:0%
+just go to control panel, power options,
+and<00:06:39.840><c> set</c><00:06:39.919><c> it</c><00:06:40.080><c> to</c><00:06:40.240><c> high</c><00:06:40.400><c> performance.</c><00:06:40.880><c> And</c>
+
+00:06:41.029 --> 00:06:41.039 align:start position:0%
+and set it to high performance. And
+ 
+
+00:06:41.039 --> 00:06:42.550 align:start position:0%
+and set it to high performance. And
+that's<00:06:41.199><c> it</c><00:06:41.280><c> for</c><00:06:41.520><c> Windows.</c><00:06:41.919><c> Keep</c><00:06:42.080><c> it</c><00:06:42.319><c> simple</c>
+
+00:06:42.550 --> 00:06:42.560 align:start position:0%
+that's it for Windows. Keep it simple
+ 
+
+00:06:42.560 --> 00:06:44.390 align:start position:0%
+that's it for Windows. Keep it simple
+and<00:06:42.800><c> just</c><00:06:42.960><c> keep</c><00:06:43.120><c> it</c><00:06:43.360><c> optimized.</c><00:06:44.000><c> Now,</c><00:06:44.160><c> after</c>
+
+00:06:44.390 --> 00:06:44.400 align:start position:0%
+and just keep it optimized. Now, after
+ 
+
+00:06:44.400 --> 00:06:45.830 align:start position:0%
+and just keep it optimized. Now, after
+making<00:06:44.639><c> these</c><00:06:44.880><c> changes,</c><00:06:45.120><c> you</c><00:06:45.360><c> need</c><00:06:45.440><c> to</c><00:06:45.520><c> verify</c>
+
+00:06:45.830 --> 00:06:45.840 align:start position:0%
+making these changes, you need to verify
+ 
+
+00:06:45.840 --> 00:06:47.510 align:start position:0%
+making these changes, you need to verify
+your<00:06:46.080><c> performance.</c><00:06:46.479><c> Black</c><00:06:46.720><c> Ops</c><00:06:46.960><c> 7</c><00:06:47.199><c> has</c><00:06:47.280><c> a</c>
+
+00:06:47.510 --> 00:06:47.520 align:start position:0%
+your performance. Black Ops 7 has a
+ 
+
+00:06:47.520 --> 00:06:49.430 align:start position:0%
+your performance. Black Ops 7 has a
+built-in<00:06:47.919><c> benchmark,</c><00:06:48.560><c> but</c><00:06:48.880><c> just</c><00:06:49.039><c> do</c><00:06:49.280><c> not</c>
+
+00:06:49.430 --> 00:06:49.440 align:start position:0%
+built-in benchmark, but just do not
+ 
+
+00:06:49.440 --> 00:06:51.430 align:start position:0%
+built-in benchmark, but just do not
+hyperfixate<00:06:50.240><c> on</c><00:06:50.400><c> this</c><00:06:50.560><c> bench</c><00:06:50.960><c> because</c><00:06:51.280><c> the</c>
+
+00:06:51.430 --> 00:06:51.440 align:start position:0%
+hyperfixate on this bench because the
+ 
+
+00:06:51.440 --> 00:06:53.110 align:start position:0%
+hyperfixate on this bench because the
+results<00:06:51.840><c> are</c><00:06:52.080><c> not</c><00:06:52.240><c> very</c><00:06:52.479><c> comparable</c><00:06:52.960><c> to</c>
+
+00:06:53.110 --> 00:06:53.120 align:start position:0%
+results are not very comparable to
+ 
+
+00:06:53.120 --> 00:06:54.710 align:start position:0%
+results are not very comparable to
+in-game<00:06:53.600><c> performance.</c><00:06:54.240><c> So,</c><00:06:54.400><c> I'm</c><00:06:54.560><c> just</c><00:06:54.639><c> going</c>
+
+00:06:54.710 --> 00:06:54.720 align:start position:0%
+in-game performance. So, I'm just going
+ 
+
+00:06:54.720 --> 00:06:56.950 align:start position:0%
+in-game performance. So, I'm just going
+to<00:06:54.800><c> show</c><00:06:55.120><c> screenshots</c><00:06:55.680><c> of</c><00:06:56.000><c> low-end</c><00:06:56.639><c> graphics</c>
+
+00:06:56.950 --> 00:06:56.960 align:start position:0%
+to show screenshots of low-end graphics
+ 
+
+00:06:56.960 --> 00:06:59.270 align:start position:0%
+to show screenshots of low-end graphics
+cards<00:06:57.280><c> to</c><00:06:57.520><c> mid-range</c><00:06:58.160><c> graphics</c><00:06:58.560><c> cards</c><00:06:59.039><c> as</c>
+
+00:06:59.270 --> 00:06:59.280 align:start position:0%
+cards to mid-range graphics cards as
+ 
+
+00:06:59.280 --> 00:07:01.110 align:start position:0%
+cards to mid-range graphics cards as
+well<00:06:59.440><c> as</c><00:06:59.680><c> high-end</c><00:07:00.160><c> graphics</c><00:07:00.560><c> cards.</c><00:07:00.880><c> If</c>
+
+00:07:01.110 --> 00:07:01.120 align:start position:0%
+well as high-end graphics cards. If
+ 
+
+00:07:01.120 --> 00:07:01.990 align:start position:0%
+well as high-end graphics cards. If
+you're<00:07:01.199><c> not</c><00:07:01.360><c> hitting</c><00:07:01.599><c> some</c><00:07:01.759><c> of</c><00:07:01.840><c> these</c>
+
+00:07:01.990 --> 00:07:02.000 align:start position:0%
+you're not hitting some of these
+ 
+
+00:07:02.000 --> 00:07:03.830 align:start position:0%
+you're not hitting some of these
+targets,<00:07:02.479><c> you</c><00:07:02.639><c> need</c><00:07:02.720><c> to</c><00:07:02.880><c> go</c><00:07:03.039><c> back</c><00:07:03.120><c> and</c><00:07:03.360><c> verify</c>
+
+00:07:03.830 --> 00:07:03.840 align:start position:0%
+targets, you need to go back and verify
+ 
+
+00:07:03.840 --> 00:07:05.670 align:start position:0%
+targets, you need to go back and verify
+everything<00:07:04.319><c> that</c><00:07:04.479><c> you</c><00:07:04.720><c> did</c><00:07:05.039><c> following</c><00:07:05.520><c> this</c>
+
+00:07:05.670 --> 00:07:05.680 align:start position:0%
+everything that you did following this
+ 
+
+00:07:05.680 --> 00:07:08.070 align:start position:0%
+everything that you did following this
+video<00:07:05.840><c> is</c><00:07:06.160><c> correct</c><00:07:06.720><c> or</c><00:07:07.120><c> you</c><00:07:07.440><c> might</c><00:07:07.599><c> have</c><00:07:07.840><c> other</c>
+
+00:07:08.070 --> 00:07:08.080 align:start position:0%
+video is correct or you might have other
+ 
+
+00:07:08.080 --> 00:07:10.629 align:start position:0%
+video is correct or you might have other
+problems<00:07:08.560><c> that</c><00:07:08.880><c> require</c><00:07:09.440><c> some</c><00:07:09.759><c> expertise.</c><00:07:10.479><c> So</c>
+
+00:07:10.629 --> 00:07:10.639 align:start position:0%
+problems that require some expertise. So
+ 
+
+00:07:10.639 --> 00:07:13.270 align:start position:0%
+problems that require some expertise. So
+on<00:07:10.880><c> 1080p</c><00:07:11.440><c> with</c><00:07:11.599><c> a</c><00:07:11.759><c> 4060</c><00:07:12.400><c> Ti</c><00:07:12.880><c> with</c><00:07:13.120><c> the</c>
+
+00:07:13.270 --> 00:07:13.280 align:start position:0%
+on 1080p with a 4060 Ti with the
+ 
+
+00:07:13.280 --> 00:07:15.589 align:start position:0%
+on 1080p with a 4060 Ti with the
+configuration<00:07:13.919><c> file</c><00:07:14.319><c> set,</c><00:07:14.880><c> we</c><00:07:15.120><c> are</c><00:07:15.280><c> getting</c>
+
+00:07:15.589 --> 00:07:15.599 align:start position:0%
+configuration file set, we are getting
+ 
+
+00:07:15.599 --> 00:07:19.029 align:start position:0%
+configuration file set, we are getting
+232<00:07:16.639><c> average</c><00:07:16.960><c> FPS</c><00:07:17.680><c> in</c><00:07:17.919><c> the</c><00:07:18.080><c> benchmark.</c><00:07:18.880><c> And</c>
+
+00:07:19.029 --> 00:07:19.039 align:start position:0%
+232 average FPS in the benchmark. And
+ 
+
+00:07:19.039 --> 00:07:20.790 align:start position:0%
+232 average FPS in the benchmark. And
+this<00:07:19.199><c> is</c><00:07:19.280><c> with</c><00:07:19.520><c> resizable</c><00:07:20.080><c> bar</c><00:07:20.319><c> support</c>
+
+00:07:20.790 --> 00:07:20.800 align:start position:0%
+this is with resizable bar support
+ 
+
+00:07:20.800 --> 00:07:23.909 align:start position:0%
+this is with resizable bar support
+obviously<00:07:21.280><c> turned</c><00:07:21.680><c> on.</c><00:07:22.160><c> Now</c><00:07:22.560><c> again</c><00:07:22.880><c> on</c><00:07:23.120><c> 1080p</c>
+
+00:07:23.909 --> 00:07:23.919 align:start position:0%
+obviously turned on. Now again on 1080p
+ 
+
+00:07:23.919 --> 00:07:26.629 align:start position:0%
+obviously turned on. Now again on 1080p
+if<00:07:24.160><c> you</c><00:07:24.319><c> have</c><00:07:24.479><c> a</c><00:07:24.800><c> 4080</c><00:07:25.520><c> super</c><00:07:26.080><c> paired</c><00:07:26.400><c> with</c><00:07:26.479><c> an</c>
+
+00:07:26.629 --> 00:07:26.639 align:start position:0%
+if you have a 4080 super paired with an
+ 
+
+00:07:26.639 --> 00:07:29.029 align:start position:0%
+if you have a 4080 super paired with an
+i9<00:07:27.199><c> or</c><00:07:27.440><c> something</c><00:07:27.680><c> similar</c><00:07:28.400><c> you</c><00:07:28.639><c> should</c><00:07:28.880><c> be</c>
+
+00:07:29.029 --> 00:07:29.039 align:start position:0%
+i9 or something similar you should be
+ 
+
+00:07:29.039 --> 00:07:32.309 align:start position:0%
+i9 or something similar you should be
+getting<00:07:29.360><c> around</c><00:07:29.840><c> 362</c><00:07:30.880><c> average</c><00:07:31.199><c> FPS</c><00:07:32.000><c> that</c><00:07:32.240><c> is</c>
+
+00:07:32.309 --> 00:07:32.319 align:start position:0%
+getting around 362 average FPS that is
+ 
+
+00:07:32.319 --> 00:07:34.230 align:start position:0%
+getting around 362 average FPS that is
+with<00:07:32.560><c> the</c><00:07:32.720><c> configuration</c><00:07:33.199><c> file</c><00:07:33.520><c> that</c><00:07:33.680><c> we</c><00:07:33.919><c> set.</c>
+
+00:07:34.230 --> 00:07:34.240 align:start position:0%
+with the configuration file that we set.
+ 
+
+00:07:34.240 --> 00:07:36.390 align:start position:0%
+with the configuration file that we set.
+Now<00:07:34.639><c> subtract</c><00:07:35.120><c> around</c><00:07:35.440><c> 30</c><00:07:35.759><c> frames</c><00:07:36.080><c> from</c><00:07:36.240><c> this</c>
+
+00:07:36.390 --> 00:07:36.400 align:start position:0%
+Now subtract around 30 frames from this
+ 
+
+00:07:36.400 --> 00:07:39.110 align:start position:0%
+Now subtract around 30 frames from this
+benchmark<00:07:36.880><c> cuz</c><00:07:37.199><c> the</c><00:07:37.440><c> GPU</c><00:07:37.919><c> is</c><00:07:38.160><c> overclocked</c><00:07:38.960><c> on</c>
+
+00:07:39.110 --> 00:07:39.120 align:start position:0%
+benchmark cuz the GPU is overclocked on
+ 
+
+00:07:39.120 --> 00:07:40.550 align:start position:0%
+benchmark cuz the GPU is overclocked on
+this<00:07:39.280><c> benchmark.</c><00:07:39.919><c> Without</c><00:07:40.240><c> obviously</c>
+
+00:07:40.550 --> 00:07:40.560 align:start position:0%
+this benchmark. Without obviously
+ 
+
+00:07:40.560 --> 00:07:41.990 align:start position:0%
+this benchmark. Without obviously
+overclocking<00:07:41.039><c> your</c><00:07:41.199><c> graphics</c><00:07:41.440><c> card</c><00:07:41.680><c> you</c><00:07:41.919><c> are</c>
+
+00:07:41.990 --> 00:07:42.000 align:start position:0%
+overclocking your graphics card you are
+ 
+
+00:07:42.000 --> 00:07:43.510 align:start position:0%
+overclocking your graphics card you are
+missing<00:07:42.319><c> a</c><00:07:42.479><c> little</c><00:07:42.560><c> bit</c><00:07:42.720><c> of</c><00:07:42.880><c> performance</c><00:07:43.280><c> in</c>
+
+00:07:43.510 --> 00:07:43.520 align:start position:0%
+missing a little bit of performance in
+ 
+
+00:07:43.520 --> 00:07:45.830 align:start position:0%
+missing a little bit of performance in
+the<00:07:43.680><c> benchmark.</c><00:07:44.160><c> So</c><00:07:44.400><c> I'll</c><00:07:44.639><c> say</c><00:07:44.960><c> around</c><00:07:45.440><c> 300</c>
+
+00:07:45.830 --> 00:07:45.840 align:start position:0%
+the benchmark. So I'll say around 300
+ 
+
+00:07:45.840 --> 00:07:47.830 align:start position:0%
+the benchmark. So I'll say around 300
+fps<00:07:46.240><c> range</c><00:07:46.479><c> is</c><00:07:46.639><c> what</c><00:07:46.800><c> you</c><00:07:46.960><c> should</c><00:07:47.039><c> be</c><00:07:47.199><c> hitting</c>
+
+00:07:47.830 --> 00:07:47.840 align:start position:0%
+fps range is what you should be hitting
+ 
+
+00:07:47.840 --> 00:07:51.350 align:start position:0%
+fps range is what you should be hitting
+on<00:07:48.160><c> 1080p</c><00:07:48.800><c> with</c><00:07:48.960><c> a</c><00:07:49.120><c> 4080</c><00:07:49.680><c> super</c><00:07:50.000><c> or</c><00:07:50.319><c> 4080.</c><00:07:51.039><c> Now,</c>
+
+00:07:51.350 --> 00:07:51.360 align:start position:0%
+on 1080p with a 4080 super or 4080. Now,
+ 
+
+00:07:51.360 --> 00:07:53.909 align:start position:0%
+on 1080p with a 4080 super or 4080. Now,
+on<00:07:51.520><c> a</c><00:07:51.759><c> 5090,</c><00:07:52.400><c> which</c><00:07:52.560><c> is</c><00:07:52.720><c> as</c><00:07:52.960><c> crazy</c><00:07:53.199><c> as</c><00:07:53.440><c> it</c><00:07:53.599><c> is,</c>
+
+00:07:53.909 --> 00:07:53.919 align:start position:0%
+on a 5090, which is as crazy as it is,
+ 
+
+00:07:53.919 --> 00:07:56.950 align:start position:0%
+on a 5090, which is as crazy as it is,
+on<00:07:54.160><c> 1440p</c><00:07:55.120><c> and</c><00:07:55.520><c> specifically</c><00:07:56.080><c> 1440p,</c><00:07:56.879><c> on</c>
+
+00:07:56.950 --> 00:07:56.960 align:start position:0%
+on 1440p and specifically 1440p, on
+ 
+
+00:07:56.960 --> 00:07:58.710 align:start position:0%
+on 1440p and specifically 1440p, on
+1080p,<00:07:57.680><c> obviously,</c><00:07:57.919><c> it's</c><00:07:58.240><c> different.</c><00:07:58.560><c> Uh,</c>
+
+00:07:58.710 --> 00:07:58.720 align:start position:0%
+1080p, obviously, it's different. Uh,
+ 
+
+00:07:58.720 --> 00:08:00.070 align:start position:0%
+1080p, obviously, it's different. Uh,
+with<00:07:58.879><c> fidelity</c><00:07:59.360><c> turned</c><00:07:59.599><c> off,</c><00:07:59.759><c> so</c><00:07:59.919><c> no</c>
+
+00:08:00.070 --> 00:08:00.080 align:start position:0%
+with fidelity turned off, so no
+ 
+
+00:08:00.080 --> 00:08:02.309 align:start position:0%
+with fidelity turned off, so no
+upscaling,<00:08:00.720><c> it</c><00:08:00.960><c> should</c><00:08:01.120><c> be</c><00:08:01.280><c> around</c><00:08:01.840><c> almost</c>
+
+00:08:02.309 --> 00:08:02.319 align:start position:0%
+upscaling, it should be around almost
+ 
+
+00:08:02.319 --> 00:08:05.430 align:start position:0%
+upscaling, it should be around almost
+close<00:08:02.560><c> to</c><00:08:02.800><c> 400</c><00:08:03.280><c> average</c><00:08:03.680><c> FPS.</c><00:08:04.479><c> Now,</c><00:08:04.879><c> I'll</c><00:08:05.199><c> say</c>
+
+00:08:05.430 --> 00:08:05.440 align:start position:0%
+close to 400 average FPS. Now, I'll say
+ 
+
+00:08:05.440 --> 00:08:07.029 align:start position:0%
+close to 400 average FPS. Now, I'll say
+without<00:08:05.759><c> overclocking,</c><00:08:06.479><c> without</c><00:08:06.720><c> doing</c><00:08:06.879><c> any</c>
+
+00:08:07.029 --> 00:08:07.039 align:start position:0%
+without overclocking, without doing any
+ 
+
+00:08:07.039 --> 00:08:08.469 align:start position:0%
+without overclocking, without doing any
+special<00:08:07.360><c> tuning,</c><00:08:07.680><c> you</c><00:08:07.840><c> should</c><00:08:08.000><c> be</c><00:08:08.080><c> hitting</c><00:08:08.400><c> at</c>
+
+00:08:08.469 --> 00:08:08.479 align:start position:0%
+special tuning, you should be hitting at
+ 
+
+00:08:08.479 --> 00:08:11.990 align:start position:0%
+special tuning, you should be hitting at
+least<00:08:08.960><c> 380</c><00:08:09.680><c> average</c><00:08:10.080><c> FPS</c><00:08:10.639><c> on</c><00:08:10.960><c> 1440p.</c><00:08:11.759><c> Now,</c>
+
+00:08:11.990 --> 00:08:12.000 align:start position:0%
+least 380 average FPS on 1440p. Now,
+ 
+
+00:08:12.000 --> 00:08:13.430 align:start position:0%
+least 380 average FPS on 1440p. Now,
+1080p,<00:08:12.479><c> I'm</c><00:08:12.639><c> just</c><00:08:12.800><c> not</c><00:08:12.960><c> even</c><00:08:13.120><c> going</c><00:08:13.199><c> to</c><00:08:13.280><c> count</c>
+
+00:08:13.430 --> 00:08:13.440 align:start position:0%
+1080p, I'm just not even going to count
+ 
+
+00:08:13.440 --> 00:08:15.670 align:start position:0%
+1080p, I'm just not even going to count
+that<00:08:13.680><c> because</c><00:08:13.840><c> it's</c><00:08:14.000><c> a</c><00:08:14.160><c> 5090.</c><00:08:14.800><c> No</c><00:08:14.960><c> one</c><00:08:15.120><c> with</c><00:08:15.280><c> a</c>
+
+00:08:15.670 --> 00:08:15.680 align:start position:0%
+that because it's a 5090. No one with a
+ 
+
+00:08:15.680 --> 00:08:17.670 align:start position:0%
+that because it's a 5090. No one with a
+5090<00:08:16.080><c> is</c><00:08:16.240><c> really</c><00:08:16.479><c> running</c><00:08:16.639><c> 1080p.</c><00:08:17.360><c> Now,</c>
+
+00:08:17.670 --> 00:08:17.680 align:start position:0%
+5090 is really running 1080p. Now,
+ 
+
+00:08:17.680 --> 00:08:18.950 align:start position:0%
+5090 is really running 1080p. Now,
+everything<00:08:17.919><c> I</c><00:08:18.080><c> just</c><00:08:18.240><c> showed</c><00:08:18.479><c> you</c><00:08:18.639><c> will</c><00:08:18.879><c> get</c>
+
+00:08:18.950 --> 00:08:18.960 align:start position:0%
+everything I just showed you will get
+ 
+
+00:08:18.960 --> 00:08:21.270 align:start position:0%
+everything I just showed you will get
+you<00:08:19.199><c> 80%</c><00:08:19.840><c> of</c><00:08:20.000><c> the</c><00:08:20.160><c> way</c><00:08:20.319><c> there,</c><00:08:20.720><c> but</c><00:08:20.879><c> there's</c><00:08:21.120><c> a</c>
+
+00:08:21.270 --> 00:08:21.280 align:start position:0%
+you 80% of the way there, but there's a
+ 
+
+00:08:21.280 --> 00:08:23.510 align:start position:0%
+you 80% of the way there, but there's a
+limit<00:08:21.440><c> to</c><00:08:21.680><c> what</c><00:08:21.840><c> you</c><00:08:22.000><c> can</c><00:08:22.160><c> do</c><00:08:22.319><c> manually.</c><00:08:23.039><c> BIOS</c>
+
+00:08:23.510 --> 00:08:23.520 align:start position:0%
+limit to what you can do manually. BIOS
+ 
+
+00:08:23.520 --> 00:08:25.749 align:start position:0%
+limit to what you can do manually. BIOS
+optimization,<00:08:24.400><c> RAM</c><00:08:24.800><c> tuning,</c><00:08:25.199><c> and</c><00:08:25.440><c> advanced</c>
+
+00:08:25.749 --> 00:08:25.759 align:start position:0%
+optimization, RAM tuning, and advanced
+ 
+
+00:08:25.759 --> 00:08:28.150 align:start position:0%
+optimization, RAM tuning, and advanced
+Windows<00:08:26.160><c> configuration</c><00:08:26.879><c> require</c><00:08:27.440><c> expertise</c>
+
+00:08:28.150 --> 00:08:28.160 align:start position:0%
+Windows configuration require expertise
+ 
+
+00:08:28.160 --> 00:08:30.390 align:start position:0%
+Windows configuration require expertise
+and<00:08:28.479><c> time</c><00:08:28.720><c> that</c><00:08:29.039><c> most</c><00:08:29.280><c> people</c><00:08:29.680><c> do</c><00:08:29.919><c> not</c><00:08:30.160><c> have,</c>
+
+00:08:30.390 --> 00:08:30.400 align:start position:0%
+and time that most people do not have,
+ 
+
+00:08:30.400 --> 00:08:32.310 align:start position:0%
+and time that most people do not have,
+and<00:08:30.639><c> that's</c><00:08:30.879><c> where</c><00:08:31.039><c> we</c><00:08:31.280><c> come</c><00:08:31.520><c> in.</c><00:08:31.840><c> Our</c><00:08:32.080><c> core</c>
+
+00:08:32.310 --> 00:08:32.320 align:start position:0%
+and that's where we come in. Our core
+ 
+
+00:08:32.320 --> 00:08:34.070 align:start position:0%
+and that's where we come in. Our core
+optimization<00:08:32.959><c> service</c><00:08:33.279><c> handles</c><00:08:33.760><c> complete</c>
+
+00:08:34.070 --> 00:08:34.080 align:start position:0%
+optimization service handles complete
+ 
+
+00:08:34.080 --> 00:08:36.149 align:start position:0%
+optimization service handles complete
+BIOS<00:08:34.479><c> configurations</c><00:08:35.120><c> for</c><00:08:35.360><c> your</c><00:08:35.680><c> specific</c>
+
+00:08:36.149 --> 00:08:36.159 align:start position:0%
+BIOS configurations for your specific
+ 
+
+00:08:36.159 --> 00:08:38.469 align:start position:0%
+BIOS configurations for your specific
+motherboard.<00:08:36.880><c> Custom</c><00:08:37.279><c> Zillios</c><00:08:38.000><c> deployment,</c>
+
+00:08:38.469 --> 00:08:38.479 align:start position:0%
+motherboard. Custom Zillios deployment,
+ 
+
+00:08:38.479 --> 00:08:40.389 align:start position:0%
+motherboard. Custom Zillios deployment,
+which<00:08:38.640><c> is</c><00:08:38.719><c> just</c><00:08:38.880><c> the</c><00:08:39.039><c> pre-optimized</c><00:08:39.839><c> Windows,</c>
+
+00:08:40.389 --> 00:08:40.399 align:start position:0%
+which is just the pre-optimized Windows,
+ 
+
+00:08:40.399 --> 00:08:42.389 align:start position:0%
+which is just the pre-optimized Windows,
+and<00:08:40.560><c> it</c><00:08:40.719><c> has</c><00:08:40.880><c> all</c><00:08:41.039><c> the</c><00:08:41.279><c> basic</c><00:08:41.599><c> Windows</c><00:08:42.000><c> tweaks</c>
+
+00:08:42.389 --> 00:08:42.399 align:start position:0%
+and it has all the basic Windows tweaks
+ 
+
+00:08:42.399 --> 00:08:44.790 align:start position:0%
+and it has all the basic Windows tweaks
+I<00:08:42.560><c> showed,</c><00:08:42.959><c> plus</c><00:08:43.279><c> the</c><00:08:43.440><c> advanced</c><00:08:43.839><c> tweaks</c><00:08:44.399><c> that</c>
+
+00:08:44.790 --> 00:08:44.800 align:start position:0%
+I showed, plus the advanced tweaks that
+ 
+
+00:08:44.800 --> 00:08:46.470 align:start position:0%
+I showed, plus the advanced tweaks that
+not<00:08:45.040><c> a</c><00:08:45.200><c> lot</c><00:08:45.279><c> of</c><00:08:45.360><c> people</c><00:08:45.600><c> talk</c><00:08:45.760><c> about.</c><00:08:46.080><c> GPU</c>
+
+00:08:46.470 --> 00:08:46.480 align:start position:0%
+not a lot of people talk about. GPU
+ 
+
+00:08:46.480 --> 00:08:48.630 align:start position:0%
+not a lot of people talk about. GPU
+driver<00:08:46.880><c> optimizations</c><00:08:47.760><c> and</c><00:08:48.080><c> optimized</c>
+
+00:08:48.630 --> 00:08:48.640 align:start position:0%
+driver optimizations and optimized
+ 
+
+00:08:48.640 --> 00:08:50.150 align:start position:0%
+driver optimizations and optimized
+configuration<00:08:49.120><c> files</c><00:08:49.519><c> for</c><00:08:49.760><c> most</c><00:08:50.000><c> of</c><00:08:50.000><c> the</c>
+
+00:08:50.150 --> 00:08:50.160 align:start position:0%
+configuration files for most of the
+ 
+
+00:08:50.160 --> 00:08:51.430 align:start position:0%
+configuration files for most of the
+games<00:08:50.399><c> that</c><00:08:50.560><c> you</c><00:08:50.720><c> are</c><00:08:50.880><c> playing.</c><00:08:51.120><c> And</c><00:08:51.279><c> the</c>
+
+00:08:51.430 --> 00:08:51.440 align:start position:0%
+games that you are playing. And the
+ 
+
+00:08:51.440 --> 00:08:52.630 align:start position:0%
+games that you are playing. And the
+average<00:08:51.760><c> result</c><00:08:52.000><c> we've</c><00:08:52.240><c> been</c><00:08:52.320><c> getting</c><00:08:52.480><c> with</c>
+
+00:08:52.630 --> 00:08:52.640 align:start position:0%
+average result we've been getting with
+ 
+
+00:08:52.640 --> 00:08:55.430 align:start position:0%
+average result we've been getting with
+Black<00:08:52.880><c> Ops</c><00:08:53.120><c> 7</c><00:08:53.360><c> is</c><00:08:53.680><c> 70</c><00:08:54.000><c> to</c><00:08:54.160><c> 100</c><00:08:54.399><c> more</c><00:08:54.640><c> FPS</c><00:08:55.200><c> with</c>
+
+00:08:55.430 --> 00:08:55.440 align:start position:0%
+Black Ops 7 is 70 to 100 more FPS with
+ 
+
+00:08:55.440 --> 00:08:58.070 align:start position:0%
+Black Ops 7 is 70 to 100 more FPS with
+better.1%<00:08:56.640><c> lows</c><00:08:57.279><c> compared</c><00:08:57.600><c> to</c><00:08:57.760><c> stock</c>
+
+00:08:58.070 --> 00:08:58.080 align:start position:0%
+better.1% lows compared to stock
+ 
+
+00:08:58.080 --> 00:09:00.389 align:start position:0%
+better.1% lows compared to stock
+settings.<00:08:58.640><c> This</c><00:08:58.880><c> takes</c><00:08:59.200><c> 30</c><00:08:59.440><c> to</c><00:08:59.760><c> 45</c><00:09:00.160><c> minutes</c>
+
+00:09:00.389 --> 00:09:00.399 align:start position:0%
+settings. This takes 30 to 45 minutes
+ 
+
+00:09:00.399 --> 00:09:03.430 align:start position:0%
+settings. This takes 30 to 45 minutes
+and<00:09:00.640><c> cost</c><00:09:00.959><c> $65</c><00:09:01.760><c> during</c><00:09:02.080><c> our</c><00:09:02.399><c> current</c><00:09:02.880><c> holiday</c>
+
+00:09:03.430 --> 00:09:03.440 align:start position:0%
+and cost $65 during our current holiday
+ 
+
+00:09:03.440 --> 00:09:05.110 align:start position:0%
+and cost $65 during our current holiday
+sale.<00:09:03.839><c> And</c><00:09:04.000><c> if</c><00:09:04.160><c> you</c><00:09:04.240><c> want</c><00:09:04.399><c> the</c><00:09:04.640><c> maximum</c>
+
+00:09:05.110 --> 00:09:05.120 align:start position:0%
+sale. And if you want the maximum
+ 
+
+00:09:05.120 --> 00:09:06.389 align:start position:0%
+sale. And if you want the maximum
+performance,<00:09:05.680><c> our</c><00:09:05.920><c> competitive</c>
+
+00:09:06.389 --> 00:09:06.399 align:start position:0%
+performance, our competitive
+ 
+
+00:09:06.399 --> 00:09:08.710 align:start position:0%
+performance, our competitive
+optimization<00:09:07.200><c> adds</c><00:09:07.519><c> RAM</c><00:09:07.839><c> overclocking</c><00:09:08.480><c> and</c>
+
+00:09:08.710 --> 00:09:08.720 align:start position:0%
+optimization adds RAM overclocking and
+ 
+
+00:09:08.720 --> 00:09:11.269 align:start position:0%
+optimization adds RAM overclocking and
+timing<00:09:09.120><c> tuning,</c><00:09:09.920><c> advanced</c><00:09:10.720><c> CPU</c>
+
+00:09:11.269 --> 00:09:11.279 align:start position:0%
+timing tuning, advanced CPU
+ 
+
+00:09:11.279 --> 00:09:14.070 align:start position:0%
+timing tuning, advanced CPU
+overclocking,<00:09:12.560><c> GPU</c><00:09:13.040><c> overclocking,</c><00:09:13.760><c> as</c><00:09:13.920><c> well</c>
+
+00:09:14.070 --> 00:09:14.080 align:start position:0%
+overclocking, GPU overclocking, as well
+ 
+
+00:09:14.080 --> 00:09:16.070 align:start position:0%
+overclocking, GPU overclocking, as well
+as<00:09:14.320><c> obviously</c><00:09:14.880><c> stress</c><00:09:15.200><c> testing.</c><00:09:15.600><c> all</c><00:09:15.839><c> these</c>
+
+00:09:16.070 --> 00:09:16.080 align:start position:0%
+as obviously stress testing. all these
+ 
+
+00:09:16.080 --> 00:09:17.670 align:start position:0%
+as obviously stress testing. all these
+components<00:09:16.399><c> for</c><00:09:16.640><c> stability</c><00:09:17.440><c> and</c>
+
+00:09:17.670 --> 00:09:17.680 align:start position:0%
+components for stability and
+ 
+
+00:09:17.680 --> 00:09:19.590 align:start position:0%
+components for stability and
+personalized<00:09:18.480><c> configuration</c><00:09:19.120><c> for</c><00:09:19.279><c> your</c>
+
+00:09:19.590 --> 00:09:19.600 align:start position:0%
+personalized configuration for your
+ 
+
+00:09:19.600 --> 00:09:22.550 align:start position:0%
+personalized configuration for your
+specific<00:09:20.000><c> setup.</c><00:09:20.800><c> This</c><00:09:21.040><c> is</c><00:09:21.200><c> a</c><00:09:21.360><c> 2hour</c><00:09:22.080><c> deep</c>
+
+00:09:22.550 --> 00:09:22.560 align:start position:0%
+specific setup. This is a 2hour deep
+ 
+
+00:09:22.560 --> 00:09:25.430 align:start position:0%
+specific setup. This is a 2hour deep
+optimization<00:09:23.600><c> and</c><00:09:23.839><c> the</c><00:09:24.000><c> average</c><00:09:24.320><c> gain</c><00:09:24.560><c> is</c><00:09:25.120><c> 150</c>
+
+00:09:25.430 --> 00:09:25.440 align:start position:0%
+optimization and the average gain is 150
+ 
+
+00:09:25.440 --> 00:09:27.350 align:start position:0%
+optimization and the average gain is 150
+FPS<00:09:25.920><c> compared</c><00:09:26.160><c> to</c><00:09:26.320><c> stock</c><00:09:26.720><c> depending</c><00:09:27.040><c> on</c><00:09:27.120><c> what</c>
+
+00:09:27.350 --> 00:09:27.360 align:start position:0%
+FPS compared to stock depending on what
+ 
+
+00:09:27.360 --> 00:09:29.269 align:start position:0%
+FPS compared to stock depending on what
+you<00:09:27.440><c> had</c><00:09:27.680><c> done</c><00:09:27.839><c> before.</c><00:09:28.320><c> And</c><00:09:28.560><c> our</c><00:09:28.880><c> holiday</c>
+
+00:09:29.269 --> 00:09:29.279 align:start position:0%
+you had done before. And our holiday
+ 
+
+00:09:29.279 --> 00:09:32.630 align:start position:0%
+you had done before. And our holiday
+sale<00:09:29.600><c> pricing</c><00:09:29.920><c> is</c><00:09:30.160><c> $200.</c><00:09:30.800><c> It's</c><00:09:31.040><c> normally</c><00:09:31.600><c> 250.</c>
+
+00:09:32.630 --> 00:09:32.640 align:start position:0%
+sale pricing is $200. It's normally 250.
+ 
+
+00:09:32.640 --> 00:09:34.310 align:start position:0%
+sale pricing is $200. It's normally 250.
+Limited<00:09:33.040><c> spots</c><00:09:33.360><c> available</c><00:09:33.839><c> because</c><00:09:34.000><c> we</c><00:09:34.240><c> don't</c>
+
+00:09:34.310 --> 00:09:34.320 align:start position:0%
+Limited spots available because we don't
+ 
+
+00:09:34.320 --> 00:09:36.630 align:start position:0%
+Limited spots available because we don't
+rush<00:09:34.640><c> the</c><00:09:34.800><c> process.</c><00:09:35.279><c> Every</c><00:09:35.519><c> optimization</c><00:09:36.320><c> is</c>
+
+00:09:36.630 --> 00:09:36.640 align:start position:0%
+rush the process. Every optimization is
+ 
+
+00:09:36.640 --> 00:09:38.310 align:start position:0%
+rush the process. Every optimization is
+done<00:09:37.040><c> thoroughly.</c><00:09:37.600><c> So</c><00:09:37.680><c> if</c><00:09:37.839><c> you</c><00:09:37.920><c> want</c><00:09:38.000><c> a</c>
+
+00:09:38.310 --> 00:09:38.320 align:start position:0%
+done thoroughly. So if you want a
+ 
+
+00:09:38.320 --> 00:09:39.910 align:start position:0%
+done thoroughly. So if you want a
+professional<00:09:38.880><c> optimization</c><00:09:39.519><c> that</c><00:09:39.760><c> goes</c>
+
+00:09:39.910 --> 00:09:39.920 align:start position:0%
+professional optimization that goes
+ 
+
+00:09:39.920 --> 00:09:41.829 align:start position:0%
+professional optimization that goes
+beyond<00:09:40.160><c> what</c><00:09:40.399><c> any</c><00:09:40.560><c> guide</c><00:09:40.880><c> can</c><00:09:41.040><c> teach</c><00:09:41.200><c> you,</c>
+
+00:09:41.829 --> 00:09:41.839 align:start position:0%
+beyond what any guide can teach you,
+ 
+
+00:09:41.839 --> 00:09:43.590 align:start position:0%
+beyond what any guide can teach you,
+check<00:09:42.000><c> the</c><00:09:42.240><c> link</c><00:09:42.399><c> in</c><00:09:42.560><c> the</c><00:09:42.720><c> description.</c><00:09:43.360><c> We're</c>
+
+00:09:43.590 --> 00:09:43.600 align:start position:0%
+check the link in the description. We're
+ 
+
+00:09:43.600 --> 00:09:45.509 align:start position:0%
+check the link in the description. We're
+currently<00:09:44.000><c> running</c><00:09:44.240><c> our</c><00:09:44.560><c> first</c><00:09:44.800><c> ever</c><00:09:45.120><c> holiday</c>
+
+00:09:45.509 --> 00:09:45.519 align:start position:0%
+currently running our first ever holiday
+ 
+
+00:09:45.519 --> 00:09:47.829 align:start position:0%
+currently running our first ever holiday
+sale<00:09:45.920><c> with</c><00:09:46.240><c> limited</c><00:09:46.720><c> availability.</c><00:09:47.440><c> So</c><00:09:47.680><c> to</c>
+
+00:09:47.829 --> 00:09:47.839 align:start position:0%
+sale with limited availability. So to
+ 
+
+00:09:47.839 --> 00:09:49.829 align:start position:0%
+sale with limited availability. So to
+recap,<00:09:48.320><c> configuration</c><00:09:48.959><c> files,</c><00:09:49.440><c> just</c><00:09:49.600><c> drag</c>
+
+00:09:49.829 --> 00:09:49.839 align:start position:0%
+recap, configuration files, just drag
+ 
+
+00:09:49.839 --> 00:09:51.910 align:start position:0%
+recap, configuration files, just drag
+them<00:09:50.000><c> over</c><00:09:50.240><c> to</c><00:09:50.320><c> your</c><00:09:50.480><c> playlist</c><00:09:50.880><c> folder.</c><00:09:51.440><c> GPU</c>
+
+00:09:51.910 --> 00:09:51.920 align:start position:0%
+them over to your playlist folder. GPU
+ 
+
+00:09:51.920 --> 00:09:54.389 align:start position:0%
+them over to your playlist folder. GPU
+drivers,<00:09:52.640><c> use</c><00:09:52.880><c> Nvidia</c><00:09:53.440><c> driver</c><00:09:53.839><c> version</c>
+
+00:09:54.389 --> 00:09:54.399 align:start position:0%
+drivers, use Nvidia driver version
+ 
+
+00:09:54.399 --> 00:09:58.630 align:start position:0%
+drivers, use Nvidia driver version
+581.94<00:09:55.839><c> with</c><00:09:56.160><c> resizable</c><00:09:56.880><c> bar</c><00:09:57.200><c> enabled.</c><00:09:58.240><c> And</c>
+
+00:09:58.630 --> 00:09:58.640 align:start position:0%
+581.94 with resizable bar enabled. And
+ 
+
+00:09:58.640 --> 00:10:01.269 align:start position:0%
+581.94 with resizable bar enabled. And
+for<00:09:58.880><c> AMD,</c><00:09:59.279><c> use</c><00:09:59.600><c> latest</c><00:09:59.839><c> drivers.</c><00:10:00.399><c> AMD</c><00:10:00.880><c> users,</c>
+
+00:10:01.269 --> 00:10:01.279 align:start position:0%
+for AMD, use latest drivers. AMD users,
+ 
+
+00:10:01.279 --> 00:10:03.030 align:start position:0%
+for AMD, use latest drivers. AMD users,
+enable<00:10:01.680><c> image</c><00:10:02.000><c> sharpening</c><00:10:02.480><c> and</c><00:10:02.720><c> power</c>
+
+00:10:03.030 --> 00:10:03.040 align:start position:0%
+enable image sharpening and power
+ 
+
+00:10:03.040 --> 00:10:04.550 align:start position:0%
+enable image sharpening and power
+tuning.<00:10:03.519><c> Everyone,</c><00:10:04.000><c> pretty</c><00:10:04.160><c> much</c><00:10:04.320><c> with</c><00:10:04.399><c> a</c>
+
+00:10:04.550 --> 00:10:04.560 align:start position:0%
+tuning. Everyone, pretty much with a
+ 
+
+00:10:04.560 --> 00:10:06.550 align:start position:0%
+tuning. Everyone, pretty much with a
+graphics<00:10:04.880><c> card,</c><00:10:05.120><c> verify</c><00:10:05.519><c> your</c><00:10:05.680><c> PCIe</c><00:10:06.240><c> speed</c>
+
+00:10:06.550 --> 00:10:06.560 align:start position:0%
+graphics card, verify your PCIe speed
+ 
+
+00:10:06.560 --> 00:10:08.790 align:start position:0%
+graphics card, verify your PCIe speed
+and<00:10:06.640><c> GPU</c><00:10:07.200><c> Z.</c><00:10:07.760><c> Enable</c><00:10:08.080><c> hardware</c><00:10:08.399><c> accelerator</c>
+
+00:10:08.790 --> 00:10:08.800 align:start position:0%
+and GPU Z. Enable hardware accelerator
+ 
+
+00:10:08.800 --> 00:10:10.630 align:start position:0%
+and GPU Z. Enable hardware accelerator
+GPU<00:10:09.120><c> scheduling.</c><00:10:09.600><c> And</c><00:10:09.839><c> in</c><00:10:10.000><c> game,</c><00:10:10.320><c> adjust</c>
+
+00:10:10.630 --> 00:10:10.640 align:start position:0%
+GPU scheduling. And in game, adjust
+ 
+
+00:10:10.640 --> 00:10:12.230 align:start position:0%
+GPU scheduling. And in game, adjust
+textures<00:10:11.120><c> if</c><00:10:11.360><c> you</c><00:10:11.440><c> have</c><00:10:11.519><c> a</c><00:10:11.680><c> higherend</c>
+
+00:10:12.230 --> 00:10:12.240 align:start position:0%
+textures if you have a higherend
+ 
+
+00:10:12.240 --> 00:10:13.910 align:start position:0%
+textures if you have a higherend
+graphics<00:10:12.560><c> card</c><00:10:12.880><c> to</c><00:10:13.120><c> make</c><00:10:13.200><c> the</c><00:10:13.360><c> game</c><00:10:13.600><c> look</c><00:10:13.760><c> a</c>
+
+00:10:13.910 --> 00:10:13.920 align:start position:0%
+graphics card to make the game look a
+ 
+
+00:10:13.920 --> 00:10:15.190 align:start position:0%
+graphics card to make the game look a
+little<00:10:14.000><c> bit</c><00:10:14.160><c> better.</c><00:10:14.480><c> And</c><00:10:14.640><c> in</c><00:10:14.800><c> Windows,</c>
+
+00:10:15.190 --> 00:10:15.200 align:start position:0%
+little bit better. And in Windows,
+ 
+
+00:10:15.200 --> 00:10:16.949 align:start position:0%
+little bit better. And in Windows,
+disable<00:10:15.600><c> game</c><00:10:15.839><c> bar</c><00:10:16.079><c> and</c><00:10:16.320><c> set</c><00:10:16.480><c> your</c><00:10:16.640><c> correct</c>
+
+00:10:16.949 --> 00:10:16.959 align:start position:0%
+disable game bar and set your correct
+ 
+
+00:10:16.959 --> 00:10:19.030 align:start position:0%
+disable game bar and set your correct
+power.<00:10:17.680><c> And</c><00:10:17.839><c> make</c><00:10:18.000><c> sure</c><00:10:18.079><c> you</c><00:10:18.240><c> disable</c><00:10:18.720><c> any</c><00:10:18.959><c> of</c>
+
+00:10:19.030 --> 00:10:19.040 align:start position:0%
+power. And make sure you disable any of
+ 
+
+00:10:19.040 --> 00:10:20.949 align:start position:0%
+power. And make sure you disable any of
+the<00:10:19.279><c> bloware</c><00:10:19.839><c> that</c><00:10:20.000><c> comes</c><00:10:20.160><c> with</c><00:10:20.320><c> your</c><00:10:20.480><c> PC</c><00:10:20.800><c> if</c>
+
+00:10:20.949 --> 00:10:20.959 align:start position:0%
+the bloware that comes with your PC if
+ 
+
+00:10:20.959 --> 00:10:22.790 align:start position:0%
+the bloware that comes with your PC if
+it<00:10:21.120><c> is</c><00:10:21.200><c> a</c><00:10:21.279><c> pre-built</c><00:10:21.760><c> or</c><00:10:22.160><c> that</c><00:10:22.320><c> comes</c><00:10:22.560><c> with</c>
+
+00:10:22.790 --> 00:10:22.800 align:start position:0%
+it is a pre-built or that comes with
+ 
+
+00:10:22.800 --> 00:10:24.550 align:start position:0%
+it is a pre-built or that comes with
+Windows.<00:10:23.279><c> And</c><00:10:23.440><c> do</c><00:10:23.600><c> all</c><00:10:23.839><c> this</c><00:10:23.920><c> and</c><00:10:24.160><c> you'll</c><00:10:24.399><c> see</c>
+
+00:10:24.550 --> 00:10:24.560 align:start position:0%
+Windows. And do all this and you'll see
+ 
+
+00:10:24.560 --> 00:10:26.470 align:start position:0%
+Windows. And do all this and you'll see
+significant<00:10:25.120><c> FPS</c><00:10:25.600><c> gains.</c><00:10:26.079><c> And</c><00:10:26.160><c> if</c><00:10:26.320><c> you</c><00:10:26.399><c> want</c>
+
+00:10:26.470 --> 00:10:26.480 align:start position:0%
+significant FPS gains. And if you want
+ 
+
+00:10:26.480 --> 00:10:28.069 align:start position:0%
+significant FPS gains. And if you want
+to<00:10:26.560><c> go</c><00:10:26.720><c> even</c><00:10:26.959><c> further,</c><00:10:27.279><c> our</c><00:10:27.519><c> optimization</c>
+
+00:10:28.069 --> 00:10:28.079 align:start position:0%
+to go even further, our optimization
+ 
+
+00:10:28.079 --> 00:10:30.150 align:start position:0%
+to go even further, our optimization
+services<00:10:28.560><c> are</c><00:10:28.800><c> linked</c><00:10:29.120><c> below.</c><00:10:29.680><c> And</c><00:10:29.839><c> if</c><00:10:30.000><c> this</c>
+
+00:10:30.150 --> 00:10:30.160 align:start position:0%
+services are linked below. And if this
+ 
+
+00:10:30.160 --> 00:10:32.150 align:start position:0%
+services are linked below. And if this
+helped,<00:10:30.640><c> leave</c><00:10:30.880><c> a</c><00:10:31.040><c> like,</c><00:10:31.360><c> subscribe</c><00:10:31.680><c> for</c><00:10:31.920><c> more</c>
+
+00:10:32.150 --> 00:10:32.160 align:start position:0%
+helped, leave a like, subscribe for more
+ 
+
+00:10:32.160 --> 00:10:33.829 align:start position:0%
+helped, leave a like, subscribe for more
+optimization<00:10:32.800><c> content,</c><00:10:33.200><c> and</c><00:10:33.440><c> if</c><00:10:33.600><c> you</c><00:10:33.680><c> have</c>
+
+00:10:33.829 --> 00:10:33.839 align:start position:0%
+optimization content, and if you have
+ 
+
+00:10:33.839 --> 00:10:35.269 align:start position:0%
+optimization content, and if you have
+questions,<00:10:34.240><c> drop</c><00:10:34.480><c> them</c><00:10:34.560><c> in</c><00:10:34.720><c> the</c><00:10:34.880><c> comments.</c>
+
+00:10:35.269 --> 00:10:35.279 align:start position:0%
+questions, drop them in the comments.
+ 
+
+00:10:35.279 --> 00:10:36.949 align:start position:0%
+questions, drop them in the comments.
+And<00:10:35.360><c> I'll</c><00:10:35.600><c> see</c><00:10:35.680><c> you</c><00:10:35.839><c> guys</c><00:10:36.000><c> in</c><00:10:36.160><c> the</c><00:10:36.399><c> next</c><00:10:36.560><c> one.</c>
+
+00:10:36.949 --> 00:10:36.959 align:start position:0%
+And I'll see you guys in the next one.
+ 
+
+00:10:36.959 --> 00:10:39.200 align:start position:0%
+And I'll see you guys in the next one.
+Peace.
+

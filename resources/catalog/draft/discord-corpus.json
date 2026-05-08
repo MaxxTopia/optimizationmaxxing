@@ -1,0 +1,706 @@
+{
+  "version": "v0",
+  "source": "C:\\Users\\Diggy\\projects\\discord-archive\\exports\\servers\\ss04-personal",
+  "channel_count": 11,
+  "entry_count": 38,
+  "entries": [
+    {
+      "id": "discord.cpu.1474042345895890955",
+      "channel": "cpu",
+      "message_id": "1474042345895890955",
+      "timestamp": "2026-02-19T05:58:01.644-08:00",
+      "author": "diggyt",
+      "content": "https://bitsum.com/download-process-lasso/\nLaunch Fortnite and sit in the lobby. FortniteClient-Win64-Shipping.exe CPU Affinity -> Always -> Select CPU Affinity. CPU Priority -> Always, and set it to High go to Efficiency Mode -> Always -> OFF.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": [
+          "Affinity = Always",
+          "Priority = Always",
+          "Mode = Always"
+        ]
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.cpu.1474052828518420674",
+      "channel": "cpu",
+      "message_id": "1474052828518420674",
+      "timestamp": "2026-02-19T06:39:40.896-08:00",
+      "author": "diggyt",
+      "content": "Open Command Prompt (Admin) and run these exact commands one by one:\n\n    bcdedit /set useplatformclock no\n\n        Why: This forces Windows to use the TSC (Time Stamp Counter) instead of the slower HPET. This is the single most important tweak for 0.1% low stability.\n\n    bcdedit /set disabledynamictick yes\n\n        Why: This stops the CPU from stopping its clock during idle moments. It keeps the CPU \"awake\" and ready to process a frame at all times.\n\n    bcdedit /set tscsyncpolicy enhanced\n\n        Why: Specifically for the 14900K’s hybrid architecture, this ensures all 24 cores are perfectly synchronized in time.\n\n    bcdedit /set useplatformtick no\n\n        Why: Prevents Windows from using an extra synthetic layer for time-keeping, further reducing kernel-level latency.\n\n    bcdedit /set hypervisorlaunchtype off\n\n        Why: This is the \"Nuclear Option\" to ensure VBS/Core Isolation is dead. If this is ON, your CPU is running in a \"virtual bubble,\" adding ~5-10% latency to every frame.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [
+          "bcdedit /set useplatformclock no",
+          "bcdedit /set useplatformtick no",
+          "bcdedit /set disabledynamictick yes",
+          "bcdedit /set tscsyncpolicy enhanced",
+          "bcdedit /set hypervisorlaunchtype off"
+        ],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.cpu.1474067954072289595",
+      "channel": "cpu",
+      "message_id": "1474067954072289595",
+      "timestamp": "2026-02-19T07:39:47.109-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nRun CMD as Admin: bcdedit /set tscsyncpolicy Enhanced (You did this).\n\nThe Add-on: bcdedit /set clockres 10000\n\nWhy: This sets the global kernel timer resolution to exactly 0.5ms (10,000 units). While tools like \"Timer Resolution\" do this in the app, setting it at the BCD level ensures it's active from the second you boot.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [
+          "bcdedit /set tscsyncpolicy Enhanced (You did this).",
+          "bcdedit /set clockres 10000"
+        ],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.cpu.1474068096430903570",
+      "channel": "cpu",
+      "message_id": "1474068096430903570",
+      "timestamp": "2026-02-19T07:40:21.05-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nDownload ParkControl (Bitsum).\n\nSelect Bitsum Highest Performance.\n\nSet Parking and Frequency Scaling to 100% (Disabled) for all core types.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.device-tweaks.1474051025244782807",
+      "channel": "device-tweaks",
+      "message_id": "1474051025244782807",
+      "timestamp": "2026-02-19T06:32:30.962-08:00",
+      "author": "diggyt",
+      "content": "Device Manager (The Deep Clean):\n\n    Click View -> Show hidden devices.\n\n    Expand Universal Serial Bus controllers.\n\n    Right-click every USB Root Hub and Generic USB Hub -> Properties -> Power Management.\n\n    Uncheck \"Allow the computer to turn off this device to save power.\"\n\n    Pro Tip: Do the same for Human Interface Devices (HID). Your mouse and keyboard are often listed here as \"HID-compliant device.\" Disable power savings for all of them.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": [
+          "View = Show",
+          "Hub = Properties"
+        ]
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.device-tweaks.1474051098430935050",
+      "channel": "device-tweaks",
+      "message_id": "1474051098430935050",
+      "timestamp": "2026-02-19T06:32:48.411-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nHKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\2a737441-1930-4402-8d77-b2bebba308a3\\d4e23884-9b93-478a-9e23-77356611f124\n\nSet Attributes to 2. (This makes the hidden \"USB 3 Link Power Management\" visible in your Power Plan settings so you can disable it).",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\2a737441-1930-4402-8d77-b2bebba308a3\\d4e23884-9b93-478a-9e23-77356611f124\n\nSet Attributes to 2"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.device-tweaks.1474051166554951690",
+      "channel": "device-tweaks",
+      "message_id": "1474051166554951690",
+      "timestamp": "2026-02-19T06:33:04.653-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nGo to: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling (If it doesn't exist, create the key).\n\nCreate a DWORD (32-bit) named PowerThrottlingOff and set it to 1.",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.device-tweaks.1474051606877175920",
+      "channel": "device-tweaks",
+      "message_id": "1474051606877175920",
+      "timestamp": "2026-02-19T06:34:49.634-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nDISABLE ALL\nHigh Precision Event Timer (HPET): The Most Controversial. Pros disable this to remove the \"Timer\" overhead, allowing the CPU to use its own raw TSC (Time Stamp Counter). This often fixes micro-stutters in Fortnite.\n\nMicrosoft System Management BIOS Driver: Purely for corporate inventory tracking.\n\nNDIS Virtual Network Adapter Enumerator: Only needed if you use complex Virtual Machines.\n\nUMBus Root Bus Enumerator: An old legacy device for \"User-Mode\" drivers.\n\nIntel(R) Management Engine Interface: This is a \"backdoor\" processor inside your CPU. Disabling it can reduce DPC latency, though some people report it affects boot times. For a pro rig, we disable it.\n\nProgrammable Interrupt Controller: Legacy hardware that interferes with modern MSI-mode devices.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.device-tweaks.1474066395976175759",
+      "channel": "device-tweaks",
+      "message_id": "1474066395976175759",
+      "timestamp": "2026-02-19T07:33:35.63-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nInterrupt Affinity Pinning (The Tool)\n\nDownload the Interrupt Affinity Policy Tool (a classic Microsoft utility often found on TechPowerUp).\n\n    Run IntPolicy.exe as Administrator.\n\n    Find the USB xHCI Compliant Host Controller that matches the \"Location Path\" of your mouse.\n\n    Click Set Mask.\n\n    The Pro-Strat for 14900K:\n\n        Core 0 & 1: Never use these. Windows bloat lives here.\n\n        Core 2: Assign your GPU here.\n\n        Core 4: Assign your Mouse USB Controller here.\n\n        Core 6: Assign your Keyboard USB Controller here",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.gpu.1474033006284112067",
+      "channel": "gpu",
+      "message_id": "1474033006284112067",
+      "timestamp": "2026-02-19T05:20:54.907-08:00",
+      "author": "diggyt",
+      "content": "https://www.techpowerup.com/download/techpowerup-nvcleanstall/",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.gpu.1474033426360307795",
+      "channel": "gpu",
+      "message_id": "1474033426360307795",
+      "timestamp": "2026-02-19T05:22:35.061-08:00",
+      "author": "diggyt",
+      "content": "- Disable Installer Telemetry & Advertising\n\n- Perform a Clean Installation\n\n- Disable Ansel (Stops the driver from injecting the 3D screenshot overlay)\n\n- Disable Driver Telemetry\n\n- Disable HDCP\n\n- Enable Message Signaled Interrupts (MSI",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.gpu.1474034457982799966",
+      "channel": "gpu",
+      "message_id": "1474034457982799966",
+      "timestamp": "2026-02-19T05:26:41.019-08:00",
+      "author": "diggyt",
+      "content": "bugged so just manually input seeetings like maximun pre-rendered frames = 1",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": true,
+      "needs_review": true
+    },
+    {
+      "id": "discord.gpu.1474043434015658034",
+      "channel": "gpu",
+      "message_id": "1474043434015658034",
+      "timestamp": "2026-02-19T06:02:21.072-08:00",
+      "author": "diggyt",
+      "content": "https://github.com/Sathango/Msi-Utility-v3/blob/main/Msi%20Utility%20v3.exe\nDownload the \"Interrupt Affinity Policy Tool\" (msi-util-v3).\n\nRun it as Admin. Find your NVIDIA GeForce RTX 4070 Ti.\n\nCheck the box for MSI (Message Signaled Interrupts).\n\nChange the Interrupt Priority to High.\n\nClick Set Mask and select ONLY CPU 2 and CPU 3 (These are the second physical P-Core).\n\n    Note: CPU 0 and 1 are usually busy with Windows kernel tasks. By moving the GPU to Core 2/3, you give it a \"private lane\" to the CPU.\\",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.gpu.1474067722269622497",
+      "channel": "gpu",
+      "message_id": "1474067722269622497",
+      "timestamp": "2026-02-19T07:38:51.843-08:00",
+      "author": "diggyt",
+      "content": "Open NVIDIA Control Panel.\n\nGo to Program Settings -> Add.\n\nBrowse to C:\\Windows\\explorer.exe.\n\nSet Power Management Mode to Prefer Maximum Performance.\n\nWhy: Windows often drops the GPU clock slightly when it thinks you are \"just on the desktop\" or in a menu. Forcing Explorer to Max Performance keeps the GPU voltage rails from dipping when you transition from the lobby to the bus.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": [
+          "Settings = Add."
+        ]
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.gpu.1474068389612752968",
+      "channel": "gpu",
+      "message_id": "1474068389612752968",
+      "timestamp": "2026-02-19T07:41:30.95-08:00",
+      "author": "diggyt",
+      "content": "The Tweak: In Profile Inspector, look for:\n\n    0x20891540 (Memory Allocation Policy): Set this to 0x00000001 (Aggressive).\n\n    0x20D833C1 (Toggle FXAA Indicator): Set to 0x00000000 (Off).",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.monitor.1474046751341281282",
+      "channel": "monitor",
+      "message_id": "1474046751341281282",
+      "timestamp": "2026-02-19T06:15:31.984-08:00",
+      "author": "diggyt",
+      "content": "https://www.dell.com/support/home/en-au/drivers/driversdetails?driverid=j9g8k",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.ping.1474044354145288276",
+      "channel": "ping",
+      "message_id": "1474044354145288276",
+      "timestamp": "2026-02-19T06:06:00.448-08:00",
+      "author": "diggyt",
+      "content": "Interrupt Moderation: Disabled. \n\nFlow Control: Disabled.\n\nGigabit Lite / Green Ethernet / Power Saving Mode: Disabled.\n\nJumbo Packet: Disabled.\n\nLarge Send Offload (IPv4 & IPv6): Disabled. \n\nSpeed & Duplex: Set to your maximum (e.g., 1.0 Gbps Full Duplex or 2.5 Gbps Full Duplex). Do not leave on \"Auto-Negotiation.\"\n\nReceive Side Scaling (RSS): Enabled.\n\nGo to the Power Management tab and Uncheck \"Allow the computer to turn off this device to save power.\"",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.ping.1474045408027218105",
+      "channel": "ping",
+      "message_id": "1474045408027218105",
+      "timestamp": "2026-02-19T06:10:11.713-08:00",
+      "author": "diggyt",
+      "content": "⬇️ \nCloudflare DNS: Go to your Network Settings and manually set your DNS to 1.1.1.1 and 1.0.0.1. This is the fastest public DNS for gaming.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.ping.1474049706836623573",
+      "channel": "ping",
+      "message_id": "1474049706836623573",
+      "timestamp": "2026-02-19T06:27:16.629-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nOpen Registry Editor (regedit).\n\nNavigate to: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\n\nRight-click in the right pane and create/modify these DWORD (32-bit) values:\n\n    MaxFreeTcbs: Set to 65536. (Increases the number of active connections Windows can handle before it starts dropping or delaying packets).\n\n    MaxUserPort: Set to 65534. (Opens the maximum range of ports for the game to communicate through).\n\n    TcpTimedWaitDelay: Set to 30. (Forces Windows to close \"dead\" connections faster so they don't sit around and bloat your network stack).\n\n    GlobalMaxTcpWindowSize: Set to 65535.\n\n    Tcp1323Opts: Set to 1. (Enables \"Window Scaling\" which allows the PC to handle larger bursts of data without stalling).\n\n    DefaultTTL: Set to 64. (The standard \"hop\" limit for gaming packets).",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\n\nRight-click in the right pane and create"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.ping.1474049860578574449",
+      "channel": "ping",
+      "message_id": "1474049860578574449",
+      "timestamp": "2026-02-19T06:27:53.284-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nPress Win + R, type gpedit.msc, and hit Enter.\n\nGo to Computer Configuration -> Windows Settings -> Policy-based QoS.\n\nRight-click it and select Create new policy.\n\n    Name: Fortnite_Priority\n\n    DSCP Value: 46 (This is the \"Expedited Forwarding\" tag used by pros).\n\n    Click Next.\n\nSelect Only for executable name and type: FortniteClient-Win64-Shipping.exe.\n\nKeep clicking Next/Finish until the policy is created.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": [
+          "Configuration = Windows",
+          "Settings = Policy-based"
+        ]
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.ping.1474050141773365390",
+      "channel": "ping",
+      "message_id": "1474050141773365390",
+      "timestamp": "2026-02-19T06:29:00.326-08:00",
+      "author": "diggyt",
+      "content": "buy this https://www.amazon.com/NETGEAR-Nighthawk-Gaming-6-Stream-Router/dp/B08FWNNWTB?th=1",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.ping.1474050356899221706",
+      "channel": "ping",
+      "message_id": "1474050356899221706",
+      "timestamp": "2026-02-19T06:29:51.616-08:00",
+      "author": "diggyt",
+      "content": "Go to waveform.com/tools/bufferbloat and run the test.\n\nThe Goal: If you get anything less than an A+, your router is the bottleneck.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.powerplan.1474043776526717048",
+      "channel": "powerplan",
+      "message_id": "1474043776526717048",
+      "timestamp": "2026-02-19T06:03:42.733-08:00",
+      "author": "diggyt",
+      "content": "Open PowerShell (Admin).\n\nPaste this: powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61\n\nThis unlocks the \"Ultimate Performance\" power plan. Go to your Control Panel Power Options and select it.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [
+          "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61"
+        ],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.powerplan.1474043827034521691",
+      "channel": "powerplan",
+      "message_id": "1474043827034521691",
+      "timestamp": "2026-02-19T06:03:54.775-08:00",
+      "author": "diggyt",
+      "content": "nside that plan, ensure Link State Power Management for PCI Express is OFF. This prevents your 4070 Ti from ever entering a low-power state.\\",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.ram.1474043239513194688",
+      "channel": "ram",
+      "message_id": "1474043239513194688",
+      "timestamp": "2026-02-19T06:01:34.699-08:00",
+      "author": "diggyt",
+      "content": "tFAW (Four Activate Window): Set to 16. (This is the lowest stable value for almost all DDR5).\n\ntRRDS (Row to Row Delay Short): Set to 4.\n\ntRRDL (Row to Row Delay Long): Set to 8.",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.reg-edits.1474044631015751714",
+      "channel": "reg-edits",
+      "message_id": "1474044631015751714",
+      "timestamp": "2026-02-19T06:07:06.459-08:00",
+      "author": "diggyt",
+      "content": "Press Win + R, type regedit, and hit Enter.\n\nNavigate to: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\n\nYou will see several folders with long IDs. Click through them until you find the one that contains your IP address (look for the key DhcpIPAddress).\n\nInside that folder, right-click and create two new DWORD (32-bit) Values:\n\n    Name one: TcpAckFrequency -> Set value to 1.\n\n    Name the other: TCPNoDelay -> Set value to 1.\n\nThis forces Windows to send every packet the instant it is generated.",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\n\nYou will see several folders with long IDs"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": [
+          "TcpAckFrequency = 1.",
+          "TCPNoDelay = 1."
+        ]
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.reg-edits.1474045266737889341",
+      "channel": "reg-edits",
+      "message_id": "1474045266737889341",
+      "timestamp": "2026-02-19T06:09:38.027-08:00",
+      "author": "diggyt",
+      "content": "⬇️ \nIn Registry Editor, go to: HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\n\nFind NetworkThrottlingIndex.\n\nDouble-click it and change the value to ffffffff (Hexadecimal). This completely disables the throttle.\n\nIn the same folder, find SystemResponsiveness. Set it to 0.",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\n\nFind NetworkThrottlingIndex"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.reg-edits.1474053309982834840",
+      "channel": "reg-edits",
+      "message_id": "1474053309982834840",
+      "timestamp": "2026-02-19T06:41:35.686-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nHKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel\n\nRight-click -> New -> DWORD (32-bit) Value.\n\nName it: GlobalTimerResolutionRequests\n\nSet the value to 1.\n\n    Why: This forces Windows to respect the 0.5ms timer resolution",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel\n\nRight-click -"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": [
+          "New = DWORD"
+        ]
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.reg-edits.1474054518177009913",
+      "channel": "reg-edits",
+      "message_id": "1474054518177009913",
+      "timestamp": "2026-02-19T06:46:23.742-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nHKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\n\nCreate/Modify these DWORD (32-bit) values:\n\n    FeatureSettingsOverride -> Set to 3\n\n    FeatureSettingsOverrideMask -> Set to 3\n\nNavigate to: HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel\n\n    DisableExceptionChainValidation -> Set to 1",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel\n\n    DisableExceptionChainValidation -",
+          "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\n\nCreate"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": [
+          "FeatureSettingsOverride = Set",
+          "FeatureSettingsOverrideMask = Set",
+          "DisableExceptionChainValidation = Set"
+        ]
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.reg-edits.1474067519802314814",
+      "channel": "reg-edits",
+      "message_id": "1474067519802314814",
+      "timestamp": "2026-02-19T07:38:03.571-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nHKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl\n\nValue: Win32PrioritySeparation\n\nThe Pro Value: Set this to 26 (Hexadecimal).",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl\n\nValue"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.reg-edits.1474067856928014590",
+      "channel": "reg-edits",
+      "message_id": "1474067856928014590",
+      "timestamp": "2026-02-19T07:39:23.948-08:00",
+      "author": "diggyt",
+      "content": "🆕 \nHKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games\n\nValues to change:\n\n    GPU Priority: Set to 8.\n\n    Priority: Set to 6.\n\n    Scheduling Category: Set to High.\n\n    SFIO Priority: Set to High.\n\nPath: HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\n\n    SystemResponsiveness: Set to 0 (This disables the 20% \"safety\" reserve Windows keeps for background apps).",
+      "signals": {
+        "registry_paths": [
+          "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games\n\nValues to change",
+          "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\n\n    SystemResponsiveness"
+        ],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.tweaks.1461604713224208529",
+      "channel": "tweaks",
+      "message_id": "1461604713224208529",
+      "timestamp": "2026-01-15T22:15:18.935-08:00",
+      "author": "diggyt",
+      "content": "(Testing)\nDownload - **aida64** memory benchmark note latency (ns) aim to lower this.\n**Y-cruncher** run the vst to test ddr5 ram\n**Hwinfo64** make sure under 50c\n**Capframex** benchmarks latency \n**basic**\n• Fresh Reinstall windows to avoid bloat using a usb (Windows X-Lite 'Micro 11 24H2)\n•Update all drivers \n•Research NVIDIA CLEAN INSTALL and Display Driver Uninstaller \n•Update bios \n\n(Advanced)\n• Download scewin from GitHub \n•extract zip run export.bat open the file that dumps using notepad++, \nDisable **spread spectrum(or clock spread)**,\nDisable **socket power saving** or **pcie power saving** or **usb phy power down**\nEnable EHCI\nEnable Pci delay optimization save the .txt run import .bat \n•Tighten ram timings using thaiphoon\n•Enable Resizeable bar and make sure it’s on using nvidia profile inspector",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.tweaks.1461610175210459250",
+      "channel": "tweaks",
+      "message_id": "1461610175210459250",
+      "timestamp": "2026-01-15T22:37:01.174-08:00",
+      "author": "diggyt",
+      "content": "Ram timings (Too Be Continued)\ntry 32-38-38-76 or 30-36-36-72\n\nCr 2n\nTCL \nTRCD \nTRCDW \nChanging any of these won’t really do much if only changed by one or two \nTrp \nTras\nup dram voltage to 1.4 or 1.45\ntRFC: 450-550 (lower for latency, but test—too low causes errors). \ntRRDS/tRRDL: 4-6/6-8.\ntFAW: 16-24.\ntREFI: Increase to 65000+ (delays refreshes for performance, but monitor heat)\nStability/Heat Check: HWInfo for temps (<60°C RAM ideal)",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.tweaks.1461613829501747331",
+      "channel": "tweaks",
+      "message_id": "1461613829501747331",
+      "timestamp": "2026-01-15T22:51:32.425-08:00",
+      "author": "diggyt",
+      "content": "Cpu\nRun cinebench r23 pay attention to vcore voltage on hwinfo64 \nAim for 37000 pts \nAim for 1.2 vcore \nGo in bios set cpu loadline calibration to mode 3 and lite load mode 3 \nadaptive + offset - 0.070 -0.130 or 0.100 for some cpus",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.tweaks.1474054448677650512",
+      "channel": "tweaks",
+      "message_id": "1474054448677650512",
+      "timestamp": "2026-02-19T06:46:07.172-08:00",
+      "author": "diggyt",
+      "content": "Open Command Prompt (Admin) and run:\n\n    fsutil behavior set disablelastaccess 1 (Prevents Windows from writing a \"timestamp\" every time a game file is read—saves SSD cycles).\n\n    fsutil behavior set disable8dot3 1 (Disables legacy MS-DOS filename creation).\n\n    fsutil behavior set encryptpagingfile 0 (Ensures your page file isn't being encrypted on the fly).",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.tweaks.1474059349289861164",
+      "channel": "tweaks",
+      "message_id": "1474059349289861164",
+      "timestamp": "2026-02-19T07:05:35.569-08:00",
+      "author": "diggyt",
+      "content": "https://en.softonic.com/download/usb-device-tree-viewer/windows/post-download?dt=internalDownload",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.tweaks.1474059514008309791",
+      "channel": "tweaks",
+      "message_id": "1474059514008309791",
+      "timestamp": "2026-02-19T07:06:14.841-08:00",
+      "author": "diggyt",
+      "content": "Open UsbTreeView.\n\nIt will show a beautiful tree of your ports.\n\nMove your mouse. The port it’s plugged into will usually turn green or have a mouse icon.\n\nClick that port. In the right-hand window, it will tell you exactly which Host Controller it belongs to.\n\nNote the Device ID or Service Name",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    },
+    {
+      "id": "discord.tweaks.1474059614965465313",
+      "channel": "tweaks",
+      "message_id": "1474059614965465313",
+      "timestamp": "2026-02-19T07:06:38.911-08:00",
+      "author": "diggyt",
+      "content": "https://www.techpowerup.com/download/microsoft-interrupt-affinity-tool/",
+      "signals": {
+        "registry_paths": [],
+        "bcdedit_commands": [],
+        "reg_add_commands": [],
+        "powershell_hints": [],
+        "named_values": []
+      },
+      "has_attachments": false,
+      "needs_review": true
+    }
+  ]
+}

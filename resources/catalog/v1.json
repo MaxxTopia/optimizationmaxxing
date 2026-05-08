@@ -1,0 +1,1959 @@
+{
+  "version": "v1.7.4",
+  "generated_at": "2026-05-06",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion.",
+  "tweaks": [
+    {
+      "id": "ui.gamedvr.disable",
+      "title": "Disable Game DVR & Game Bar",
+      "category": "process",
+      "description": "Stops Windows from running background recording for Game DVR / Xbox Game Bar. Frees CPU + GPU cycles that would otherwise idle-record your gameplay.",
+      "rationale": "Game DVR is the #1 background CPU thief on a stock Windows install. Disabling it reliably recovers 1-3% sustained CPU on top of stutter reduction. Source: diggy-tweaks/cpu, validated by paragontweaks + hone.gg presets.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\GameConfigStore",
+          "name": "GameDVR_Enabled",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\GameBar",
+          "name": "AllowAutoGameMode",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "ui.fse.disable-global",
+      "title": "Disable Fullscreen Optimizations (global)",
+      "category": "process",
+      "description": "Forces fullscreen-exclusive mode for all DirectX games. Removes the DWM compositor path that adds ~1 frame of input latency on borderless-fullscreen.",
+      "rationale": "FSO routes through DWM and adds presentation latency. Pro players disable this universally. Source: diggy-tweaks/tweaks.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\GameConfigStore",
+          "name": "GameDVR_FSEBehaviorMode",
+          "value_type": "dword",
+          "value": 2
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\GameConfigStore",
+          "name": "GameDVR_HonorUserFSEBehaviorMode",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "System\\GameConfigStore",
+          "name": "GameDVR_DXGIHonorFSEWindowsCompatible",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "targets": { "osMinBuild": 18362 }
+    },
+    {
+      "id": "ui.mouse.disable-acceleration",
+      "title": "Disable Mouse Acceleration",
+      "category": "process",
+      "description": "Removes Windows' nonlinear pointer-precision curve. 1:1 mouse-to-cursor mapping, predictable flicks.",
+      "rationale": "Aim-trainer-grade requirement. Mouse acceleration is anti-muscle-memory.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Mouse",
+          "name": "MouseSpeed",
+          "value_type": "string",
+          "value": "0"
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Mouse",
+          "name": "MouseThreshold1",
+          "value_type": "string",
+          "value": "0"
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Mouse",
+          "name": "MouseThreshold2",
+          "value_type": "string",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "ui.visualfx.best-performance",
+      "title": "Visual Effects: Best Performance",
+      "category": "process",
+      "description": "Disables window animations, shadows, and transition fades. Faster context switching, less GPU work for Explorer.",
+      "rationale": "Explorer's animations are pure idle GPU load. Pros run with 'Best Performance' set.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects",
+          "name": "VisualFXSetting",
+          "value_type": "dword",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "net.throttling.disable",
+      "title": "Disable Network Throttling Index",
+      "category": "network",
+      "description": "Removes Windows' multimedia network rate limit. Frees full pipe to game traffic during gameplay.",
+      "rationale": "From diggy-tweaks/reg-edits: 'completely disables the throttle'. Default value caps multimedia network throughput; gaming benefits from removal.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+          "name": "NetworkThrottlingIndex",
+          "value_type": "dword",
+          "value": 4294967295
+        }
+      ]
+    },
+    {
+      "id": "process.system.responsiveness",
+      "title": "System Responsiveness = 0",
+      "category": "process",
+      "description": "Tells the MMCSS scheduler to give 0% CPU reservation to non-multimedia tasks. All headroom goes to games.",
+      "rationale": "From diggy-tweaks/reg-edits. Default 20 reserves a fifth of CPU for other tasks; gaming wants every cycle.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
+          "name": "SystemResponsiveness",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "process.mmcss.games-gpu-priority",
+      "title": "MMCSS: Games GPU Priority = 8",
+      "category": "process",
+      "description": "Bumps GPU scheduling priority for processes registered as 'Games' with the multimedia scheduler.",
+      "rationale": "Default GPU Priority is 2. Pushing to 8 (max non-realtime) prioritizes game frames over background GPU load.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+          "name": "GPU Priority",
+          "value_type": "dword",
+          "value": 8
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+          "name": "Priority",
+          "value_type": "dword",
+          "value": 6
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+          "name": "Scheduling Category",
+          "value_type": "string",
+          "value": "High"
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
+          "name": "SFIO Priority",
+          "value_type": "string",
+          "value": "High"
+        }
+      ]
+    },
+    {
+      "id": "ui.startup.delay-disable",
+      "title": "Disable Startup Delay",
+      "category": "process",
+      "description": "Removes the 10-second 'wait for startup tasks' delay Windows imposes after login. App launches sooner.",
+      "rationale": "Default StartupDelayInMSec=10000. Zero pushes Windows to launch logon programs immediately.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize",
+          "name": "StartupDelayInMSec",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "process.priority-separation.foreground",
+      "title": "Priority Separation: Aggressive Foreground",
+      "category": "process",
+      "description": "Tells the Windows scheduler to bias CPU time toward the focused window. Game gets the lion's share when it has focus.",
+      "rationale": "Win32PrioritySeparation=38 (0x26) decodes to 'Short quanta · Variable · Foreground-boost = High' per the documented bit-layout (foreground:6=High, variable:2=Variable, short:2=Short). Audited 2026-05-07: prior rationale claimed 'long-quanta' which was wrong; the foreground-bias is real, the quanta length is short. Source: diggy-tweaks/cpu.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
+          "name": "Win32PrioritySeparation",
+          "value_type": "dword",
+          "value": 38
+        }
+      ]
+    },
+    {
+      "id": "ui.menu-show-delay.zero",
+      "title": "Menu Show Delay = 0",
+      "category": "process",
+      "description": "Removes the 400ms hover delay on Windows menus.",
+      "rationale": "Pure latency reduction on shell interactions. Doesn't affect games but feels snappy.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Desktop",
+          "name": "MenuShowDelay",
+          "value_type": "string",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "privacy.telemetry.disable",
+      "title": "Disable Windows Telemetry",
+      "category": "process",
+      "description": "Sets the Diagnostic Data policy to Off. Stops the regular telemetry uploads + the heuristics they drive.",
+      "rationale": "Telemetry runs as background processes that wake the CPU on intervals. Disabling reclaims sustained idle. Privacy bonus. **Caveat audited 2026-05-07**: `AllowTelemetry=0` is only honored on Enterprise/Education SKUs; on Home/Pro the effective floor is 1 (Required). Catalog still applies the value (does no harm) but expect partial-effect on consumer SKUs. For Home/Pro, the DiagTrack service-disable + hosts-block is the more effective route.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+          "name": "AllowTelemetry",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "privacy.cortana.disable",
+      "title": "Disable Cortana",
+      "category": "process",
+      "description": "Disables the Cortana background search agent and personal assistant features.",
+      "rationale": "Cortana indexes constantly. Disabling stops the SearchHost process from spinning.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
+          "name": "AllowCortana",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "privacy.diagtrack.disable",
+      "title": "Disable Connected User Experiences (DiagTrack)",
+      "category": "process",
+      "description": "Sets the DiagTrack service Start type to Disabled (4). The biggest ongoing telemetry process.",
+      "rationale": "DiagTrack is the longest-running background tracker on stock Windows. Killing it is the single highest-impact privacy + performance toggle.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\DiagTrack",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "ui.win11.widgets.disable",
+      "title": "Disable Win11 Widgets",
+      "category": "process",
+      "description": "Stops the Widgets pane (Dsh.exe / WidgetService) from launching at login.",
+      "rationale": "Widgets pulls news + ads + weather over network on a heartbeat. Pure background drain.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "targets": { "osMinBuild": 22000 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Dsh",
+          "name": "AllowNewsAndInterests",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "audio.system-sounds.none",
+      "title": "Audio: System Sounds = None",
+      "category": "process",
+      "description": "Sets the system sound scheme to 'No Sounds'. Disables every default Windows event sound.",
+      "rationale": "Each system event (notification, error, USB plug) wakes the audio service. Killing the scheme means audio service stays asleep until games request it.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "AppEvents\\Schemes",
+          "name": "",
+          "value_type": "string",
+          "value": ".None"
+        }
+      ]
+    },
+    {
+      "id": "process.hpet.disable",
+      "title": "Disable HPET (High-Precision Event Timer)",
+      "category": "timer",
+      "description": "Sets the hpet driver Start type to Disabled. Forces Windows to fall back to the TSC for timing.",
+      "rationale": "From diggy-tweaks: 'forces Windows to use the TSC instead of the slower HPET. Single most important tweak for 0.1% low stability.' Pairs with bcdedit useplatformclock=no when that lands in Phase 4d.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "low",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\hpet",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "ui.mouse.disable-trails",
+      "title": "Disable Mouse Trails",
+      "category": "process",
+      "description": "Removes the Windows mouse-trail effect entirely.",
+      "rationale": "Trails repaint frames behind the cursor — wastes GPU work. Default is off but some setups enable it accidentally.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Mouse",
+          "name": "MouseTrails",
+          "value_type": "string",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "ui.mouse.disable-shadow",
+      "title": "Disable Mouse Pointer Shadow",
+      "category": "process",
+      "description": "Disables the soft shadow under the mouse cursor.",
+      "rationale": "Shadow is composited every frame — small but constant GPU work. Off looks identical on dark themes. Audited 2026-05-07: prior catalog wrote `Cursors\\Scheme Source` (cursor scheme origin) which had no effect on shadow; corrected to `Desktop\\MouseShadow=0`.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Desktop",
+          "name": "MouseShadow",
+          "value_type": "string",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "ui.taskbar.chat-icon.hide",
+      "title": "Hide Win11 Chat / Teams Icon",
+      "category": "process",
+      "description": "Removes the Microsoft Teams chat icon from the Win11 taskbar.",
+      "rationale": "Chat icon spawns msteams.exe lazily; hiding stops the lazy-load probe at logon.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "targets": { "osMinBuild": 22000 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+          "name": "TaskbarMn",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "privacy.activity-history.disable",
+      "title": "Disable Activity History",
+      "category": "process",
+      "description": "Stops Windows from logging app + file usage to its Activity History (used for Timeline + cross-device sync).",
+      "rationale": "Activity feed runs as a background process, syncs to Microsoft. Off = privacy + idle CPU recovered.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "osMinBuild": 17134 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+          "name": "EnableActivityFeed",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+          "name": "PublishUserActivities",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+          "name": "UploadUserActivities",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "bcd.useplatformclock.disable",
+      "title": "BCD: Disable useplatformclock (force TSC)",
+      "category": "timer",
+      "description": "Tells the Windows boot loader to ignore HPET/PM-timer and use TSC for the platform clock. Pairs with the HPET-disable registry tweak for full TSC operation.",
+      "rationale": "From diggy-tweaks/cpu: forces Windows to use the TSC instead of the slower HPET. Single most important tweak for 0.1% low stability. Without this, Windows can fall back to HPET even with the driver disabled.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "low",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "useplatformclock",
+          "value": "no"
+        }
+      ]
+    },
+    {
+      "id": "bcd.disabledynamictick.yes",
+      "title": "BCD: Disable Dynamic Tick",
+      "category": "timer",
+      "description": "Locks the kernel timer to a constant rate. Removes the dynamic ticking that lets the CPU sleep between interrupts; gains stability at the cost of idle power.",
+      "rationale": "From diggy-tweaks/cpu: disables tickless idle. Smoother frame pacing on desktops where wake-from-idle latency matters more than wattage.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "low",
+      "rebootRequired": "reboot",
+      "targets": { "formFactor": ["desktop"] },
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "disabledynamictick",
+          "value": "yes"
+        }
+      ]
+    },
+    {
+      "id": "bcd.tscsyncpolicy.enhanced",
+      "title": "BCD: TSC Sync Policy = Enhanced",
+      "category": "timer",
+      "description": "Forces Windows to use the enhanced TSC synchronization policy across CPU cores. Reduces TSC drift on multi-CCD / multi-die parts (Ryzen, Threadripper).",
+      "rationale": "From diggy-tweaks/cpu. Default policy can let TSC drift between dies on AMD chiplets; Enhanced syncs aggressively. Lower 0.1% lows on Ryzen specifically.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "cpuVendor": ["amd"] },
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "tscsyncpolicy",
+          "value": "Enhanced"
+        }
+      ]
+    },
+    {
+      "id": "process.power-throttling.disable",
+      "title": "Disable Power Throttling",
+      "category": "process",
+      "description": "Tells Windows to never throttle background processes for power. Removes the EcoQoS scheduler bias on idle apps that can stall game-process wake-ups.",
+      "rationale": "Cross-validated across fr33thy + lecctron + xilly. Power Throttling can briefly demote game threads when alt-tabbing or when GPU presents stall. Off = consistent thread priority.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling",
+          "name": "PowerThrottlingOff",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "targets": { "osMinBuild": 16299, "formFactor": ["desktop"] }
+    },
+    {
+      "id": "process.global-timer-resolution.allow",
+      "title": "Allow Process-Level Timer Resolution Requests",
+      "category": "timer",
+      "description": "Restores Windows 10 1909+ behavior where any process can drop the system timer to 0.5ms via NtSetTimerResolution. Required for TimerResolution.exe + QuickCPU + per-game timer-res hacks to actually take effect.",
+      "rationale": "Win10/11 changed timer resolution to be per-process for power reasons. This reg flag opts back into the legacy global-low-timer-res mode. From reknotic + xilly transcripts; pre-condition for any user-mode timer-res tool.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "osMinBuild": 22000 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel",
+          "name": "GlobalTimerResolutionRequests",
+          "value_type": "dword",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "process.cpu-mitigations.disable-DANGER",
+      "title": "Disable Spectre/Meltdown Mitigations (DANGER)",
+      "category": "process",
+      "description": "Turns off Windows' Spectre v2 + Meltdown mitigations. Recovers 3-10% CPU on Intel parts but RE-EXPOSES the original CVEs. Single-user gaming rigs only.",
+      "rationale": "Cross-validated across fr33thy + lecctron + xilly. **Audited 2026-05-07**: `FeatureSettingsOverride=3 + Mask=3` is the original 2018 KB4072698 guidance — covers Spectre v2 + Meltdown ONLY. Does NOT cover MDS / Downfall / L1TF / Retbleed (those need different bit values like Override=72 or 8264 per current MS guidance). Pure performance tradeoff. Apply ONLY on dedicated gaming PCs with no untrusted browsers / mail / VMs. NEVER on shared/work machines. Almost no win on AMD (Meltdown didn't affect AMD); we hard-target Intel.",
+      "riskLevel": 4,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "cpuVendor": ["intel"] },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "name": "FeatureSettingsOverride",
+          "value_type": "dword",
+          "value": 3
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
+          "name": "FeatureSettingsOverrideMask",
+          "value_type": "dword",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "process.usb-power-mgmt.disable",
+      "title": "Disable USB Selective-Suspend Power Management",
+      "category": "process",
+      "description": "Stops Windows from entering selective-suspend on USB hub devices. Removes the 1-3ms wake stalls that hit when a sleeping USB controller is needed mid-frame.",
+      "rationale": "Cross-validated across fr33thy + xilly. Selective-suspend is the #1 cause of unexplained mouse/keyboard stutter on otherwise-tuned rigs. Off = consistent USB latency.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\usbhub\\Parameters",
+          "name": "EnhancedPowerManagementEnabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "process.hid-power-mgmt.disable",
+      "title": "Disable HID Power Management",
+      "category": "process",
+      "description": "Companion to the USB power-mgmt tweak — covers HID-class devices (mouse, keyboard, controllers) at the driver layer.",
+      "rationale": "Cross-validated across fr33thy + lecctron. Apply alongside the USB selective-suspend tweak; without this, HID-class devices can still selective-suspend independently.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\hidclass\\Parameters",
+          "name": "EnhancedPowerManagementEnabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "process.hags.enable",
+      "title": "Enable Hardware-Accelerated GPU Scheduling (HAGS)",
+      "category": "process",
+      "description": "Turns on HAGS at the driver layer. Lets the GPU manage its own VRAM scheduling, removing the CPU-side scheduling tax (~1-2% CPU win on modern NVIDIA / AMD).",
+      "rationale": "Cross-validated across fr33thy + lestripez transcripts. HAGS is on by default on Win11 22H2+ but off on many Win10 / older Win11 builds. Forces it on. Pairs well with NVIDIA Reflex and DirectStorage.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "osMinBuild": 19041 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+          "name": "HwSchMode",
+          "value_type": "dword",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "ui.gamedvr.appcapture.disable",
+      "title": "Disable Auto-Capture / Clip Recording",
+      "category": "process",
+      "description": "Disables the auto-clip recorder that runs alongside Game DVR. Distinct from the main Game DVR toggle — kills the always-on circular-buffer capture process.",
+      "rationale": "From reknotic. Even with Game DVR off, AppCaptureEnabled can still spin a buffer process that holds GPU resources. Off = full GameDVR shutdown.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+          "name": "AppCaptureEnabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "ps.mmagent.disable-mc",
+      "title": "Disable Memory Compression (MMAgent)",
+      "category": "ram",
+      "description": "Turns off Windows' compressed-memory background process. Recovers ~1-2% sustained CPU + reduces page-file pressure on systems with adequate RAM (16GB+).",
+      "rationale": "MMAgent's memory-compression saves RAM at the cost of constant CPU work. On 16GB+ rigs, the trade goes the wrong way for gaming. From fr33thy + xilly transcripts. Reversible.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "ramMinGb": 16 },
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "Disable-MMAgent -mc",
+          "revert": "Enable-MMAgent -mc"
+        }
+      ]
+    },
+    {
+      "id": "ps.power.ultimate-performance",
+      "title": "Add Ultimate Performance Power Plan",
+      "category": "powerplan",
+      "description": "Duplicates the hidden 'Ultimate Performance' power scheme so it appears in advanced power options. Removes ALL CPU/disk idle throttling — pairs with manually selecting it from the power dropdown after applying.",
+      "rationale": "Win10/11 ships Ultimate Performance hidden by default unless on Enterprise/Workstation SKUs. Duplicating exposes it on every SKU. Cross-validated by lecctron + reknotic. After apply, switch to it via Settings > Power.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 | Out-Null",
+          "revert": "$plans = powercfg /list | Select-String 'Ultimate Performance'; foreach ($line in $plans) { if ($line -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { powercfg /delete $matches[1] | Out-Null } }"
+        }
+      ],
+      "targets": { "osMinBuild": 17134 }
+    },
+    {
+      "id": "hosts.block.ms-telemetry",
+      "title": "Block Microsoft Telemetry Endpoints",
+      "category": "network",
+      "description": "Adds 15 Microsoft telemetry hostnames to the hosts file routed to 0.0.0.0. Stops Windows + Office + Edge from phoning home to their analytics + crash-reporter pipelines.",
+      "rationale": "Pairs with the registry telemetry/DiagTrack tweaks. Even with services disabled, some user-mode components fall through to direct HTTPS posts. Hosts-blocking is the belt-and-suspenders. Reversible via the marker block.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$h = \"$env:WINDIR\\System32\\drivers\\etc\\hosts\"; $startMarker = '# === optimizationmaxxing/ms-telemetry begin ==='; $endMarker = '# === optimizationmaxxing/ms-telemetry end ==='; $existing = Get-Content $h -Raw -ErrorAction SilentlyContinue; if ($existing -and $existing -match [regex]::Escape($startMarker)) { return }; $hosts = @('vortex.data.microsoft.com','vortex-win.data.microsoft.com','telemetry.microsoft.com','watson.telemetry.microsoft.com','wes.df.telemetry.microsoft.com','services.wes.df.telemetry.microsoft.com','statsfe2.ws.microsoft.com','sqm.df.telemetry.microsoft.com','sqm.telemetry.microsoft.com','v10.events.data.microsoft.com','v20.events.data.microsoft.com','settings-win.data.microsoft.com','oca.telemetry.microsoft.com','reports.wes.df.telemetry.microsoft.com','feedback.windows.com'); $block = @($startMarker) + ($hosts | ForEach-Object { \"0.0.0.0  $_\" }) + @($endMarker); Add-Content -Path $h -Value ([string]::Join([Environment]::NewLine, $block)) -Encoding ASCII; ipconfig /flushdns | Out-Null",
+          "revert": "$h = \"$env:WINDIR\\System32\\drivers\\etc\\hosts\"; $startMarker = '# === optimizationmaxxing/ms-telemetry begin ==='; $endMarker = '# === optimizationmaxxing/ms-telemetry end ==='; $content = Get-Content $h -ErrorAction SilentlyContinue; if (-not $content) { return }; $out = New-Object System.Collections.Generic.List[string]; $skip = $false; foreach ($line in $content) { if ($line.Trim() -eq $startMarker) { $skip = $true; continue }; if ($line.Trim() -eq $endMarker) { $skip = $false; continue }; if (-not $skip) { $out.Add($line) } }; Set-Content -Path $h -Value $out -Encoding ASCII; ipconfig /flushdns | Out-Null"
+        }
+      ]
+    },
+    {
+      "id": "hosts.block.windows-ads",
+      "title": "Block Windows + Edge Ad / Promo Endpoints",
+      "category": "network",
+      "description": "Adds 10 Windows + Edge ad-network hostnames to the hosts file. Stops Start Menu suggestions, Edge new-tab content feed, and the Lock Screen 'Spotlight' ad rotation.",
+      "rationale": "Spotlight + suggested-apps endpoints make outbound HTTPS calls on every login + screen-wake. Off = quieter network + no surprise tile content. Reversible via the marker block.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$h = \"$env:WINDIR\\System32\\drivers\\etc\\hosts\"; $startMarker = '# === optimizationmaxxing/windows-ads begin ==='; $endMarker = '# === optimizationmaxxing/windows-ads end ==='; $existing = Get-Content $h -Raw -ErrorAction SilentlyContinue; if ($existing -and $existing -match [regex]::Escape($startMarker)) { return }; $hosts = @('arc.msn.com','g.msn.com','cdn.atdmt.com','m.adnxs.com','ads.msn.com','ads1.msn.com','rad.msn.com','live.rads.msn.com','msnbot-65-55-108-23.search.msn.com','flex.msn.com'); $block = @($startMarker) + ($hosts | ForEach-Object { \"0.0.0.0  $_\" }) + @($endMarker); Add-Content -Path $h -Value ([string]::Join([Environment]::NewLine, $block)) -Encoding ASCII; ipconfig /flushdns | Out-Null",
+          "revert": "$h = \"$env:WINDIR\\System32\\drivers\\etc\\hosts\"; $startMarker = '# === optimizationmaxxing/windows-ads begin ==='; $endMarker = '# === optimizationmaxxing/windows-ads end ==='; $content = Get-Content $h -ErrorAction SilentlyContinue; if (-not $content) { return }; $out = New-Object System.Collections.Generic.List[string]; $skip = $false; foreach ($line in $content) { if ($line.Trim() -eq $startMarker) { $skip = $true; continue }; if ($line.Trim() -eq $endMarker) { $skip = $false; continue }; if (-not $skip) { $out.Add($line) } }; Set-Content -Path $h -Value $out -Encoding ASCII; ipconfig /flushdns | Out-Null"
+        }
+      ]
+    },
+    {
+      "id": "ps.mmagent.disable-pagecombining",
+      "title": "Disable Page Combining (MMAgent)",
+      "category": "ram",
+      "description": "Stops Windows from scanning RAM for identical pages and merging them. Pairs with the Disable-MMAgent -mc tweak — together they fully disable Win10/11's RAM-deduplication background work.",
+      "rationale": "Page combining runs every few minutes and walks the entire memory map. On 16GB+ rigs the CPU cost outweighs the RAM savings. Cross-validated by fr33thy + xilly.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "ramMinGb": 16 },
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "Disable-MMAgent -PageCombining",
+          "revert": "Enable-MMAgent -PageCombining"
+        }
+      ]
+    },
+    {
+      "id": "process.sysmain.disable",
+      "title": "Disable SysMain (Superfetch)",
+      "category": "process",
+      "description": "Sets the SysMain service start type to Disabled. Stops Windows from preloading 'predicted' app data — the legacy Superfetch behavior that hurts SSDs more than it helps.",
+      "rationale": "Superfetch's predictive disk reads were a real win on HDDs but waste IO bandwidth on NVMe. Default-on for compatibility; off for any post-2020 build.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\SysMain",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "process.windows-search.disable",
+      "title": "Disable Windows Search Indexer",
+      "category": "process",
+      "description": "Sets the WSearch service to Disabled. Stops the always-on indexing process that scans new files on every save.",
+      "rationale": "Windows Search indexer is one of the heaviest background CPU consumers on a stock install — especially noticeable during gameplay when titles write to AppData. Modern Everything / Voidtools-style search tools cover the same ground without the constant background load.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\WSearch",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "bcd.quietboot",
+      "title": "BCD: Silent Boot (Skip Boot Logo)",
+      "category": "process",
+      "description": "Tells the Windows boot loader to skip the rotating-dots boot animation. Minor boot-time win + cleaner POST → game-ready handoff.",
+      "rationale": "Saves ~0.5s of boot time and removes the post-bootloader animation that some Quick Resume rigs flicker through. Safe and fully reversible.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "quietboot",
+          "value": "yes"
+        }
+      ]
+    },
+    {
+      "id": "process.edge.background-disable",
+      "title": "Disable Microsoft Edge Background Mode",
+      "category": "process",
+      "description": "Stops Edge from running background extension hosts and update probes when no Edge windows are open. Frees ~50-200 MB and several background threads on stock Win11.",
+      "rationale": "Edge keeps a hidden 'background mode' process alive even after you close all windows — used for sync, push notifications, and update polling. Off = clean shutdown when you close the last window.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "targets": { "osMinBuild": 17763 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Policies\\Microsoft\\Edge",
+          "name": "BackgroundModeEnabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "process.discord.autostart-disable",
+      "title": "Disable Discord Auto-Start",
+      "category": "process",
+      "description": "Removes Discord from the login Run key so it doesn't auto-launch + auto-update on boot. Discord still works on-demand.",
+      "rationale": "Discord's startup runs the auto-updater (constant network/disk on slow rigs) plus loads the full Electron shell into memory before you even open a chat. Off = launch when you actually need it.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_delete",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "name": "Discord"
+        }
+      ]
+    },
+    {
+      "id": "process.steam.autostart-disable",
+      "title": "Disable Steam Auto-Start",
+      "category": "process",
+      "description": "Removes Steam from the login Run key. Steam still launches when you click a game shortcut or run steam.exe directly — just doesn't auto-boot.",
+      "rationale": "Steam's auto-start spins up the full client + every shader pre-cache + family-view sync immediately on login. Multi-GB of disk read + steady network for 60s after boot. Off = no idle Steam tax.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_delete",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "name": "Steam"
+        }
+      ]
+    },
+    {
+      "id": "privacy.start-bing-search.disable",
+      "title": "Disable Bing Web Search in Start Menu",
+      "category": "process",
+      "description": "Stops the Win10/11 Start menu from sending your typed text to Bing. Search becomes local-only — apps + files + settings, no web roundtrip.",
+      "rationale": "Every keystroke in Start is uploaded to Bing for 'web suggestions'. Off = privacy + zero network roundtrips on every keystroke. Distinct from Cortana service disable — that kills the service, this kills the search-uploads-to-bing pipeline.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+          "name": "DisableSearchBoxSuggestions",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+          "name": "BingSearchEnabled",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "targets": { "osMinBuild": 18362 }
+    },
+    {
+      "id": "process.onedrive.autostart-disable",
+      "title": "Disable OneDrive Auto-Start",
+      "category": "process",
+      "description": "Removes OneDrive from the Run key so it doesn't auto-launch on login. OneDrive still works on-demand if you launch it manually.",
+      "rationale": "OneDrive's startup probe + initial folder sync wakes the disk + network on every boot. Even with no files synced, the daemon polls Microsoft endpoints every few minutes.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_delete",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "name": "OneDrive"
+        }
+      ]
+    },
+    {
+      "id": "ui.win11.transparency.disable",
+      "title": "Disable Win11 Transparency Effects",
+      "category": "process",
+      "description": "Turns off the acrylic/blur compositor effects in the Win11 taskbar, Start menu, and notification center. Removes the per-frame GPU blur passes.",
+      "rationale": "Acrylic blur is composited every frame Explorer is on screen — small but measurable GPU work that runs alongside games on shared-GPU rigs (laptops + iGPU). Off = matte backgrounds, ~0.5% GPU recovered.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "targets": { "osMinBuild": 22000 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+          "name": "EnableTransparency",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "ui.sticky-keys.disable",
+      "title": "Disable Sticky / Filter / Toggle Keys Shortcuts",
+      "category": "process",
+      "description": "Removes the 'Press Shift 5x' StickyKeys popup, the FilterKeys hold-key shortcut, and the ToggleKeys beeps. The accessibility prompts that pop up mid-game and steal focus.",
+      "rationale": "Every gamer's nightmare — Shift-spam in a melee burst triggers the StickyKeys dialog, which steals window focus and breaks input until you alt-tab. Off = never see it again. Accessibility features themselves stay functional via Settings → Ease of Access if you ever turn them on intentionally.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Accessibility\\StickyKeys",
+          "name": "Flags",
+          "value_type": "string",
+          "value": "506"
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Accessibility\\Keyboard Response",
+          "name": "Flags",
+          "value_type": "string",
+          "value": "122"
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Control Panel\\Accessibility\\ToggleKeys",
+          "name": "Flags",
+          "value_type": "string",
+          "value": "58"
+        }
+      ]
+    },
+    {
+      "id": "process.connected-standby.disable",
+      "title": "Disable Modern Standby (Force S3 Sleep)",
+      "category": "process",
+      "description": "Forces the platform to use the traditional S3 sleep state instead of Modern Standby (S0ix). Sleep actually sleeps — no background wake-from-sleep cycles draining battery / waking GPU.",
+      "rationale": "Modern Standby keeps a 'connected' state running while the screen is off, allowing background sync but causing real wake-cycle drain on desktops that don't need it. S3 is the classic 'really off' sleep. Off = predictable sleep behavior, fans actually stop.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Power",
+          "name": "PlatformAoAcOverride",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "targets": { "osMinBuild": 16299 }
+    },
+    {
+      "id": "privacy.win11.recall.disable",
+      "title": "Disable Win11 Recall (AI Snapshots)",
+      "category": "process",
+      "description": "Stops the Win11 24H2+ Recall feature from taking continuous screenshots + indexing them with the on-device AI model. The well-known privacy / security disaster that Microsoft shipped quietly.",
+      "rationale": "Recall takes screenshots every few seconds and stores them in a local DB. While encrypted, the attack surface (and battery + GPU + disk drain) is real. Off = no screenshot capture, no AI indexing, no Copilot+PC overhead. Required reading before applying: Microsoft's own Recall security disclosures.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "osMinBuild": 26100 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI",
+          "name": "DisableAIDataAnalysis",
+          "value_type": "dword",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "privacy.windows-spotlight.disable",
+      "title": "Disable Cloud-Content Promos + 3rd-Party Suggestions",
+      "category": "privacy",
+      "description": "Disables CloudContent consumer features (movie/app promos, OS feature pushes) and third-party Start-menu suggestions. Reduces network calls + promo surfaces.",
+      "rationale": "Audited 2026-05-07: prior catalog framed this as 'lock-screen Spotlight off' — these two keys target CloudContent / 3rd-party suggestions, NOT the Spotlight image rotation. Lock-screen image rotation is killed by `DisableWindowsSpotlightFeatures=1` + per-user `RotatingLockScreenEnabled=0` (separate tweak owed). Current entry is still useful (kills the Start-menu app suggestions + Office trial promos) but doesn't change the lock-screen image.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+          "name": "DisableWindowsConsumerFeatures",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+          "name": "DisableThirdPartySuggestions",
+          "value_type": "dword",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "ui.taskbar-search.minimize",
+      "title": "Hide Taskbar Search Box",
+      "category": "process",
+      "description": "Collapses the always-on taskbar search box into a small icon. Reclaims taskbar real estate + removes the always-rendered search field from the compositor's hot path.",
+      "rationale": "The taskbar search box renders on every Explorer redraw + holds keyboard focus when accidentally clicked mid-game. Hidden mode keeps Win+S shortcut working but reclaims the pixels. Win10/11 universal.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+          "name": "SearchboxTaskbarMode",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "process.wake-timers.disable",
+      "title": "Disable Wake Timers",
+      "category": "powerplan",
+      "description": "Stops scheduled tasks + Windows Update from waking the PC out of sleep. Sleep stays sleep until you press a key.",
+      "rationale": "Wake timers are a hidden cause of 'why did my fans spin up at 3am' — Windows Update + maintenance tasks fire on a wake schedule. Off = predictable idle. Pairs well with Connected Standby disable.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D 0; powercfg /setdcvalueindex SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D 0; powercfg /S SCHEME_CURRENT",
+          "revert": "powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D 1; powercfg /setdcvalueindex SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D 1; powercfg /S SCHEME_CURRENT"
+        }
+      ]
+    },
+    {
+      "id": "privacy.news-and-interests.disable",
+      "title": "Disable News and Interests Taskbar Feed",
+      "category": "process",
+      "description": "Stops the Win10 22H2+ taskbar weather/news feed from polling Microsoft endpoints + rendering its widget. Reclaims taskbar real estate + a steady network heartbeat.",
+      "rationale": "News and Interests fetches every few minutes and renders a widget on every Explorer paint. Off on most pro rigs. Distinct from Win11 Widgets — this is the Win10 taskbar version.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "targets": { "osMaxBuild": 21999 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Policies\\Microsoft\\Windows\\Windows Feeds",
+          "name": "EnableFeeds",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "process.storage-sense.disable",
+      "title": "Disable Storage Sense Auto-Cleanup",
+      "category": "process",
+      "description": "Stops Storage Sense from auto-emptying Recycle Bin, Downloads, and old OneDrive cloud-only files on a schedule. Lets you control your own cleanup.",
+      "rationale": "Storage Sense runs in the background, scans every drive, and auto-deletes 'unused' files. On rigs with predictable workflow it deletes things you actually wanted. Off = you decide when to clean.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\StorageSense\\Parameters\\StoragePolicy",
+          "name": "01",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "targets": { "osMinBuild": 15063 }
+    },
+    {
+      "id": "ui.win11.snap-layouts.hover-disable",
+      "title": "Disable Win11 Snap Layouts Hover Popup",
+      "category": "process",
+      "description": "Stops the Snap Layouts grid from popping up when you hover over a window's maximize button. Win+Z still works if you want it.",
+      "rationale": "The hover-trigger fires on every accidental near-pass of the maximize button — pure friction during gameplay window-switching. Off = no popup, no flash, hotkey still available.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "targets": { "osMinBuild": 22000 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+          "name": "EnableSnapAssistFlyout",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "privacy.clipboard-history-cloud.disable",
+      "title": "Disable Clipboard Cloud Sync",
+      "category": "process",
+      "description": "Stops the Win10/11 cloud clipboard from uploading copied text/images to your Microsoft account for cross-device sync. Local clipboard history (Win+V) still works.",
+      "rationale": "Cloud clipboard uploads literally everything you copy to Microsoft — including passwords, secrets, paste-buffer contents during dev work. Off = local-only clipboard, no upload. Win+V history still functional.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Clipboard",
+          "name": "EnableCloudClipboard",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Clipboard",
+          "name": "CloudClipboardAutomaticUpload",
+          "value_type": "dword",
+          "value": 0
+        }
+      ],
+      "targets": { "osMinBuild": 17763 }
+    },
+    {
+      "id": "ps.hibernation.disable",
+      "title": "Disable Hibernation",
+      "category": "powerplan",
+      "description": "Turns off hibernation entirely. Removes hiberfil.sys (frees 4-32GB disk depending on RAM) and the fast-startup overhead that interferes with full-shutdown reboots.",
+      "rationale": "Hibernation matters on laptops only — desktops gain disk space + a clean shutdown path that drivers actually re-init from. Cross-validated by fr33thy + xilly + lestripez.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "powercfg /h off",
+          "revert": "powercfg /h on"
+        }
+      ]
+    },
+    {
+      "id": "process.driver-auto-updates.disable",
+      "title": "Disable Automatic Windows Driver Updates",
+      "category": "process",
+      "description": "Stops Windows Update from pushing driver updates alongside quality updates. Lets you keep manually-installed drivers (NVIDIA Studio, Realtek custom audio) without WU silently regressing them.",
+      "rationale": "Win Update will silently swap your hand-picked driver for a generic Microsoft one on every quality update — a known cause of audio crackling + VR headset disconnects after a 'cumulative update'. Pro+studio rigs always disable this.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "targets": { "osMinBuild": 14393 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+          "name": "ExcludeWUDriversInQualityUpdate",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\DriverSearching",
+          "name": "SearchOrderConfig",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "privacy.smartscreen.disable",
+      "title": "Disable Windows SmartScreen",
+      "category": "process",
+      "description": "Turns off the SmartScreen reputation-based executable filter. Lets unsigned utilities and custom binaries run without the 'Windows protected your PC' warning + click-through gate.",
+      "rationale": "SmartScreen makes a network call to Microsoft on EVERY new-binary launch. Power users running custom tools, crypto wallets, or self-built utilities pay a 0.5-2s startup tax for the privilege of an upload. Off = no network roundtrip on launch.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "targets": { "osMinBuild": 19041 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+          "name": "EnableSmartScreen",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "ui.zone-warning.disable",
+      "title": "Disable Internet-Zone Download Warning",
+      "category": "process",
+      "description": "Stops File Explorer from blocking downloaded files until you right-click → Unblock. Saves a manual click on every legit download from a non-MOTW source.",
+      "rationale": "The 'this file came from the Internet' MOTW gate is a security feature for office users; for power users running custom tools and patches it's pure friction. Off = no per-file unblock dance. Audited 2026-05-07: prior catalog had value=1 inverted, which preserved zone info; corrected to 2 (strip on save).",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Attachments",
+          "name": "SaveZoneInformation",
+          "value_type": "dword",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "monitor.mpo.disable",
+      "title": "Disable Multi-Plane Overlay (MPO)",
+      "category": "monitor",
+      "description": "Forces DWM to composite normally instead of using GPU plane overlays. Fixes the well-known multi-monitor stuttering / black-screen flicker that hit a wave of Win10 21H2 + Win11 21H2 users.",
+      "rationale": "MPO is a power optimization that backfires on dual-monitor + variable-refresh setups. The GPU's plane scheduler conflicts with G-Sync/FreeSync. Disabling forces classic compositor path — costs ~1% GPU, restores frame stability.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "osMinBuild": 19041 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows\\Dwm",
+          "name": "OverlayTestMode",
+          "value_type": "dword",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "monitor.windowed-game-opt.disable",
+      "title": "Disable Win11 Optimizations for Windowed Games",
+      "category": "monitor",
+      "description": "Turns off Win11's per-game windowed-mode optimizations (the new Auto-HDR + Variable-Refresh hint layer). Some games stutter when this layer activates mid-frame.",
+      "rationale": "Win11 22H2 added a windowed-game optimization shim that intercepts present calls. Real benefit on some titles, real stutter source on others. Off = predictable presentation.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "targets": { "osMinBuild": 22000 },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\DirectX\\UserGpuPreferences",
+          "name": "DirectXUserGlobalSettings",
+          "value_type": "string",
+          "value": "GlobalOptimizationsFlags=0;"
+        }
+      ]
+    },
+    {
+      "id": "process.exception-chain-validation.disable",
+      "title": "Disable Kernel Exception Chain Validation",
+      "category": "process",
+      "description": "Turns off SEHOP-style exception-chain validation in the kernel. Removes a small per-call check that runs on every kernel exception.",
+      "rationale": "From lestripez + reknotic. Real but small CPU win. Has a security cost (slightly easier exploitation if a kernel exploit lands), so we VIP-gate + risk-3 it. Don't enable on machines that run untrusted code.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "low",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel",
+          "name": "DisableExceptionChainValidation",
+          "value_type": "dword",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "bcd.hypervisorlaunchtype.off",
+      "title": "BCD: Disable Hyper-V Hypervisor at Boot",
+      "category": "process",
+      "description": "Stops the Hyper-V hypervisor from loading at boot. Removes VBS/HVCI overhead even with Memory Integrity left enabled in Windows Security.",
+      "rationale": "From diggy-tweaks/cpu. Hyper-V's root partition adds VM-exit overhead on every privileged op. Off = bare-metal Windows, ~3-7% CPU recovered on stock Win11.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "medium",
+      "rebootRequired": "reboot",
+      "targets": { "osMinBuild": 19041 },
+      "actions": [
+        {
+          "kind": "bcdedit_set",
+          "name": "hypervisorlaunchtype",
+          "value": "off"
+        }
+      ]
+    },
+    {
+      "id": "net.nic.interrupt-moderation.disable",
+      "title": "NIC: Interrupt Moderation = Disabled",
+      "category": "network",
+      "description": "Disables NIC-level interrupt coalescing on every physical adapter that exposes the property. Each packet generates an immediate interrupt instead of being batched — lowest possible network latency at the cost of CPU.",
+      "rationale": "Source: diggy-tweaks/network. The single highest-impact NIC latency win pros run. Default coalescing batches up to 256 µs of packets to reduce CPU load; disabled = sub-µs interrupt delivery. Tradeoff: more CPU spent in network DPC. Pair with core-parking-disable so a parked core doesn't have to wake first.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; $p = Get-NetAdapterAdvancedProperty -Name $n -DisplayName 'Interrupt Moderation' -ErrorAction SilentlyContinue; if (-not $p) { Add-Content $f \"$t SKIP $n : Interrupt Moderation not exposed\" } else { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName 'Interrupt Moderation' -DisplayValue 'Disabled' -ErrorAction Stop; Add-Content $f \"$t APPLY $n : IntMod -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } } }",
+          "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; foreach ($v in @('Enabled','Adaptive')) { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName 'Interrupt Moderation' -DisplayValue $v -ErrorAction Stop; Add-Content $f \"$t REVERT $n : IntMod -> $v\"; break } catch { } } }"
+        }
+      ]
+    },
+    {
+      "id": "net.nic.flow-control.disable",
+      "title": "NIC: Flow Control = Disabled",
+      "category": "network",
+      "description": "Turns off Ethernet pause-frame Flow Control on every up-physical NIC. Switches stop being able to ask the NIC to pause; queue management becomes the host's job.",
+      "rationale": "Source: diggy-tweaks/network. Flow Control's pause frames add jitter on consumer switches that misbehave under load. Pros disable to keep the NIC always-sending. Safe on dedicated gaming switches; can cause drop bursts on enterprise QoS gear — keep on if your switch is managing your VoIP.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; $p = Get-NetAdapterAdvancedProperty -Name $n -DisplayName 'Flow Control' -ErrorAction SilentlyContinue; if (-not $p) { Add-Content $f \"$t SKIP $n : Flow Control not exposed\" } else { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName 'Flow Control' -DisplayValue 'Disabled' -ErrorAction Stop; Add-Content $f \"$t APPLY $n : FlowCtrl -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } } }",
+          "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; foreach ($v in @('Rx & Tx Enabled','Auto Negotiation','Enabled','Tx Enabled')) { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName 'Flow Control' -DisplayValue $v -ErrorAction Stop; Add-Content $f \"$t REVERT $n : FlowCtrl -> $v\"; break } catch { } } }"
+        }
+      ]
+    },
+    {
+      "id": "net.nic.rss.enable",
+      "title": "NIC: Receive Side Scaling = Enabled",
+      "category": "network",
+      "description": "Force-enables Receive Side Scaling on every up-physical adapter. Spreads incoming-packet processing across CPU cores instead of pinning to core 0.",
+      "rationale": "Source: diggy-tweaks/network. Default-on most modern NICs but vendor drivers sometimes flip off after updates. Idempotent re-enable. Without RSS the network stack is a single-core bottleneck under high pps — multiplayer match servers can saturate it.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Enable-NetAdapterRss -Name $n -ErrorAction Stop; Add-Content $f \"$t APPLY $n : RSS -> Enabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } }",
+          "revert": "# Idempotent re-enable; default-on most NICs. If a vendor driver was actively disabling RSS pre-tweak, the user should re-disable manually (rare). Audited 2026-05-07."
+        }
+      ]
+    },
+    {
+      "id": "process.core-parking.disable",
+      "title": "Disable CPU Core Parking (100% min cores)",
+      "category": "powerplan",
+      "description": "Sets the minimum-active-cores power-plan setting to 100% on both AC and DC. Windows scheduler keeps every core spun up — no parking, no wake-from-park latency penalty when a game thread suddenly needs another core.",
+      "rationale": "Source: diggy-tweaks/cpu (Bitsum ParkControl recommendation). The native equivalent of ParkControl's 'Disable parking' without a third-party tool. Wake-from-park = 50-200 µs latency spike when a parked core needs to handle an interrupt or a new thread; disabling = no spike at the cost of slightly higher idle power.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "powercfg /setacvalueindex SCHEME_CURRENT SUB_PROCESSOR 0cc5b647-c1df-4637-891a-dec35c318583 100; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PROCESSOR 0cc5b647-c1df-4637-891a-dec35c318583 100; powercfg /setactive SCHEME_CURRENT",
+          "revert": "powercfg /setacvalueindex SCHEME_CURRENT SUB_PROCESSOR 0cc5b647-c1df-4637-891a-dec35c318583 0; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PROCESSOR 0cc5b647-c1df-4637-891a-dec35c318583 0; powercfg /setactive SCHEME_CURRENT"
+        }
+      ],
+      "targets": { "formFactor": ["desktop"] }
+    },
+    {
+      "id": "power.pcie.link-state.off",
+      "title": "Disable PCIe Link State Power Management (ASPM Off)",
+      "category": "powerplan",
+      "description": "Sets PCI Express ASPM (Active State Power Management) to Off on the current power plan. PCIe lanes stay at full power instead of dropping to L0s/L1 between transfers.",
+      "rationale": "Source: diggy-tweaks/gpu. ASPM transitions add 5-20 µs latency on every PCIe burst. GPU + NVMe + NIC all sit on PCIe — the fix is global. Tradeoff: a few watts of idle power. Worth it on a desktop, defer on laptops.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg /setactive SCHEME_CURRENT",
+          "revert": "powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 1; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 2; powercfg /setactive SCHEME_CURRENT"
+        }
+      ],
+      "targets": { "formFactor": ["desktop"] }
+    },
+    {
+      "id": "power.usb3.link-power.disable",
+      "title": "Disable USB 3 Link Power Management",
+      "category": "powerplan",
+      "description": "Reveals the hidden USB-3 Link Power Management option (Attributes=2) then sets it to Off on both AC and DC. Stops USB-3 ports from dropping to a lower link state between packets — eliminates the wake spike on USB devices like wireless mice + audio interfaces.",
+      "rationale": "Source: diggy-tweaks/device-tweaks. Pairs with NVIDIA HID-power-disable. Polling-rate-1000Hz wireless mice can lose packets when the USB-3 host controller transitions out of U1/U2; off = constant link state, predictable polling. Combine with `process.usb-power-mgmt.disable` for full coverage.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "reg add 'HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\\PowerSettings\\2a737441-1930-4402-8d77-b2bebba308a3\\d4e23884-9b93-478a-9e23-77356611f124' /v Attributes /t REG_DWORD /d 2 /f | Out-Null; powercfg /setacvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 d4e23884-9b93-478a-9e23-77356611f124 0; powercfg /setdcvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 d4e23884-9b93-478a-9e23-77356611f124 0; powercfg /setactive SCHEME_CURRENT",
+          "revert": "powercfg /setacvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 d4e23884-9b93-478a-9e23-77356611f124 1; powercfg /setdcvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 d4e23884-9b93-478a-9e23-77356611f124 1; powercfg /setactive SCHEME_CURRENT"
+        }
+      ],
+      "targets": { "formFactor": ["desktop"] }
+    },
+    {
+      "id": "hid.mouse.priority-realtime",
+      "title": "Mouse Class: ThreadPriority = Realtime (31)",
+      "category": "process",
+      "description": "Boosts the mouclass kernel worker thread that drains incoming mouse events to realtime priority. Reduces ISR-to-user-thread propagation jitter.",
+      "rationale": "Source: denis-g/windows10-latency-optimization + djdallmann GamingPCSetup. Not Microsoft-documented at the API level — the value is read by the class driver at boot and used to set its worker-thread priority. Safe: the worker just drains a queue, no userland bypass. Pair with `process.usb-power-mgmt.disable` and `power.usb3.link-power.disable` for full input chain coverage.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\mouclass\\Parameters",
+          "name": "ThreadPriority",
+          "value_type": "dword",
+          "value": 31
+        }
+      ]
+    },
+    {
+      "id": "hid.mouse.queue-size.optimize",
+      "title": "Mouse Class: DataQueueSize = 0x14 (20)",
+      "category": "process",
+      "description": "Caps the mouse data queue at 20 events. Smaller queue = events drain faster + drop sooner under load (preferable to lag-spike accumulation).",
+      "rationale": "Source: legacy MSDN Mouse and Keyboard Driver Entries + community latency guides. Default is 0x64 (100). 20 is the optimization-community consensus — a high-DPI mouse can fill a 100-event queue in <30 ms under heavy motion, which is exactly the jitter we want to drop instead of buffer.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\mouclass\\Parameters",
+          "name": "MouseDataQueueSize",
+          "value_type": "dword",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "hid.keyboard.priority-realtime",
+      "title": "Keyboard Class: ThreadPriority = Realtime (31)",
+      "category": "process",
+      "description": "Same as the mouse-class realtime boost, applied to kbdclass — keyboard worker thread runs at realtime priority for lower input jitter.",
+      "rationale": "Mirror of `hid.mouse.priority-realtime`. Keyboard input is less jitter-sensitive than mouse (input quanta are 10-30 ms vs mouse's 1-10 ms) but the same mechanism applies and the cost is zero.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\kbdclass\\Parameters",
+          "name": "ThreadPriority",
+          "value_type": "dword",
+          "value": 31
+        }
+      ]
+    },
+    {
+      "id": "hid.keyboard.queue-size.optimize",
+      "title": "Keyboard Class: DataQueueSize = 0x14 (20)",
+      "category": "process",
+      "description": "Caps the keyboard data queue at 20 events.",
+      "rationale": "Mirror of mouse queue tweak for kbdclass.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\kbdclass\\Parameters",
+          "name": "KeyboardDataQueueSize",
+          "value_type": "dword",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "vbs.hvci.disable",
+      "title": "Disable HVCI / Memory Integrity (VBS off)",
+      "category": "process",
+      "description": "Disables Hypervisor-Enforced Code Integrity at the registry-policy level. Companion to `bcd.hypervisorlaunchtype.off` — both are needed for VBS to fully cost 0%. Settings → Device security → Core isolation → Memory Integrity must also be flipped manually if it's on (we can't toggle it programmatically without trust-store risk).",
+      "rationale": "Microsoft Learn: HVCI is the primary VBS perf cost. Disabling can recover 5-15% in CPU-bound games (28% on Cyberpunk in some tests). **Anti-cheat caveat**: Riot Vanguard, FACEIT, BattlEye on some titles refuse to run without VBS / Secure Boot / TPM. Verify your game list before applying. Pair with `bcd.hypervisorlaunchtype.off` and reboot for full effect; check the VBS Status card on /diagnostics afterward.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "medium",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity",
+          "name": "Enabled",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\DeviceGuard",
+          "name": "EnableVirtualizationBasedSecurity",
+          "value_type": "dword",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "process.fortnite.priority-high",
+      "title": "Fortnite: launch with High CPU priority (IFEO)",
+      "category": "process",
+      "description": "Image File Execution Options entry that launches FortniteClient-Win64-Shipping.exe with CPU Priority Class = High (3). Persistent across launches — set once, applies forever.",
+      "rationale": "Source: Bitsum + Microsoft IFEO docs. CpuPriorityClass=3 (High) is the safe ceiling — Realtime (4) starves keyboard/mouse input threads and can hard-freeze the rig. High biases the scheduler toward the game without input starvation. Note: the IFEO `Affinity` value people quote is FOLKLORE — only `CpuPriorityClass` actually works.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\FortniteClient-Win64-Shipping.exe\\PerfOptions",
+          "name": "CpuPriorityClass",
+          "value_type": "dword",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "process.valorant.priority-high",
+      "title": "Valorant: launch with High CPU priority (IFEO)",
+      "category": "process",
+      "description": "IFEO entry for VALORANT-Win64-Shipping.exe → CpuPriorityClass = High.",
+      "rationale": "See `process.fortnite.priority-high` for the rationale + caveat about IFEO Affinity being folklore.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\VALORANT-Win64-Shipping.exe\\PerfOptions",
+          "name": "CpuPriorityClass",
+          "value_type": "dword",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "process.cs2.priority-high",
+      "title": "CS2: launch with High CPU priority (IFEO)",
+      "category": "process",
+      "description": "IFEO entry for cs2.exe → CpuPriorityClass = High.",
+      "rationale": "See `process.fortnite.priority-high`.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\cs2.exe\\PerfOptions",
+          "name": "CpuPriorityClass",
+          "value_type": "dword",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "service.werservice.disable",
+      "title": "Disable Windows Error Reporting Service",
+      "category": "process",
+      "description": "Sets WerSvc Start = 4 (Disabled). Stops the WER background process from waking on every crash + uploading dumps.",
+      "rationale": "Source: djdallmann + Raphire/Win11Debloat. Pure telemetry / crash-upload service; disabling has zero gameplay impact. Crash dialogs still appear (those are user-mode); only the upload pipeline goes quiet.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\WerSvc",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "service.maps-broker.disable",
+      "title": "Disable Downloaded Maps Manager",
+      "category": "process",
+      "description": "Sets MapsBroker Start = 4. Stops the offline-maps service that runs on a schedule for the Windows Maps app.",
+      "rationale": "If you don't use Windows Maps app, this is pure dead weight. Permanent disable.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\MapsBroker",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "service.retail-demo.disable",
+      "title": "Disable Retail Demo",
+      "category": "process",
+      "description": "Sets RetailDemo Start = 4. The Best Buy / store-demo mode service.",
+      "rationale": "Zero use to a real user. Permanent disable.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\RetailDemo",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "service.fax.disable",
+      "title": "Disable Fax service",
+      "category": "process",
+      "description": "Sets Fax Start = 4. The Windows fax-machine service.",
+      "rationale": "Permanent disable for any rig that's not literally a fax appliance.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\Fax",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "service.wmp-network.disable",
+      "title": "Disable Windows Media Player Network Sharing",
+      "category": "process",
+      "description": "Sets WMPNetworkSvc Start = 4. The DLNA-share service for WMP.",
+      "rationale": "Permanent disable unless you DLNA-share your library.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\WMPNetworkSvc",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "service.geolocation.disable",
+      "title": "Disable Geolocation service",
+      "category": "privacy",
+      "description": "Sets lfsvc Start = 4. Stops the Windows Location Service from pinging WiFi-positioning + GPS.",
+      "rationale": "Privacy + idle-CPU win. Disables location for any app that uses Win32 location API. If you actually use location-aware apps (Weather widget, Find My Device), keep on.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\lfsvc",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "service.smart-card.disable",
+      "title": "Disable Smart Card services",
+      "category": "process",
+      "description": "Disables SCardSvr + ScDeviceEnum + SCPolicySvc. The Windows smart-card stack.",
+      "rationale": "Used for federal/CAC card login + some enterprise auth. Zero use to home gaming rigs. Permanent disable.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\SCardSvr",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\ScDeviceEnum",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\SCPolicySvc",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "service.biometric.disable",
+      "title": "Disable Windows Biometric Service",
+      "category": "process",
+      "description": "Sets WbioSrvc Start = 4. The Hello-fingerprint / face / iris auth service.",
+      "rationale": "Disable on rigs without biometric hardware OR rigs that don't use Hello.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\WbioSrvc",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "service.tablet-input.disable",
+      "title": "Disable Touch Keyboard / Tablet Input",
+      "category": "process",
+      "description": "Sets TabletInputService Start = 4. The on-screen-keyboard + pen-input service.",
+      "rationale": "Pure desktop dead weight. Touch / pen rigs should keep on. `formFactor: desktop` recommended.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "targets": { "formFactor": ["desktop"] },
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Services\\TabletInputService",
+          "name": "Start",
+          "value_type": "dword",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "tasks.telemetry-batch.disable",
+      "title": "Disable 13 Microsoft telemetry / promo scheduled tasks",
+      "category": "privacy",
+      "description": "Disables a curated batch of Microsoft\\Windows scheduled tasks that exist purely for telemetry upload, compatibility-appraiser, customer-experience-improvement program, and store-app promo. Reverts to enable.",
+      "rationale": "Source: Raphire/Win11Debloat + djdallmann. These tasks wake the system on a schedule even when telemetry services are disabled, because the scheduler runs them as one-shots. Disabling closes the back-door. Note: some get re-enabled after major Windows feature updates; re-apply post-update.",
+      "riskLevel": 1,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$tasks = @('\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser','\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater','\\Microsoft\\Windows\\Application Experience\\StartupAppTask','\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask','\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator','\\Microsoft\\Windows\\Customer Experience Improvement Program\\KernelCeipTask','\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip','\\Microsoft\\Windows\\Autochk\\Proxy','\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector','\\Microsoft\\Windows\\Maps\\MapsToastTask','\\Microsoft\\Windows\\Maps\\MapsUpdateTask','\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient','\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload','\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting'); foreach ($p in $tasks) { $tn = ($p -split '\\\\')[-1]; $tp = $p.Substring(0, $p.Length - $tn.Length); try { Disable-ScheduledTask -TaskPath $tp -TaskName $tn -ErrorAction Stop | Out-Null } catch { } }",
+          "revert": "$tasks = @('\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser','\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater','\\Microsoft\\Windows\\Application Experience\\StartupAppTask','\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask','\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator','\\Microsoft\\Windows\\Customer Experience Improvement Program\\KernelCeipTask','\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip','\\Microsoft\\Windows\\Autochk\\Proxy','\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector','\\Microsoft\\Windows\\Maps\\MapsToastTask','\\Microsoft\\Windows\\Maps\\MapsUpdateTask','\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient','\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload','\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting'); foreach ($p in $tasks) { $tn = ($p -split '\\\\')[-1]; $tp = $p.Substring(0, $p.Length - $tn.Length); try { Enable-ScheduledTask -TaskPath $tp -TaskName $tn -ErrorAction Stop | Out-Null } catch { } }"
+        }
+      ]
+    },
+    {
+      "id": "process.msi-mode.gpu-nic-audio",
+      "title": "Enable MSI mode on GPU + NIC + Audio (safe-class only)",
+      "category": "process",
+      "description": "Enumerates Display + Net + AudioEndpoint PCI devices and sets MSISupported=1 under each device's Interrupt Management key. Hard-excludes storage controllers + USB host controllers (documented breakage). Logs each apply / fail to %LOCALAPPDATA%\\optmaxxing\\msi-mode.log.",
+      "rationale": "Source: Microsoft Learn (MSI registry path) + community validation (guru3D, GoInterruptPolicy). Message-Signaled Interrupts pin device IRQs to the device's own MSI vector instead of sharing a line-based IRQ — measurable input + DPC-latency win on GPU + NIC. **Hard exclusions**: StorAHCI / NVMe / xHCI USB host controllers (Dell KB 000125194 documents 100% disk utilization storms; overclock.net 'Muh deadzone' thread documents xHCI input lag with MSI on). Reboot required.",
+      "riskLevel": 3,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\msi-mode.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; $classes = @('Display','Net','AudioEndpoint'); foreach ($c in $classes) { Get-PnpDevice -Class $c -PresentOnly -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'OK' -and $_.InstanceId -like 'PCI\\\\*' } | ForEach-Object { $regPath = \"HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\$($_.InstanceId)\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties\"; if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force -ErrorAction SilentlyContinue | Out-Null }; try { Set-ItemProperty -Path $regPath -Name MSISupported -Value 1 -Type DWord -ErrorAction Stop; Add-Content $f \"$t APPLY $($_.FriendlyName) ($c)\" } catch { Add-Content $f \"$t FAIL $($_.FriendlyName) ($c) : $($_.Exception.Message)\" } } }",
+          "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\msi-mode.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; $classes = @('Display','Net','AudioEndpoint'); foreach ($c in $classes) { Get-PnpDevice -Class $c -PresentOnly -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'OK' -and $_.InstanceId -like 'PCI\\\\*' } | ForEach-Object { $regPath = \"HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\$($_.InstanceId)\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties\"; if (Test-Path $regPath) { try { Set-ItemProperty -Path $regPath -Name MSISupported -Value 0 -Type DWord -ErrorAction Stop; Add-Content $f \"$t REVERT $($_.FriendlyName) ($c)\" } catch { Add-Content $f \"$t REVERT-FAIL $($_.FriendlyName) ($c) : $($_.Exception.Message)\" } } } }"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "Streamer Plus",
+  "glyph": "🎥",
+  "tagline": "OBS-friendly + clean recording sessions",
+  "description": "Extended streamer preset. Removes Game DVR + capture conflict, kills Edge/OneDrive/Discord auto-start (buffers obs encoder), HAGS on for NVENC, telemetry off so quality-update reboots don't hit mid-stream.",
+  "tweakIds": [
+    "ui.gamedvr.disable",
+    "ui.gamedvr.appcapture.disable",
+    "ui.fse.disable-global",
+    "ui.startup.delay-disable",
+    "ui.menu-show-delay.zero",
+    "process.hags.enable",
+    "process.edge.background-disable",
+    "process.onedrive.autostart-disable",
+    "process.discord.autostart-disable",
+    "process.driver-auto-updates.disable",
+    "privacy.telemetry.disable",
+    "privacy.diagtrack.disable",
+    "audio.system-sounds.none"
+  ]
+}

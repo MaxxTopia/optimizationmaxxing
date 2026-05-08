@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>optimizationmaxxing — Max FPS, zero input lag, undo-safe</title>
+<meta name="description" content="Spec-aware Windows tweaks for competitive gamers. 5MB installer. 4 themes. Per-tweak undo. Better than paragontweaks + hone.gg." />
+<meta property="og:title" content="optimizationmaxxing" />
+<meta property="og:description" content="Max FPS, zero input lag. 3.5MB installer that actually knows your rig." />
+<meta property="og:image" content="og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="og.png" />
+<!-- og.png is generated from og.html — see comments in that file. -->
+
+<style>
+  :root {
+    --bg-base: #0d1418;
+    --bg-raised: #16252c;
+    --bg-card: rgba(45, 76, 87, 0.45);
+    --accent: #ff4655;
+    --accent-soft: #ff7a87;
+    --secondary: #0f1923;
+    --text: #ece8e1;
+    --text-muted: #c8b89a;
+    --text-subtle: #8e8579;
+    --border: rgba(255, 70, 85, 0.18);
+    --border-glow: rgba(255, 70, 85, 0.4);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-base);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* Navbar */
+  nav.top {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(8px);
+    background: rgba(13, 20, 24, 0.85);
+    border-bottom: 1px solid var(--border);
+  }
+  nav.top .row { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; }
+  .brand { font-weight: 700; letter-spacing: -0.02em; }
+  nav.top .links a { margin-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem; }
+  nav.top .links a:hover { color: var(--text); text-decoration: none; }
+
+  /* Hero */
+  header.hero {
+    position: relative; padding: 6rem 0 4rem;
+    overflow: hidden;
+  }
+  header.hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, var(--accent) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, var(--secondary) 0%, transparent 50%);
+    filter: blur(80px);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  header.hero .content { position: relative; }
+  .eyebrow { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 1rem; }
+  h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; margin: 0 0 1rem; }
+  h1 .accent { color: var(--accent); }
+  .lede { font-size: 1.15rem; color: var(--text-muted); max-width: 620px; margin: 0 0 2rem; }
+  .ctas { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600; font-size: 0.95rem;
+    transition: transform 120ms ease, box-shadow 180ms ease;
+    cursor: pointer; border: none;
+  }
+  .btn-primary {
+    background: var(--accent); color: var(--bg-base);
+    box-shadow: 0 4px 20px var(--border-glow);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 28px var(--border-glow); text-decoration: none; }
+  .btn-ghost {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--border-glow); text-decoration: none; }
+  .stats { display: flex; gap: 2rem; margin-top: 3rem; flex-wrap: wrap; }
+  .stat .num { font-size: 1.75rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 0.8rem; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.15em; }
+
+  /* Sections */
+  section { padding: 5rem 0; border-top: 1px solid var(--border); }
+  section h2 { font-size: clamp(1.75rem, 3.5vw, 2.5rem); margin: 0 0 1rem; letter-spacing: -0.01em; }
+  section .lede { margin-bottom: 2.5rem; }
+
+  /* Why grid */
+  .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .why-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+  .why-card .metric { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .why-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-subtle); margin: 0.25rem 0 0.75rem; }
+  .why-card p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+
+  /* Features */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .feature {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+  .feature h3 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+  .feature p { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+
+  /* Pricing */
+  .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .price-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.75rem;
+    position: relative;
+  }
+  .price-card.highlight {
+    border-color: var(--border-glow);
+    box-shadow: 0 0 30px var(--border-glow);
+  }
+  .price-card .badge { position: absolute; top: -10px; left: 1.5rem; background: var(--accent); color: var(--bg-base); font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 0.25rem; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; }
+  .price-card .price { font-size: 2.5rem; font-weight: 700; }
+  .price-card .price .strike { font-size: 1rem; color: var(--text-subtle); text-decoration: line-through; margin-left: 0.5rem; }
+  .price-card .sale { background: var(--accent); color: var(--bg-base); font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 0.2rem; margin-left: 0.5rem; vertical-align: middle; letter-spacing: 0.1em; font-weight: 600; }
+  .price-card ul { list-style: none; padding: 0; margin: 1.5rem 0; font-size: 0.9rem; color: var(--text-muted); }
+  .price-card li { padding: 0.4rem 0; border-bottom: 1px solid var(--border); }
+  .price-card li::before { content: '▸ '; color: var(--accent); }
+  .price-card .cta { display: block; text-align: center; padding: 0.75rem; border-radius: 0.5rem; font-weight: 600; }
+
+  /* Comparison */
+  .compare { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .compare th, .compare td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  .compare th { text-transform: uppercase; font-size: 0.7rem; color: var(--text-subtle); letter-spacing: 0.15em; }
+  .compare .us { color: var(--accent); font-weight: 600; }
+  .compare .them { color: var(--text-subtle); text-decoration: line-through; }
+
+  /* FAQ */
+  details { background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem 1.25rem; margin-bottom: 0.5rem; }
+  details[open] { border-color: var(--border-glow); }
+  summary { cursor: pointer; font-weight: 600; }
+  summary::-webkit-details-marker { display: none; }
+  details p { color: var(--text-muted); margin: 0.75rem 0 0; font-size: 0.9rem; }
+
+  /* Footer */
+  footer { padding: 3rem 0; text-align: center; color: var(--text-subtle); font-size: 0.85rem; border-top: 1px solid var(--border); }
+  footer a { color: var(--text-muted); margin: 0 0.75rem; }
+</style>
+</head>
+<body>
+<nav class="top">
+  <div class="container row">
+    <span class="brand">optimizationmaxxing</span>
+    <span class="links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#download" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Download</a>
+    </span>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container content">
+    <div class="eyebrow">v0.1.27 · Windows 10 / 11</div>
+    <h1>Max FPS. <span class="accent">Zero input lag.</span></h1>
+    <p class="lede">
+      Spec-aware Windows tweaks for competitive gamers. Every change is undo-safe,
+      curated to your exact rig, and ships in a <strong>3.5 MB installer</strong> —
+      <em>23× smaller than paragontweaks</em>. Built by gamers who don't trust
+      <em>"trust us"</em> tools.
+    </p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="#download">Download for Windows</a>
+      <a class="btn btn-ghost" href="#features">See the tweaks list</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">70</div><div class="label">Curated tweaks</div></div>
+      <div class="stat"><div class="num">10</div><div class="label">Bundled presets</div></div>
+      <div class="stat"><div class="num">3.5 MB</div><div class="label">Installer size</div></div>
+      <div class="stat"><div class="num">1</div><div class="label">UAC prompt per preset</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="why">
+  <div class="container">
+    <div class="eyebrow">why</div>
+    <h2>Built for gamers who want to <em>see</em> what's being changed.</h2>
+    <p class="lede">No black-box "one-click optimize." Every tweak shows its description, rationale, risk level, and exact registry path. Per-tweak undo. Spec-aware curation. Themes you can switch.</p>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="metric">5 MB</div>
+        <div class="label">vs Paragon's 81 MB</div>
+        <p>Tauri build, Rust backend, native Windows API. No Electron bloat.</p>
+      </div>
+      <div class="why-card">
+        <div class="metric">Per-tweak</div>
+        <div class="label">undo, not all-or-nothing</div>
+        <p>Apply 5 tweaks, revert one, keep the others. SQLite snapshot store records every pre-state.</p>
+      </div>
+      <div class="why-card">
+        <div class="metric">Spec-aware</div>
+        <div class="label">curation</div>
+        <p>Tweaks gate on your CPU gen + GPU arch + OS build. No "this might brick your laptop" surprises.</p>
+      </div>
+      <div class="why-card">
+        <div class="metric">RAM Advisor</div>
+        <div class="label">your kit, decoded</div>
+        <p>Reads your DIMM PartNumber → tells you the die, the manual tuning targets, the right TestMem5 config.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <div class="eyebrow">features</div>
+    <h2>Everything in v0.1.27</h2>
+    <div class="features">
+      <div class="feature"><h3>70-tweak curated catalog</h3><p>Registry, BCD, PowerShell, hosts-file. 26 of 70 carry rig-targeting metadata so recommendations sharpen per CPU vendor / GPU / OS build / RAM.</p></div>
+      <div class="feature"><h3>10 bundled presets + custom builder</h3><p>5 curated (Esports · BR · Streamer · Frame Pacing · Network Low-Latency) + 5 community (Laptop · iGPU · Streamer Plus · Competitive FPS · Calm Mode). Build your own. Export / import as JSON.</p></div>
+      <div class="feature"><h3>Single-UAC batch apply</h3><p>Whole preset = one prompt. Not five. Not forty. Powered by a unified cmd.exe runner across registry / bcdedit / PowerShell.</p></div>
+      <div class="feature"><h3>Tune Score on Dashboard</h3><p>0-100 grade with Stock / Lukewarm / Tuned / Tournament tiers. Score-blocker hint suggests the next preset to lift the lowest-applied category.</p></div>
+      <div class="feature"><h3>Spec-aware recommendations</h3><p>Top 6 unapplied tweaks that match your rig surface on Dashboard. Apply All Recommended batches them into one UAC.</p></div>
+      <div class="feature"><h3>One-click Restore Point</h3><p>Settings has a single "Revert All Applied" button that walks every receipt newest-first under one UAC. Vanilla-Windows recovery in seconds.</p></div>
+      <div class="feature"><h3>Diagnostics + What's New</h3><p>/diagnostics rolls up live CPU% / RAM / temps / disk-free in one snapshot. /changelog shows the full version history. What's-New modal greets you after every upgrade.</p></div>
+      <div class="feature"><h3>4 profile themes</h3><p>Val tactical · Sonic kinetic · DMC gothic · Black Ops 3 cyber. Full color + typography swap.</p></div>
+      <div class="feature"><h3>RAM Advisor + 6 research articles</h3><p>15 popular DDR4/DDR5 kits → die inference + tuning targets. NVIDIA Reflex · Browsers · Mice · Per-game Win · AMD/Intel · BIOS-per-chipset.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="vs">
+  <div class="container">
+    <div class="eyebrow">comparison</div>
+    <h2>vs the rest</h2>
+    <table class="compare">
+      <thead><tr><th>What</th><th>optimizationmaxxing</th><th>paragontweaks</th><th>hone.gg</th></tr></thead>
+      <tbody>
+        <tr><td>Installer size</td><td class="us">3.5 MB</td><td>81 MB</td><td>90+ MB</td></tr>
+        <tr><td>Curated tweaks</td><td class="us">70 (26 rig-targeted)</td><td>~100 (generic)</td><td>~50 (generic)</td></tr>
+        <tr><td>Themes</td><td class="us">4 full</td><td>1</td><td>1</td></tr>
+        <tr><td>Per-tweak undo</td><td class="us">Yes (SQLite receipts)</td><td>System Restore only</td><td>System backup, all-or-nothing</td></tr>
+        <tr><td>One-click revert all</td><td class="us">Yes</td><td>System Restore</td><td>System Restore</td></tr>
+        <tr><td>Spec-aware recommendations</td><td class="us">Yes (CPU vendor + RAM + OS build)</td><td>Generic</td><td>Generic</td></tr>
+        <tr><td>Custom preset builder + export</td><td class="us">Yes</td><td>No</td><td>No</td></tr>
+        <tr><td>RAM kit advisor</td><td class="us">Yes</td><td>No</td><td>No</td></tr>
+        <tr><td>Source-cited research</td><td class="us">6 deep-dives</td><td>Hidden</td><td>FAQ blurbs</td></tr>
+        <tr><td>Pricing</td><td class="us">$8 (sale, $15 reg)</td><td>$15-20</td><td>Premium (paywalled)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="container">
+    <div class="eyebrow">pricing</div>
+    <h2>Free for life on the safest tweaks</h2>
+    <div class="pricing">
+      <div class="price-card">
+        <div style="text-transform: uppercase; font-size: 0.7rem; color: var(--text-subtle); letter-spacing: 0.15em;">Free</div>
+        <div class="price">$0</div>
+        <p style="color: var(--text-subtle); font-size: 0.85rem; margin: 0.25rem 0 0;">Forever</p>
+        <ul>
+          <li>30+ safest tweaks (risk 1-2)</li>
+          <li>Single rig profile</li>
+          <li>Manual apply, no presets</li>
+          <li>No restore checkpoints</li>
+          <li>Community support (Discord)</li>
+        </ul>
+        <a class="cta btn btn-ghost" href="#download">Download free</a>
+      </div>
+      <div class="price-card highlight">
+        <span class="badge">Most Value</span>
+        <div style="text-transform: uppercase; font-size: 0.7rem; color: var(--text-subtle); letter-spacing: 0.15em;">VIP</div>
+        <div class="price">$8<span class="strike">$15</span><span class="sale">SALE</span></div>
+        <p style="color: var(--text-subtle); font-size: 0.85rem; margin: 0.25rem 0 0;">USD / month</p>
+        <ul>
+          <li>Full 70-tweak catalog</li>
+          <li>All curated presets + custom builder</li>
+          <li>Unlimited restore checkpoints</li>
+          <li>Profile export & share via JSON</li>
+          <li>Spec-aware recommendations</li>
+          <li>Boot-store + PowerShell tweaks unlocked</li>
+          <li>Priority Discord support</li>
+          <li>Future tweak-pack updates</li>
+        </ul>
+        <a class="cta btn btn-primary" href="#download">Upgrade to VIP</a>
+      </div>
+    </div>
+    <p style="font-size: 0.8rem; color: var(--text-subtle); margin-top: 1rem; text-align: center;">
+      Subscription / lifetime decision finalizes after pilot. Discord vote tracked.
+    </p>
+  </div>
+</section>
+
+<section id="download">
+  <div class="container" style="text-align: center;">
+    <div class="eyebrow">download</div>
+    <h2>Get optimizationmaxxing</h2>
+    <p class="lede" style="margin-left: auto; margin-right: auto;">
+      Windows 10 / 11. 3.5 MB installer. SmartScreen will warn until we add an EV cert — click "More info" → "Run anyway" for now.
+    </p>
+    <a class="btn btn-primary" href="optimizationmaxxing_0.1.27_x64-setup.exe" style="font-size: 1.05rem; padding: 1rem 2rem;">
+      Download for Windows (3.5 MB)
+    </a>
+    <p style="font-size: 0.8rem; color: var(--text-subtle); margin-top: 1rem;">
+      SHA-256 published next to the file · Source on GitHub · Discord support
+    </p>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="container">
+    <div class="eyebrow">faq</div>
+    <h2>Frequently asked</h2>
+    <details>
+      <summary>Will this brick my PC?</summary>
+      <p>No. Every tweak is undo-safe — we record the prior value before changing anything, in a SQLite snapshot store. One-click revert per tweak. We refuse to write BIOS in software (that's where bricking happens). For BIOS, we tell you what to type and you flip it manually.</p>
+    </details>
+    <details>
+      <summary>Is this safe to use with Vanguard / EAC / BattlEye?</summary>
+      <p>Most tweaks are anti-cheat-safe (registry / scheduler tweaks). A few are flagged with anti-cheat-risk badges in the catalog. We don't ship a kernel driver. Read the Toolkit research card on AMD/Intel + Vanguard caveats before applying high-risk tweaks.</p>
+    </details>
+    <details>
+      <summary>Why is the installer unsigned?</summary>
+      <p>EV code-signing certs cost $300+/yr. We're getting one before public launch; for the pilot, SmartScreen warns. Click "More info" → "Run anyway." SHA-256 is published so you can verify nothing was tampered with.</p>
+    </details>
+    <details>
+      <summary>What's "spec-aware curation"?</summary>
+      <p>Each tweak in our catalog has a "requires" predicate: e.g. "Intel 12th gen+ AND Win11 22H2+ AND not laptop." If your rig doesn't match, the tweak is hidden or shown grayed-out with the gating reason. Beats one-size-fits-all that ships you Hyper-V tweaks on a Mac VM.</p>
+    </details>
+    <details>
+      <summary>Why is Paragon $20 and you're $8?</summary>
+      <p>Paragon's moat is pro-player endorsements and a manual 1-on-1 service tier — they charge for relationship + brand. We're charging for the software + content. Different value prop. We're priced to be a no-brainer for solo gamers.</p>
+    </details>
+    <details>
+      <summary>Does it work on AMD or only NVIDIA?</summary>
+      <p>Both. Spec detection identifies your GPU vendor (NVIDIA/AMD/Intel Arc) and tweaks gate accordingly. NVIDIA Profile Inspector integration is NVIDIA-only by design (Phase 4d).</p>
+    </details>
+    <details>
+      <summary>Where's the source?</summary>
+      <p>Public GitHub repo coming with the v0.2 launch. For the pilot, hash + Discord support is the trust path.</p>
+    </details>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://discord.gg">Discord</a>
+      <a href="https://github.com">GitHub</a>
+    </p>
+    <p style="margin-top: 1rem;">© 2026 optimizationmaxxing — part of the maxxer suite.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "iGPU Rig Tuning",
+  "glyph": "🎨",
+  "tagline": "Every GPU cycle counts · DWM compositor lite",
+  "description": "For Intel/AMD iGPU rigs (laptops, NUCs, budget desktops) where the integrated GPU is shared with everything. Strips DWM overhead, MPO compositing, transparency effects, and GPU-side scheduling tax. Shifts work off the iGPU.",
+  "tweakIds": [
+    "ui.visualfx.best-performance",
+    "ui.fse.disable-global",
+    "ui.mouse.disable-trails",
+    "ui.mouse.disable-shadow",
+    "ui.win11.transparency.disable",
+    "ui.gamedvr.disable",
+    "ui.gamedvr.appcapture.disable",
+    "monitor.mpo.disable",
+    "monitor.windowed-game-opt.disable",
+    "process.edge.background-disable",
+    "process.onedrive.autostart-disable",
+    "process.windows-search.disable",
+    "process.driver-auto-updates.disable"
+  ]
+}

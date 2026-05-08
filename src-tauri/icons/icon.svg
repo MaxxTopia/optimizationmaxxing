@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <!-- Brand gradient: magenta → violet → cobalt. Multi-stop for a saturated
+         but balanced finish (Apple icons use 3-4 stops, not 2). -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f37bff"/>
+      <stop offset="35%" stop-color="#e25bff"/>
+      <stop offset="70%" stop-color="#7d51f7"/>
+      <stop offset="100%" stop-color="#4c51f7"/>
+    </linearGradient>
+
+    <!-- Apple-style top-edge specular highlight. Gives the icon a slight
+         "physical light" feel on dark dock backgrounds. -->
+    <linearGradient id="hi" x1="50%" y1="0%" x2="50%" y2="55%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Subtle bottom-edge depth shadow inside the squircle -->
+    <linearGradient id="bottomShade" x1="50%" y1="60%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.18"/>
+    </linearGradient>
+
+    <!-- Bolt body — subtle vertical gradient for dimensional feel.
+         White → barely-tinted lavender so it reads as "lit from above". -->
+    <linearGradient id="boltFill" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#fbe8ff"/>
+    </linearGradient>
+
+    <!-- Drop shadow on the bolt — gives it lift off the squircle face. -->
+    <filter id="boltShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#1a0028" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Outer transparent canvas -->
+  <rect width="1024" height="1024" fill="transparent"/>
+
+  <!-- Apple-style squircle (corner radius ≈ 22% of side, close to true superellipse) -->
+  <rect x="64" y="64" width="896" height="896" rx="220" ry="220" fill="url(#bg)"/>
+
+  <!-- Top specular highlight overlay -->
+  <rect x="64" y="64" width="896" height="896" rx="220" ry="220" fill="url(#hi)"/>
+
+  <!-- Bottom shade overlay -->
+  <rect x="64" y="64" width="896" height="896" rx="220" ry="220" fill="url(#bottomShade)"/>
+
+  <!-- Crisp 1px inner stroke — tightens the silhouette without looking heavy. -->
+  <rect x="65" y="65" width="894" height="894" rx="219" ry="219" fill="none" stroke="#ffffff" stroke-opacity="0.20" stroke-width="2"/>
+
+  <!-- Three speed accent lines, top-right corner. Communicate motion + the
+       "maxxer/optimized" angle subtly without crowding the focal point. -->
+  <g stroke="#ffffff" stroke-opacity="0.22" stroke-linecap="round" fill="none">
+    <line x1="772" y1="208" x2="868" y2="252" stroke-width="14"/>
+    <line x1="792" y1="288" x2="864" y2="320" stroke-width="11"/>
+    <line x1="810" y1="356" x2="858" y2="378" stroke-width="9"/>
+  </g>
+
+  <!-- Lightning bolt — single focal subject. Slightly tilted right for forward
+       energy. Centered, with generous padding (~70% canvas usage). -->
+  <g filter="url(#boltShadow)">
+    <path d="M 595 232
+             L 384 540
+             L 510 540
+             L 426 792
+             L 642 484
+             L 522 484 Z"
+          fill="url(#boltFill)"/>
+  </g>
+</svg>
