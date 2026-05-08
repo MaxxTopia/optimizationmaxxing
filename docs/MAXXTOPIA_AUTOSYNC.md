@@ -1,6 +1,6 @@
 # Auto-sync this product's releases to maxxtopia.com
 
-When you cut a new GitHub release here (or any `v*` tag pushes to CI), the [download CTA on maxxtopia.com/optimizationmaxxing](https://maxxtopia.com/optimizationmaxxing) should auto-update to point at the new installer. Maxxtopia already has the listener wired (see `dtman-gif/maxxtopia/.github/workflows/sync-optimizationmaxxing-release.yml`); you just need to fire the dispatch from this repo.
+When you cut a new GitHub release here (or any `v*` tag pushes to CI), the [download CTA on maxxtopia.com/optimizationmaxxing](https://maxxtopia.com/optimizationmaxxing) should auto-update to point at the new installer. Maxxtopia already has the listener wired (see `MaxxTopia/maxxtopia/.github/workflows/sync-optimizationmaxxing-release.yml`); you just need to fire the dispatch from this repo.
 
 ## One-time setup
 
@@ -8,13 +8,13 @@ When you cut a new GitHub release here (or any `v*` tag pushes to CI), the [down
    - **Token name:** `maxxtopia-dispatch-from-om`
    - **Resource owner:** `dtman-gif`
    - **Expiration:** 1 year (or no-expiration)
-   - **Repository access:** *Only select repositories* → `dtman-gif/maxxtopia`
+   - **Repository access:** *Only select repositories* → `MaxxTopia/maxxtopia`
    - **Permissions:**
      - `Contents` → **Read and write**
      - `Metadata` → **Read-only** (auto-required)
    - Generate, copy the `github_pat_…` token.
 
-2. **Add as repo secret** at https://github.com/dtman-gif/optimizationmaxxing/settings/secrets/actions/new
+2. **Add as repo secret** at https://github.com/MaxxTopia/optimizationmaxxing/settings/secrets/actions/new
    - Name: `MAXXTOPIA_DISPATCH_PAT`
    - Value: paste the token
 
@@ -39,11 +39,11 @@ Wherever your CI runs the final installer build + GitHub release upload (likely 
                        -H "Accept: application/vnd.github+json" \
                        -H "Authorization: Bearer ${PAT}" \
                        -H "X-GitHub-Api-Version: 2022-11-28" \
-                       https://api.github.com/repos/dtman-gif/maxxtopia/dispatches \
+                       https://api.github.com/repos/MaxxTopia/maxxtopia/dispatches \
                        -d "$(jq -n \
                            --arg version "${TAG}" \
-                           --arg installerUrl "https://github.com/dtman-gif/optimizationmaxxing/releases/download/${TAG}/optimizationmaxxing_${VERSION}_x64-setup.exe" \
-                           --arg releasePageUrl "https://github.com/dtman-gif/optimizationmaxxing/releases/tag/${TAG}" \
+                           --arg installerUrl "https://github.com/MaxxTopia/optimizationmaxxing/releases/download/${TAG}/optimizationmaxxing_${VERSION}_x64-setup.exe" \
+                           --arg releasePageUrl "https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/${TAG}" \
                            '{event_type: "optimizationmaxxing-released", client_payload: {version: $version, installerUrl: $installerUrl, releasePageUrl: $releasePageUrl}}')"
 ```
 
@@ -63,8 +63,8 @@ If the PAT secret is missing, the dispatch step skips silently — your release 
 
 ```powershell
 gh workflow run sync-optimizationmaxxing-release.yml `
-  --repo dtman-gif/maxxtopia `
+  --repo MaxxTopia/maxxtopia `
   --field version=v0.1.7 `
-  --field installer_url='https://github.com/dtman-gif/optimizationmaxxing/releases/download/v0.1.7/optimizationmaxxing_0.1.7_x64-setup.exe' `
-  --field release_page_url=https://github.com/dtman-gif/optimizationmaxxing/releases/tag/v0.1.7
+  --field installer_url='https://github.com/MaxxTopia/optimizationmaxxing/releases/download/v0.1.7/optimizationmaxxing_0.1.7_x64-setup.exe' `
+  --field release_page_url=https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.1.7
 ```

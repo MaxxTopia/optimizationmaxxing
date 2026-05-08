@@ -12,6 +12,25 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.39',
+    date: '2026-05-08',
+    highlights: [
+      'NEW Game Session mode — pick the game you\'re playing today (Fortnite / Valorant / CS2 / osu / Custom), see every competing launcher / voice / music / overlay running, hit Start to suspend them all',
+      'Suspend-Process freezes them in RAM — no CPU, no IO, instant resume on End Session',
+      'Per-game keep-list: Epic stays alive when you pick Fortnite, Vanguard + Riot stack stay alive for Valorant, Steam stays alive for CS2',
+      'Force-resume-by-name recovery for stuck-suspended processes after a crash',
+    ],
+  },
+  {
+    version: '0.1.38',
+    date: '2026-05-08',
+    highlights: [
+      '3 new fiber-aware NIC offload tweaks: net.nic.rsc.disable, net.nic.checksum-offload.disable, net.nic.lso.disable — let the CPU handle packet work for tighter frametimes',
+      'Renamed Ultimate Performance plan → "DT Tournament" with explicit thermal-limits-still-active note',
+      'New Recommended Gear research article — mouse / keyboard / pad / monitor / network framework, no affiliate links',
+    ],
+  },
+  {
     version: '0.1.37',
     date: '2026-05-07',
     highlights: [

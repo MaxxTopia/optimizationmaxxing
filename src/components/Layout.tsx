@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { to: '/presets', label: 'Presets' },
   { to: '/toolkit', label: 'Toolkit' },
   { to: '/diagnostics', label: 'Diagnostics' },
+  { to: '/session', label: 'Session' },
   { to: '/profile', label: 'Profile' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/settings', label: 'Settings' },

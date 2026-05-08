@@ -11,6 +11,7 @@ import { Pricing } from './pages/Pricing'
 import { Settings } from './pages/Settings'
 import { Changelog } from './pages/Changelog'
 import { Diagnostics } from './pages/Diagnostics'
+import { Session } from './pages/Session'
 import { inTauri } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/diagnostics" element={<Diagnostics />} />
+        <Route path="/session" element={<Session />} />
       </Routes>
       <WhatsNewModal />
     </Layout>

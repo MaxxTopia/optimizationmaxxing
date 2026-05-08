@@ -742,11 +742,11 @@
       ]
     },
     {
-      "id": "ps.power.ultimate-performance",
-      "title": "Add Ultimate Performance Power Plan",
+      "id": "ps.power.dt-tournament",
+      "title": "Add 'DT Tournament' Power Plan",
       "category": "powerplan",
-      "description": "Duplicates the hidden 'Ultimate Performance' power scheme so it appears in advanced power options. Removes ALL CPU/disk idle throttling — pairs with manually selecting it from the power dropdown after applying.",
-      "rationale": "Win10/11 ships Ultimate Performance hidden by default unless on Enterprise/Workstation SKUs. Duplicating exposes it on every SKU. Cross-validated by lecctron + reknotic. After apply, switch to it via Settings > Power.",
+      "description": "Duplicates the hidden Ultimate Performance scheme and renames it to 'DT Tournament' with a description that flags it as the optimizationmaxxing-tuned profile. Same primitives as Ultimate Performance — full CPU/disk idle throttling off — but BIOS thermal limits + per-core boost stop it from frying the rig. Pairs with manually selecting it from the power dropdown after apply.",
+      "rationale": "Win10/11 ships Ultimate Performance hidden unless on Enterprise/Workstation SKUs. We duplicate, then rename the clone so users can see at a glance which plan came from us. NOTE: 'doesn't fry the PC' is misleading — neither this plan nor any power plan can override BIOS thermal/power limits. The motherboard's PL1/PL2/IccMax + the CPU's thermal trip-point are still active. We just stop Windows from voluntarily under-clocking.",
       "riskLevel": 1,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -754,8 +754,8 @@
       "actions": [
         {
           "kind": "powershell_script",
-          "apply": "powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 | Out-Null",
-          "revert": "$plans = powercfg /list | Select-String 'Ultimate Performance'; foreach ($line in $plans) { if ($line -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { powercfg /delete $matches[1] | Out-Null } }"
+          "apply": "$out = powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61; if ($out -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { $g = $matches[1]; powercfg /changename $g 'DT Tournament' 'optimizationmaxxing-tuned for tournament play. Clones Ultimate Performance + custom name. BIOS thermal limits still active.' | Out-Null }",
+          "revert": "$plans = powercfg /list | Select-String 'DT Tournament'; foreach ($line in $plans) { if ($line -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { powercfg /delete $matches[1] | Out-Null } }"
         }
       ],
       "targets": { "osMinBuild": 17134 }
@@ -1954,6 +1954,62 @@
           "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\msi-mode.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; $classes = @('Display','Net','AudioEndpoint'); foreach ($c in $classes) { Get-PnpDevice -Class $c -PresentOnly -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'OK' -and $_.InstanceId -like 'PCI\\\\*' } | ForEach-Object { $regPath = \"HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\$($_.InstanceId)\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties\"; if (Test-Path $regPath) { try { Set-ItemProperty -Path $regPath -Name MSISupported -Value 0 -Type DWord -ErrorAction Stop; Add-Content $f \"$t REVERT $($_.FriendlyName) ($c)\" } catch { Add-Content $f \"$t REVERT-FAIL $($_.FriendlyName) ($c) : $($_.Exception.Message)\" } } } }"
         }
       ]
+    },
+    {
+      "id": "net.nic.rsc.disable",
+      "title": "NIC: Disable Receive Segment Coalescing (RSC) — fiber",
+      "category": "network",
+      "description": "Disables Receive Segment Coalescing on every up-physical NIC. RSC merges incoming TCP segments into larger ones at the NIC level to reduce CPU interrupt load — but on a high-end fiber connection, modern CPUs can handle the per-segment work and benefit from lower-latency packet delivery vs the coalescing batch delay.",
+      "rationale": "Source: Microsoft Learn `Set-NetAdapterRsc` cmdlet docs + competitive-FPS community testing. RSC was designed for 1Gbps NICs feeding slow CPUs — modern 2.5/10Gbps + Ryzen/Raptor Lake doesn't need the help. Disabling = packets delivered as the NIC receives them, lower latency at slightly higher CPU. Pairs with `net.nic.interrupt-moderation.disable`. Logs to `%LOCALAPPDATA%\\optmaxxing\\nic-tweak.log`.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Disable-NetAdapterRsc -Name $n -ErrorAction Stop; Add-Content $f \"$t APPLY $n : RSC -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } }",
+          "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Enable-NetAdapterRsc -Name $n -ErrorAction Stop; Add-Content $f \"$t REVERT $n : RSC -> Enabled\" } catch { } }"
+        }
+      ]
+    },
+    {
+      "id": "net.nic.checksum-offload.disable",
+      "title": "NIC: Disable TCP/IPv4 Checksum Offload",
+      "category": "network",
+      "description": "Disables hardware checksum offloading for IPv4 + TCP on every up-physical NIC. The CPU computes packet checksums instead of the NIC.",
+      "rationale": "Source: Microsoft Learn `Set-NetAdapterChecksumOffload` + community testing. On a fast modern CPU (Ryzen 5xxx+, Raptor Lake), CPU-computed checksums add < 1% sustained CPU but eliminate one source of variable latency in the NIC's packet-processing pipeline — pros report more consistent frametimes after disable. Tradeoff: slightly higher CPU during heavy network load. Skip on laptops / mid-range systems where the offload is genuinely saving cycles.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Disable-NetAdapterChecksumOffload -Name $n -ErrorAction Stop; Add-Content $f \"$t APPLY $n : ChecksumOffload -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } }",
+          "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Enable-NetAdapterChecksumOffload -Name $n -ErrorAction Stop; Add-Content $f \"$t REVERT $n : ChecksumOffload -> Enabled\" } catch { } }"
+        }
+      ],
+      "targets": { "formFactor": ["desktop"] }
+    },
+    {
+      "id": "net.nic.lso.disable",
+      "title": "NIC: Disable Large Send Offload (LSO)",
+      "category": "network",
+      "description": "Disables Large Send Offload on every up-physical NIC. LSO lets the NIC fragment large outbound TCP segments — disabling it makes the CPU do that work, eliminating one source of NIC-side queuing delay.",
+      "rationale": "LSO is a throughput optimization (helps file transfers + bulk uploads); for game traffic which is usually small UDP packets it does nothing useful, and on some Killer/Realtek consumer NICs the LSO logic introduces measurable latency variance. Tradeoff: slower sustained large uploads. Apply on dedicated gaming rigs; skip on a workstation that's also pulling video uploads.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Disable-NetAdapterLso -Name $n -ErrorAction Stop; Add-Content $f \"$t APPLY $n : LSO -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } }",
+          "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Enable-NetAdapterLso -Name $n -ErrorAction Stop; Add-Content $f \"$t REVERT $n : LSO -> Enabled\" } catch { } }"
+        }
+      ],
+      "targets": { "formFactor": ["desktop"] }
     }
   ]
 }

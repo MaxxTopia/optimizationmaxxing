@@ -10,6 +10,7 @@ import perGameWindows from '../../resources/research/per-game-windows-version.md
 import amdIntel from '../../resources/research/amd-intel-features.md?raw'
 import biosPerChipset from '../../resources/research/bios-per-chipset.md?raw'
 import discordLowFps from '../../resources/research/discord-low-fps.md?raw'
+import recommendedGear from '../../resources/research/recommended-gear.md?raw'
 
 export interface ResearchArticle {
   id: string
@@ -76,5 +77,13 @@ export const RESEARCH: ResearchArticle[] = [
       'Hardware Acceleration off + Overlay off + Streamer Mode off + Reduce Motion. Why we can\'t automate this (Discord uses leveldb).',
     badge: 'APP',
     body: discordLowFps,
+  },
+  {
+    id: 'recommended-gear',
+    title: 'Recommended gear — what to look for, not which to buy',
+    blurb:
+      'Mouse / keyboard / pad / monitor / network frameworks. Specs that matter, what we don\'t ship affiliate links for, what an actual VIP edition would unlock.',
+    badge: 'GEAR',
+    body: recommendedGear,
   },
 ]

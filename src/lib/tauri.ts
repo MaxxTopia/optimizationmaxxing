@@ -366,3 +366,35 @@ export interface VbsReport {
 export async function vbsReport(): Promise<VbsReport> {
   return invoke<VbsReport>('vbs_report')
 }
+
+export interface ProcessEntry {
+  pid: number
+  name: string
+  ramMb: number
+  /** "launcher" | "voice" | "music" | "browser" | "overlay" | "other" */
+  category: string
+}
+
+export interface SuspendResult {
+  pid: number
+  ok: boolean
+  error: string | null
+}
+
+/** Lists currently-running processes that match our curated list of "competing
+ *  app" candidates: rival game launchers (Steam, Riot, Epic, EA, Battle.net,
+ *  Galaxy, Ubisoft, Xbox, osu, etc.) plus voice (Discord), music (Spotify),
+ *  and overlay/recorder processes. Empty array = nothing competing is running. */
+export async function listSessionCandidates(): Promise<ProcessEntry[]> {
+  return invoke<ProcessEntry[]>('list_session_candidates')
+}
+
+/** Suspends each PID (Windows process suspend — no CPU, no IO, but still in RAM).
+ *  Per-PID results so the UI can flag protected/dead PIDs individually. */
+export async function sessionSuspend(pids: number[]): Promise<SuspendResult[]> {
+  return invoke<SuspendResult[]>('session_suspend', { pids })
+}
+
+export async function sessionResume(pids: number[]): Promise<SuspendResult[]> {
+  return invoke<SuspendResult[]>('session_resume', { pids })
+}

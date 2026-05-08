@@ -605,6 +605,144 @@ pub fn read_vbs_report() -> anyhow::Result<VbsReport> {
     })
 }
 
+// ---------- Game Session: suspend/resume competing apps ----------
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProcessEntry {
+    pub pid: u32,
+    pub name: String,
+    pub ram_mb: u64,
+    /// "launcher" | "voice" | "music" | "browser" | "overlay" | "other"
+    pub category: String,
+}
+
+/// Curated list of process names that are typical "suspend candidates" when
+/// you're focusing on one game. Names are matched case-insensitive against
+/// `Process.name()` (which is the executable filename, not the full path).
+fn known_candidates() -> &'static [(&'static str, &'static str)] {
+    &[
+        // Game launchers
+        ("steam.exe", "launcher"),
+        ("steamwebhelper.exe", "launcher"),
+        ("epicgameslauncher.exe", "launcher"),
+        ("epicwebhelper.exe", "launcher"),
+        ("riotclientservices.exe", "launcher"),
+        ("riotclientux.exe", "launcher"),
+        ("riotclientuxrender.exe", "launcher"),
+        ("leagueclient.exe", "launcher"),
+        ("leagueclientux.exe", "launcher"),
+        ("leagueclientuxrender.exe", "launcher"),
+        ("valorant.exe", "launcher"),
+        ("ea.exe", "launcher"),
+        ("ealauncher.exe", "launcher"),
+        ("eadesktop.exe", "launcher"),
+        ("battle.net.exe", "launcher"),
+        ("battle.net helper.exe", "launcher"),
+        ("blizzard.exe", "launcher"),
+        ("agent.exe", "launcher"), // Battle.net agent (also other apps; check)
+        ("galaxyclient.exe", "launcher"),
+        ("upc.exe", "launcher"), // Ubisoft Connect
+        ("ubisoft connect.exe", "launcher"),
+        ("uplaywebcore.exe", "launcher"),
+        ("rockstargameslauncher.exe", "launcher"),
+        ("xboxapp.exe", "launcher"),
+        ("gamingservices.exe", "launcher"),
+        ("osu!.exe", "launcher"),
+        // Voice / music — leave running by default but expose for opt-in
+        ("discord.exe", "voice"),
+        ("spotify.exe", "music"),
+        ("spotifywebhelper.exe", "music"),
+        // Overlays + recorders
+        ("nvcontainer.exe", "overlay"),
+        ("nvbroadcast.exe", "overlay"),
+        ("obs64.exe", "overlay"),
+        ("obs32.exe", "overlay"),
+        ("xboxgamebar.exe", "overlay"),
+        ("rtss.exe", "overlay"),
+    ]
+}
+
+pub fn list_session_candidates() -> Vec<ProcessEntry> {
+    use sysinfo::System;
+    let sys = System::new_all();
+
+    let mut out: Vec<ProcessEntry> = Vec::new();
+    let known = known_candidates();
+    for (pid, p) in sys.processes() {
+        // sysinfo 0.32: name() returns &OsStr; lowercase for matching.
+        let name_os = p.name();
+        let name_string = name_os.to_string_lossy();
+        let name_lc = name_string.to_lowercase();
+        let cat = known.iter().find(|(n, _)| *n == name_lc).map(|(_, c)| *c);
+        if let Some(category) = cat {
+            out.push(ProcessEntry {
+                pid: pid.as_u32(),
+                name: name_string.into_owned(),
+                ram_mb: p.memory() / (1024 * 1024),
+                category: category.to_string(),
+            });
+        }
+    }
+    out.sort_by(|a, b| a.category.cmp(&b.category).then(a.name.cmp(&b.name)));
+    out
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuspendResult {
+    pub pid: u32,
+    pub ok: bool,
+    pub error: Option<String>,
+}
+
+/// Suspend a list of PIDs by shelling to PowerShell `Suspend-Process`. Each
+/// PID processed independently; failures (anti-cheat-protected processes,
+/// already-exited PIDs) recorded per-PID. Returns one result per input pid.
+pub fn session_suspend(pids: Vec<u32>) -> Vec<SuspendResult> {
+    pids.into_iter()
+        .map(|pid| match Command::new("powershell.exe")
+            .args([
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                &format!("Suspend-Process -Id {pid} -ErrorAction Stop"),
+            ])
+            .output()
+        {
+            Ok(o) if o.status.success() => SuspendResult { pid, ok: true, error: None },
+            Ok(o) => SuspendResult {
+                pid,
+                ok: false,
+                error: Some(String::from_utf8_lossy(&o.stderr).trim().to_string()),
+            },
+            Err(e) => SuspendResult { pid, ok: false, error: Some(e.to_string()) },
+        })
+        .collect()
+}
+
+pub fn session_resume(pids: Vec<u32>) -> Vec<SuspendResult> {
+    pids.into_iter()
+        .map(|pid| match Command::new("powershell.exe")
+            .args([
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                &format!("Resume-Process -Id {pid} -ErrorAction Stop"),
+            ])
+            .output()
+        {
+            Ok(o) if o.status.success() => SuspendResult { pid, ok: true, error: None },
+            Ok(o) => SuspendResult {
+                pid,
+                ok: false,
+                error: Some(String::from_utf8_lossy(&o.stderr).trim().to_string()),
+            },
+            Err(e) => SuspendResult { pid, ok: false, error: Some(e.to_string()) },
+        })
+        .collect()
+}
+
 fn wmi_vbs_status() -> anyhow::Result<u32> {
     let com = wmi::COMLibrary::new()?;
     let wmi_con = WMIConnection::with_namespace_path("root\\Microsoft\\Windows\\DeviceGuard", com)?;

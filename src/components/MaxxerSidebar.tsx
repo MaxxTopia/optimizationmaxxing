@@ -156,7 +156,8 @@ function resolveActiveProductId(pathname: string): string {
     pathname.startsWith('/settings') ||
     pathname.startsWith('/toolkit') ||
     pathname.startsWith('/changelog') ||
-    pathname.startsWith('/diagnostics')
+    pathname.startsWith('/diagnostics') ||
+    pathname.startsWith('/session')
   ) {
     return 'opt'
   }

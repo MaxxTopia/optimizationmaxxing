@@ -322,6 +322,27 @@ async fn vbs_report() -> Result<toolkit::VbsReport, String> {
 /// guarantees the neon-ripple animation gets at least one full sweep before
 /// the splash blinks out, even on fast hardware.
 #[tauri::command]
+async fn list_session_candidates() -> Result<Vec<toolkit::ProcessEntry>, String> {
+    tokio::task::spawn_blocking(|| Ok(toolkit::list_session_candidates()))
+        .await
+        .map_err(|e| format!("session list task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn session_suspend(pids: Vec<u32>) -> Result<Vec<toolkit::SuspendResult>, String> {
+    tokio::task::spawn_blocking(move || Ok(toolkit::session_suspend(pids)))
+        .await
+        .map_err(|e| format!("suspend task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn session_resume(pids: Vec<u32>) -> Result<Vec<toolkit::SuspendResult>, String> {
+    tokio::task::spawn_blocking(move || Ok(toolkit::session_resume(pids)))
+        .await
+        .map_err(|e| format!("resume task failed: {e}"))?
+}
+
+#[tauri::command]
 async fn close_splashscreen(app: tauri::AppHandle) -> Result<(), String> {
     if let Some(splash) = app.get_webview_window("splash") {
         let _ = splash.close();
@@ -434,6 +455,9 @@ pub fn run() {
             pcie_links,
             microcode_report,
             vbs_report,
+            list_session_candidates,
+            session_suspend,
+            session_resume,
             close_splashscreen,
         ])
         .run(tauri::generate_context!())
