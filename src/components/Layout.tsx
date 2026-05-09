@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { to: '/', label: 'Dashboard' },
   { to: '/tweaks', label: 'Tweaks' },
   { to: '/presets', label: 'Presets' },
+  { to: '/guides', label: 'Guides' },
   { to: '/toolkit', label: 'Toolkit' },
   { to: '/diagnostics', label: 'Diagnostics' },
   { to: '/session', label: 'Session' },
@@ -20,9 +21,9 @@ export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
 
   return (
-    <div className="flex min-h-screen bg-bg-base text-text">
+    <div className="app-shell flex min-h-screen bg-bg-base text-text">
       <MaxxerSidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-10 backdrop-blur bg-bg-base border-b border-border">
           <div className="flex items-center justify-between gap-4 px-6 py-3">
             <div className="flex items-center gap-6">

@@ -7,6 +7,7 @@ import { Tweaks } from './pages/Tweaks'
 import { Presets } from './pages/Presets'
 import { Profile } from './pages/Profile'
 import { Toolkit } from './pages/Toolkit'
+import { Guides } from './pages/Guides'
 import { Pricing } from './pages/Pricing'
 import { Settings } from './pages/Settings'
 import { Changelog } from './pages/Changelog'
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/tweaks" element={<Tweaks />} />
         <Route path="/presets" element={<Presets />} />
         <Route path="/toolkit" element={<Toolkit />} />
+        <Route path="/guides" element={<Guides />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/settings" element={<Settings />} />

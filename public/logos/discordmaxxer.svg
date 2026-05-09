@@ -1,0 +1,229 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="sl-bg" cx="35%" cy="32%" r="78%">
+      <stop offset="0%"   stop-color="#8a98ff"/>
+      <stop offset="35%"  stop-color="#5865F2"/>
+      <stop offset="75%"  stop-color="#404eed"/>
+      <stop offset="100%" stop-color="#2c34c4"/>
+    </radialGradient>
+    <linearGradient id="sl-hi" x1="50%" y1="0%" x2="50%" y2="55%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="sl-shade" x1="50%" y1="60%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.22"/>
+    </linearGradient>
+    <!-- Bubble face — DARK navy-blurple. Mirrors Discord's actual UI palette
+         instead of the iMessage white-bubble convention, and gives the
+         magenta seam + plasma cap a stage to GLOW against. -->
+    <linearGradient id="sl-bubble" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#1e2348"/>
+      <stop offset="60%"  stop-color="#161938"/>
+      <stop offset="100%" stop-color="#0f1129"/>
+    </linearGradient>
+
+    <!-- Bright bar gradients — designed for visibility on the dark face. -->
+    <linearGradient id="sl-barA" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#ffaaff"/>
+      <stop offset="100%" stop-color="#ff5dff"/>
+    </linearGradient>
+    <linearGradient id="sl-barB" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#d0a4ff"/>
+      <stop offset="100%" stop-color="#9a5fff"/>
+    </linearGradient>
+    <linearGradient id="sl-barC" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#a5b1ff"/>
+      <stop offset="100%" stop-color="#5865F2"/>
+    </linearGradient>
+
+    <!-- Maxxer brand-shimmer — magenta → indigo gradient. Same colors as the
+         "maxxer" suffix in the wordmark. -->
+    <linearGradient id="sl-maxxer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#ff86ff"/>
+      <stop offset="50%"  stop-color="#e25bff"/>
+      <stop offset="100%" stop-color="#7d51f7"/>
+    </linearGradient>
+
+    <!-- Hot magenta energy seam — saturated and bright. -->
+    <linearGradient id="sl-seam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#ffd6ff"/>
+      <stop offset="50%"  stop-color="#ff5dff"/>
+      <stop offset="100%" stop-color="#c026ff"/>
+    </linearGradient>
+
+    <filter id="sl-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#0a0a40" flood-opacity="0.42"/>
+    </filter>
+    <filter id="sl-fragShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#3d0066" flood-opacity="0.55"/>
+    </filter>
+
+    <!-- Magenta plasma glow — used on the slice seam + shards + outer ring. -->
+    <filter id="sl-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="sl-bigGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <clipPath id="sl-circle">
+      <circle cx="512" cy="512" r="448"/>
+    </clipPath>
+    <clipPath id="sl-bubbleClip">
+      <path d="M 350 304
+               L 568 304
+               L 766 624
+               A 110 110 0 0 1 656 720
+               L 470 720
+               L 360 808
+               L 386 720
+               L 320 720
+               A 110 110 0 0 1 210 610
+               L 210 414
+               A 110 110 0 0 1 320 304 Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1024" height="1024" fill="transparent"/>
+
+  <!-- Circular face. -->
+  <circle cx="512" cy="512" r="448" fill="url(#sl-bg)"/>
+  <g clip-path="url(#sl-circle)">
+    <rect x="64" y="64" width="896" height="896" fill="url(#sl-hi)"/>
+    <rect x="64" y="64" width="896" height="896" fill="url(#sl-shade)"/>
+  </g>
+  <circle cx="512" cy="512" r="447"
+          fill="none" stroke="#ffffff" stroke-opacity="0.20" stroke-width="2"/>
+
+  <!-- Outer maxxer-magenta ring — boosted: thicker, with a soft halo. -->
+  <g filter="url(#sl-bigGlow)">
+    <circle cx="512" cy="512" r="455"
+            fill="none" stroke="url(#sl-maxxer)" stroke-opacity="0.55" stroke-width="5"/>
+  </g>
+  <circle cx="512" cy="512" r="455"
+          fill="none" stroke="url(#sl-maxxer)" stroke-opacity="0.85" stroke-width="3"/>
+
+  <!-- Suite-signature speed accents (white) — fragment exhaust. -->
+  <g stroke="#ffffff" stroke-opacity="0.26" stroke-linecap="round" fill="none">
+    <line x1="772" y1="232" x2="858" y2="272" stroke-width="14"/>
+    <line x1="788" y1="304" x2="852" y2="332" stroke-width="11"/>
+    <line x1="804" y1="364" x2="848" y2="384" stroke-width="9"/>
+  </g>
+
+  <!-- THE BUBBLE -->
+  <g filter="url(#sl-shadow)">
+    <path d="M 350 304
+             L 568 304
+             L 766 624
+             A 110 110 0 0 1 656 720
+             L 470 720
+             L 360 808
+             L 386 720
+             L 320 720
+             A 110 110 0 0 1 210 610
+             L 210 414
+             A 110 110 0 0 1 320 304 Z"
+          fill="url(#sl-bubble)"/>
+  </g>
+
+  <!-- Inner magenta glow that leaks along the cut edge from inside the bubble.
+       Painted as a thick magenta stroke clipped to the bubble path so it
+       appears only on the slice edge and bleeds inward. -->
+  <g clip-path="url(#sl-bubbleClip)">
+    <g filter="url(#sl-bigGlow)">
+      <line x1="568" y1="304" x2="766" y2="624"
+            stroke="url(#sl-seam)" stroke-opacity="0.85" stroke-width="42"/>
+    </g>
+  </g>
+
+  <!-- THE GLOWING SLICE SEAM — bright magenta plasma line right on the cut
+       edge. The whole point of the v3 redesign — makes the slice feel like
+       an *act*, not just a shape. -->
+  <g filter="url(#sl-glow)">
+    <line x1="568" y1="304" x2="766" y2="624"
+          stroke="url(#sl-seam)" stroke-width="14" stroke-linecap="round"/>
+  </g>
+  <line x1="568" y1="304" x2="766" y2="624"
+        stroke="#ffe0ff" stroke-width="3" stroke-linecap="round" stroke-opacity="0.95"/>
+
+  <!-- SHATTERED FRAGMENT — three progressively smaller magenta shards
+       fanning out from the slice. Replaces the single boring triangle. -->
+  <!-- Shard 1: largest, closest to the bubble, full opacity. -->
+  <g filter="url(#sl-fragShadow)">
+    <path d="M 626 252
+             L 712 252
+             L 798 388
+             Z"
+          fill="url(#sl-maxxer)" opacity="0.92"/>
+  </g>
+  <!-- Shard 2: medium, rotated, drifting up. -->
+  <g transform="rotate(18 758 198)" opacity="0.72">
+    <path d="M 728 174
+             L 800 178
+             L 776 230
+             Z"
+          fill="url(#sl-maxxer)" filter="url(#sl-glow)"/>
+  </g>
+  <!-- Shard 3: smallest, furthest, dissolving into the speed accents. -->
+  <g transform="rotate(35 818 168)" opacity="0.55">
+    <path d="M 808 152
+             L 852 156
+             L 836 196
+             Z"
+          fill="url(#sl-maxxer)" filter="url(#sl-glow)"/>
+  </g>
+
+  <!-- Particle trail — magenta sparks dissolving into white toward the
+       suite speed-accents. -->
+  <g>
+    <circle cx="700" cy="232" r="9" fill="url(#sl-maxxer)" filter="url(#sl-glow)" opacity="0.78"/>
+    <circle cx="730" cy="220" r="6" fill="#ff5dff" opacity="0.60"/>
+    <circle cx="754" cy="208" r="4" fill="#ffd6ff" opacity="0.55"/>
+    <circle cx="772" cy="200" r="3" fill="#ffffff" opacity="0.45"/>
+  </g>
+
+  <!-- THE CENTER MARK — 3 ascending bars on a dark bubble face.
+       Three bars = the universal cellular-signal-strength icon, instantly
+       readable as "max signal" at any size. Wider strokes survive the
+       32px favicon scale. Bars glow on the dark face instead of just
+       sitting on white. Magenta-on-the-left → blurple-on-the-right
+       paints the brand arc: maxxer (bloat) optimized into Discord. -->
+
+  <!-- Faint baseline glow — a thin bright line under the bars, "the floor". -->
+  <line x1="368" y1="628" x2="500" y2="628"
+        stroke="#5865F2" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Bar 1 — shortest, hot magenta with halo glow. -->
+  <g filter="url(#sl-glow)" opacity="0.55">
+    <rect x="372" y="544" width="28" height="80" rx="5" fill="url(#sl-barA)"/>
+  </g>
+  <rect x="372" y="544" width="28" height="80" rx="5" fill="url(#sl-barA)"/>
+
+  <!-- Bar 2 — mid, violet transition. -->
+  <g filter="url(#sl-glow)" opacity="0.55">
+    <rect x="418" y="476" width="28" height="148" rx="5" fill="url(#sl-barB)"/>
+  </g>
+  <rect x="418" y="476" width="28" height="148" rx="5" fill="url(#sl-barB)"/>
+
+  <!-- Bar 3 — tallest, Discord blurple. "Max signal achieved." -->
+  <g filter="url(#sl-glow)" opacity="0.55">
+    <rect x="464" y="408" width="28" height="216" rx="5" fill="url(#sl-barC)"/>
+  </g>
+  <rect x="464" y="408" width="28" height="216" rx="5" fill="url(#sl-barC)"/>
+
+  <!-- Plasma peak cap on the tallest bar — visually rhymes with the
+       slice glow above. Same magenta seam, contained in a dot. -->
+  <g filter="url(#sl-bigGlow)">
+    <circle cx="478" cy="406" r="14" fill="url(#sl-seam)"/>
+  </g>
+  <circle cx="478" cy="406" r="8" fill="#ffe0ff"/>
+</svg>

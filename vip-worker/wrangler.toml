@@ -1,0 +1,18 @@
+name = "optmaxxing-vip"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# KV namespace for the first-claim-wins ledger. Created via:
+#   wrangler kv namespace create vip-claims
+# Then paste the returned id below + run `wrangler deploy`.
+[[kv_namespaces]]
+binding = "VIP_CLAIMS"
+id = "06752792b28c4e5e9d3ed3d48d3278ec"
+
+# Optional: route to vip.maxxtopia.com after the DNS record exists.
+# Uncomment + adjust when ready. Until then, the workers.dev subdomain
+# (https://optmaxxing-vip.<your-account>.workers.dev) works as-is.
+#
+# [[routes]]
+# pattern = "vip.maxxtopia.com/*"
+# custom_domain = true

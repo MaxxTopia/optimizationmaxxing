@@ -11,13 +11,13 @@
 //!   `{ "found": "unknown"                }` — couldn't read (revert = deletevalue)
 
 use anyhow::anyhow;
-use std::process::Command;
 
 use super::actions::TweakAction;
+use crate::process_helpers::hidden_bcdedit;
 
 /// Run `bcdedit /enum {current} /v` and return stdout, or None on failure.
 fn enum_bcd() -> Option<String> {
-    let out = Command::new("bcdedit")
+    let out = hidden_bcdedit()
         .args(["/enum", "{current}", "/v"])
         .output()
         .ok()?;

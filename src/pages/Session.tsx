@@ -7,6 +7,7 @@ import {
   type ProcessEntry,
   type SuspendResult,
 } from '../lib/tauri'
+import { GAMES, type Game } from '../lib/games'
 
 /**
  * Game Session mode. "Today I'm focusing on Fortnite" — pick the game, see
@@ -29,47 +30,18 @@ interface ActiveSession {
   suspendedPids: number[]
 }
 
-interface GameProfile {
-  id: string
+// Session-page profile = central Game registry + a synthetic "custom" entry
+// that suspends everything competing.
+type SessionProfile = (Game | {
+  id: 'custom'
   label: string
   glyph: string
-  /** Process names (lowercase) we DON'T touch when this game is selected
-   *  because the game itself depends on them. */
   keepNames: string[]
-  /** What to pre-check by category. */
   defaultSuspend: { launcher: boolean; voice: boolean; music: boolean; overlay: boolean }
-}
+})
 
-const PROFILES: GameProfile[] = [
-  {
-    id: 'fortnite',
-    label: 'Fortnite',
-    glyph: '🎯',
-    keepNames: ['epicgameslauncher.exe', 'epicwebhelper.exe'],
-    defaultSuspend: { launcher: true, voice: false, music: false, overlay: false },
-  },
-  {
-    id: 'valorant',
-    label: 'Valorant',
-    glyph: '🔫',
-    // RiotClient + Vanguard MUST stay alive
-    keepNames: ['riotclientservices.exe', 'riotclientux.exe', 'riotclientuxrender.exe', 'valorant.exe', 'vgc.exe', 'vgtray.exe'],
-    defaultSuspend: { launcher: true, voice: false, music: false, overlay: false },
-  },
-  {
-    id: 'cs2',
-    label: 'CS2 / Steam game',
-    glyph: '⚡',
-    keepNames: ['steam.exe', 'steamwebhelper.exe', 'cs2.exe'],
-    defaultSuspend: { launcher: true, voice: false, music: false, overlay: false },
-  },
-  {
-    id: 'osu',
-    label: 'osu!',
-    glyph: '🎵',
-    keepNames: ['osu!.exe'],
-    defaultSuspend: { launcher: true, voice: false, music: false, overlay: false },
-  },
+const PROFILES: SessionProfile[] = [
+  ...GAMES,
   {
     id: 'custom',
     label: 'Custom (suspend everything competing)',
@@ -327,7 +299,7 @@ function CategoryGroup({
 }: {
   category: string
   rows: ProcessEntry[]
-  profile: GameProfile
+  profile: SessionProfile
   selected: Record<number, boolean>
   setSelected: (s: Record<number, boolean>) => void
 }) {

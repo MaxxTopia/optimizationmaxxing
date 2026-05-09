@@ -304,9 +304,22 @@ export function Presets() {
                 }`}
               >
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-text-subtle">
-                    {p.archetype}
-                    {p.vipGate === 'vip' && <span className="ml-2 text-accent">VIP</span>}
+                  <p className="text-xs uppercase tracking-widest text-text-subtle flex items-center gap-2 flex-wrap">
+                    <span>{p.archetype}</span>
+                    {p.vipGate === 'vip' && (
+                      <span
+                        title="VIP unlocks this preset — see Pricing"
+                        className="text-[10px] px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1"
+                        style={{
+                          background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #cc9900 100%)',
+                          color: '#3a2a00',
+                          border: '1px solid rgba(255, 215, 0, 0.65)',
+                          boxShadow: '0 0 10px rgba(255, 215, 0, 0.35)',
+                        }}
+                      >
+                        <span aria-hidden="true">👑</span> VIP
+                      </span>
+                    )}
                   </p>
                   <h2 className="text-xl font-bold">
                     {p.glyph && <span className="mr-2" aria-hidden>{p.glyph}</span>}

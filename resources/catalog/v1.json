@@ -618,6 +618,7 @@
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
       "targets": { "cpuVendor": ["intel"] },
+      "tournamentCompliance": { "fortnite": "risk", "valorant": "risk", "warzone": "risk", "overwatch": "risk" },
       "actions": [
         {
           "kind": "registry_set",
@@ -1418,6 +1419,7 @@
       "anticheatRisk": "medium",
       "rebootRequired": "reboot",
       "targets": { "osMinBuild": 19041 },
+      "tournamentCompliance": { "valorant": "risk" },
       "actions": [
         {
           "kind": "bcdedit_set",
@@ -1631,6 +1633,7 @@
       "vipGate": "vip",
       "anticheatRisk": "medium",
       "rebootRequired": "reboot",
+      "tournamentCompliance": { "valorant": "risk", "warzone": "risk", "overwatch": "risk" },
       "actions": [
         {
           "kind": "registry_set",
@@ -1660,6 +1663,8 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
+      "applicableGames": ["fortnite"],
+      "tournamentCompliance": { "fortnite": "safe" },
       "actions": [
         {
           "kind": "registry_set",
@@ -1681,6 +1686,8 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
+      "applicableGames": ["valorant"],
+      "tournamentCompliance": { "valorant": "safe" },
       "actions": [
         {
           "kind": "registry_set",
@@ -1702,6 +1709,8 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
+      "applicableGames": ["cs2"],
+      "tournamentCompliance": { "cs2": "safe" },
       "actions": [
         {
           "kind": "registry_set",

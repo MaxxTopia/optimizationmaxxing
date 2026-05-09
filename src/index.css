@@ -25,6 +25,13 @@
     --border-glow: rgba(255, 70, 85, 0.4);
     --font-body: 'Inter', system-ui, sans-serif;
     --font-heading: 'Inter', system-ui, sans-serif;
+
+    /* TikTok-pace motion tokens. Applied uniformly across all 5 themes;
+     * per-theme distinction comes from typography + density + glow speed,
+     * not from skipping motion. (Locked decision 2026-05-08.) */
+    --motion-snap: 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    --motion-arc: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    --motion-glow: 340ms ease-out;
   }
 
   html, body, #root {
@@ -87,7 +94,10 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.3),
     0 2px 6px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(0, 0, 0, 0.25);
-  transition: box-shadow 180ms ease, transform 120ms ease, border-color 180ms ease;
+  transition:
+    box-shadow var(--motion-glow),
+    transform var(--motion-snap),
+    border-color var(--motion-snap);
 }
 .btn-chrome:hover:not(:disabled) {
   border-color: rgba(255, 255, 255, 0.7);
@@ -108,14 +118,28 @@
 
 /* Card surface — themed bg with subtle border + hover lift. */
 .surface-card {
+  position: relative;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition:
+    border-color var(--motion-arc),
+    box-shadow var(--motion-glow),
+    transform var(--motion-arc);
 }
 .surface-card:hover {
   border-color: var(--border-glow);
   box-shadow: 0 0 18px var(--border-glow);
+  transform: translateY(-1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .surface-card,
+  .btn-chrome,
+  .surface-card:hover,
+  .btn-chrome:hover:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* Hero ambient gradient — themed accent drift. */
@@ -145,6 +169,39 @@ body.profile-dmc .surface-card {
 body.profile-bo3 .btn-chrome {
   border-radius: 2px; /* tactical, sharp */
 }
+
+/* Per-theme motion-glow tuning — same vocabulary, different tone.
+ * Sonic = kinetic (faster glow), BO3 Zombies + DMC = heavy (slower glow). */
+body.profile-sonic { --motion-glow: 220ms ease-out; }
+body.profile-bo3   { --motion-glow: 460ms ease-out; }
+body.profile-dmc   { --motion-glow: 420ms ease-out; }
+
+/* BO3 Zombies — Pack-a-Punch gold serifs with a faint blood-drip text-shadow
+ * on the big display headings, plus a parchment fade at the top of every
+ * surface card so the whole frame reads as Origins crypt rather than
+ * BO3-multiplayer corporate. */
+body.profile-bo3 h1,
+body.profile-bo3 h2 {
+  font-family: 'Pirata One', 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 8px rgba(91, 26, 26, 0.5);
+}
+body.profile-bo3 .surface-card {
+  background-image: linear-gradient(180deg, rgba(212, 175, 55, 0.04), transparent 70%);
+}
+
+/* Akatsuki — Cinzel display serifs over the void; .accent-glyph rule lets
+ * the RingGauge SVGs paint a faint gold concentric ring (Sharingan tomoe). */
+body.profile-akatsuki h1,
+body.profile-akatsuki h2 {
+  font-family: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+body.profile-akatsuki .accent-glyph {
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.35));
+}
+
 body.profile-sonic h1,
 body.profile-sonic h2 {
   text-transform: uppercase;
@@ -157,6 +214,11 @@ body.profile-val .surface-card::before {
   pointer-events: none;
   border-radius: inherit;
   border: 1px solid rgba(255, 255, 255, 0.04);
+}
+body.profile-val h1,
+body.profile-val h2 {
+  letter-spacing: -0.01em;
+  font-weight: 600;
 }
 
 /* Research-article body styling — applied to the rendered markdown. */
@@ -226,4 +288,423 @@ body.profile-val .surface-card::before {
   background: var(--bg-raised);
   color: var(--text);
   font-weight: 600;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Maxxer suite sidebar — ported from maxxtopia.com so the desktop app
+   reads as the same product family as the website.
+   ════════════════════════════════════════════════════════════════════ */
+
+.maxxer-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  background: rgba(10, 6, 18, 0.85);
+  border-right: 1px solid var(--border);
+}
+
+/* When the sidebar is open, push the app-shell content right so the rail
+ * doesn't overlap the topnav + page content. The toggle is the
+ * `sidebar-collapsed` body class we set in MaxxerSidebar. */
+@media (min-width: 1024px) {
+  .app-shell { padding-left: 64px; }
+  body.sidebar-collapsed .app-shell { padding-left: 0; }
+}
+
+.maxxer-sidebar-opener {
+  position: fixed;
+  left: 14px;
+  top: 70px;
+  z-index: 31;
+}
+
+.maxxer-sidebar-close {
+  position: absolute;
+  right: -16px;
+  top: 10px;
+  z-index: 32;
+}
+
+.maxxer-sidebar-root {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 220ms ease, transform 220ms ease;
+  margin-top: 36px;
+}
+.maxxer-sidebar-root:hover {
+  border-color: var(--border-glow);
+  transform: scale(1.04);
+}
+.sidebar-logo-glyph { overflow: visible; }
+.sidebar-logo-cyan {
+  transform: translate(1.1px, 0.4px);
+  opacity: 0.9;
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sidebar-logo-magenta {
+  transform: translate(-1.1px, -0.4px);
+  opacity: 0.9;
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.maxxer-sidebar-root:hover .sidebar-logo-cyan    { transform: translate(2.2px, 0.7px); }
+.maxxer-sidebar-root:hover .sidebar-logo-magenta { transform: translate(-2.2px, -0.7px); }
+
+.maxxer-sidebar-divider {
+  width: 24px;
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0 12px;
+}
+
+.maxxer-sidebar-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.maxxer-sidebar-item {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 240ms ease, background 240ms ease, transform 220ms ease, box-shadow 240ms ease;
+}
+.maxxer-sidebar-item:hover {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  color: var(--text);
+  transform: scale(1.04);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 18px color-mix(in oklab, var(--accent) 40%, transparent);
+}
+.maxxer-sidebar-item.is-active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  color: var(--text);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 22px color-mix(in oklab, var(--accent) 50%, transparent);
+  cursor: default;
+}
+.maxxer-sidebar-item.is-soon { opacity: 0.6; }
+.maxxer-sidebar-item.is-soon:hover { opacity: 1; }
+
+.maxxer-sidebar-item.is-zapping {
+  animation: zap-shake 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.maxxer-sidebar-item.is-zapping::before,
+.maxxer-sidebar-item.is-zapping::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 24px var(--accent), 0 0 48px var(--accent);
+  opacity: 0;
+}
+.maxxer-sidebar-item.is-zapping::before { animation: zap-ring 700ms cubic-bezier(0.16, 1, 0.3, 1); }
+.maxxer-sidebar-item.is-zapping::after  { animation: zap-ring 700ms cubic-bezier(0.16, 1, 0.3, 1) 120ms; }
+.maxxer-sidebar-item.is-zapping .maxxer-sidebar-icon img,
+.maxxer-sidebar-item.is-zapping .maxxer-sidebar-monogram {
+  animation: zap-glow 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes zap-ring {
+  0%   { transform: scale(1);   opacity: 1; }
+  70%  { transform: scale(2.2); opacity: 0.4; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+@keyframes zap-shake {
+  0%, 100% { transform: scale(1); }
+  20%      { transform: scale(1.18); filter: brightness(1.4); }
+  40%      { transform: scale(0.96) translateX(-1px); filter: brightness(1.2); }
+  60%      { transform: scale(1.06) translateX(1px); filter: brightness(1.3); }
+  80%      { transform: scale(1.0); filter: brightness(1.1); }
+}
+@keyframes zap-glow {
+  0%   { filter: drop-shadow(0 0 0 transparent) brightness(1) saturate(1); }
+  25%  { filter: drop-shadow(0 0 18px var(--accent)) brightness(1.6) saturate(1.4); }
+  60%  { filter: drop-shadow(0 0 12px var(--accent)) brightness(1.3) saturate(1.2); }
+  100% { filter: drop-shadow(0 0 0 transparent) brightness(1) saturate(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .maxxer-sidebar-item.is-zapping,
+  .maxxer-sidebar-item.is-zapping::before,
+  .maxxer-sidebar-item.is-zapping::after {
+    animation: none !important;
+  }
+}
+
+.maxxer-sidebar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+.maxxer-sidebar-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 4px rgba(0,0,0,0.4));
+}
+
+.maxxer-sidebar-monogram {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.maxxer-sidebar-lock {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-subtle);
+}
+
+.maxxer-sidebar-tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  white-space: nowrap;
+  padding: 5px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+  z-index: 40;
+}
+.maxxer-sidebar-item:hover .maxxer-sidebar-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Fidget-orb minimize/expand button — indigo radial gem with breathing
+   pulse, spinning arrow on hover, smoke trail behind the arrow.
+   ──────────────────────────────────────────────────────────────────── */
+.fidget-orb {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(129, 140, 248, 0.6);
+  background: radial-gradient(circle at 30% 30%, #6366f1 0%, #3b1d8e 45%, #14042a 100%);
+  box-shadow:
+    0 0 16px rgba(99, 102, 241, 0.55),
+    0 2px 10px rgba(0, 0, 0, 0.8),
+    inset 0 0 6px rgba(199, 210, 254, 0.35);
+  animation: fidget-breathe 5s ease-in-out infinite;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  overflow: visible;
+  padding: 0;
+}
+.fidget-orb::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, rgba(129, 140, 248, 0.4), rgba(10, 5, 30, 0.9) 65%);
+  z-index: 0;
+}
+.fidget-orb:hover {
+  box-shadow:
+    0 0 24px rgba(129, 140, 248, 0.95),
+    0 4px 18px rgba(0, 0, 0, 0.85),
+    inset 0 0 10px rgba(199, 210, 254, 0.6);
+}
+.fidget-orb:active { transform: scale(0.92); }
+
+.fidget-orb__arrow {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 900;
+  color: #e0e7ff;
+  text-shadow:
+    0 0 6px #c7d2fe,
+    0 0 12px rgba(129, 140, 248, 0.9),
+    0 0 20px rgba(99, 102, 241, 0.7);
+  filter: drop-shadow(0 0 3px rgba(165, 180, 252, 0.8));
+  transition: transform 180ms ease;
+}
+.fidget-orb:hover .fidget-orb__arrow {
+  animation: fidget-spin 1.6s cubic-bezier(0.3, 0, 0.4, 1) infinite;
+}
+.fidget-orb:active .fidget-orb__arrow {
+  animation: fidget-spin 0.6s cubic-bezier(0.3, 0, 0.4, 1) infinite;
+}
+
+@keyframes fidget-spin {
+  0%   { transform: rotate(0deg); }
+  30%  { transform: rotate(540deg); }
+  60%  { transform: rotate(900deg); }
+  100% { transform: rotate(1080deg); }
+}
+@keyframes fidget-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+.aura-smoke,
+.aura-smoke-3 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+.aura-smoke::before,
+.aura-smoke::after,
+.aura-smoke-3::before,
+.aura-smoke-3::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, rgba(199, 210, 254, 1), rgba(129, 140, 248, 0.95) 40%, rgba(67, 56, 202, 0.7) 75%);
+  filter: blur(1.5px);
+  box-shadow: 0 0 6px rgba(129, 140, 248, 0.8);
+}
+.aura-smoke-3::before,
+.aura-smoke-3::after {
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
+}
+.fidget-orb--minimize .aura-smoke::before   { animation: trail-left-1 2.2s ease-out infinite; }
+.fidget-orb--minimize .aura-smoke::after    { animation: trail-left-2 2.2s ease-out infinite 0.7s; }
+.fidget-orb--minimize .aura-smoke-3::before { animation: trail-left-3 2.2s ease-out infinite 1.1s; }
+.fidget-orb--minimize .aura-smoke-3::after  { animation: trail-left-1 2.2s ease-out infinite 1.5s; }
+.fidget-orb--expand .aura-smoke::before     { animation: trail-right-1 2.2s ease-out infinite; }
+.fidget-orb--expand .aura-smoke::after      { animation: trail-right-2 2.2s ease-out infinite 0.7s; }
+.fidget-orb--expand .aura-smoke-3::before   { animation: trail-right-3 2.2s ease-out infinite 1.1s; }
+.fidget-orb--expand .aura-smoke-3::after    { animation: trail-right-1 2.2s ease-out infinite 1.5s; }
+
+@keyframes trail-left-1 {
+  0%   { transform: translate(-50%, -50%) scale(0.6);   opacity: 0; }
+  10%  { opacity: 1; }
+  80%  { opacity: 0.9; }
+  100% { transform: translate(-340%, -80%) scale(0.35); opacity: 0; }
+}
+@keyframes trail-left-2 {
+  0%   { transform: translate(-50%, -50%) scale(0.55);  opacity: 0; }
+  12%  { opacity: 0.95; }
+  80%  { opacity: 0.8; }
+  100% { transform: translate(-380%, -20%) scale(0.3);  opacity: 0; }
+}
+@keyframes trail-left-3 {
+  0%   { transform: translate(-50%, -50%) scale(0.7);   opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translate(-300%, -140%) scale(0.3); opacity: 0; }
+}
+@keyframes trail-right-1 {
+  0%   { transform: translate(-50%, -50%) scale(0.6);   opacity: 0; }
+  10%  { opacity: 1; }
+  80%  { opacity: 0.9; }
+  100% { transform: translate(240%, -80%) scale(0.35);  opacity: 0; }
+}
+@keyframes trail-right-2 {
+  0%   { transform: translate(-50%, -50%) scale(0.55);  opacity: 0; }
+  12%  { opacity: 0.95; }
+  80%  { opacity: 0.8; }
+  100% { transform: translate(280%, -20%) scale(0.3);   opacity: 0; }
+}
+@keyframes trail-right-3 {
+  0%   { transform: translate(-50%, -50%) scale(0.7);   opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translate(200%, -140%) scale(0.3);  opacity: 0; }
+}
+
+/* DMC-3 tooltip — gothic Metal Mania, blood-red glow.
+   Show via .has-dmc-tooltip:hover .dmc-tooltip { opacity: 1 } */
+.dmc-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  transform: translateY(-4px);
+  white-space: nowrap;
+  padding: 4px 9px;
+  background: linear-gradient(180deg, rgba(20, 0, 0, 0.96) 0%, rgba(40, 4, 4, 0.96) 100%);
+  color: #ffe9e0;
+  border: 1px solid rgba(220, 40, 40, 0.55);
+  border-radius: 4px;
+  font-family: "Metal Mania", "Pirata One", "Cinzel", serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 5px rgba(255, 60, 60, 0.8),
+    0 0 10px rgba(160, 0, 0, 0.5);
+  box-shadow:
+    0 0 12px rgba(220, 40, 40, 0.4),
+    0 4px 14px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+  z-index: 1500;
+}
+.dmc-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 12px;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  border-top: 1px solid rgba(220, 40, 40, 0.55);
+  border-left: 1px solid rgba(220, 40, 40, 0.55);
+  transform: rotate(45deg);
+}
+.has-dmc-tooltip:hover .dmc-tooltip {
+  opacity: 1;
+  transform: translateY(0);
 }

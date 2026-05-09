@@ -81,7 +81,10 @@ export function TweakRow({
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="font-semibold text-text">{tweak.title}</span>
             <Badge>{tweak.category}</Badge>
-            <Badge color={RISK_COLOR[tweak.riskLevel]}>
+            <Badge
+              color={RISK_COLOR[tweak.riskLevel]}
+              title={`Risk ${tweak.riskLevel} — ${RISK_LABEL[tweak.riskLevel] ?? '(unknown)'}`}
+            >
               {RISK_LABEL[tweak.riskLevel] ?? `risk ${tweak.riskLevel}`}
             </Badge>
             {tweak.rebootRequired !== 'none' && <Badge>{tweak.rebootRequired}</Badge>}
@@ -89,9 +92,8 @@ export function TweakRow({
               <Badge color="text-accent">AC: {tweak.anticheatRisk}</Badge>
             )}
             {adminNeeded && <Badge color="text-accent">admin</Badge>}
-            {tweak.vipGate === 'vip' && (
-              <Badge color="text-accent font-semibold">VIP</Badge>
-            )}
+            {tweak.vipGate === 'vip' && <VipBadge />}
+            <ComplianceBadges tweak={tweak} />
             {audit && <AuditBadge audit={audit} />}
             <span className="text-text-subtle text-xs">
               {expanded ? '▾' : '▸'}
@@ -187,9 +189,38 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-function Badge({ children, color }: { children: React.ReactNode; color?: string }) {
+/** Hypixel-style gold badge for VIP-gated tweaks. Borrows the discordmaxxer
+ * VIP card colorway: gold gradient, crown glyph, soft glow. Reads as
+ * unambiguously gated on hover/scan instead of "another accent chip". */
+function VipBadge() {
   return (
     <span
+      title="VIP unlocks this tweak — see Pricing"
+      className="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1"
+      style={{
+        background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #cc9900 100%)',
+        color: '#3a2a00',
+        border: '1px solid rgba(255, 215, 0, 0.65)',
+        boxShadow: '0 0 10px rgba(255, 215, 0, 0.35)',
+      }}
+    >
+      <span aria-hidden="true">👑</span> VIP
+    </span>
+  )
+}
+
+function Badge({
+  children,
+  color,
+  title,
+}: {
+  children: React.ReactNode
+  color?: string
+  title?: string
+}) {
+  return (
+    <span
+      title={title}
       className={`text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border border-border ${
         color ?? 'text-text-subtle'
       }`}
@@ -277,6 +308,38 @@ function describeSource(t: TweakRecord): string {
   const found = creators.filter((c) => rationale.toLowerCase().includes(c.toLowerCase()))
   if (found.length > 0) return `Cross-validated by ${found.join(' + ')}`
   return 'Curated by Diggy — see rationale for primary reference.'
+}
+
+/** Surfaces only the negative cases — `risk` and `breaks`. `safe` is implied
+ * by the absence of a pill. Keeps the row visually quiet for tweaks that
+ * pass every game's tournament check. */
+function ComplianceBadges({ tweak }: { tweak: TweakRecord }) {
+  const c = tweak.tournamentCompliance
+  if (!c) return null
+  const entries = (Object.entries(c) as [string, 'safe' | 'risk' | 'breaks'][])
+    .filter(([, v]) => v === 'risk' || v === 'breaks')
+  if (entries.length === 0) return null
+  return (
+    <>
+      {entries.map(([game, verdict]) => (
+        <span
+          key={game}
+          title={
+            verdict === 'breaks'
+              ? `Breaks ${game} tournament eligibility — anticheat will block / unrank.`
+              : `${game}: tournament-risk — read the rationale before applying.`
+          }
+          className={`text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${
+            verdict === 'breaks'
+              ? 'border-red-500/60 text-red-400 bg-red-500/10'
+              : 'border-amber-500/50 text-amber-300 bg-amber-500/10'
+          }`}
+        >
+          {verdict === 'breaks' ? '⛔' : '⚠'} {game}
+        </span>
+      ))}
+    </>
+  )
 }
 
 function AuditBadge({ audit }: { audit: TweakAudit }) {

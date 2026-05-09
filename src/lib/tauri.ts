@@ -312,6 +312,128 @@ export async function pingProbe(targets: Array<[string, string]>): Promise<PingR
   return invoke<PingResult[]>('ping_probe', { targets })
 }
 
+export interface BufferbloatReport {
+  idlePingsMs: number[]
+  loadedPingsMs: number[]
+  idleP50Ms: number | null
+  loadedP50Ms: number | null
+  /** Loaded p50 minus idle p50, in ms. Higher = worse bufferbloat. */
+  deltaMs: number | null
+  /** Single-letter grade A/B/C/D/F (or "—" if probe failed). */
+  grade: string
+  bytesDownloaded: number
+  error: string | null
+}
+
+export async function bufferbloatProbe(): Promise<BufferbloatReport> {
+  return invoke<BufferbloatReport>('bufferbloat_probe')
+}
+
+export interface OnuStickReport {
+  temperatureC: number | null
+  voltageV: number | null
+  biasCurrentMa: number | null
+  txPowerDbm: number | null
+  rxPowerDbm: number | null
+  state: string | null
+  firmware: string | null
+  serial: string | null
+  rawJson: string | null
+  error: string | null
+  fetchMs: number
+}
+
+export async function onuStickMetrics(url: string): Promise<OnuStickReport> {
+  return invoke<OnuStickReport>('onu_stick_metrics', { url })
+}
+
+export interface ThermalReading {
+  source: string
+  celsius: number
+}
+
+export interface GpuSnapshot {
+  vendor: string
+  name: string
+  temperatureC: number | null
+  utilizationPct: number | null
+  powerW: number | null
+  clockMhz: number | null
+  memoryClockMhz: number | null
+  fanPct: number | null
+  throttleReasons: string[]
+}
+
+export interface CpuClockSnapshot {
+  baseMhz: number | null
+  currentMhz: number | null
+  currentPctOfMax: number | null
+  belowMax: boolean
+}
+
+export interface LiveThermalsReport {
+  capturedAtMs: number
+  thermalZones: ThermalReading[]
+  gpus: GpuSnapshot[]
+  cpuClock: CpuClockSnapshot
+  cpuThermalThrottleSuspected: boolean
+  gpuThrottleActive: boolean
+}
+
+export async function liveThermals(): Promise<LiveThermalsReport> {
+  return invoke<LiveThermalsReport>('live_thermals')
+}
+
+export interface LhmSensorReading {
+  name: string
+  kind: string
+  value: number | null
+  min: number | null
+  max: number | null
+}
+
+export interface LhmComponent {
+  name: string
+  kind: string
+  sensors: LhmSensorReading[]
+}
+
+export interface LhmReport {
+  ok: boolean
+  elevated: boolean
+  lhmVersion: string | null
+  components: LhmComponent[]
+  error: string | null
+}
+
+export async function lhmSensors(): Promise<LhmReport> {
+  return invoke<LhmReport>('lhm_sensors')
+}
+
+export async function lhmSensorsElevated(): Promise<LhmReport> {
+  return invoke<LhmReport>('lhm_sensors_elevated')
+}
+
+export async function vipHwid(): Promise<string> {
+  return invoke<string>('vip_hwid')
+}
+
+export async function vipVerify(code: string): Promise<boolean> {
+  return invoke<boolean>('vip_verify', { code })
+}
+
+export interface VipClaimResult {
+  ok: boolean
+  /** 'claimed' / 'idempotent' / 'already-claimed' / 'network-error' / 'malformed' / 'not-found' / 'http-<code>' */
+  status: string
+  boundHwid: string | null
+  error: string | null
+}
+
+export async function vipClaimOnline(code: string): Promise<VipClaimResult> {
+  return invoke<VipClaimResult>('vip_claim_online', { code })
+}
+
 export interface PcieLink {
   device: string
   /** Current link width as integer (8 = x8, 16 = x16). */

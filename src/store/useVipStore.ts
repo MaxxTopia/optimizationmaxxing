@@ -15,9 +15,16 @@ interface VipState {
   tier: Tier
   /** Set after a successful purchase + receipt verification (placeholder). */
   purchaseId: string | null
+  /** Last-redeemed code, for display + revoke. Null if VIP came from dev unlock. */
+  redeemedCode: string | null
+  /** HWID the redeemed code was bound to. If the user moves to a new rig
+   * the HWID changes and the persisted VIP no longer applies. */
+  boundHwid: string | null
   setTier: (t: Tier) => void
-  /** Dev / test switch — set the tier without going through Stripe. */
+  /** Dev / test switch — set the tier without going through redemption. */
   unlockForDev: () => void
+  /** Apply a successfully verified code. Persists code + HWID. */
+  applyRedemption: (code: string, hwid: string) => void
   reset: () => void
 }
 
@@ -26,9 +33,15 @@ export const useVipStore = create<VipState>()(
     (set) => ({
       tier: 'free',
       purchaseId: null,
+      redeemedCode: null,
+      boundHwid: null,
       setTier: (t) => set({ tier: t }),
-      unlockForDev: () => set({ tier: 'vip', purchaseId: 'dev-unlock' }),
-      reset: () => set({ tier: 'free', purchaseId: null }),
+      unlockForDev: () =>
+        set({ tier: 'vip', purchaseId: 'dev-unlock', redeemedCode: null, boundHwid: null }),
+      applyRedemption: (code, hwid) =>
+        set({ tier: 'vip', purchaseId: 'code-redeem', redeemedCode: code, boundHwid: hwid }),
+      reset: () =>
+        set({ tier: 'free', purchaseId: null, redeemedCode: null, boundHwid: null }),
     }),
     { name: 'optmaxxing-vip' },
   ),

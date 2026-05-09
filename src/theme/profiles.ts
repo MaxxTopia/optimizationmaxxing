@@ -1,5 +1,5 @@
 /**
- * Four named profile themes. Each is a complete colorway + typography
+ * Five named profile themes. Each is a complete colorway + typography
  * swap, applied by ProfileProvider via CSS custom properties on :root
  * plus a `profile-<id>` body class for component-level overrides.
  *
@@ -7,7 +7,7 @@
  * but expressed visually rather than functionally.
  */
 
-export type ProfileId = 'val' | 'sonic' | 'dmc' | 'bo3'
+export type ProfileId = 'val' | 'sonic' | 'dmc' | 'bo3' | 'akatsuki'
 
 export interface ProfileTheme {
   id: ProfileId
@@ -23,28 +23,34 @@ export interface ProfileTheme {
 }
 
 const FONT_INTER = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+const FONT_DMC = "'Cormorant Garamond', Georgia, serif"
+const FONT_ZOMBIES = "'Pirata One', 'Cinzel', 'Cormorant Garamond', Georgia, serif"
+const FONT_AKATSUKI = "'Cinzel', 'Cormorant Garamond', Georgia, serif"
 
 export const profiles: Record<ProfileId, ProfileTheme> = {
   val: {
     id: 'val',
     label: 'Val',
-    blurb: 'Tactical. Red + cream. Inspired by Valorant.',
+    blurb: 'Tactical. Desaturated red + cool slate. Valorant menu energy.',
     bodyClass: 'profile-val',
-    swatch: { primary: '#ff4655', secondary: '#0f1923', bg: '#0d1418' },
+    // Polished palette: drop a bit of saturation off the candy red, deepen
+    // the base, sharpen the borders, and tighten the card opacity so the
+    // surface reads tactical instead of plastic.
+    swatch: { primary: '#e23947', secondary: '#0f1923', bg: '#0c1217' },
     vars: {
-      '--bg-base': '#0d1418',
-      '--bg-raised': '#16252c',
-      '--bg-card': 'rgba(45, 76, 87, 0.45)',
-      '--accent': '#ff4655',
-      '--accent-soft': '#ff7a87',
-      '--accent-dark': '#b3303c',
+      '--bg-base': '#0c1217',
+      '--bg-raised': '#16242b',
+      '--bg-card': 'rgba(45, 76, 87, 0.35)',
+      '--accent': '#e23947',
+      '--accent-soft': '#ff5a6a',
+      '--accent-dark': '#a52938',
       '--secondary': '#0f1923',
       '--secondary-dark': '#08111a',
       '--text': '#ece8e1',
       '--text-muted': '#c8b89a',
       '--text-subtle': '#8e8579',
-      '--border': 'rgba(255, 70, 85, 0.18)',
-      '--border-glow': 'rgba(255, 70, 85, 0.4)',
+      '--border': 'rgba(226, 57, 71, 0.22)',
+      '--border-glow': 'rgba(226, 57, 71, 0.5)',
       '--font-body': FONT_INTER,
       '--font-heading': FONT_INTER,
     },
@@ -94,34 +100,65 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
       '--border': 'rgba(179, 0, 12, 0.22)',
       '--border-glow': 'rgba(179, 0, 12, 0.55)',
       '--font-body': FONT_INTER,
-      '--font-heading': "'Cormorant Garamond', Georgia, serif",
+      '--font-heading': FONT_DMC,
     },
   },
   bo3: {
     id: 'bo3',
-    label: 'Black Ops 3',
-    blurb: 'Military / cyber. Olive + neon orange + matte black.',
+    label: 'BO3 Zombies',
+    // Treyarch's Zombies design language — Pack-a-Punch gold over Origins
+    // crypt black, blood maroon walls, parchment text, eldritch Apothicon
+    // purple as a rare accent. The original BO3 multiplayer orange/olive
+    // never matched the dread the Zombies designers actually built.
+    blurb: 'Eldritch. Pack-a-Punch gold + blood maroon + parchment + Apothicon purple.',
     bodyClass: 'profile-bo3',
-    swatch: { primary: '#ff6b1a', secondary: '#5a6840', bg: '#0e0f0a' },
+    swatch: { primary: '#d4af37', secondary: '#5b1a1a', bg: '#080404' },
     vars: {
-      '--bg-base': '#0e0f0a',
-      '--bg-raised': '#1c1d15',
-      '--bg-card': 'rgba(50, 56, 35, 0.45)',
-      '--accent': '#ff6b1a',
-      '--accent-soft': '#ffa14d',
-      '--accent-dark': '#b34a0e',
-      '--secondary': '#5a6840',
-      '--secondary-dark': '#3a4329',
-      '--text': '#e9e8df',
-      '--text-muted': '#b3b09e',
-      '--text-subtle': '#7e7c6c',
-      '--border': 'rgba(255, 107, 26, 0.22)',
-      '--border-glow': 'rgba(255, 107, 26, 0.5)',
+      '--bg-base': '#080404',
+      '--bg-raised': '#160a0a',
+      '--bg-card': 'rgba(60, 16, 16, 0.5)',
+      '--accent': '#d4af37',
+      '--accent-soft': '#f0c75e',
+      '--accent-dark': '#8a6d1f',
+      '--accent-eldritch': '#5b2d8a',
+      '--secondary': '#5b1a1a',
+      '--secondary-dark': '#3a0f0f',
+      '--text': '#e8d9b0',
+      '--text-muted': '#bda87a',
+      '--text-subtle': '#8a7a52',
+      '--border': 'rgba(212, 175, 55, 0.22)',
+      '--border-glow': 'rgba(212, 175, 55, 0.55)',
       '--font-body': FONT_INTER,
-      '--font-heading': FONT_INTER,
+      '--font-heading': FONT_ZOMBIES,
+    },
+  },
+  akatsuki: {
+    id: 'akatsuki',
+    label: 'Akatsuki',
+    // Black robe + scarlet cloud + Sharingan gold ring. Crimson outlives
+    // every other "competitive red" theme on contrast alone.
+    blurb: 'Cloud-red on void. Scarlet clouds, Sharingan gold accents.',
+    bodyClass: 'profile-akatsuki',
+    swatch: { primary: '#c91f37', secondary: '#d4af37', bg: '#0a0606' },
+    vars: {
+      '--bg-base': '#0a0606',
+      '--bg-raised': '#14080a',
+      '--bg-card': 'rgba(40, 8, 12, 0.5)',
+      '--accent': '#c91f37',
+      '--accent-soft': '#e45669',
+      '--accent-dark': '#7a0a1a',
+      '--secondary': '#d4af37',
+      '--secondary-dark': '#9a7a1f',
+      '--text': '#f0e4d8',
+      '--text-muted': '#b9a487',
+      '--text-subtle': '#7e6b54',
+      '--border': 'rgba(201, 31, 55, 0.22)',
+      '--border-glow': 'rgba(201, 31, 55, 0.55)',
+      '--font-body': FONT_INTER,
+      '--font-heading': FONT_AKATSUKI,
     },
   },
 }
 
 export const DEFAULT_PROFILE: ProfileId = 'val'
-export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bo3']
+export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bo3', 'akatsuki']

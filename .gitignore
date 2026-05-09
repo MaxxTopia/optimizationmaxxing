@@ -40,3 +40,14 @@ yt-mine*.log
 # Local notes / drop-zones
 RESUME.md
 *.local.md
+
+# UX-walkthrough video + ffmpeg-extracted frames Claude used during
+# plan-mode review — never meant for the public repo.
+.plan-frames/
+*.mp4
+*.mov
+*.mkv
+
+# Local Cloudflare wrangler state (auth tokens, build cache)
+vip-worker/.wrangler/
+vip-worker/node_modules/

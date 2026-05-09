@@ -1,4 +1,6 @@
+import { useRef, useState } from 'react'
 import { useVipStore } from '../store/useVipStore'
+import { VipRedemptionPanel } from '../components/VipRedemptionPanel'
 
 /**
  * Pricing — modeled on Paragon's Free/Edge/Apex tier ladder but slimmed
@@ -34,7 +36,22 @@ export function Pricing() {
   const tier = useVipStore((s) => s.tier)
   const unlockForDev = useVipStore((s) => s.unlockForDev)
   const reset = useVipStore((s) => s.reset)
+  const redeemedCode = useVipStore((s) => s.redeemedCode)
   const isVip = tier === 'vip'
+
+  // Easter egg: 5 clicks on the VIP "$8" price within 3 s reveals the
+  // hidden HWID-bound code-redemption panel.
+  const [showRedemption, setShowRedemption] = useState(false)
+  const clicks = useRef<number[]>([])
+
+  function handlePriceTap() {
+    const now = Date.now()
+    clicks.current = [...clicks.current, now].filter((t) => now - t <= 3000)
+    if (clicks.current.length >= 5) {
+      setShowRedemption(true)
+      clicks.current = []
+    }
+  }
 
   function handleUpgrade() {
     // Real flow: open Stripe Checkout in default browser (Tauri shell handles it),
@@ -75,8 +92,13 @@ export function Pricing() {
           ctaLabel={isVip ? 'You are VIP' : 'Upgrade'}
           ctaDisabled={isVip}
           onCta={isVip ? undefined : handleUpgrade}
+          onPriceTap={handlePriceTap}
         />
       </div>
+
+      {(showRedemption || (isVip && redeemedCode)) && (
+        <VipRedemptionPanel onClose={() => setShowRedemption(false)} />
+      )}
 
       <div className="surface-card p-4 text-xs text-text-subtle">
         <p>
@@ -121,6 +143,7 @@ function PriceCard({
   onCta,
   highlighted,
   highlightLabel,
+  onPriceTap,
 }: {
   name: string
   price: string
@@ -132,6 +155,10 @@ function PriceCard({
   onCta?: () => void
   highlighted?: boolean
   highlightLabel?: string
+  /** Optional click handler on the big price element. Used by the
+   * Pricing-page easter-egg counter. The element stays visually unchanged
+   * — no hint that it's clickable. */
+  onPriceTap?: () => void
 }) {
   return (
     <div
@@ -147,7 +174,13 @@ function PriceCard({
       <div>
         <p className="text-xs uppercase tracking-widest text-text-subtle mb-1">{name}</p>
         <div className="flex items-baseline gap-2 flex-wrap">
-          <p className="text-4xl font-bold text-text">{price}</p>
+          <p
+            className="text-4xl font-bold text-text select-none"
+            onClick={onPriceTap}
+            style={onPriceTap ? { cursor: 'default' } : undefined}
+          >
+            {price}
+          </p>
           {regularPrice && (
             <p className="text-base text-text-subtle line-through tabular-nums">
               {regularPrice}

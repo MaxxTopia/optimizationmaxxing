@@ -1,35 +1,26 @@
-import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+
+import { MAXXER_PRODUCTS, monogram, type MaxxerProduct } from '../lib/maxxerProducts'
 
 /**
- * Slim left-rail nav for switching between maxxer-suite products. Lifted
- * verbatim from clipmaxxing/src/components/MaxxerSidebar.tsx but with `opt`
- * (optimizationmaxxing) flagged as the active in-app product.
+ * Maxxer suite sidebar — React port of `maxxtopia/src/components/MaxxerSidebar.astro`.
+ * Same rail, same indigo "fidget orb" minimize/expand control with breathing
+ * pulse + smoke trail, same DMC-3 "Banish/Unleash the Menu" tooltip, same
+ * per-item accent + click electricity zap. Stays in sync with maxxtopia.com
+ * so the desktop app and the website read as the same product family.
+ *
+ * Keyboard / a11y:
+ *  - Each rail item is a `<button>` (hover tooltip + click navigates to the
+ *    product's deployedUrl in a new tab, since this is an in-app sibling
+ *    switcher, not an in-router link).
+ *  - The optimizationmaxxing slot shows as active and is non-clickable.
+ *  - Reduced-motion preference disables the click-zap animation.
  */
 
-interface MaxxerProduct {
-  id: string
-  label: string
-  monogram: string
-  accent: string
-  route: string
-  external: boolean
-  available: boolean
-}
-
-const PRODUCTS: MaxxerProduct[] = [
-  { id: 'clip', label: 'clipmaxxer', monogram: 'CM', accent: '#e25bff', route: '#', external: true, available: false },
-  { id: 'drop', label: 'dropmaxxer', monogram: 'DM', accent: '#e25bff', route: '#', external: true, available: false },
-  { id: 'aim', label: 'aimmaxxer', monogram: 'AM', accent: '#00d4ff', route: '#', external: true, available: false },
-  { id: 'edit', label: 'editmacros', monogram: 'EM', accent: '#f3af19', route: '#', external: true, available: false },
-  { id: 'opt', label: 'optimizationmaxxing', monogram: 'OM', accent: '#4c51f7', route: '/', external: false, available: true },
-  { id: 'view', label: 'viewmaxxing', monogram: 'VM', accent: '#10b981', route: '#', external: true, available: false },
-]
-
 const STORAGE_KEY = 'optmaxxing_sidebar_open'
+const ACTIVE_SLUG = 'optimizationmaxxing'
 
 export function MaxxerSidebar() {
-  const location = useLocation()
   const [open, setOpen] = useState<boolean>(() => {
     const v = localStorage.getItem(STORAGE_KEY)
     return v === null ? true : v === '1'
@@ -37,129 +28,152 @@ export function MaxxerSidebar() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, open ? '1' : '0')
+    document.body.classList.toggle('sidebar-collapsed', !open)
   }, [open])
 
-  const activeId = resolveActiveProductId(location.pathname)
-
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="open suite navigation"
-        className="fixed top-3 left-3 z-30 size-9 rounded-md border border-border bg-bg-card text-text-muted hover:text-text hover:border-border-glow transition"
-      >
-        ◀
-      </button>
-    )
-  }
-
   return (
-    <aside className="hidden md:flex shrink-0 sticky top-0 self-start h-screen w-16 flex-col items-center py-3 gap-1 bg-bg-base border-r border-border z-20 relative">
-      <button
-        onClick={() => setOpen(false)}
-        aria-label="hide suite navigation"
-        className="absolute -right-3 top-3 z-10 size-6 rounded-full border border-border bg-bg-base text-text-muted hover:text-text hover:border-border-glow text-xs"
-      >
-        ▶
-      </button>
+    <>
+      {open && (
+        <aside className="maxxer-sidebar" aria-label="Maxxer suite">
+          <FidgetOrb
+            direction="minimize"
+            ariaLabel="hide suite navigation"
+            tooltipText="Banish the Menu"
+            onClick={() => setOpen(false)}
+            className="maxxer-sidebar-close"
+          />
 
-      <div
-        className="size-9 rounded-md flex items-center justify-center mb-2 select-none mt-12"
-        title="maxxers"
-      >
-        <span className="font-sans font-bold text-lg tracking-tight text-text">m</span>
-      </div>
+          <div className="maxxer-sidebar-root" aria-label="Maxxtopia home" title="Maxxers">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="sidebar-logo-glyph">
+              <path
+                className="sidebar-logo-cyan"
+                d="M 4 19.5 L 4 4.5 L 12 13.5 L 20 4.5 L 20 19.5"
+                stroke="#00d4ff" strokeWidth="3.2"
+                strokeLinecap="round" strokeLinejoin="round" fill="none"
+              />
+              <path
+                className="sidebar-logo-magenta"
+                d="M 4 19.5 L 4 4.5 L 12 13.5 L 20 4.5 L 20 19.5"
+                stroke="#e25bff" strokeWidth="3.2"
+                strokeLinecap="round" strokeLinejoin="round" fill="none"
+              />
+              <path
+                d="M 4 19.5 L 4 4.5 L 12 13.5 L 20 4.5 L 20 19.5"
+                stroke="#ffffff" strokeWidth="1.9"
+                strokeLinecap="round" strokeLinejoin="round" fill="none"
+              />
+            </svg>
+          </div>
 
-      <div className="w-8 h-px bg-border my-1" />
+          <div className="maxxer-sidebar-divider" />
 
-      <nav className="flex flex-col gap-1.5 mt-1 flex-1">
-        {PRODUCTS.map((p) => (
-          <ProductIcon key={p.id} product={p} isActive={p.id === activeId} />
-        ))}
-      </nav>
-    </aside>
+          <nav className="maxxer-sidebar-rail">
+            {MAXXER_PRODUCTS.map((p) => (
+              <ProductItem key={p.slug} product={p} />
+            ))}
+          </nav>
+        </aside>
+      )}
+      {!open && (
+        <FidgetOrb
+          direction="expand"
+          ariaLabel="open suite navigation"
+          tooltipText="Unleash the Menu"
+          onClick={() => setOpen(true)}
+          className="maxxer-sidebar-opener"
+        />
+      )}
+    </>
   )
 }
 
-function ProductIcon({
-  product,
-  isActive,
-}: {
-  product: MaxxerProduct
-  isActive: boolean
-}) {
-  const { label, monogram, accent, route, external, available } = product
+function ProductItem({ product }: { product: MaxxerProduct }) {
+  const isActive = product.slug === ACTIVE_SLUG
+  const isLive = product.status === 'live'
+  const isComingSoon = product.status === 'soon' || product.status === 'dev'
+  const ref = useRef<HTMLButtonElement | null>(null)
 
-  const baseClass =
-    'size-10 rounded-md flex items-center justify-center font-sans font-semibold text-xs tracking-tight transition relative'
-
-  let stateClass = ''
-  let style: React.CSSProperties = {}
-
-  if (isActive) {
-    stateClass = 'text-bg-base'
-    style = { backgroundColor: accent, boxShadow: `0 0 18px ${accent}55` }
-  } else if (available) {
-    stateClass = 'border border-border bg-bg-card text-text-muted hover:text-text'
-  } else {
-    stateClass = 'border border-border bg-bg-card text-text-subtle opacity-60'
+  function handleClick() {
+    if (isActive) return
+    if (product.deployedUrl) {
+      window.open(product.deployedUrl, '_blank', 'noopener')
+    } else {
+      window.open(`https://maxxtopia.com/${product.slug}`, '_blank', 'noopener')
+    }
+    // Re-trigger the zap animation on each click.
+    const el = ref.current
+    if (!el) return
+    el.classList.remove('is-zapping')
+    void el.offsetWidth // force reflow
+    el.classList.add('is-zapping')
+    window.setTimeout(() => el.classList.remove('is-zapping'), 800)
   }
 
-  const tooltip = available ? label : `${label} · coming soon`
+  const cls = [
+    'maxxer-sidebar-item',
+    isActive && 'is-active',
+    isLive && 'is-live',
+    isComingSoon && 'is-soon',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
-  const inner = (
-    <span
-      className={`${baseClass} ${stateClass}`}
-      style={style}
-      title={tooltip}
-      aria-label={tooltip}
-      onMouseEnter={(e) => {
-        if (!isActive && available) {
-          ;(e.currentTarget as HTMLElement).style.boxShadow = `0 0 14px ${accent}33`
-          ;(e.currentTarget as HTMLElement).style.borderColor = `${accent}66`
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive && available) {
-          ;(e.currentTarget as HTMLElement).style.boxShadow = ''
-          ;(e.currentTarget as HTMLElement).style.borderColor = ''
-        }
-      }}
+  return (
+    <button
+      ref={ref}
+      type="button"
+      onClick={handleClick}
+      className={cls}
+      style={{ ['--accent' as string]: product.accentHex }}
+      aria-current={isActive ? 'page' : undefined}
+      aria-label={product.name}
     >
-      {monogram}
-    </span>
-  )
-
-  if (!available) return <div>{inner}</div>
-  if (external) {
-    return (
-      <a href={route} className="block focus:outline-none focus:ring-2 focus:ring-accent rounded-md">
-        {inner}
-      </a>
-    )
-  }
-  return (
-    <Link to={route} className="block focus:outline-none focus:ring-2 focus:ring-accent rounded-md">
-      {inner}
-    </Link>
+      <span className="maxxer-sidebar-icon">
+        {product.logo ? (
+          <img src={product.logo} alt="" width={24} height={24} />
+        ) : (
+          <span className="maxxer-sidebar-monogram">{monogram(product.name)}</span>
+        )}
+      </span>
+      {isComingSoon && (
+        <span className="maxxer-sidebar-lock" aria-hidden="true">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 0 1 6 0v3H9Z" />
+          </svg>
+        </span>
+      )}
+      <span className="maxxer-sidebar-tooltip">
+        {product.name}
+        {product.status === 'soon' ? ' · coming soon' : product.status === 'dev' ? ' · in development' : ''}
+      </span>
+    </button>
   )
 }
 
-function resolveActiveProductId(pathname: string): string {
-  // We're inside the optimizationmaxxing app — every internal route belongs to it.
-  if (
-    pathname === '/' ||
-    pathname.startsWith('/tweaks') ||
-    pathname.startsWith('/presets') ||
-    pathname.startsWith('/profile') ||
-    pathname.startsWith('/pricing') ||
-    pathname.startsWith('/settings') ||
-    pathname.startsWith('/toolkit') ||
-    pathname.startsWith('/changelog') ||
-    pathname.startsWith('/diagnostics') ||
-    pathname.startsWith('/session')
-  ) {
-    return 'opt'
-  }
-  return ''
+function FidgetOrb({
+  direction,
+  ariaLabel,
+  tooltipText,
+  onClick,
+  className,
+}: {
+  direction: 'minimize' | 'expand'
+  ariaLabel: string
+  tooltipText: string
+  onClick: () => void
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className={`fidget-orb fidget-orb--${direction} has-dmc-tooltip ${className ?? ''}`}
+    >
+      <span className="aura-smoke" aria-hidden="true" />
+      <span className="aura-smoke-3" aria-hidden="true" />
+      <span className="fidget-orb__arrow">{direction === 'minimize' ? '▶' : '◀'}</span>
+      <span className="dmc-tooltip">{tooltipText}</span>
+    </button>
+  )
 }

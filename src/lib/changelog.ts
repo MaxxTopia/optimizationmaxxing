@@ -12,6 +12,106 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.47',
+    date: '2026-05-08',
+    highlights: [
+      'NEW Cloudflare Worker first-claim ledger — drop a code in DM, friend pastes, code locks to their rig on first activation. No back-and-forth needed.',
+      'Worker code at vip-worker/ with 5-step deploy in vip-worker/README.md. Free tier (100k req/day, 100k KV reads/day, 1k KV writes/day) — never going to hit it.',
+      'New mint script: scripts/mint-unbound-codes.py — generates fresh random Crockford-base32 codes (16 chars = 80 bits, unguessable) ready to paste in DMs. Run with N to mint a batch: `python scripts/mint-unbound-codes.py 10`.',
+      'VipRedemptionPanel now tries online claim first (the new flow), falls back to local HWID-bound HMAC verify if the worker is unreachable — so the older offline scripts/mint-vip-code.py <hwid> path still works as a fallback for high-trust gifts.',
+      'New "already claimed by another rig" amber message replaces the generic fail when the worker returns 409 — tells the friend the code is dead and to ask for a fresh one.',
+      'Worker URL configurable via OPTMAXXING_VIP_WORKER_URL env var at build time; default points at the workers.dev subdomain shape.',
+    ],
+  },
+  {
+    version: '0.1.46',
+    date: '2026-05-08',
+    highlights: [
+      'NEW HWID-bound VIP redemption codes — no backend, no Stripe, no recurring billing. Friend installs the app, copies their HWID fingerprint from a hidden panel, DMs it to me, I run scripts/mint-vip-code.py <hwid> + DM the code back. Friend pastes + activates. Code only works on that exact rig.',
+      'Easter-egg trigger: tap the VIP "$8" price on the Pricing page 5 times within 3 seconds → reveals the HWID display + redemption input. Apple-developer-mode pattern; nothing in the UI hints the price is interactive.',
+      'Hypixel gold redemption panel — confetti burst on success, shake animation on miss, copyable fingerprint, MAXX-XXXX-XXXX-XXXX-XXXX paste-friendly format with whitespace + lowercase tolerated.',
+      'Crockford-style base32 (no I/L/O/U) so codes survive being typed by hand from a phone.',
+      'Rust + Python parity-locked: both implementations share the VIP_SECRET constant + algorithm, with a Rust unit test asserting the canonical "32 zeros" HWID produces the exact code Python emits. Drift between the two now fails CI.',
+      'useVipStore extended with applyRedemption(code, hwid) — persists code + bound HWID alongside tier. Survives reboots; doesn\'t survive moving to a new rig (HWID changes).',
+      '+8 cargo tests for vip module (mint determinism, per-HWID divergence, verify accept/reject, prefix/whitespace tolerance, alphabet sanity, Python parity vector). 32/32 unit tests pass.',
+    ],
+  },
+  {
+    version: '0.1.45',
+    date: '2026-05-08',
+    highlights: [
+      'LHM dependency set complete — 27 DLLs bundled (LibreHardwareMonitorLib + HidSharp + RAMSPDToolkit-NDD + DiskInfoToolkit + 23 .NET runtime support libs). Validated end-to-end on a Ryzen 7 2700 + RTX 2070 + WD_BLACK SN770 + Corsair DDR4-3600 + ASRock X570 Steel Legend.',
+      'Bundle config switched to glob (resources/lhm/*.dll) so future LHM upgrades do not require itemizing each transitive dep.',
+      'Probe-validated sensor coverage: AMD Tctl/Tdie + per-core clocks + per-core load + per-core VID, NVIDIA GPU core temp + hot spot + fan + power + memory clock, NVMe SMART, motherboard zones via Nuvoton SuperIO.',
+    ],
+  },
+  {
+    version: '0.1.44',
+    date: '2026-05-08',
+    highlights: [
+      'NEW LibreHardwareMonitor-backed Live Thermals. Real CPU package + per-core temps, GPU core/memory clocks + power + fan, NVMe SMART, motherboard zones, fan RPMs, voltage rails. v0.9.6 LHM bundled (~1.5 MB).',
+      'Two-tier probe: unelevated user-mode probe runs every 2.5 s automatically (gets ACPI + GPU + SMART). "Enable full sensor access (UAC)" button fires the elevated probe — loads WinRing0 kernel driver, unlocks CPU package + voltage rails. Persists preference for next launch.',
+      'Throttle banner fires automatically when any CPU sensor ≥ 95 °C, package ≥ 90 °C, or any GPU temp ≥ 88 °C.',
+      'Fallback path: if LHM bundle fails (AV blocking the driver), card auto-falls-back to the v0.1.43 WMI + nvidia-smi probe so users still get something useful.',
+      'NEW troubleshooting guide: "AV blocking WinRing0 / LHM" with Add-MpPreference snippet for Defender + notes for Bitdefender/Kaspersky/ESET/CrowdStrike. Linked from the Live Thermals error fallback.',
+      'Per-component tile layout — CPU tile leads with package KPI + load + power + per-core breakdown details; each GPU gets its own tile with core+mem clocks; storage tile shows SMART temp + wear; motherboard sensors top-8.',
+    ],
+  },
+  {
+    version: '0.1.43',
+    date: '2026-05-08',
+    highlights: [
+      'NEW Live Thermals + Throttle Watch on /toolkit — refreshes every 2 s. ACPI motherboard zones, NVIDIA GPU temp / clock / power / fan / utilization (via nvidia-smi), CPU live MHz vs base ratio. Banners red when thermal throttle is suspected.',
+      'CPU throttle detection: surfaces "% of max frequency" from Win32_PerfFormattedData_Counters_ProcessorInformation; flags red if any thermal zone ≥ 80 °C while CPU runs < 90% of max.',
+      'GPU throttle reasons decoded: nvidia-smi clocks_throttle_reasons.active hex bitmask → human-readable labels (sw power cap, hw thermal slowdown, hw power brake, etc.).',
+      'NEW 8311 X-ONU-SFPP stick monitor on /toolkit — fetches the 8311 community firmware metrics endpoint (default https://192.168.11.1/cgi-bin/luci/8311/metrics), shows live temperature / TX/RX optical power / voltage / bias / PON state. Amber pill at 55 °C, red at 60 °C (pon.wiki recommends active cooling above 60 °C).',
+      'Self-signed TLS tolerated for the LuCI cert. Auto-refresh toggle. Persists URL to localStorage. Raw JSON viewable for firmware-version debugging.',
+      'Old "Live thermal probes" 28 °C ACPI-only card replaced. Disk Cleanup card unwrapped from the broken 2-column grid that left an empty right pane after extraction.',
+      '+4 cargo tests for the 8311 metrics parser (typical shape, nested fields, string-with-units, parse-error fallback). 24/24 unit tests pass.',
+    ],
+  },
+  {
+    version: '0.1.42',
+    date: '2026-05-08',
+    highlights: [
+      'NEW Dashboard Quick Start — first-run 3-card walkthrough (pick your game / apply preset / tune later) with deep-link to /tweaks?game=<id>. Dismissible; reappears on major upgrades.',
+      'NEW /guides page — curated articles moved out of /toolkit footer into a dedicated route with per-game chip filter, search, and an "include advanced (SCEWIN / overclocks)" toggle. Old Toolkit section now redirects.',
+      'Per-game callouts on every guide — pick Fortnite + see "For Fortnite:" line at the top of every relevant article. Article cards expose all callouts inline when expanded.',
+      'NEW guide: lightweight Windows distros — Atlas / X-Lite / Tiny11 / Ghost Spectre / ReviOS compared side-by-side. Anticheat compat, update story, idle RAM, recommended-for. Includes our verdict on whether to build a maxxer-OS (not yet).',
+      'NEW guide: BIOS + tweaks vs tournament rules — Fortnite (FNCS/EAC), Valorant (Vanguard/VCT), CS2 (VAC), Warzone (Ricochet+BattlEye). Maps every catalog tweak to per-anticheat verdicts.',
+      'NEW guide: SCEWIN advanced track — read-only BIOS export workflow for diagnostics + before-you-flash backup. Article-only; we never auto-edit BIOS at runtime.',
+      'gaming-mice guide rewritten with current ProSettings.net data (650+ Valorant pros, 328 Fortnite pros, May 2026): the "every pro uses 1600 DPI" myth is out — 800 is dominant in Val + Fortnite, 400 in CS2. Cited per-genre.',
+      'Latency probe heads-up — first-run banner explains the brief flash so it doesn\'t feel broken. Persists optmaxxing-latency-probe-seen.',
+      'Motion tokens (--motion-snap / --motion-arc / --motion-glow) — applied uniformly across all 5 themes. Per-theme tone via glow speed: Sonic kinetic, BO3 Zombies + DMC heavy, Val + Akatsuki neutral.',
+      'surface-card hover-lift (1 px) for TikTok-pace responsiveness. Reduced-motion preference respected.',
+    ],
+  },
+  {
+    version: '0.1.41',
+    date: '2026-05-08',
+    highlights: [
+      'NEW Akatsuki theme — cloud-red on void with Sharingan-gold accents and Cinzel display serifs. Brings the theme count to 5 (val · sonic · dmc · bo3 · akatsuki).',
+      'BO3 theme reworked into BO3 Zombies — Pack-a-Punch gold + blood maroon + Origins-crypt black + parchment text + Pirata One serif headings + faint blood-drip text-shadow. The orange/olive corporate read is gone.',
+      'Val theme polished — desaturated red, deeper base, sharper borders, tactical heading weight. No more candy-red plastic.',
+      'NEW maxxer suite sidebar — ported wholesale from maxxtopia.com so the desktop app reads as the same product family. Indigo "fidget orb" close button with breathing pulse + smoke trail, click-zap electricity ripple in each product\'s accent, "Banish/Unleash the Menu" DMC tooltip, Sharingan-gold M brand mark.',
+      '7 maxxer products in the rail (optimizationmaxxing, discordmaxxer, clipmaxxer, dropmaxxer, aimmaxxer, viewmaxxing, editmaxxing) with per-product accents + lock overlays for "coming soon".',
+      'Heading fonts now load Pirata One + Cinzel + Cormorant Garamond + Metal Mania from Google Fonts on first launch (graceful fallback to system serifs offline).',
+    ],
+  },
+  {
+    version: '0.1.40',
+    date: '2026-05-08',
+    highlights: [
+      'NEW per-game tweak filter — Tweaks page gains a Game chip row (Fortnite / Valorant / CS2 / Apex / Warzone / osu / OW2). Universal tweaks always show; tagged ones show only when their game is picked.',
+      'NEW Tournament-eligibility flagging — high-risk tweaks (HVCI off, Hyper-V off, Spectre mitigations off) carry a per-game ⚠ pill and a "hide tournament-breaking" filter when a game is selected.',
+      'NEW Risk legend — click the ? next to the Risk filter to see what 1/2/3/4 actually mean (Safe / Standard / Expert / Extreme). Hover any chip for the same.',
+      'VIP badges restyled with a Hypixel-gold gradient + crown so locked tweaks read as locked at a glance instead of as another accent chip.',
+      'NEW in-app Bufferbloat probe — runs a 30 MB Cloudflare /__down stream while pinging 1.1.1.1, scores idle vs loaded p50 with an A–F grade. External Waveform / DSLReports / fast.com / Ookla links demoted to a "deeper test" footer.',
+      'No more flashing cmd windows — every PowerShell / ping / bcdedit probe now runs with CREATE_NO_WINDOW. Latency Probe + Bufferbloat + PCIe link + DPC + Session suspend are all silent.',
+      'Centralized Game registry at src/lib/games.ts — single source of truth for tweak filtering, Session profiles, and (Phase 4) per-guide callouts.',
+    ],
+  },
+  {
     version: '0.1.39',
     date: '2026-05-08',
     highlights: [

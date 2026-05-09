@@ -3,8 +3,10 @@ use tauri::Manager;
 
 mod engine;
 mod metrics;
+mod process_helpers;
 mod specs;
 mod toolkit;
+mod vip;
 
 pub use engine::{ApplyReceipt, AppliedTweak, SnapshotStore, TweakAction, TweakPreview};
 pub use metrics::PerfSnapshot;
@@ -297,6 +299,103 @@ async fn ping_probe(targets: Vec<(String, String)>) -> Result<Vec<toolkit::PingR
 }
 
 #[tauri::command]
+async fn bufferbloat_probe() -> Result<toolkit::BufferbloatReport, String> {
+    tokio::task::spawn_blocking(toolkit::run_bufferbloat_probe)
+        .await
+        .map_err(|e| format!("bufferbloat task failed: {e}"))
+}
+
+#[tauri::command]
+async fn onu_stick_metrics(url: String) -> Result<toolkit::OnuStickReport, String> {
+    tokio::task::spawn_blocking(move || toolkit::fetch_onu_stick(&url))
+        .await
+        .map_err(|e| format!("onu task failed: {e}"))
+}
+
+#[tauri::command]
+async fn live_thermals() -> Result<toolkit::LiveThermals, String> {
+    tokio::task::spawn_blocking(toolkit::read_live_thermals)
+        .await
+        .map_err(|e| format!("thermals task failed: {e}"))
+}
+
+/// Resolves the bundled LHM script + DLL paths and runs the unelevated
+/// sensor probe. Returns whatever the script produces — sensor coverage
+/// without admin is partial (ACPI + GPU + SMART; no CPU package).
+#[tauri::command]
+async fn lhm_sensors(app: tauri::AppHandle) -> Result<toolkit::LhmReport, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let script = resource_dir.join("resources/lhm/read_sensors.ps1");
+    let dll = resource_dir.join("resources/lhm/LibreHardwareMonitorLib.dll");
+    let script_str = script.to_string_lossy().to_string();
+    let dll_str = dll.to_string_lossy().to_string();
+    tokio::task::spawn_blocking(move || toolkit::probe_lhm_sensors(&script_str, &dll_str))
+        .await
+        .map_err(|e| format!("lhm task failed: {e}"))
+}
+
+/// Same probe but routed through the single-UAC elevation path so the
+/// WinRing0 driver loads. Returns full sensor coverage (CPU package +
+/// per-core + voltage rails) on success. Surfaces "driver failed to load"
+/// when AV blocks WinRing0.
+/// Returns the rig's stable HWID — SHA256(BIOS UUID + BIOS serial + CPU
+/// brand). Surface to the Pricing page so users can copy + paste it to a
+/// friend who's gifting them VIP.
+#[tauri::command]
+async fn vip_hwid() -> Result<String, String> {
+    tokio::task::spawn_blocking(|| vip::compute_hwid().map_err(|e| format!("{:#}", e)))
+        .await
+        .map_err(|e| format!("hwid task failed: {e}"))?
+}
+
+/// Validate a VIP redemption code against this rig's HWID. Returns true
+/// only if the code was minted for this exact machine. Whitespace +
+/// "MAXX-" prefix + lowercase tolerated.
+#[tauri::command]
+async fn vip_verify(code: String) -> Result<bool, String> {
+    tokio::task::spawn_blocking(move || {
+        let hwid = vip::compute_hwid().map_err(|e| format!("{:#}", e))?;
+        Ok::<bool, String>(vip::verify_code(&code, &hwid))
+    })
+    .await
+    .map_err(|e| format!("vip task failed: {e}"))?
+}
+
+/// Online-claim path: POSTs the code to the Cloudflare Worker first-claim
+/// ledger. Worker writes `claim:<code>` = `<hwid>` on success, returns
+/// 409 if a different hwid already claimed. Idempotent re-redeem from
+/// the same hwid succeeds.
+#[tauri::command]
+async fn vip_claim_online(code: String) -> Result<vip::ClaimResult, String> {
+    tokio::task::spawn_blocking(move || {
+        let hwid = vip::compute_hwid().map_err(|e| format!("{:#}", e))?;
+        Ok::<vip::ClaimResult, String>(vip::claim_online(&code, &hwid))
+    })
+    .await
+    .map_err(|e| format!("vip claim task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn lhm_sensors_elevated(app: tauri::AppHandle) -> Result<toolkit::LhmReport, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let script = resource_dir.join("resources/lhm/read_sensors.ps1");
+    let dll = resource_dir.join("resources/lhm/LibreHardwareMonitorLib.dll");
+    let script_str = script.to_string_lossy().to_string();
+    let dll_str = dll.to_string_lossy().to_string();
+    tokio::task::spawn_blocking(move || {
+        toolkit::probe_lhm_sensors_elevated(&script_str, &dll_str)
+    })
+    .await
+    .map_err(|e| format!("lhm task failed: {e}"))
+}
+
+#[tauri::command]
 async fn pcie_links() -> Result<Vec<toolkit::PcieLink>, String> {
     tokio::task::spawn_blocking(|| toolkit::read_pcie_links().map_err(|e| format!("{:#}", e)))
         .await
@@ -452,6 +551,14 @@ pub fn run() {
             launch_memtest,
             dpc_snapshot,
             ping_probe,
+            bufferbloat_probe,
+            onu_stick_metrics,
+            live_thermals,
+            lhm_sensors,
+            lhm_sensors_elevated,
+            vip_hwid,
+            vip_verify,
+            vip_claim_online,
             pcie_links,
             microcode_report,
             vbs_report,

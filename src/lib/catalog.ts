@@ -5,6 +5,7 @@
  */
 import catalogData from '../../resources/catalog/v1.json'
 import type { TweakAction } from './tauri'
+import type { GameId } from './games'
 
 export type TweakCategory =
   | 'registry'
@@ -38,6 +39,15 @@ export interface TweakTargets {
   formFactor?: ('desktop' | 'laptop')[]
 }
 
+/** Tournament-compliance verdict for a single game/anticheat. Used to flag
+ * tweaks that would break eligibility for ranked / FNCS / VCT / etc. */
+export type ComplianceVerdict = 'safe' | 'risk' | 'breaks'
+
+/** Per-game compliance map. Indexed by GameId so we can read it dynamically
+ * via the active game-filter chip without TS index errors. Games with no
+ * tournament concept (e.g. osu!) simply stay omitted. */
+export type TournamentCompliance = Partial<Record<GameId, ComplianceVerdict>>
+
 export interface TweakRecord {
   id: string
   title: string
@@ -51,6 +61,13 @@ export interface TweakRecord {
   actions: TweakAction[]
   /** Optional rig-targeting hints — see TweakTargets. */
   targets?: TweakTargets
+  /** Optional per-game applicability. Omitted/empty = applies universally to
+   * every supported title. Filtering: a tweak passes the per-game filter iff
+   * it's universal OR includes the selected game. */
+  applicableGames?: GameId[]
+  /** Optional per-game tournament-eligibility verdict. Surfaces a warning pill
+   * on the row + powers the "Hide tournament-breaking" filter. */
+  tournamentCompliance?: TournamentCompliance
 }
 
 export interface Catalog {

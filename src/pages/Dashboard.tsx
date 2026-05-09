@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GameBenchmark } from '../components/GameBenchmark'
 import { HowItWorks } from '../components/HowItWorks'
+import { QuickStart } from '../components/QuickStart'
 import { RecentlyApplied } from '../components/RecentlyApplied'
 import { RecommendedForRig } from '../components/RecommendedForRig'
 import { RecommendedTweaks } from '../components/RecommendedTweaks'
@@ -105,6 +106,8 @@ export function Dashboard() {
       <RecommendedTweaks spec={spec} />
 
       <RecentlyApplied />
+
+      <QuickStart />
 
       {/* GAME-BENCHMARK CLAIMS */}
       <section className="space-y-4">

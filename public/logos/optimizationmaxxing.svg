@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <defs>
+    <linearGradient id="om-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1c1138"/>
+      <stop offset="100%" stop-color="#0a0612"/>
+    </linearGradient>
+    <linearGradient id="om-bolt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e25bff"/>
+      <stop offset="50%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#00d4ff"/>
+    </linearGradient>
+    <filter id="om-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="0.6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="24" height="24" rx="6" fill="url(#om-bg)" stroke="#322361" stroke-width="0.5"/>
+  <path
+    d="M13.4 3.2 L7.5 13 L11.4 13 L10.6 20.8 L16.5 11 L12.6 11 Z"
+    fill="url(#om-bolt)"
+    filter="url(#om-glow)"
+    stroke="rgba(255,255,255,0.25)"
+    stroke-width="0.3"
+    stroke-linejoin="round"
+  />
+</svg>

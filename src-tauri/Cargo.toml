@@ -1,6 +1,6 @@
 [package]
 name = "optimizationmaxxing"
-version = "0.1.39"
+version = "0.1.47"
 description = "PC optimization tool for competitive gamers"
 authors = ["Diggy"]
 edition = "2021"
@@ -38,6 +38,10 @@ parking_lot = "0.12"
 
 # Live system metrics for dashboard ring gauges
 sysinfo = "0.32"
+
+# Phase 7 — HWID-bound VIP redemption codes
+hmac = "0.12"
+sha2 = "0.10"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

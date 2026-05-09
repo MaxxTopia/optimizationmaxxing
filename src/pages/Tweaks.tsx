@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { TweakRow } from '../components/TweakRow'
 import { SuggestTweakModal } from '../components/SuggestTweakModal'
 import { TweakPreviewDrawer, type ResolvedPreview } from '../components/TweakPreviewDrawer'
+import { RiskLegend } from '../components/RiskLegend'
 import { auditMany, type TweakAudit } from '../lib/audit'
 import { catalog, tweakRequiresAdmin, type TweakCategory, type TweakRecord } from '../lib/catalog'
+import { GAMES, type GameId } from '../lib/games'
 import { useIsVip } from '../store/useVipStore'
 import {
   applyBatch,
@@ -29,6 +32,15 @@ export function Tweaks() {
   const [suggestOpen, setSuggestOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<TweakCategory | 'all'>('all')
   const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  const [activeGame, setActiveGame] = useState<GameId | 'any'>(() => {
+    // Deep-link: /tweaks?game=fortnite (used by Dashboard QuickStart). Falls
+    // back to 'any' if the param is absent or not a known game id.
+    const g = searchParams.get('game') as GameId | null
+    if (g && GAMES.some((x) => x.id === g)) return g
+    return 'any'
+  })
+  const [hideTournamentBreaking, setHideTournamentBreaking] = useState(false)
   const [riskFilter, setRiskFilter] = useState<0 | 1 | 2 | 3 | 4>(0)
   const [adminFilter, setAdminFilter] = useState<'all' | 'admin' | 'no-admin'>('all')
   const [appliedFilter, setAppliedFilter] = useState<'all' | 'applied' | 'not-applied'>('all')
@@ -68,6 +80,17 @@ export function Tweaks() {
     const q = search.trim().toLowerCase()
     return catalog.tweaks.filter((t) => {
       if (activeCategory !== 'all' && t.category !== activeCategory) return false
+      // Per-game filter — universal tweaks (no applicableGames or empty array)
+      // pass every game filter. Tagged tweaks pass only if the chosen game is
+      // listed.
+      if (activeGame !== 'any') {
+        const tagged = t.applicableGames && t.applicableGames.length > 0
+        if (tagged && !t.applicableGames!.includes(activeGame)) return false
+      }
+      if (hideTournamentBreaking && activeGame !== 'any') {
+        const verdict = t.tournamentCompliance?.[activeGame]
+        if (verdict === 'breaks') return false
+      }
       if (riskFilter !== 0 && t.riskLevel !== riskFilter) return false
       if (adminFilter !== 'all') {
         const needsAdmin = tweakRequiresAdmin(t)
@@ -92,7 +115,7 @@ export function Tweaks() {
       }
       return true
     })
-  }, [activeCategory, search, riskFilter, adminFilter, appliedFilter, appliedById, auditFilter, auditByTweakId])
+  }, [activeCategory, activeGame, hideTournamentBreaking, search, riskFilter, adminFilter, appliedFilter, appliedById, auditFilter, auditByTweakId])
 
   async function handleScan() {
     if (!inTauri()) {
@@ -207,6 +230,38 @@ export function Tweaks() {
           className="w-full px-4 py-2 rounded-md bg-bg-card border border-border focus:border-border-glow outline-none text-sm"
         />
 
+        <nav className="flex flex-wrap gap-2 items-center">
+          <span className="text-text-subtle uppercase tracking-wider text-[10px] mr-1">Game:</span>
+          <CategoryChip active={activeGame === 'any'} onClick={() => setActiveGame('any')}>
+            any
+          </CategoryChip>
+          {GAMES.map((g) => {
+            const count = catalog.tweaks.filter(
+              (t) => !t.applicableGames || t.applicableGames.length === 0 || t.applicableGames.includes(g.id),
+            ).length
+            return (
+              <CategoryChip
+                key={g.id}
+                active={activeGame === g.id}
+                onClick={() => setActiveGame(g.id)}
+              >
+                <span aria-hidden="true">{g.glyph}</span> {g.label} ({count})
+              </CategoryChip>
+            )
+          })}
+          {activeGame !== 'any' && (
+            <label className="ml-2 flex items-center gap-1.5 text-[11px] text-text-muted cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={hideTournamentBreaking}
+                onChange={(e) => setHideTournamentBreaking(e.target.checked)}
+                className="accent-accent"
+              />
+              hide tournament-breaking
+            </label>
+          )}
+        </nav>
+
         <nav className="flex flex-wrap gap-2">
           <CategoryChip
             active={activeCategory === 'all'}
@@ -228,17 +283,22 @@ export function Tweaks() {
           })}
         </nav>
 
-        <div className="flex flex-wrap gap-2 text-xs">
+        <div className="flex flex-wrap gap-2 text-xs items-center">
           <FilterGroup label="Risk">
-            {([0, 1, 2, 3, 4] as const).map((r) => (
-              <FilterChip
-                key={r}
-                active={riskFilter === r}
-                onClick={() => setRiskFilter(r)}
-              >
-                {r === 0 ? 'any' : `${r}`}
-              </FilterChip>
-            ))}
+            {([0, 1, 2, 3, 4] as const).map((r) => {
+              const labels: Record<number, string> = { 0: 'any tier', 1: 'Safe', 2: 'Standard', 3: 'Expert', 4: 'Extreme' }
+              return (
+                <FilterChip
+                  key={r}
+                  active={riskFilter === r}
+                  onClick={() => setRiskFilter(r)}
+                  title={labels[r]}
+                >
+                  {r === 0 ? 'any' : `${r}`}
+                </FilterChip>
+              )
+            })}
+            <RiskLegend />
           </FilterGroup>
           <FilterGroup label="Admin">
             {(['all', 'admin', 'no-admin'] as const).map((a) => (
@@ -275,7 +335,7 @@ export function Tweaks() {
               ))}
             </FilterGroup>
           )}
-          {(search || riskFilter !== 0 || adminFilter !== 'all' || appliedFilter !== 'all' || auditFilter !== 'all' || activeCategory !== 'all') && (
+          {(search || riskFilter !== 0 || adminFilter !== 'all' || appliedFilter !== 'all' || auditFilter !== 'all' || activeCategory !== 'all' || activeGame !== 'any' || hideTournamentBreaking) && (
             <button
               onClick={() => {
                 setSearch('')
@@ -284,6 +344,8 @@ export function Tweaks() {
                 setAppliedFilter('all')
                 setAuditFilter('all')
                 setActiveCategory('all')
+                setActiveGame('any')
+                setHideTournamentBreaking(false)
               }}
               className="px-2 py-1 text-text-subtle hover:text-text underline"
             >
@@ -377,14 +439,17 @@ function FilterChip({
   active,
   onClick,
   children,
+  title,
 }: {
   active: boolean
   onClick: () => void
   children: React.ReactNode
+  title?: string
 }) {
   return (
     <button
       onClick={onClick}
+      title={title}
       className={`px-2 py-0.5 rounded transition border ${
         active
           ? 'bg-accent text-bg-base border-accent'

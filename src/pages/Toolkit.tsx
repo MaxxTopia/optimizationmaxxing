@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
+import { BufferbloatCard } from '../components/BufferbloatCard'
+import { LiveThermalsCard } from '../components/LiveThermalsCard'
 import { NetworkLatencyCard } from '../components/NetworkLatencyCard'
-import { ResearchCard } from '../components/ResearchCard'
-import { RESEARCH } from '../lib/research'
+import { OnuStickCard } from '../components/OnuStickCard'
 import {
   diskFree,
   launchDiskCleanup,
   launchMemtest,
-  readTemps,
   type DiskFreeRow,
-  type ThermalSnapshot,
 } from '../lib/tauri'
 
 /** True iff window.__TAURI_INTERNALS__ is present — i.e. running inside Tauri shell. */
@@ -18,26 +17,10 @@ function inTauri(): boolean {
 }
 
 export function Toolkit() {
-  const [temps, setTemps] = useState<ThermalSnapshot | null>(null)
-  const [tempsErr, setTempsErr] = useState<string | null>(null)
   const [disks, setDisks] = useState<DiskFreeRow[] | null>(null)
   const [disksErr, setDisksErr] = useState<string | null>(null)
   const [actionMsg, setActionMsg] = useState<string | null>(null)
   const isNative = inTauri()
-
-  async function refreshTemps() {
-    if (!isNative) {
-      setTempsErr('Live thermal data only available inside the optimizationmaxxing.exe shell.')
-      return
-    }
-    setTempsErr(null)
-    try {
-      const t = await readTemps()
-      setTemps(t)
-    } catch (e) {
-      setTempsErr(formatErr(e))
-    }
-  }
 
   async function refreshDisks() {
     if (!isNative) {
@@ -54,11 +37,7 @@ export function Toolkit() {
   }
 
   useEffect(() => {
-    refreshTemps()
     refreshDisks()
-    if (!isNative) return
-    const t = setInterval(refreshTemps, 5000)
-    return () => clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -99,145 +78,57 @@ export function Toolkit() {
         <div className="surface-card p-3 text-sm text-text">{actionMsg}</div>
       )}
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Temps */}
-        <div className="surface-card p-5 space-y-3">
-          <div>
-            <p className="text-xs uppercase tracking-widest text-text-subtle">temps</p>
-            <h2 className="text-lg font-semibold">Live thermal probes</h2>
-          </div>
-          {tempsErr && (
-            <p className="text-xs text-text-muted italic">
-              {tempsErr}
-            </p>
-          )}
-          {temps && temps.probes.length === 0 && (
-            <p className="text-sm text-text-muted">
-              ACPI didn't return any thermal zones on this rig. Install LibreHardwareMonitor or
-              HWInfo for full coverage; we'll wire it next pass.
-            </p>
-          )}
-          {temps && temps.probes.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {temps.probes.map((p, i) => (
-                <div key={i} className="border border-border rounded-md p-3 text-center">
-                  <p className="text-[10px] uppercase tracking-widest text-text-subtle">
-                    {p.source}
-                  </p>
-                  <p
-                    className={`text-2xl font-bold tabular-nums ${
-                      p.celsius > 80
-                        ? 'text-accent'
-                        : p.celsius > 70
-                        ? 'text-text'
-                        : 'text-text'
-                    }`}
-                  >
-                    {p.celsius.toFixed(1)}°
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-          {temps && (
-            <p className="text-[11px] text-text-subtle italic">{temps.disclaimer}</p>
-          )}
-        </div>
+      <LiveThermalsCard />
 
-        {/* Disk free */}
-        <div className="surface-card p-5 space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-text-subtle">storage</p>
-              <h2 className="text-lg font-semibold">Disk space + cleanup</h2>
-            </div>
-            <button
-              onClick={runDiskCleanup}
-              disabled={!isNative}
-              title={isNative ? undefined : 'Requires optimizationmaxxing.exe shell'}
-              className="btn-chrome px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Disk Cleanup
-            </button>
+      <section className="surface-card p-5 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-text-subtle">storage</p>
+            <h2 className="text-lg font-semibold">Disk space + cleanup</h2>
           </div>
-          {disksErr && <p className="text-xs text-text-muted italic">{disksErr}</p>}
-          {disks && disks.length === 0 && (
-            <p className="text-sm text-text-muted">No fixed drives reported.</p>
-          )}
-          {disks && disks.length > 0 && (
-            <div className="space-y-2">
-              {disks.map((d) => (
-                <div key={d.driveLetter} className="text-sm">
-                  <div className="flex items-center justify-between gap-3 mb-1">
-                    <span className="text-text">
-                      <span className="font-semibold">{d.driveLetter}</span>
-                      {d.label ? (
-                        <span className="text-text-muted"> · {d.label}</span>
-                      ) : null}
-                    </span>
-                    <span className="text-text-muted text-xs tabular-nums">
-                      {d.freeGb} / {d.sizeGb} GB free
-                    </span>
-                  </div>
-                  <div className="h-1.5 bg-border rounded overflow-hidden">
-                    <div
-                      className="h-full bg-accent transition-all"
-                      style={{ width: `${100 - d.freePercent}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <button
+            onClick={runDiskCleanup}
+            disabled={!isNative}
+            title={isNative ? undefined : 'Requires optimizationmaxxing.exe shell'}
+            className="btn-chrome px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Disk Cleanup
+          </button>
         </div>
+        {disksErr && <p className="text-xs text-text-muted italic">{disksErr}</p>}
+        {disks && disks.length === 0 && (
+          <p className="text-sm text-text-muted">No fixed drives reported.</p>
+        )}
+        {disks && disks.length > 0 && (
+          <div className="space-y-2">
+            {disks.map((d) => (
+              <div key={d.driveLetter} className="text-sm">
+                <div className="flex items-center justify-between gap-3 mb-1">
+                  <span className="text-text">
+                    <span className="font-semibold">{d.driveLetter}</span>
+                    {d.label ? <span className="text-text-muted"> · {d.label}</span> : null}
+                  </span>
+                  <span className="text-text-muted text-xs tabular-nums">
+                    {d.freeGb} / {d.sizeGb} GB free
+                  </span>
+                </div>
+                <div className="h-1.5 bg-border rounded overflow-hidden">
+                  <div
+                    className="h-full bg-accent transition-all"
+                    style={{ width: `${100 - d.freePercent}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <NetworkLatencyCard />
 
-      <section className="surface-card p-5 space-y-3">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-text-subtle">network</p>
-          <h2 className="text-lg font-semibold">Bufferbloat + latency tools</h2>
-          <p className="text-sm text-text-muted">
-            Outbound to gold-standard testers. Bufferbloat is the silent input-lag killer when your
-            ISP under-buffers — measure before you tune router QoS.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2 text-xs">
-          <a
-            href="https://www.waveform.com/tools/bufferbloat"
-            target="_blank"
-            rel="noopener"
-            className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-text"
-          >
-            Waveform Bufferbloat ↗
-          </a>
-          <a
-            href="https://www.dslreports.com/speedtest"
-            target="_blank"
-            rel="noopener"
-            className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-text-muted hover:text-text"
-          >
-            DSLReports Speed+Buffer ↗
-          </a>
-          <a
-            href="https://fast.com/"
-            target="_blank"
-            rel="noopener"
-            className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-text-muted hover:text-text"
-          >
-            Netflix fast.com ↗
-          </a>
-          <a
-            href="https://www.speedtest.net/apps/cli"
-            target="_blank"
-            rel="noopener"
-            className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-text-muted hover:text-text"
-          >
-            Ookla CLI ↗
-          </a>
-        </div>
-      </section>
+      <BufferbloatCard />
+
+      <OnuStickCard />
 
       <section className="surface-card p-5 space-y-3">
         <div>
@@ -341,19 +232,21 @@ export function Toolkit() {
         </div>
       </section>
 
-      <section className="space-y-3">
-        <header>
-          <p className="text-xs uppercase tracking-widest text-text-subtle">research</p>
-          <h2 className="text-2xl font-bold">Curated guides</h2>
-          <p className="text-sm text-text-muted">
-            Deep-dives we keep updated. Each card expands to the full article.
+      <section className="surface-card p-5 flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <p className="text-xs uppercase tracking-widest text-text-subtle">research moved</p>
+          <h2 className="text-base font-semibold">Curated guides now live in /guides</h2>
+          <p className="text-sm text-text-muted max-w-xl">
+            Per-game callouts, advanced tracks (SCEWIN / overclocks), and OS comparison
+            shipped 2026-05-08 — open the new page to filter by your title.
           </p>
-        </header>
-        <div className="space-y-2">
-          {RESEARCH.map((article) => (
-            <ResearchCard key={article.id} article={article} />
-          ))}
         </div>
+        <a
+          href="/guides"
+          className="px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold btn-chrome"
+        >
+          Open Guides →
+        </a>
       </section>
     </div>
   )

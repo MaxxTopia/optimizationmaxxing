@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { inTauri, pingProbe, type PingResult } from '../lib/tauri'
+
+const HEADS_UP_KEY = 'optmaxxing-latency-probe-seen'
 
 /**
  * Multi-host ping probe. Curated list of gaming-relevant infrastructure:
@@ -27,13 +29,21 @@ export function NetworkLatencyCard() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [customHost, setCustomHost] = useState('')
+  const [showHeadsUp, setShowHeadsUp] = useState<boolean>(() => localStorage.getItem(HEADS_UP_KEY) !== '1')
   const isNative = inTauri()
+
+  useEffect(() => {
+    if (!showHeadsUp) {
+      localStorage.setItem(HEADS_UP_KEY, '1')
+    }
+  }, [showHeadsUp])
 
   async function run() {
     if (!isNative) {
       setErr('Latency probe requires the optimizationmaxxing.exe shell.')
       return
     }
+    setShowHeadsUp(false)
     setLoading(true)
     setErr(null)
     try {
@@ -76,6 +86,24 @@ export function NetworkLatencyCard() {
           {loading ? 'Pinging…' : results ? 'Re-run' : 'Run probe'}
         </button>
       </div>
+
+      {showHeadsUp && !results && (
+        <div
+          className="rounded-md border border-border-glow/40 bg-accent/5 px-3 py-2 text-[11px] text-text-muted leading-snug"
+          role="status"
+        >
+          <strong className="text-text">Heads up:</strong> the probe spawns 6 hidden ICMP pings —
+          you might see a brief flash on slower rigs. Nothing leaves your machine; the only IPs
+          contacted are the public endpoints listed below.{' '}
+          <button
+            type="button"
+            onClick={() => setShowHeadsUp(false)}
+            className="underline hover:text-text"
+          >
+            got it
+          </button>
+        </div>
+      )}
 
       {err && <p className="text-xs text-text-muted italic">{err}</p>}
 
