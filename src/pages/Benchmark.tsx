@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { ThirdPartyBenchLogger } from '../components/ThirdPartyBenchLogger'
 import {
   inTauri,
   type CpuLatencySample,
@@ -239,6 +240,8 @@ export function Benchmark() {
           </button>
         </section>
       )}
+
+      <ThirdPartyBenchLogger />
     </div>
   )
 }

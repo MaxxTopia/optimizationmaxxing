@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { to: '/', label: 'Dashboard' },
   { to: '/tweaks', label: 'Tweaks' },
   { to: '/presets', label: 'Presets' },
+  { to: '/diff', label: 'Diff' },
   { to: '/guides', label: 'Guides' },
   { to: '/grind', label: 'Grind' },
   { to: '/asta', label: 'Asta' },

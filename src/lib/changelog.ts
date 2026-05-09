@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.52',
+    date: '2026-05-09',
+    highlights: [
+      'NEW /diff page — every applied tweak in one consolidated audit table. Shows on-target / drift / partial / unknown verdict per row, expandable per-action detail, summary strip across the top, "copy as text" so users can DM their tune. Catches drift from Windows Update / other tuners / accidental BIOS resets.',
+      'NEW third-party benchmark score logger on /benchmark — Cinebench R23 / 2024 multi+single, 3DMark Time Spy / Time Spy Extreme / Steel Nomad / Speed Way / Fire Strike, plus CS2-fps-bench and Fortnite-replay-fps. Per-benchmark history, latest delta vs previous, point/fps unit-aware. Persisted to localStorage.',
+      'NEW CS2 competitive autoexec.cfg FileWrite — converged-pro baseline (raw input + 128-tick netcode + interp 0/ratio 1 + lag-comp + mat_queue_mode 2 + audio mix-ahead 25ms). Lives in cfg/autoexec.cfg, snapshot-backed revert.',
+      'NEW Apex Legends competitive videoconfig.txt FileWrite — strips gibs / ragdoll collision / particles / film grain / dynamic super-sampling / cascade shadows. Read-only enforcement step required after apply (PowerShell `attrib +R` snippet documented in the tweak description) since Apex rewrites videoconfig at launch.',
+      'Skipped Valorant FileWrite — Vanguard kernel AC fights config-dir modifications. Will ship a /guides article instead next batch.',
+    ],
+  },
+  {
     version: '0.1.51',
     date: '2026-05-09',
     highlights: [

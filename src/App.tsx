@@ -12,6 +12,7 @@ import { Guides } from './pages/Guides'
 import { Grind } from './pages/Grind'
 import { Asta } from './pages/Asta'
 import { Benchmark } from './pages/Benchmark'
+import { Diff } from './pages/Diff'
 import { Pricing } from './pages/Pricing'
 import { Settings } from './pages/Settings'
 import { Changelog } from './pages/Changelog'
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/grind" element={<Grind />} />
         <Route path="/asta" element={<Asta />} />
         <Route path="/benchmark" element={<Benchmark />} />
+        <Route path="/diff" element={<Diff />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/settings" element={<Settings />} />
