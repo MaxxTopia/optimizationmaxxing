@@ -51,3 +51,9 @@ RESUME.md
 # Local Cloudflare wrangler state (auth tokens, build cache)
 vip-worker/.wrangler/
 vip-worker/node_modules/
+
+# Tauri updater signing keypair — public key goes in tauri.conf.json,
+# private key + .pub are kept local; CI uses TAURI_SIGNING_PRIVATE_KEY
+# secret (paste of the file's contents) to sign release artifacts.
+.tauri-signing-key
+.tauri-signing-key.pub

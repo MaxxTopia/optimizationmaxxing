@@ -3,6 +3,7 @@ import type { TweakRecord, TweakTargets } from '../lib/catalog'
 import { tweakRequiresAdmin, tweakMatchesSpec } from '../lib/catalog'
 import { detectSpecs, type SpecProfile } from '../lib/tauri'
 import type { TweakAudit } from '../lib/audit'
+import { getImpactFor, type TweakImpactRow } from '../lib/benchImpact'
 
 /**
  * Single tweak row in the catalog list. Click the title to expand and
@@ -18,6 +19,11 @@ interface TweakRowProps {
   onApply: () => void
   onRevert: () => void
   onPreview: () => void
+  /** Optional: launch the bench-then-apply-then-bench measurement flow.
+   * When provided, a small "📏 measure" button surfaces next to Apply. */
+  onMeasureImpact?: () => void
+  /** When the bench is currently running for THIS tweak, lock the row. */
+  measuring?: boolean
 }
 
 const RISK_LABEL: Record<number, string> = {
@@ -60,11 +66,14 @@ export function TweakRow({
   onApply,
   onRevert,
   onPreview,
+  onMeasureImpact,
+  measuring,
 }: TweakRowProps) {
   const adminNeeded = tweakRequiresAdmin(tweak)
   const lockedByVip = tweak.vipGate === 'vip' && !isVip
   const [expanded, setExpanded] = useState(false)
   const [spec, setSpec] = useState<SpecProfile | null>(cachedSpec)
+  const impact: TweakImpactRow | null = getImpactFor(tweak.id)
 
   useEffect(() => {
     if (!expanded || spec) return
@@ -100,9 +109,20 @@ export function TweakRow({
             </span>
           </div>
           <p className="text-sm text-text-muted leading-snug">{tweak.description}</p>
+          {impact && <ImpactDelta impact={impact} />}
         </button>
 
         <div className="shrink-0 flex items-center gap-2">
+          {onMeasureImpact && !applied && !lockedByVip && (
+            <button
+              onClick={onMeasureImpact}
+              disabled={busy || measuring}
+              title="Bench → apply → bench (~70 s) and persist the measured delta on this row."
+              className="px-2 py-1.5 rounded-md border border-border text-[11px] hover:border-border-glow disabled:opacity-40"
+            >
+              {measuring ? '📏 …' : '📏 measure'}
+            </button>
+          )}
           <button
             onClick={onPreview}
             disabled={busy}
@@ -177,6 +197,27 @@ export function TweakRow({
         </>
       )}
     </div>
+  )
+}
+
+/** Inline display of the measured before/after delta for this tweak.
+ * Empirical "this tweak gave you +0.8" — different from generic catalog
+ * promises because the number is from the user's actual rig. */
+function ImpactDelta({ impact }: { impact: TweakImpactRow }) {
+  const delta = impact.delta
+  const colorClass =
+    delta > 0.5 ? 'text-emerald-300' : delta < -0.5 ? 'text-red-400' : 'text-text-subtle'
+  const sign = delta >= 0 ? '+' : ''
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 mt-1 px-1.5 py-0.5 rounded border border-border bg-bg-card text-[10px]"
+      title={`Measured on ${new Date(impact.ts).toLocaleString()} — composite ${impact.beforeComposite.toFixed(0)} → ${impact.afterComposite.toFixed(0)}`}
+    >
+      <span className="text-text-subtle uppercase tracking-widest">measured</span>
+      <span className={`font-semibold tabular-nums ${colorClass}`}>
+        {sign}{delta.toFixed(1)} score
+      </span>
+    </span>
   )
 }
 

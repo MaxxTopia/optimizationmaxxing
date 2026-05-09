@@ -1144,6 +1144,114 @@ impl CommandHidden for std::process::Command {
     }
 }
 
+// ── Pre-tournament audit ─────────────────────────────────────────────
+// One-button "are you ready?" check for users about to enter ranked /
+// FNCS / VCT scrims. Composes recording-app detection + service-state
+// probes into a single result the /asta page surfaces. Bench + ping +
+// DPC checks are driven by the frontend (uses existing commands).
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecordingApp {
+    pub name: String,
+    pub pid: u32,
+    pub ram_mb: u32,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AuditState {
+    pub recording_apps: Vec<RecordingApp>,
+    /// Game DVR / Xbox Game Bar background recording: ON / OFF / UNKNOWN.
+    pub game_dvr_state: String,
+    /// Windows Update service current state — "running" is bad pre-match.
+    pub windows_update_state: String,
+    /// Search Indexer service — pre-match noise.
+    pub search_indexer_state: String,
+}
+
+const RECORDING_HINTS: &[&str] = &[
+    "obs",
+    "obs64",
+    "obs32",
+    "obs-studio",
+    "streamlabs",
+    "geforce experience",
+    "nvcontainer",
+    "shadowplay",
+    "shadow_play",
+    "rtss",
+    "msi afterburner",
+    "afterburner",
+    "outplayed",
+    "medal",
+    "discord screenshare",
+    "xboxapp",
+    "broadcast",
+];
+
+pub fn read_audit_state() -> AuditState {
+    use sysinfo::{ProcessesToUpdate, System};
+    let mut sys = System::new();
+    sys.refresh_processes(ProcessesToUpdate::All, true);
+
+    let mut hits: Vec<RecordingApp> = Vec::new();
+    for (pid, p) in sys.processes() {
+        let name = p.name().to_string_lossy().to_lowercase();
+        if RECORDING_HINTS.iter().any(|h| name.contains(h)) {
+            hits.push(RecordingApp {
+                name: p.name().to_string_lossy().to_string(),
+                pid: pid.as_u32(),
+                ram_mb: (p.memory() / (1024 * 1024)) as u32,
+            });
+        }
+    }
+
+    let game_dvr_state = read_game_dvr_state();
+    let windows_update_state = read_service_state("wuauserv");
+    let search_indexer_state = read_service_state("WSearch");
+
+    AuditState {
+        recording_apps: hits,
+        game_dvr_state,
+        windows_update_state,
+        search_indexer_state,
+    }
+}
+
+fn read_game_dvr_state() -> String {
+    // HKCU\System\GameConfigStore!GameDVR_Enabled
+    use winreg::enums::*;
+    use winreg::RegKey;
+    let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+    match hkcu.open_subkey("System\\GameConfigStore") {
+        Ok(k) => match k.get_value::<u32, _>("GameDVR_Enabled") {
+            Ok(0) => "off".to_string(),
+            Ok(_) => "on".to_string(),
+            Err(_) => "unknown".to_string(),
+        },
+        Err(_) => "unknown".to_string(),
+    }
+}
+
+fn read_service_state(name: &str) -> String {
+    use crate::process_helpers::hidden_powershell;
+    let cmd = format!(
+        "(Get-Service -Name '{}' -ErrorAction SilentlyContinue).Status",
+        name.replace('\'', "''")
+    );
+    match hidden_powershell()
+        .args(["-NoProfile", "-NonInteractive", "-Command", &cmd])
+        .output()
+    {
+        Ok(o) => {
+            let s = String::from_utf8_lossy(&o.stdout).trim().to_lowercase();
+            if s.is_empty() { "unknown".to_string() } else { s }
+        }
+        Err(_) => "unknown".to_string(),
+    }
+}
+
 // ── Asta Bench ────────────────────────────────────────────────────────
 // 3 native metrics that map to actual Fortnite click-to-pixel cost:
 //   - CPU single-thread sha256 throughput (proxy for game-thread tail)

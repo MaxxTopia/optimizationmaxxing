@@ -1,13 +1,20 @@
 import { useMemo, useState } from 'react'
 import {
-  benchCpu,
-  benchPing,
-  dpcSnapshot,
   inTauri,
   type CpuLatencySample,
   type PingJitterSample,
   type DpcSnapshot,
 } from '../lib/tauri'
+import {
+  PING_COUNT,
+  PING_TARGET,
+  runBench,
+  scoreCpu,
+  scoreDpc,
+  scoreFrame,
+  scorePing,
+  type BenchStage,
+} from '../lib/astaBench'
 
 /**
  * Asta Bench — 4-metric synthetic that maps to actual Fortnite click-to-pixel cost.
@@ -23,8 +30,6 @@ import {
  */
 
 const SNAPSHOTS_KEY = 'optmaxxing-asta-bench-snapshots'
-const PING_TARGET = '1.1.1.1'
-const PING_COUNT = 30
 
 interface BenchSnapshot {
   ts: string
@@ -37,11 +42,9 @@ interface BenchSnapshot {
   composite: number
 }
 
-type Stage = 'idle' | 'cpu' | 'dpc' | 'ping' | 'frame' | 'done'
-
 export function Benchmark() {
   const isNative = inTauri()
-  const [stage, setStage] = useState<Stage>('idle')
+  const [stage, setStage] = useState<BenchStage>('idle')
   const [cpu, setCpu] = useState<CpuLatencySample | null>(null)
   const [dpc, setDpc] = useState<DpcSnapshot | null>(null)
   const [ping, setPing] = useState<PingJitterSample | null>(null)
@@ -76,19 +79,15 @@ export function Benchmark() {
     setPing(null)
     setFramePaceStddev(null)
     try {
-      setStage('cpu')
-      const c = await benchCpu()
-      setCpu(c)
-      setStage('dpc')
-      const d = await dpcSnapshot()
-      setDpc(d)
-      setStage('ping')
-      const p = await benchPing(PING_TARGET, PING_COUNT)
-      setPing(p)
-      setStage('frame')
-      const fp = await runFramePaceTest(10000)
-      setFramePaceStddev(fp)
-      setStage('done')
+      const sample = await runBench((s) => {
+        setStage(s)
+        // Surface partial results as each metric resolves so the UI
+        // doesn't look frozen during the 30 s run.
+      })
+      setCpu(sample.cpu)
+      setDpc(sample.dpc)
+      setPing(sample.ping)
+      setFramePaceStddev(sample.framePaceStddevMs)
     } catch (e) {
       setErr(typeof e === 'string' ? e : (e as Error).message ?? String(e))
       setStage('idle')
@@ -334,59 +333,8 @@ function Metric({
   )
 }
 
-// ── Frame-pacing test ────────────────────────────────────────────────
-// rAF for ~10 s, measure stddev of frame intervals. Mirrors what
-// Fortnite's render loop does — the same DWM compositor, the same
-// Windows scheduler. Browser-side because the values we want (frame
-// pacing under no GPU load) come from rAF, not from a Rust timer.
-
-async function runFramePaceTest(durationMs: number): Promise<number> {
-  const samples: number[] = []
-  let last = performance.now()
-  const end = last + durationMs
-  return new Promise<number>((resolve) => {
-    function tick(now: number) {
-      const dt = now - last
-      last = now
-      // Skip first sample (warmup), include subsequent.
-      if (samples.length > 0 || dt < 100) {
-        samples.push(dt)
-      } else {
-        samples.push(dt)
-      }
-      if (now < end) {
-        requestAnimationFrame(tick)
-      } else {
-        // Compute stddev on the middle 90% to ignore tab-switch outliers.
-        samples.sort((a, b) => a - b)
-        const trim = Math.floor(samples.length * 0.05)
-        const trimmed = samples.slice(trim, samples.length - trim)
-        const mean = trimmed.reduce((a, b) => a + b, 0) / trimmed.length
-        const variance =
-          trimmed.reduce((a, b) => a + (b - mean) * (b - mean), 0) / trimmed.length
-        resolve(Math.sqrt(variance))
-      }
-    }
-    requestAnimationFrame(tick)
-  })
-}
-
-// ── Scoring ──────────────────────────────────────────────────────────
-function scoreCpu(nsPerIter: number): number {
-  // 50 ns/op = full marks. 200 ns/op = 0.
-  return Math.max(0, Math.min(25, (200 - nsPerIter) / 6))
-}
-function scoreDpc(pct: number): number {
-  // 0% = 25, 5% = 0.
-  return Math.max(0, Math.min(25, 25 - pct * 5))
-}
-function scorePing(stddevMs: number): number {
-  // 0 ms stddev = 20, 8 ms = 0.
-  return Math.max(0, Math.min(20, 20 - stddevMs * 2.5))
-}
 function scoreFramePace(stddevMs: number): number {
-  // 0 ms = 30, 4 ms = 0. Most rigs land 0.5-1.5.
-  return Math.max(0, Math.min(30, 30 - stddevMs * 7.5))
+  return scoreFrame(stddevMs)
 }
 
 function scoreComposite(m: {
@@ -399,7 +347,7 @@ function scoreComposite(m: {
     scoreCpu(m.cpuNsPerIter) +
     scoreDpc(m.dpcPct) +
     scorePing(m.pingStddevMs) +
-    scoreFramePace(m.framePaceStddevMs)
+    scoreFrame(m.framePaceStddevMs)
   )
 }
 

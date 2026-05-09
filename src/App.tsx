@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { UpdateBanner } from './components/UpdateBanner'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { Dashboard } from './pages/Dashboard'
 import { Tweaks } from './pages/Tweaks'
@@ -37,6 +38,7 @@ export default function App() {
 
   return (
     <Layout>
+      <UpdateBanner />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/tweaks" element={<Tweaks />} />

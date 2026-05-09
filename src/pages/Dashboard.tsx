@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AstaBenchHud } from '../components/AstaBenchHud'
 import { AstaCard } from '../components/AstaCard'
 import { GameBenchmark } from '../components/GameBenchmark'
 import { HowItWorks } from '../components/HowItWorks'
@@ -107,6 +108,8 @@ export function Dashboard() {
       <RecommendedTweaks spec={spec} />
 
       <RecentlyApplied />
+
+      <AstaBenchHud />
 
       <AstaCard />
 

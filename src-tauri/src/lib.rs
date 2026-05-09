@@ -368,6 +368,16 @@ async fn vip_verify(code: String) -> Result<bool, String> {
 /// ledger. Worker writes `claim:<code>` = `<hwid>` on success, returns
 /// 409 if a different hwid already claimed. Idempotent re-redeem from
 /// the same hwid succeeds.
+/// Pre-tournament audit — recording apps + Game DVR + Windows Update +
+/// Search Indexer service states. Composed with bench + ping + DPC on the
+/// /asta page client-side.
+#[tauri::command]
+async fn audit_state() -> Result<toolkit::AuditState, String> {
+    tokio::task::spawn_blocking(toolkit::read_audit_state)
+        .await
+        .map_err(|e| format!("audit task failed: {e}"))
+}
+
 /// Asta Bench — CPU sha256 throughput, run on a worker thread so we don't
 /// block the Tauri event loop. ~3-5 s on a modern CPU.
 #[tauri::command]
@@ -544,6 +554,8 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .setup(|app| {
             let dir = app
                 .path()
@@ -579,6 +591,7 @@ pub fn run() {
             vip_claim_online,
             bench_cpu,
             bench_ping,
+            audit_state,
             pcie_links,
             microcode_report,
             vbs_report,

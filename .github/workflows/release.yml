@@ -48,6 +48,13 @@ jobs:
               uses: tauri-apps/tauri-action@v0
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # Auto-update signing — both must be set as repo secrets.
+                  # See README in vip-worker/ for similar setup pattern.
+                  # If either is missing, tauri-action skips signing + the
+                  # latest.json artifact won't be produced (manual install
+                  # still works, just no in-app update prompts).
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
               with:
                   tagName: ${{ github.ref_name }}
                   releaseName: "Optimizationmaxxing ${{ github.ref_name }}"
@@ -56,8 +63,15 @@ jobs:
                       Download `optimizationmaxxing_${{ github.ref_name }}_x64-setup.exe` below.
 
                       Windows SmartScreen will warn (unsigned for v0.1) — More info -> Run anyway.
+
+                      v0.1.49+ supports auto-update — installs after this auto-prompt to install
+                      the next release once the signed `latest.json` is published.
                   releaseDraft: true
                   prerelease: false
+                  # Emits a `latest.json` manifest alongside the .exe so the
+                  # Tauri updater plugin can find new builds. Endpoints
+                  # config in tauri.conf.json points at this file.
+                  updaterJsonPreferNsis: true
 
             # Cross-repo: notify maxxtopia.com so the Download CTA on
             # /optimizationmaxxing updates to the new installer. Listener

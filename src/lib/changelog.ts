@@ -12,6 +12,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.49',
+    date: '2026-05-09',
+    highlights: [
+      'NEW per-tweak impact measurement — small "📏 measure" button on every Tweak row. Click it: runs Asta Bench (~30s) → applies the tweak → settles 4s → reruns Asta Bench. Persists the measured composite delta keyed by tweakId in localStorage. Catalog row shows "measured +0.8 score" inline once you have data — empirical, not vibes. Free-tier feature.',
+      'NEW Pre-Tournament Audit on /asta — one button below Activate, ~40s, six checks: Latency Health Score ≥ 75, ping p50 < 30 ms / jitter < 8 ms, DPC < 2%, Game DVR off, no recording/overlay apps running (OBS / Streamlabs / GeForce Experience / ShadowPlay), Windows Update + Search Indexer services stopped. Pass / warn / fail per row + an overall verdict ribbon.',
+      'NEW Asta Bench HUD on Dashboard — small glanceable card with your latest composite + 10-snapshot sparkline (rising = green, falling = red). Click → /benchmark.',
+      'NEW auto-update via Tauri updater plugin — every launch checks https://github.com/MaxxTopia/optimizationmaxxing/releases/latest/download/latest.json. New version available? Banner appears at top of app — one click downloads + verifies signature against bundled minisign public key + relaunches into the new build. v0.1.49 ships the plumbing; v0.1.50+ users get the prompt.',
+      'CI release.yml wired with TAURI_SIGNING_PRIVATE_KEY + TAURI_SIGNING_PRIVATE_KEY_PASSWORD env vars + updaterJsonPreferNsis=true so future tag pushes auto-emit a signed latest.json.',
+      'Pipeline ops fix — patched the 6 sibling sync-*-release.yml workflows (aimmaxxer / clipmaxxer / discordmaxxer / dropmaxxer / editmaxxing / viewmaxxing) with the same actions:write + gh workflow run deploy.yml step we shipped on the optimizationmaxxing sync. Future product releases auto-cascade through the deploy chain too.',
+      'Refactor: Asta Bench logic moved to src/lib/astaBench.ts so /benchmark page + per-tweak measure flow share the same scoring + runner. No double-implementations.',
+      'New Tauri command: audit_state() — sysinfo process scan + winreg Game DVR probe + service-state queries.',
+    ],
+  },
+  {
     version: '0.1.48',
     date: '2026-05-09',
     highlights: [

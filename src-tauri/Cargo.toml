@@ -1,6 +1,6 @@
 [package]
 name = "optimizationmaxxing"
-version = "0.1.48"
+version = "0.1.49"
 description = "PC optimization tool for competitive gamers"
 authors = ["Diggy"]
 edition = "2021"
@@ -42,6 +42,10 @@ sysinfo = "0.32"
 # Phase 7 — HWID-bound VIP redemption codes
 hmac = "0.12"
 sha2 = "0.10"
+
+# Phase 10 — auto-update via Tauri updater
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

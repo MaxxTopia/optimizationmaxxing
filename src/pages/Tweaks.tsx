@@ -8,6 +8,8 @@ import { auditMany, type TweakAudit } from '../lib/audit'
 import { catalog, tweakRequiresAdmin, type TweakCategory, type TweakRecord } from '../lib/catalog'
 import { GAMES, type GameId } from '../lib/games'
 import { useIsVip } from '../store/useVipStore'
+import { runBench, score } from '../lib/astaBench'
+import { saveImpact } from '../lib/benchImpact'
 import {
   applyBatch,
   inTauri,
@@ -27,6 +29,8 @@ import {
 export function Tweaks() {
   const [appliedById, setAppliedById] = useState<Record<string, AppliedTweak>>({})
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [measuringId, setMeasuringId] = useState<string | null>(null)
+  const [measureNotice, setMeasureNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<ResolvedPreview | null>(null)
   const [suggestOpen, setSuggestOpen] = useState(false)
@@ -171,6 +175,49 @@ export function Tweaks() {
       setError(formatErr(e))
     } finally {
       setBusyId(null)
+    }
+  }
+
+  async function handleMeasureImpact(t: TweakRecord) {
+    if (!inTauri()) {
+      setError('Measure-impact requires the optimizationmaxxing.exe shell.')
+      return
+    }
+    setMeasuringId(t.id)
+    setMeasureNotice(`📏 ${t.title} — running before-bench…`)
+    setError(null)
+    try {
+      const before = score(await runBench())
+      setMeasureNotice(`📏 ${t.title} — applying tweak…`)
+      const items: BatchItem[] = t.actions.map((action) => ({ tweakId: t.id, action }))
+      await applyBatch(items)
+      await refreshApplied()
+      // Brief settle for caches + scheduler.
+      setMeasureNotice(`📏 ${t.title} — settling 4 s before re-bench…`)
+      await new Promise((r) => setTimeout(r, 4000))
+      setMeasureNotice(`📏 ${t.title} — running after-bench…`)
+      const after = score(await runBench())
+      saveImpact({
+        tweakId: t.id,
+        ts: new Date().toISOString(),
+        beforeComposite: before.composite,
+        afterComposite: after.composite,
+        delta: after.composite - before.composite,
+        cpuDeltaNs: after.cpu.nsPerIter - before.cpu.nsPerIter,
+        dpcDelta: after.dpc.totalDpcPercent - before.dpc.totalDpcPercent,
+        pingStddevDelta: (after.ping.stddevMs ?? 0) - (before.ping.stddevMs ?? 0),
+        framePaceStddevDelta: after.framePaceStddevMs - before.framePaceStddevMs,
+      })
+      const delta = after.composite - before.composite
+      const sign = delta >= 0 ? '+' : ''
+      setMeasureNotice(
+        `📏 ${t.title} measured: ${before.composite.toFixed(0)} → ${after.composite.toFixed(0)} (${sign}${delta.toFixed(1)})`,
+      )
+    } catch (e) {
+      setError(formatErr(e))
+      setMeasureNotice(null)
+    } finally {
+      setMeasuringId(null)
     }
   }
 
@@ -380,6 +427,18 @@ export function Tweaks() {
         <div className="surface-card p-3 text-sm text-accent">{error}</div>
       )}
 
+      {measureNotice && (
+        <div className="surface-card p-3 text-sm text-text-muted border border-border-glow">
+          {measureNotice}
+          <button
+            onClick={() => setMeasureNotice(null)}
+            className="ml-3 text-text-subtle hover:text-text underline text-xs"
+          >
+            dismiss
+          </button>
+        </div>
+      )}
+
       {preview && <TweakPreviewDrawer preview={preview} onClose={() => setPreview(null)} />}
 
       <div className="space-y-2">
@@ -388,12 +447,14 @@ export function Tweaks() {
             key={t.id}
             tweak={t}
             applied={!!appliedById[t.id]}
-            busy={busyId === t.id}
+            busy={busyId === t.id || measuringId === t.id}
             isVip={isVip}
             audit={auditByTweakId[t.id]}
             onApply={() => handleApply(t)}
             onRevert={() => handleRevert(t)}
             onPreview={() => handlePreview(t)}
+            onMeasureImpact={() => handleMeasureImpact(t)}
+            measuring={measuringId === t.id}
           />
         ))}
       </div>

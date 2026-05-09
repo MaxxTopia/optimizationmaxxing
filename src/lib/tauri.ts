@@ -455,6 +455,23 @@ export async function benchPing(host: string, count: number): Promise<PingJitter
   return invoke<PingJitterSample>('bench_ping', { host, count })
 }
 
+export interface RecordingApp {
+  name: string
+  pid: number
+  ramMb: number
+}
+
+export interface AuditState {
+  recordingApps: RecordingApp[]
+  gameDvrState: string
+  windowsUpdateState: string
+  searchIndexerState: string
+}
+
+export async function auditState(): Promise<AuditState> {
+  return invoke<AuditState>('audit_state')
+}
+
 export interface PcieLink {
   device: string
   /** Current link width as integer (8 = x8, 16 = x16). */
