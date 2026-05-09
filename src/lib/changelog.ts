@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.51',
+    date: '2026-05-09',
+    highlights: [
+      'CI fix: Tauri 2 needs `createUpdaterArtifacts: true` in bundle config to actually emit latest.json. v0.1.50 shipped without it (silent no-op). v0.1.51 emits the signed manifest. v0.1.49+ installs in the wild now get the in-app update banner pointing at this build.',
+    ],
+  },
+  {
     version: '0.1.50',
     date: '2026-05-09',
     highlights: [
