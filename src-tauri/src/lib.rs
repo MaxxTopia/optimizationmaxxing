@@ -372,6 +372,13 @@ async fn vip_verify(code: String) -> Result<bool, String> {
 /// Search Indexer service states. Composed with bench + ping + DPC on the
 /// /asta page client-side.
 #[tauri::command]
+async fn ram_modules() -> Result<Vec<toolkit::RamModule>, String> {
+    tokio::task::spawn_blocking(|| Ok(toolkit::read_ram_modules()))
+        .await
+        .map_err(|e| format!("ram task failed: {e}"))?
+}
+
+#[tauri::command]
 async fn audit_state() -> Result<toolkit::AuditState, String> {
     tokio::task::spawn_blocking(toolkit::read_audit_state)
         .await
@@ -592,6 +599,7 @@ pub fn run() {
             bench_cpu,
             bench_ping,
             audit_state,
+            ram_modules,
             pcie_links,
             microcode_report,
             vbs_report,

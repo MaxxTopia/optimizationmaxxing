@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.50',
+    date: '2026-05-09',
+    highlights: [
+      'NEW RAM Tightening Advisor on /diagnostics — reads Win32_PhysicalMemory + identifies the IC die type from the part number (Samsung B-die / Hynix M-die / Hynix A-die / Hynix CJR/DJR / Micron Rev.E / Hynix DDR5 etc). Per-stick: vendor / part / capacity / speed / voltage + tuning character paragraph + links to Thaiphoon Burner / DRAM Calculator / TestMem5 / Buildzoid. Closest thing to a free 5-8% FPS — read-only, articleware. We never auto-flash BIOS.',
+      'NEW /guides article: "The latency budget — every layer, cited" — full click-to-pixel breakdown (input + Windows/driver + game/render/queue + GPU + display + network), per-layer tunable vs hardware-fixed, with Battle(non)sense + NVIDIA Reflex whitepaper + Blur Busters citations. Net deltas table: 76 ms stock → 31.5 ms tuned on a comparable rig.',
+      'NEW /guides article: "The grind layer — sleep, sessions, warmups, body" — Stanford sleep + athletic performance data (9% accuracy improvement from 7→10 hours), Aussie Antics personal-training-background take on body grind, 90/10 session cadence research from Anders Ericsson, fixed warmup routine framework, VOD review prompts, what to copy from each pro on /grind.',
+      'FIRST signed release. CI now has TAURI_SIGNING_PRIVATE_KEY + TAURI_SIGNING_PRIVATE_KEY_PASSWORD secrets — release.yml emits a signed latest.json alongside the .exe. v0.1.49 installs in the wild get the in-app update banner the moment this release publishes. End-to-end auto-update pipeline closed.',
+    ],
+  },
+  {
     version: '0.1.49',
     date: '2026-05-09',
     highlights: [

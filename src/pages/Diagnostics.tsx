@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { DpcLatencyCard } from '../components/DpcLatencyCard'
 import { IntelMicrocodeCard } from '../components/IntelMicrocodeCard'
 import { PcieLinkCard } from '../components/PcieLinkCard'
+import { RamAdvisorCard } from '../components/RamAdvisorCard'
 import { UclkWarningCard } from '../components/UclkWarningCard'
 import { VbsStatusCard } from '../components/VbsStatusCard'
 import {
@@ -255,6 +256,8 @@ export function Diagnostics() {
           <VbsStatusCard />
 
           <UclkWarningCard spec={snap.spec} />
+
+          <RamAdvisorCard />
 
           <PcieLinkCard />
 

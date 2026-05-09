@@ -472,6 +472,22 @@ export async function auditState(): Promise<AuditState> {
   return invoke<AuditState>('audit_state')
 }
 
+export interface RamModule {
+  slot: string
+  manufacturer: string
+  partNumber: string
+  capacityGb: number
+  speedMts: number
+  voltageMv: number | null
+  formFactor: string
+  icType: string
+  icCharacter: string
+}
+
+export async function ramModules(): Promise<RamModule[]> {
+  return invoke<RamModule[]>('ram_modules')
+}
+
 export interface PcieLink {
   device: string
   /** Current link width as integer (8 = x8, 16 = x16). */

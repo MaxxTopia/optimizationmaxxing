@@ -15,6 +15,8 @@ import osComparison from '../../resources/research/os-comparison.md?raw'
 import biosTournamentCompliance from '../../resources/research/bios-tournament-compliance.md?raw'
 import scewinAdvanced from '../../resources/research/scewin-advanced.md?raw'
 import winring0AvExclusion from '../../resources/research/winring0-av-exclusion.md?raw'
+import latencyBudget from '../../resources/research/latency-budget.md?raw'
+import grindLayer from '../../resources/research/grind-layer.md?raw'
 
 import type { GameId } from './games'
 
@@ -159,5 +161,23 @@ export const RESEARCH: ResearchArticle[] = [
       "If Live Thermals shows 'probe failed' or CPU package temp won't appear after Enable, your AV is blocking the WinRing0 driver. Add-MpPreference snippet inside.",
     badge: 'TROUBLESHOOTING',
     body: winring0AvExclusion,
+  },
+  {
+    id: 'latency-budget',
+    title: 'The latency budget — every layer, cited',
+    blurb:
+      "Total click-to-pixel: 25-35 ms tuned vs 50-80 ms stock. Per-layer breakdown with Battle(non)sense + Reflex whitepaper + Blur Busters citations. What's tunable, what's hardware-fixed.",
+    badge: 'LATENCY',
+    body: latencyBudget,
+    applicableGames: ['fortnite', 'valorant', 'cs2', 'apex', 'warzone', 'overwatch'],
+  },
+  {
+    id: 'grind-layer',
+    title: 'The grind layer — sleep, sessions, warmups, body',
+    blurb:
+      "Pros publish settings — they rarely publish sleep schedules. Aussie's PT background, Bugha's recovery research, Stanford sleep + athletic performance data, the 90/10 cadence pros actually run.",
+    badge: 'GRIND',
+    body: grindLayer,
+    applicableGames: ['fortnite', 'valorant', 'cs2', 'apex', 'warzone', 'osu', 'overwatch'],
   },
 ]

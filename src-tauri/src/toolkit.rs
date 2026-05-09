@@ -1144,6 +1144,200 @@ impl CommandHidden for std::process::Command {
     }
 }
 
+// ── RAM module probe + IC identification ────────────────────────────
+// Uses Win32_PhysicalMemory (no admin) to enumerate installed sticks.
+// IC type is inferred from part-number prefix patterns. Identification
+// is best-effort — common parts are well-covered, exotic parts fall
+// through to "unknown" and we tell the user to dump SPD via Thaiphoon
+// Burner for verification. We never auto-flash BIOS — articleware only.
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RamModule {
+    /// Slot the module is installed in (BankLabel + DeviceLocator).
+    pub slot: String,
+    pub manufacturer: String,
+    pub part_number: String,
+    pub capacity_gb: u32,
+    /// Configured speed in MT/s.
+    pub speed_mts: u32,
+    /// Configured DDR voltage if reported (millivolts).
+    pub voltage_mv: Option<u32>,
+    pub form_factor: String,
+    /// Inferred IC die type (e.g. "Samsung B-die", "Hynix M-die"). "unknown"
+    /// when no prefix pattern matches.
+    pub ic_type: String,
+    /// Tuning character / strengths of this IC. One paragraph the
+    /// frontend renders as advisor copy.
+    pub ic_character: String,
+}
+
+pub fn read_ram_modules() -> Vec<RamModule> {
+    let com = match wmi::COMLibrary::new() {
+        Ok(c) => c,
+        Err(_) => return vec![],
+    };
+    let con = match WMIConnection::new(com) {
+        Ok(c) => c,
+        Err(_) => return vec![],
+    };
+    let rows: Vec<HashMap<String, Variant>> = con
+        .raw_query("SELECT BankLabel, DeviceLocator, Manufacturer, PartNumber, Capacity, ConfiguredClockSpeed, ConfiguredVoltage, FormFactor FROM Win32_PhysicalMemory")
+        .unwrap_or_default();
+    let mut out = Vec::new();
+    for r in rows {
+        let bank = string_field(&r, "BankLabel").unwrap_or_default();
+        let dev = string_field(&r, "DeviceLocator").unwrap_or_default();
+        let slot = if bank.is_empty() { dev.clone() } else if dev.is_empty() { bank.clone() } else { format!("{}/{}", bank, dev) };
+        let manufacturer = string_field(&r, "Manufacturer").unwrap_or_default();
+        let part_number = string_field(&r, "PartNumber").unwrap_or_default();
+        let capacity_bytes = u64_field(&r, "Capacity").unwrap_or(0);
+        let capacity_gb = (capacity_bytes / (1024 * 1024 * 1024)) as u32;
+        let speed_mts = u32_field(&r, "ConfiguredClockSpeed").unwrap_or(0);
+        let voltage_mv = u32_field(&r, "ConfiguredVoltage");
+        let form_factor = match u32_field(&r, "FormFactor").unwrap_or(0) {
+            8 => "DIMM".to_string(),
+            12 => "SO-DIMM".to_string(),
+            13 => "SRIMM".to_string(),
+            other => format!("FormFactor {}", other),
+        };
+        let (ic_type, ic_character) = identify_ic(&manufacturer, &part_number);
+        out.push(RamModule {
+            slot,
+            manufacturer,
+            part_number,
+            capacity_gb,
+            speed_mts,
+            voltage_mv,
+            form_factor,
+            ic_type,
+            ic_character,
+        });
+    }
+    out
+}
+
+fn string_field(r: &HashMap<String, Variant>, key: &str) -> Option<String> {
+    match r.get(key)? {
+        Variant::String(s) => Some(s.trim().to_string()),
+        _ => None,
+    }
+}
+fn u32_field(r: &HashMap<String, Variant>, key: &str) -> Option<u32> {
+    match r.get(key)? {
+        Variant::UI4(n) => Some(*n),
+        Variant::I4(n) => Some(*n as u32),
+        Variant::UI8(n) => Some(*n as u32),
+        Variant::I8(n) => Some(*n as u32),
+        _ => None,
+    }
+}
+fn u64_field(r: &HashMap<String, Variant>, key: &str) -> Option<u64> {
+    match r.get(key)? {
+        Variant::UI8(n) => Some(*n),
+        Variant::I8(n) => Some(*n as u64),
+        Variant::UI4(n) => Some(*n as u64),
+        Variant::I4(n) => Some(*n as u64),
+        Variant::String(s) => s.trim().parse::<u64>().ok(),
+        _ => None,
+    }
+}
+
+/// Map manufacturer + part number prefix to IC die type. Conservative —
+/// when a prefix doesn't strictly match, we return "unknown" rather than
+/// guess wrong (the wrong IC recommendation can land bad voltages → bricked
+/// stick).
+///
+/// References: Hardware Unboxed deep-dives, KingPin / Buildzoid streams,
+/// DRAM Calculator for Ryzen IC database, ASUS BIOS guides.
+fn identify_ic(manufacturer: &str, part_number: &str) -> (String, String) {
+    let mfr = manufacturer.to_uppercase();
+    let pn = part_number.to_uppercase();
+
+    // Samsung B-die — the king of tight subtimings. Used by every G.Skill
+    // Trident Z RGB / Royal kit at >3600 MT/s for the DDR4 era. Loves
+    // 1.45-1.50V, scales to CL14 @ 3600 / CL16 @ 4000 with effort.
+    if (mfr.contains("SAMSUNG") || pn.starts_with("M378") || pn.starts_with("M391") || pn.starts_with("M471"))
+        && (pn.ends_with("-CB0") || pn.ends_with("-DB0") || pn.contains("B0/CN") || pn.contains("CN0") || pn.contains("DR0"))
+    {
+        return (
+            "Samsung B-die (DDR4)".into(),
+            "The king of subtimings. Loves 1.45-1.50 V. Sweet spot CL14 @ 3600 MT/s. \
+             Tight tRRD + tFAW move 1% lows in Fortnite endgames. Use DRAM Calculator on \
+             SAFE preset first; FAST after stability passes.".into(),
+        );
+    }
+
+    // Hynix M-die — second-tier DDR4, peaked at high frequency. Sweet at 3800-4000.
+    if mfr.contains("HYNIX") && (pn.contains("HMA") || pn.contains("HMAA")) && (pn.contains("M-die") || pn.contains("AFR") || pn.contains("AGR")) {
+        return (
+            "Hynix M-die (DDR4)".into(),
+            "Frequency-loving Hynix die. Tighter than A-die, looser than B-die. \
+             Sweet spot 3800-4000 MT/s @ CL16-18, 1.40 V. Be conservative on tRFC \
+             — Hynix breaks faster than Samsung when tightened too aggressively.".into(),
+        );
+    }
+
+    // Hynix A-die — loose primaries, very high frequency potential. 4400+.
+    if mfr.contains("HYNIX") && (pn.contains("HMAH") || pn.contains("A-die")) {
+        return (
+            "Hynix A-die (DDR4)".into(),
+            "High-frequency die. Looser primaries than B-die but scales to 4400+ MT/s \
+             on Z690+ boards. Sweet spot ~4000 MT/s @ CL18. Less rewarding to \
+             subtime than B-die — focus on frequency.".into(),
+        );
+    }
+
+    // Hynix DJR/CJR — DDR4 mid-tier, found in many JEDEC kits.
+    if mfr.contains("HYNIX") && pn.contains("HMC") {
+        return (
+            "Hynix CJR/DJR (DDR4)".into(),
+            "Common Hynix die in stock kits. Decent at 3600 MT/s @ CL16, won't \
+             match B-die subtimings. Recommended path: enable XMP, then tighten \
+             only tCL / tRCD / tRP via DRAM Calculator's SAFE preset.".into(),
+        );
+    }
+
+    // Hynix DDR5 — A-die / M-die — most pre-built DDR5 sticks ship Hynix.
+    if mfr.contains("HYNIX") && pn.contains("HMC") && pn.contains("DDR5") {
+        return (
+            "Hynix DDR5 (A-die or M-die)".into(),
+            "Most common DDR5 die. A-die scales to 7600+ MT/s on AM5; M-die caps lower. \
+             Use Buildzoid's DDR5 Hynix tuning guide as starting point — DDR5 timings \
+             are an order of magnitude more tunable than DDR4.".into(),
+        );
+    }
+
+    // Micron Rev.E — rebadged as Crucial Ballistix MAX. Loose primaries, high freq.
+    if (mfr.contains("MICRON") || mfr.contains("CRUCIAL")) && (pn.contains("E") || pn.contains("REVE") || pn.contains("BLM4G") || pn.contains("MTA")) {
+        return (
+            "Micron Rev.E (DDR4)".into(),
+            "Crucial Ballistix MAX heart. Loose primaries by design (CL16-18) but \
+             scales to 4266+ MT/s with attention to tFAW + tCWL. Sweet spot is \
+             frequency, not subtimings. ~1.45 V max for daily.".into(),
+        );
+    }
+
+    // Micron Rev.B — DDR5 staple in pre-built kits.
+    if mfr.contains("MICRON") && pn.contains("DDR5") {
+        return (
+            "Micron Rev.B (DDR5)".into(),
+            "Common Micron DDR5 die. Tops out around 6400 MT/s for daily-stable. \
+             AM5 + Intel Z790: enable EXPO/XMP and call it. Subtiming gains are \
+             marginal vs Hynix DDR5.".into(),
+        );
+    }
+
+    // Generic fallback.
+    (
+        "unknown".into(),
+        "Couldn't identify the die from part number alone. Run Thaiphoon Burner \
+         (free, no install) → 'Read SPD' → take the IC line under 'Memory Components' \
+         and compare against DRAM Calculator's IC database. Don't push voltage \
+         beyond stock until you've confirmed the IC.".into(),
+    )
+}
+
 // ── Pre-tournament audit ─────────────────────────────────────────────
 // One-button "are you ready?" check for users about to enter ranked /
 // FNCS / VCT scrims. Composes recording-app detection + service-state
