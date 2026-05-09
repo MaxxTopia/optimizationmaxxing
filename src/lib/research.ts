@@ -17,6 +17,7 @@ import scewinAdvanced from '../../resources/research/scewin-advanced.md?raw'
 import winring0AvExclusion from '../../resources/research/winring0-av-exclusion.md?raw'
 import latencyBudget from '../../resources/research/latency-budget.md?raw'
 import grindLayer from '../../resources/research/grind-layer.md?raw'
+import fortniteProSettings from '../../resources/research/fortnite-pro-settings.md?raw'
 
 import type { GameId } from './games'
 
@@ -179,5 +180,14 @@ export const RESEARCH: ResearchArticle[] = [
     badge: 'GRIND',
     body: grindLayer,
     applicableGames: ['fortnite', 'valorant', 'cs2', 'apex', 'warzone', 'osu', 'overwatch'],
+  },
+  {
+    id: 'fortnite-pro-settings',
+    title: 'Fortnite — in-game pro settings (cited)',
+    blurb:
+      "The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag wins live inside Fortnite's Settings menu — Reflex+Boost, Performance render mode, View Distance Far (not Epic), shadows off. Cited from Peterbot/Clix/Bugha public configs.",
+    badge: 'FORTNITE',
+    body: fortniteProSettings,
+    applicableGames: ['fortnite'],
   },
 ]

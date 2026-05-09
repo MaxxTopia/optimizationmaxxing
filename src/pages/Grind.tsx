@@ -101,6 +101,7 @@ function GoatCard({ entry }: { entry: GrindEntry }) {
           "{entry.voice}"
         </p>
         <RigSnapshot entry={entry} />
+        <Routine entry={entry} />
         <Insights entry={entry} />
         {entry.link && (
           <a
@@ -141,8 +142,45 @@ function GrindCard({ entry }: { entry: GrindEntry }) {
       </div>
       <p className="text-sm text-text leading-relaxed italic">"{entry.voice}"</p>
       <RigSnapshot entry={entry} />
+      <Routine entry={entry} />
       <Insights entry={entry} />
     </article>
+  )
+}
+
+function Routine({ entry }: { entry: GrindEntry }) {
+  const r = entry.dailyRoutine
+  if (!r) return null
+  const blocks: Array<{ label: string; items?: string[] }> = [
+    { label: 'morning', items: r.morning },
+    { label: 'afternoon', items: r.afternoon },
+    { label: 'evening', items: r.evening },
+    { label: 'recovery', items: r.recovery },
+  ].filter((b) => b.items && b.items.length > 0)
+  if (blocks.length === 0) return null
+  return (
+    <details className="pt-3 border-t border-border group">
+      <summary className="cursor-pointer text-[11px] uppercase tracking-widest text-text-subtle hover:text-text flex items-center gap-2 select-none">
+        <span aria-hidden="true">⏱</span> Daily routine
+        <span className="text-text-subtle group-open:hidden">+</span>
+        <span className="text-text-subtle hidden group-open:inline">−</span>
+      </summary>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+        {blocks.map((b) => (
+          <div key={b.label}>
+            <p className="text-[10px] uppercase tracking-widest text-accent font-semibold mb-1">{b.label}</p>
+            <ul className="space-y-1 text-xs text-text-muted leading-snug">
+              {b.items!.map((it, i) => (
+                <li key={i} className="flex gap-1.5">
+                  <span className="text-text-subtle shrink-0">·</span>
+                  <span>{it}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </details>
   )
 }
 

@@ -116,12 +116,40 @@
     0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* Card surface — themed bg with subtle border + hover lift. */
+/* Primary CTAs (.btn-chrome.bg-accent) get a diagonal accent → accent-dark
+ * gradient layered on top of Tailwind's solid bg-accent fill — adds depth
+ * to every "Apply preset / Update now / Activate" button without touching
+ * neutral chrome buttons. Each theme can override --cta-gradient in its
+ * body block for a signature flavor. */
+:root {
+  --cta-gradient:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--accent) 92%, white) 0%,
+      var(--accent) 45%,
+      var(--accent-dark) 100%
+    );
+}
+.btn-chrome.bg-accent {
+  background-image: var(--cta-gradient);
+}
+
+/* Card surface — themed bg with subtle border + hover lift.
+ * Layered: base bg + a 3-stop diagonal accent wash + inset hairline so the
+ * card reads with depth instead of a flat fill. The accent-wash uses
+ * color-mix against --bg-card so it stays subtle on every theme. */
 .surface-card {
   position: relative;
-  background: var(--bg-card);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--accent) 7%, var(--bg-card)) 0%,
+      var(--bg-card) 55%,
+      color-mix(in oklab, var(--secondary) 6%, var(--bg-card)) 100%
+    );
   border: 1px solid var(--border);
   border-radius: 0.75rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition:
     border-color var(--motion-arc),
     box-shadow var(--motion-glow),
@@ -129,7 +157,9 @@
 }
 .surface-card:hover {
   border-color: var(--border-glow);
-  box-shadow: 0 0 18px var(--border-glow);
+  box-shadow:
+    0 0 18px var(--border-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transform: translateY(-1px);
 }
 @media (prefers-reduced-motion: reduce) {

@@ -12,6 +12,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.53',
+    date: '2026-05-09',
+    highlights: [
+      'NEW Fortnite GameUserSettings.ini tweak — pairs with the existing Engine.ini. Locks FrameRateLimit=240, VSync off, motion blur off, grass off, HDR output off, fullscreen-windowed mode (Fortnite\'s lowest-input-lag option since exclusive-fullscreen was removed in Ch5). VIP-gated, snapshot-backed revert. Catalog now ~96 tweaks.',
+      'NEW /guides article: Fortnite — in-game pro settings. Cited consensus stack for everything that lives inside Fortnite\'s own Settings menu (the things Engine.ini + GameUserSettings.ini can\'t touch — Reflex+Boost, Performance render mode, View Distance Far not Epic, audio + replay settings). Sourced from Peterbot/Clix/Bugha/Mongraal public configs.',
+      'NEW /grind page operationalized — per-pro daily routine breakdowns now expandable on Peterbot, Clix, Bugha, Aussie Antics. Morning/Afternoon/Evening/Recovery blocks instead of just philosophy quotes. Real templates kids can copy.',
+      'GLAMOUR pass — every .surface-card now ships a layered diagonal accent gradient + inset hairline glow. Propagates depth across ~40 surfaces in one shot. Ring gauges get double drop-shadow for premium glow. Primary CTAs (.btn-chrome.bg-accent) get a per-theme accent → accent-dark gradient layered on top of the chrome trim.',
+      'FIX UpdateBanner re-nag — "later" now persists per-version in localStorage so a dismissed v0.1.53 banner doesn\'t reappear on every app launch. New release wipes the suppression so genuine upgrades still surface.',
+      'FIX Asta easter egg — 5-tap window on Pricing $8 was accumulating clicks across multi-minute gaps and triggering the redemption panel unintentionally. Now resets cleanly when the 3-second window expires.',
+      'FIX /diff Copy-as-text — guard against copying "0 tweaks applied" snapshot when the audit returns an empty active set.',
+    ],
+  },
+  {
     version: '0.1.52',
     date: '2026-05-09',
     highlights: [

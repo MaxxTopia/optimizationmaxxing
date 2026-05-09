@@ -2079,6 +2079,26 @@
           "contents_b64": "W0NvcmUuU3lzdGVtXQpyLk1heEFuaXNvdHJvcHk9MApyLk1vdGlvbkJsdXJRdWFsaXR5PTAKci5Nb3Rpb25CbHVyLkFtb3VudD0wCnIuU2tlbGV0YWxNZXNoTE9EQmlhcz05OQpyLkFudGlBbGlhc2luZ01ldGhvZD0wCnNnLlBvc3RQcm9jZXNzUXVhbGl0eT0wCnNnLlNoYWRvd1F1YWxpdHk9MApzZy5WaWV3RGlzdGFuY2VRdWFsaXR5PTAKc2cuRWZmZWN0c1F1YWxpdHk9MApzZy5Gb2xpYWdlUXVhbGl0eT0wCgpbQ29uc29sZVZhcmlhYmxlc10Kci5IWkJPY2NsdXNpb249MgpyLlJlbmRlclRhcmdldFBvb2xNaW49MzAwCgpbQ29yZS5Mb2ddCkxvZ0NvbnRlbnRTdHJlYW1pbmc9Tm9Mb2dnaW5nCkxvZ1RyYWNlPU5vTG9nZ2luZwpMb2dQbGF5ZXJNYW5hZ2VtZW50PU5vTG9nZ2luZwo="
         }
       ]
+    },
+    {
+      "id": "fortnite.gus-ini.competitive",
+      "title": "Fortnite: competitive GameUserSettings.ini",
+      "category": "process",
+      "description": "Pairs with Engine.ini. Writes %LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\GameUserSettings.ini with FrameRateLimit=240, bUseMaxFrameRate=True, bUseVSync=False, bMotionBlur=False, bShowGrass=False, bUseHDRDisplayOutput=False, fullscreen-windowed mode (FullscreenMode=0 — Fortnite's lowest-input-lag mode since fullscreen-exclusive was removed in Ch5), 1920x1080. Snapshot-backed revert restores the prior file byte-for-byte.",
+      "rationale": "Engine.ini sets render scalability; GameUserSettings.ini sets the things you can't touch from Engine.ini — frame cap, VSync, fullscreen mode, resolution. Locks in the Peterbot/Clix/Bugha consensus. NOTE: Fortnite rewrites GameUserSettings.ini on every launch with whatever the in-game Settings panel last had. To make this stick across launches, mark the file read-only after applying — or just re-apply after any session where you opened in-game Settings. We don't auto-set read-only because that breaks legitimate in-game tweaking.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "applicableGames": ["fortnite"],
+      "tournamentCompliance": { "fortnite": "safe" },
+      "actions": [
+        {
+          "kind": "file_write",
+          "path": "%LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\GameUserSettings.ini",
+          "contents_b64": "Wy9TY3JpcHQvRm9ydG5pdGVHYW1lLkZvcnRHYW1lVXNlclNldHRpbmdzXQpGcmFtZVJhdGVMaW1pdD0yNDAuMDAwMDAwCmJVc2VGaXhlZEZyYW1lUmF0ZT1GYWxzZQpiVXNlTWF4RnJhbWVSYXRlPVRydWUKYk1vdGlvbkJsdXI9RmFsc2UKYlNob3dHcmFzcz1GYWxzZQpiVXNlSERSRGlzcGxheU91dHB1dD1GYWxzZQpiVXNlRHluYW1pY1Jlc29sdXRpb249RmFsc2UKClsvU2NyaXB0L0VuZ2luZS5HYW1lVXNlclNldHRpbmdzXQpiVXNlVlN5bmM9RmFsc2UKYlVzZUR5bmFtaWNSZXNvbHV0aW9uPUZhbHNlClJlc29sdXRpb25TaXplWD0xOTIwClJlc29sdXRpb25TaXplWT0xMDgwCkxhc3RVc2VyQ29uZmlybWVkUmVzb2x1dGlvblNpemVYPTE5MjAKTGFzdFVzZXJDb25maXJtZWRSZXNvbHV0aW9uU2l6ZVk9MTA4MApXaW5kb3dQb3NYPS0xCldpbmRvd1Bvc1k9LTEKRnVsbHNjcmVlbk1vZGU9MApMYXN0Q29uZmlybWVkRnVsbHNjcmVlbk1vZGU9MApQcmVmZXJyZWRGdWxsc2NyZWVuTW9kZT0wClZlcnNpb249NQ=="
+        }
+      ]
     }
   ]
 }

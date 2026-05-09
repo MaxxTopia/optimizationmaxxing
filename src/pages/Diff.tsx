@@ -78,7 +78,7 @@ export function Diff() {
   }, [rows, search])
 
   function copyAsText() {
-    if (!rows) return
+    if (!rows || rows.length === 0) return
     const lines: string[] = []
     lines.push(`# my optimizationmaxxing tune  ·  ${new Date().toISOString().split('T')[0]}`)
     lines.push(`# ${rows.length} tweaks applied`)

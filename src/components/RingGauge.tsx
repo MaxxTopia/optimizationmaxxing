@@ -65,7 +65,7 @@ export function RingGauge({
             strokeDashoffset={dashOffset}
             style={{
               transition: 'stroke-dashoffset 600ms cubic-bezier(0.16, 1, 0.3, 1)',
-              filter: `drop-shadow(0 0 12px ${accent})`,
+              filter: `drop-shadow(0 0 6px ${accent}) drop-shadow(0 0 18px ${accent})`,
             }}
           />
         </svg>

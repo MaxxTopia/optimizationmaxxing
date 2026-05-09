@@ -46,7 +46,11 @@ export function Pricing() {
 
   function handlePriceTap() {
     const now = Date.now()
-    clicks.current = [...clicks.current, now].filter((t) => now - t <= 3000)
+    // If the previous tap is older than the 3 s window, treat this as a
+    // fresh start — otherwise sparse incidental clicks across the page
+    // session accumulate to 5 and trigger the easter egg unintentionally.
+    const within = clicks.current.filter((t) => now - t <= 3000)
+    clicks.current = [...within, now]
     if (clicks.current.length >= 5) {
       setShowRedemption(true)
       clicks.current = []

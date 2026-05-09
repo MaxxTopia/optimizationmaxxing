@@ -32,6 +32,20 @@ export interface GrindInsight {
   citation?: GrindCitation
 }
 
+/** Operationalized daily training template. Optional per entry — leave
+ * undefined when we don't have a verified routine, blank space beats
+ * hallucination. Strings are bullet phrases shown verbatim, ordered. */
+export interface GrindRoutine {
+  /** "Morning block — first 1-2 hr of the day." */
+  morning?: string[]
+  /** "Mid-day block — when most of the day's hours land." */
+  afternoon?: string[]
+  /** "Evening block — usually scrims / tournament play / VOD review." */
+  evening?: string[]
+  /** Recovery / off-keyboard items that aren't tied to a time slot. */
+  recovery?: string[]
+}
+
 export interface GrindEntry {
   id: string
   /** Display name (Peterbot, Veno, Aussie Antics, etc). */
@@ -54,6 +68,10 @@ export interface GrindEntry {
     mouse?: string
     keyboard?: string
   }
+  /** Optional published / inferred daily routine. Operationalizes the
+   * insights — "Bugha says split sessions" turns into "morning 60m, nap,
+   * afternoon 60m" the user can actually run. */
+  dailyRoutine?: GrindRoutine
   /** Optional URL — main channel / Twitter / etc. */
   link?: string
   /** Tier indicator for visual weight — "goat" gets the centerpiece treatment. */
@@ -94,6 +112,21 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Esports.gg pre-Pro-Am interview (May 2025)', url: 'https://esports.gg/news/fortnite/peterbot-and-aussieantics-fncs-pro-am-2025/' },
       },
     ],
+    dailyRoutine: {
+      morning: [
+        'Aim warmup 30 min — KovaaK / Aim Lab tracking + microflick scenarios',
+        'Edit course 20 min — free-build resets to wake the hands up',
+      ],
+      afternoon: [
+        'Creative 1v1s 2 hr — full-pressure scenarios, not just aim drills',
+        'Piece-control + retake reps 1 hr',
+      ],
+      evening: [
+        'Scrims 3-4 hr — competitive lobbies, no warmup substitute',
+        'VOD review 30-60 min — own deaths first, then opponent angles',
+      ],
+      recovery: ['Mechanical-keyboard wrist break every 90 min', 'Hard cutoff before midnight on tournament weeks'],
+    },
     link: 'https://www.twitch.tv/peterbot',
   },
   {
@@ -149,6 +182,14 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Esports.gg FNCS Pro-Am preview', url: 'https://esports.gg/news/fortnite/peterbot-and-aussieantics-fncs-pro-am-2025/' },
       },
     ],
+    dailyRoutine: {
+      recovery: [
+        'Stretch wrists + forearms every 90 min — set a timer, don\'t trust the feeling',
+        'Posture check: monitor at arm\'s length, feet flat, elbow at 90°',
+        'Hydrate before sessions — wrist + cognitive perf both drop dehydrated',
+        'Walk + sunlight between sessions — competing with your own circadian rhythm',
+      ],
+    },
     link: 'https://www.twitch.tv/aussieantics',
   },
   {
@@ -207,6 +248,14 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         text: 'Edit courses are mechanical, 1v1s are decision-making. Train both separately — they engage different parts of you.',
       },
     ],
+    dailyRoutine: {
+      morning: ['Edit course 1 hr — pure mechanics, before fatigue sets in'],
+      afternoon: [
+        'Retakes 1 hr — pressure simulation',
+        'Scenario-focused 1v1s 2-3 hr — pick which mechanic the rep is for, not just "play"',
+      ],
+      evening: ['Ranked / arena — back-to-back retakes if aim drops mid-session'],
+    },
     link: 'https://www.twitch.tv/clix',
   },
   {
@@ -257,6 +306,14 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         text: 'Naps between sessions are legitimate training. If aim drops mid-session and you\'re tired, sleep beats grinding through.',
       },
     ],
+    dailyRoutine: {
+      morning: ['Session 1 — 60 min focused play, full attention, no audio distractions'],
+      afternoon: ['20-min nap if morning session ran hot', 'Session 2 — 60 min focused play, separate from morning'],
+      recovery: [
+        '7+ hours of sleep is non-negotiable — reaction time drops measurably below this',
+        'Stop grinding when aim noticeably drops — fatigued reps build fatigued habits',
+      ],
+    },
     link: 'https://www.twitch.tv/bugha',
   },
 

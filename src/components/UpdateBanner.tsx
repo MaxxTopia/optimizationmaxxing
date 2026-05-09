@@ -23,6 +23,16 @@ interface BannerState {
   errorMsg: string | null
 }
 
+const DISMISSED_KEY = 'optmaxxing-update-dismissed-version'
+
+function readDismissedVersion(): string | null {
+  try {
+    return window.localStorage.getItem(DISMISSED_KEY)
+  } catch {
+    return null
+  }
+}
+
 export function UpdateBanner() {
   const [state, setState] = useState<BannerState>({
     available: null,
@@ -30,7 +40,9 @@ export function UpdateBanner() {
     installed: false,
     errorMsg: null,
   })
-  const [dismissed, setDismissed] = useState(false)
+  const [dismissedVersion, setDismissedVersion] = useState<string | null>(() =>
+    readDismissedVersion(),
+  )
 
   useEffect(() => {
     if (!inTauri()) return
@@ -52,7 +64,24 @@ export function UpdateBanner() {
     }
   }, [])
 
-  if (!state.available || dismissed) return null
+  // Suppress only when the user explicitly said "later" on THIS version. A
+  // newer release wipes the suppression so the next genuine upgrade still
+  // surfaces. Persisted in localStorage so the suppression survives navigation
+  // + relaunches.
+  const suppressed =
+    !!state.available && dismissedVersion === state.available.version
+  if (!state.available || suppressed) return null
+
+  function dismiss() {
+    if (!state.available) return
+    try {
+      window.localStorage.setItem(DISMISSED_KEY, state.available.version)
+    } catch {
+      // localStorage unavailable — fall back to in-memory dismissal so the
+      // banner still goes away for the rest of this session.
+    }
+    setDismissedVersion(state.available.version)
+  }
 
   async function applyUpdate() {
     if (!state.available) return
@@ -108,7 +137,7 @@ export function UpdateBanner() {
           {state.downloading ? 'Downloading…' : state.installed ? 'Installed ✓' : 'Update now'}
         </button>
         <button
-          onClick={() => setDismissed(true)}
+          onClick={dismiss}
           className="text-text-subtle hover:text-text text-xs underline"
         >
           later
