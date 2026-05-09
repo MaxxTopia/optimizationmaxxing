@@ -1144,6 +1144,108 @@ impl CommandHidden for std::process::Command {
     }
 }
 
+// ── Asta Bench ────────────────────────────────────────────────────────
+// 3 native metrics that map to actual Fortnite click-to-pixel cost:
+//   - CPU single-thread sha256 throughput (proxy for game-thread tail)
+//   - DPC % sampled over N seconds (driver misbehavior surfaces here)
+//   - Idle-ping jitter to 1.1.1.1 (network variance under no load)
+//
+// Frame-pacing test runs in the frontend via requestAnimationFrame
+// (same compositor Fortnite renders through). UI composes these into a
+// single Latency Health Score 0-100. Persisted in localStorage so
+// before/after diffs survive Asta Mode application.
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CpuLatencySample {
+    /// Total ns the test took. Lower = faster CPU + less scheduler jitter.
+    pub total_ns: u64,
+    /// Iterations completed. Fixed = 1_000_000.
+    pub iterations: u32,
+    /// ns per iteration (mean).
+    pub ns_per_iter: f64,
+}
+
+pub fn bench_cpu_latency() -> CpuLatencySample {
+    use sha2::{Digest, Sha256};
+    const ITERS: u32 = 1_000_000;
+    let mut buf = [0u8; 64];
+    let mut hasher = Sha256::new();
+    let started = std::time::Instant::now();
+    for i in 0..ITERS {
+        // Vary input each iter so the optimizer can't elide work.
+        buf[0] = (i & 0xff) as u8;
+        buf[1] = ((i >> 8) & 0xff) as u8;
+        buf[2] = ((i >> 16) & 0xff) as u8;
+        buf[3] = ((i >> 24) & 0xff) as u8;
+        hasher.update(&buf);
+        if i % 1024 == 0 {
+            let _ = hasher.finalize_reset();
+        }
+    }
+    let _ = hasher.finalize();
+    let total_ns = started.elapsed().as_nanos() as u64;
+    CpuLatencySample {
+        total_ns,
+        iterations: ITERS,
+        ns_per_iter: total_ns as f64 / ITERS as f64,
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PingJitterSample {
+    pub samples: Vec<u32>,
+    pub p50_ms: Option<u32>,
+    pub stddev_ms: Option<f32>,
+    pub host: String,
+}
+
+pub fn bench_ping_jitter(host: &str, count: u32) -> PingJitterSample {
+    let mut samples: Vec<u32> = Vec::with_capacity(count as usize);
+    for _ in 0..count {
+        let out = hidden_ping()
+            .args(["-n", "1", "-w", "1500", host])
+            .output();
+        if let Ok(o) = out {
+            let s = String::from_utf8_lossy(&o.stdout);
+            // Look for "time=Nms" / "time<1ms"
+            for line in s.lines() {
+                if let Some(idx) = line.find("time=") {
+                    let rest = &line[idx + 5..];
+                    let n: String = rest.chars().take_while(|c| c.is_ascii_digit()).collect();
+                    if let Ok(v) = n.parse::<u32>() {
+                        samples.push(v);
+                        break;
+                    }
+                }
+                if line.contains("time<1ms") {
+                    samples.push(1);
+                    break;
+                }
+            }
+        }
+    }
+    let mut sorted = samples.clone();
+    sorted.sort_unstable();
+    let p50 = if sorted.is_empty() { None } else { Some(sorted[sorted.len() / 2]) };
+    let stddev = if samples.len() < 2 {
+        None
+    } else {
+        let mean = samples.iter().map(|s| *s as f64).sum::<f64>() / samples.len() as f64;
+        let var = samples
+            .iter()
+            .map(|s| {
+                let d = *s as f64 - mean;
+                d * d
+            })
+            .sum::<f64>()
+            / samples.len() as f64;
+        Some(var.sqrt() as f32)
+    };
+    PingJitterSample { samples, p50_ms: p50, stddev_ms: stddev, host: host.to_string() }
+}
+
 // ── LibreHardwareMonitor sensor probe ────────────────────────────────
 // Loads the bundled LibreHardwareMonitorLib.dll via PowerShell and
 // returns parsed JSON of every sensor on the rig. Two paths:

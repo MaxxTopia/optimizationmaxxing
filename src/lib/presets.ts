@@ -108,6 +108,82 @@ export const PRESETS: PresetBundle[] = [
     ],
     vipGate: 'vip',
   },
+  // ── Asta Mode ───────────────────────────────────────────────────────
+  // The ceiling. Every aggressive software lever this app reaches in one
+  // bundle. VIP-only, Fortnite-leaning. ~70% of the gap between a stock
+  // budget rig and a $5K rig is software — this closes it.
+  // Visual treatment: Black Clover anti-magic. See AstaCard.tsx + /asta.
+  {
+    id: 'preset.asta-mode',
+    name: 'Asta Mode',
+    archetype: 'Asta',
+    glyph: '🗡',
+    tagline: 'Push the rig to its limit · ~12-22 ms off click-to-pixel',
+    description:
+      "For the kids on stock rigs born to chase pros they shouldn't be able to catch. Combines every aggressive tweak this app ships: HID priority, mitigations off, Hyper-V off, HVCI off, NIC interrupts off, MMCSS GPU bias maxed, IFEO priority for FN/Val/CS2, kernel timer at 0.5ms, MSI mode on display+net+audio, expanded service kills, telemetry/ads hosts blocked, Fortnite Engine.ini + GameUserSettings.ini hand-tunes, HAGS on. Apply once, revert any tweak via Restore Point. The 'unpolite' Tournament FPS preset.",
+    tweakIds: [
+      // Core latency
+      'ui.mouse.disable-acceleration',
+      'ui.gamedvr.disable',
+      'ui.gamedvr.appcapture.disable',
+      'ui.fse.disable-global',
+      'ui.visualfx.best-performance',
+      'process.priority-separation.foreground',
+      'process.system.responsiveness',
+      'process.mmcss.games-gpu-priority',
+      // HID realtime
+      'hid.mouse.priority-realtime',
+      'hid.mouse.queue-size.optimize',
+      'hid.keyboard.priority-realtime',
+      'hid.keyboard.queue-size.optimize',
+      // Per-game IFEO priority
+      'process.fortnite.priority-high',
+      'process.valorant.priority-high',
+      'process.cs2.priority-high',
+      // Mitigations / VBS / Hyper-V — DANGER tier
+      'process.cpu-mitigations.disable-DANGER',
+      'bcd.hypervisorlaunchtype.off',
+      'vbs.hvci.disable',
+      // Power
+      'process.power-throttling.disable',
+      'process.core-parking.disable',
+      'power.pcie.link-state.off',
+      'power.usb3.link-power.disable',
+      'process.usb-power-mgmt.disable',
+      'process.hid-power-mgmt.disable',
+      // Network
+      'net.throttling.disable',
+      'net.nic.interrupt-moderation.disable',
+      'net.nic.flow-control.disable',
+      'net.nic.rss.enable',
+      'net.nic.rsc.disable',
+      'net.nic.checksum-offload.disable',
+      'net.nic.lso.disable',
+      // GPU + display
+      'process.hags.enable',
+      'monitor.mpo.disable',
+      'monitor.windowed-game-opt.disable',
+      'process.msi-mode.gpu-nic-audio',
+      // Boot + kernel
+      'bcd.disabledynamictick.yes',
+      'bcd.tscsyncpolicy.enhanced',
+      // Memory
+      'ps.mmagent.disable-mc',
+      'ps.mmagent.disable-pagecombining',
+      // Background noise
+      'tasks.telemetry-batch.disable',
+      'service.werservice.disable',
+      'service.maps-broker.disable',
+      'service.geolocation.disable',
+      'process.windows-search.disable',
+      'process.sysmain.disable',
+      'hosts.block.ms-telemetry',
+      'hosts.block.windows-ads',
+      // Fortnite-specific config FileWrite (added in v0.1.48)
+      'fortnite.engine-ini.optimize',
+    ],
+    vipGate: 'vip',
+  },
 ]
 
 export function presetTweaks(p: PresetBundle): TweakRecord[] {
@@ -115,4 +191,9 @@ export function presetTweaks(p: PresetBundle): TweakRecord[] {
   return p.tweakIds
     .map((id) => byId.get(id))
     .filter((t): t is TweakRecord => !!t)
+}
+
+/** Find a preset by id (handles both 'preset.X' and 'X' for community packs). */
+export function presetById(id: string): PresetBundle | undefined {
+  return PRESETS.find((p) => p.id === id || p.id === `preset.${id}`)
 }

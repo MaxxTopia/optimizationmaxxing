@@ -368,6 +368,24 @@ async fn vip_verify(code: String) -> Result<bool, String> {
 /// ledger. Worker writes `claim:<code>` = `<hwid>` on success, returns
 /// 409 if a different hwid already claimed. Idempotent re-redeem from
 /// the same hwid succeeds.
+/// Asta Bench — CPU sha256 throughput, run on a worker thread so we don't
+/// block the Tauri event loop. ~3-5 s on a modern CPU.
+#[tauri::command]
+async fn bench_cpu() -> Result<toolkit::CpuLatencySample, String> {
+    tokio::task::spawn_blocking(toolkit::bench_cpu_latency)
+        .await
+        .map_err(|e| format!("cpu bench failed: {e}"))
+}
+
+/// Asta Bench — fires N pings to the given host, returns p50 + stddev.
+/// ~10-15 s for default 50 samples.
+#[tauri::command]
+async fn bench_ping(host: String, count: u32) -> Result<toolkit::PingJitterSample, String> {
+    tokio::task::spawn_blocking(move || toolkit::bench_ping_jitter(&host, count))
+        .await
+        .map_err(|e| format!("ping bench failed: {e}"))
+}
+
 #[tauri::command]
 async fn vip_claim_online(code: String) -> Result<vip::ClaimResult, String> {
     tokio::task::spawn_blocking(move || {
@@ -559,6 +577,8 @@ pub fn run() {
             vip_hwid,
             vip_verify,
             vip_claim_online,
+            bench_cpu,
+            bench_ping,
             pcie_links,
             microcode_report,
             vbs_report,

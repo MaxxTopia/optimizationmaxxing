@@ -8,6 +8,8 @@ const NAV_LINKS = [
   { to: '/tweaks', label: 'Tweaks' },
   { to: '/presets', label: 'Presets' },
   { to: '/guides', label: 'Guides' },
+  { to: '/grind', label: 'Grind' },
+  { to: '/asta', label: 'Asta' },
   { to: '/toolkit', label: 'Toolkit' },
   { to: '/diagnostics', label: 'Diagnostics' },
   { to: '/session', label: 'Session' },

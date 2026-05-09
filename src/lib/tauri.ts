@@ -434,6 +434,27 @@ export async function vipClaimOnline(code: string): Promise<VipClaimResult> {
   return invoke<VipClaimResult>('vip_claim_online', { code })
 }
 
+export interface CpuLatencySample {
+  totalNs: number
+  iterations: number
+  nsPerIter: number
+}
+
+export interface PingJitterSample {
+  samples: number[]
+  p50Ms: number | null
+  stddevMs: number | null
+  host: string
+}
+
+export async function benchCpu(): Promise<CpuLatencySample> {
+  return invoke<CpuLatencySample>('bench_cpu')
+}
+
+export async function benchPing(host: string, count: number): Promise<PingJitterSample> {
+  return invoke<PingJitterSample>('bench_ping', { host, count })
+}
+
 export interface PcieLink {
   device: string
   /** Current link width as integer (8 = x8, 16 = x16). */

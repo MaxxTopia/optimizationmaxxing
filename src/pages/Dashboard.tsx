@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { AstaCard } from '../components/AstaCard'
 import { GameBenchmark } from '../components/GameBenchmark'
 import { HowItWorks } from '../components/HowItWorks'
 import { QuickStart } from '../components/QuickStart'
@@ -106,6 +107,8 @@ export function Dashboard() {
       <RecommendedTweaks spec={spec} />
 
       <RecentlyApplied />
+
+      <AstaCard />
 
       <QuickStart />
 

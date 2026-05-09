@@ -12,6 +12,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.48',
+    date: '2026-05-09',
+    highlights: [
+      'NEW Asta Mode — VIP-only ceiling preset bundling every aggressive lever this app reaches. Black Clover anti-magic visual treatment: void background, white SVG hairline cracks with flicker, crimson border pulse on hover, 5-leaf grimoire glyph, Pirata One serif, rotating manifesto quote band. Dashboard card + dedicated /asta page.',
+      'NEW Fortnite competitive Engine.ini FileWrite tweak — writes the Bugha/Mongraal/Clix-converged baseline (PostProcess/Shadow/ViewDistance/Effects/Foliage all to 0, motion blur off, anti-aliasing off, mesh LOD bias maxed, logs muted) to %LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\Engine.ini. Snapshot-backed revert.',
+      'NEW Asta Bench at /benchmark — 4-metric Latency Health Score 0-100. CPU sha256 single-thread (game-thread tail proxy), DPC % over 5s, ping jitter 30 samples to 1.1.1.1, frame-pacing stddev via 10s rAF (same DWM compositor Fortnite renders through). Persists snapshots to localStorage; before/after diff card auto-pairs the latest "before" + "after" snapshots and shows green/red deltas.',
+      'NEW /grind page — curated knowledge channel with cited insights from Peterbot (THE GOAT), Veno, Aussie Antics, Mongraal, Clix, Reet, Bugha. Per-creator: credential + voice + rig snapshot + 3-6 insights with sources (ProSettings, Esports.gg, Liquipedia, Dignitas). Built to grow — adding a new pro is one entry append in src/lib/grind.ts.',
+      'Asta Mode preset references ~30 existing aggressive tweaks + the new Engine.ini FileWrite. Apply via /asta page Activate button, one UAC prompt, snapshot-backed revert via Settings → Restore Point.',
+      'Topnav order: Dashboard · Tweaks · Presets · Guides · Grind · Asta · Toolkit · Diagnostics · Session · Profile · Pricing · Settings · Changelog',
+      'Backend: 2 new Tauri commands (bench_cpu, bench_ping). Cargo deps unchanged (sha2 already in tree from VIP module).',
+    ],
+  },
+  {
     version: '0.1.47',
     date: '2026-05-08',
     highlights: [
