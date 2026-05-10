@@ -5,7 +5,10 @@ import {
   inTauri,
   listApplied,
   revertAllApplied,
+  telemetryGet,
+  telemetrySet,
   type RevertAllReport,
+  type TelemetrySettings,
 } from '../lib/tauri'
 
 export function Settings() {
@@ -128,6 +131,8 @@ export function Settings() {
         </div>
       </section>
 
+      <TelemetrySection />
+
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="surface-card p-6 max-w-md w-full space-y-4">
@@ -157,5 +162,73 @@ export function Settings() {
         </div>
       )}
     </div>
+  )
+}
+
+function TelemetrySection() {
+  const isNative = inTauri()
+  const [settings, setSettings] = useState<TelemetrySettings | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isNative) return
+    telemetryGet()
+      .then(setSettings)
+      .catch((e) => setErr(String(e)))
+  }, [isNative])
+
+  if (!isNative) return null
+
+  async function toggle() {
+    if (!settings) return
+    setBusy(true)
+    setErr(null)
+    try {
+      const next = await telemetrySet(!settings.enabled)
+      setSettings(next)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="space-y-3">
+      <div>
+        <h2 className="text-lg font-semibold">Anonymous usage stats</h2>
+        <p className="text-sm text-text-muted">
+          Off by default. If you turn this on, the app sends an anonymous device
+          hash + which tweaks/presets you applied + your Asta Bench composite to
+          our Cloudflare worker. We use it to publish "X% of users on Asta Mode
+          see +Y composite" stats — no personal data, no IP logging beyond what
+          Cloudflare needs to route the request, no correlation with your VIP
+          claim record (different salt). Off-switch reverts immediately and
+          deletes the local device id.
+        </p>
+      </div>
+      <div className="surface-card p-6 flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm text-text-muted">Status</div>
+          <div className="text-3xl font-bold mt-1">
+            {settings?.enabled ? 'Sharing' : 'Off'}
+          </div>
+          {settings?.enabled && settings.device_id && (
+            <div className="mt-3 text-[11px] text-text-subtle font-mono">
+              device id · {settings.device_id}
+            </div>
+          )}
+          {err && <div className="mt-3 text-xs text-accent">Error: {err}</div>}
+        </div>
+        <button
+          onClick={toggle}
+          disabled={busy || !settings}
+          className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {busy ? '…' : settings?.enabled ? 'Turn off' : 'Turn on'}
+        </button>
+      </div>
+    </section>
   )
 }

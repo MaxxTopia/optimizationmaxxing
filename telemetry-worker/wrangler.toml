@@ -1,0 +1,10 @@
+name = "optmaxxing-telemetry"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# KV namespace for the anonymous opt-in event log. Created via:
+#   wrangler kv namespace create telemetry-events
+# Then paste the returned id below + run `wrangler deploy`.
+[[kv_namespaces]]
+binding = "TELEMETRY"
+id = "REPLACE_WITH_KV_ID_AFTER_CREATE"

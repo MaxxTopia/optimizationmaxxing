@@ -574,3 +574,55 @@ export async function sessionSuspend(pids: number[]): Promise<SuspendResult[]> {
 export async function sessionResume(pids: number[]): Promise<SuspendResult[]> {
   return invoke<SuspendResult[]>('session_resume', { pids })
 }
+
+// ---------- Crash log ----------
+
+export interface CrashEntry {
+  filename: string
+  ts: string
+  kind: string
+  size_bytes: number
+}
+
+/** Lists the most-recent ≤20 crash logs from %LOCALAPPDATA%\optmaxxing\crashes\.
+ *  Newest first. Empty array if dir is missing or empty. */
+export async function crashList(): Promise<CrashEntry[]> {
+  return invoke<CrashEntry[]>('crash_list')
+}
+
+/** Reads a single crash log by filename (path-traversal-rejected on the Rust side). */
+export async function crashRead(filename: string): Promise<string> {
+  return invoke<string>('crash_read', { filename })
+}
+
+/** Frontend → Rust crash-write. Called by the React error boundary when an
+ *  exception escapes. Same on-disk format as Rust panics (different `kind`). */
+export async function crashLogFrontend(message: string, stack?: string): Promise<void> {
+  return invoke('crash_log_frontend', { message, stack: stack ?? null })
+}
+
+// ---------- Telemetry (anonymous opt-in) ----------
+
+export interface TelemetrySettings {
+  enabled: boolean
+  /** Stable anonymous device id. Generated on first opt-in. */
+  device_id: string | null
+}
+
+export async function telemetryGet(): Promise<TelemetrySettings> {
+  return invoke<TelemetrySettings>('telemetry_get')
+}
+
+export async function telemetrySet(enabled: boolean): Promise<TelemetrySettings> {
+  return invoke<TelemetrySettings>('telemetry_set', { enabled })
+}
+
+/** Fire-and-forget. Silent no-op when telemetry is disabled. Never blocks. */
+export async function telemetrySendEvent(
+  kind: 'tweak.applied' | 'preset.applied' | 'bench.composite' | 'app.launch',
+  payload: Record<string, unknown> = {},
+): Promise<void> {
+  if (!inTauri()) return
+  // Don't await — caller should not block on telemetry, ever.
+  invoke('telemetry_send_event', { kind, payload }).catch(() => {})
+}

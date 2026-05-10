@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
+import { CrashBoundary } from './components/CrashBoundary'
 import { Layout } from './components/Layout'
 import { UpdateBanner } from './components/UpdateBanner'
 import { WhatsNewModal } from './components/WhatsNewModal'
@@ -10,6 +11,7 @@ import { Profile } from './pages/Profile'
 import { Toolkit } from './pages/Toolkit'
 import { Guides } from './pages/Guides'
 import { Grind } from './pages/Grind'
+import { Hardware } from './pages/Hardware'
 import { Asta } from './pages/Asta'
 import { Benchmark } from './pages/Benchmark'
 import { Diff } from './pages/Diff'
@@ -18,12 +20,14 @@ import { Settings } from './pages/Settings'
 import { Changelog } from './pages/Changelog'
 import { Diagnostics } from './pages/Diagnostics'
 import { Session } from './pages/Session'
-import { inTauri } from './lib/tauri'
+import { inTauri, telemetrySendEvent } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
+import { useProfileStore } from './store/useProfileStore'
 
 const SPLASH_MIN_MS = 1200 // give the neon ripple at least one full sweep
 
 export default function App() {
+  const activeProfile = useProfileStore((s) => s.activeProfile)
   useEffect(() => {
     if (!inTauri()) return
     const mountedAt = performance.now()
@@ -34,30 +38,37 @@ export default function App() {
         // Splash may already be closed, or running in non-tauri preview — fine.
       })
     }, wait)
+    // Anonymous opt-in telemetry: fire app.launch on mount. Silent no-op
+    // when telemetry is disabled (which is the default).
+    telemetrySendEvent('app.launch', { profile: activeProfile })
     return () => window.clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <Layout>
-      <UpdateBanner />
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/tweaks" element={<Tweaks />} />
-        <Route path="/presets" element={<Presets />} />
-        <Route path="/toolkit" element={<Toolkit />} />
-        <Route path="/guides" element={<Guides />} />
-        <Route path="/grind" element={<Grind />} />
-        <Route path="/asta" element={<Asta />} />
-        <Route path="/benchmark" element={<Benchmark />} />
-        <Route path="/diff" element={<Diff />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/changelog" element={<Changelog />} />
-        <Route path="/diagnostics" element={<Diagnostics />} />
-        <Route path="/session" element={<Session />} />
-      </Routes>
-      <WhatsNewModal />
-    </Layout>
+    <CrashBoundary>
+      <Layout>
+        <UpdateBanner />
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/tweaks" element={<Tweaks />} />
+          <Route path="/presets" element={<Presets />} />
+          <Route path="/toolkit" element={<Toolkit />} />
+          <Route path="/guides" element={<Guides />} />
+          <Route path="/grind" element={<Grind />} />
+          <Route path="/hardware" element={<Hardware />} />
+          <Route path="/asta" element={<Asta />} />
+          <Route path="/benchmark" element={<Benchmark />} />
+          <Route path="/diff" element={<Diff />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/changelog" element={<Changelog />} />
+          <Route path="/diagnostics" element={<Diagnostics />} />
+          <Route path="/session" element={<Session />} />
+        </Routes>
+        <WhatsNewModal />
+      </Layout>
+    </CrashBoundary>
   )
 }

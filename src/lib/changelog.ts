@@ -12,6 +12,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.54',
+    date: '2026-05-09',
+    highlights: [
+      'NEW /hardware page — peripheral advisory with GOAT/pro/budget tier ladders for Mouse, Keyboard, Monitor, Mousepad, Ergonomics. Cited from /grind rig snapshots + ProSettings.net consensus. Aussie Antics PT background drives the ergonomics section. Append a HardwareItem to `src/lib/hardware.ts` to grow.',
+      'NEW anonymous opt-in telemetry — Settings page toggle (OFF by default). Sends an anonymous device hash + which tweaks/presets you applied + your Asta Bench composite to a Cloudflare worker. Auto-fires on app.launch + tweak.applied. Different HWID salt from VIP so the two worker KVs can\'t be cross-correlated. Worker code at `telemetry-worker/` — NOT yet deployed (deploy = `wrangler kv namespace create telemetry-events` + paste id + `wrangler deploy`).',
+      'NEW crash reporting — Rust panic hook + React error boundary write to `%LOCALAPPDATA%\\optmaxxing\\crashes\\<ts>__<kind>.log`. Diagnostics page now has a "Last crash" card with copy-to-clipboard for Discord support. Zero network egress — all local files.',
+      'FIX (P1) per-tweak measure race — Tweaks page now disables ALL Apply/Revert/Measure buttons across the page when ANY operation is in flight. Was per-row; concurrent Apply on a different row could pollute the in-progress before/after measurement.',
+      'GLAMOUR Val theme — scanline overlay (1px every 2px, dense but very low alpha) fades in on .surface-card hover. Valorant HUD signature flourish. Respects prefers-reduced-motion.',
+      'GLAMOUR DMC theme — bone-gold text-shimmer keyframe across the serif h1/h2 display headings (4s ambient loop). Respects prefers-reduced-motion.',
+    ],
+  },
+  {
     version: '0.1.53',
     date: '2026-05-09',
     highlights: [

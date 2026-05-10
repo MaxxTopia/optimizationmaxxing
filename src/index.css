@@ -244,11 +244,50 @@ body.profile-val .surface-card::before {
   pointer-events: none;
   border-radius: inherit;
   border: 1px solid rgba(255, 255, 255, 0.04);
+  /* Tactical scanline overlay — fades in on hover so the rest state stays
+   * clean. Dense (1px every 2px) but very low alpha so it reads as texture
+   * not pattern. Valorant HUD signature flourish. */
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 70, 85, 0.035) 0px,
+    rgba(255, 70, 85, 0.035) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  opacity: 0;
+  transition: opacity var(--motion-arc);
+}
+body.profile-val .surface-card:hover::before {
+  opacity: 1;
 }
 body.profile-val h1,
 body.profile-val h2 {
   letter-spacing: -0.01em;
   font-weight: 600;
+}
+
+/* DMC — bone-gold shimmer across the serif display headings. The
+ * background-clip + transparent fill paints the gradient INTO the
+ * letterforms; the keyframe slides it across. 4s loop = ambient, not
+ * attention-grabbing. */
+body.profile-dmc h1,
+body.profile-dmc h2 {
+  background: linear-gradient(90deg, #f4ecd8 0%, #c4b89a 50%, #f4ecd8 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 100%;
+  animation: dmc-text-shimmer 4s ease-in-out infinite;
+}
+@keyframes dmc-text-shimmer {
+  0%, 100% { background-position: 0% center; }
+  50%      { background-position: 100% center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.profile-dmc h1,
+  body.profile-dmc h2 {
+    animation: none;
+  }
 }
 
 /* Research-article body styling — applied to the rendered markdown. */

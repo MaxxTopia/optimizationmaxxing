@@ -16,6 +16,7 @@ import {
   listApplied,
   previewTweak,
   revertTweak,
+  telemetrySendEvent,
   type AppliedTweak,
   type BatchItem,
 } from '../lib/tauri'
@@ -153,6 +154,11 @@ export function Tweaks() {
       }))
       await applyBatch(items)
       await refreshApplied()
+      telemetrySendEvent('tweak.applied', {
+        tweakId: t.id,
+        category: t.category,
+        riskLevel: t.riskLevel,
+      })
     } catch (e) {
       setError(formatErr(e))
     } finally {
@@ -442,21 +448,28 @@ export function Tweaks() {
       {preview && <TweakPreviewDrawer preview={preview} onClose={() => setPreview(null)} />}
 
       <div className="space-y-2">
-        {filtered.map((t) => (
-          <TweakRow
-            key={t.id}
-            tweak={t}
-            applied={!!appliedById[t.id]}
-            busy={busyId === t.id || measuringId === t.id}
-            isVip={isVip}
-            audit={auditByTweakId[t.id]}
-            onApply={() => handleApply(t)}
-            onRevert={() => handleRevert(t)}
-            onPreview={() => handlePreview(t)}
-            onMeasureImpact={() => handleMeasureImpact(t)}
-            measuring={measuringId === t.id}
-          />
-        ))}
+        {filtered.map((t) => {
+          // Lock the WHOLE page while any operation is in flight. Otherwise a
+          // measure-bench can be polluted by a concurrent Apply on a different
+          // row (both call applyBatch — the rig changes mid-measurement and
+          // the persisted delta is meaningless).
+          const anyOperationInFlight = busyId !== null || measuringId !== null
+          return (
+            <TweakRow
+              key={t.id}
+              tweak={t}
+              applied={!!appliedById[t.id]}
+              busy={anyOperationInFlight}
+              isVip={isVip}
+              audit={auditByTweakId[t.id]}
+              onApply={() => handleApply(t)}
+              onRevert={() => handleRevert(t)}
+              onPreview={() => handlePreview(t)}
+              onMeasureImpact={() => handleMeasureImpact(t)}
+              measuring={measuringId === t.id}
+            />
+          )
+        })}
       </div>
 
       <SuggestTweakModal open={suggestOpen} onClose={() => setSuggestOpen(false)} />

@@ -1,10 +1,12 @@
 use serde::Serialize;
 use tauri::Manager;
 
+mod crash;
 mod engine;
 mod metrics;
 mod process_helpers;
 mod specs;
+mod telemetry;
 mod toolkit;
 mod vip;
 
@@ -568,6 +570,12 @@ pub fn run() {
                 .path()
                 .app_local_data_dir()
                 .expect("app local data dir resolvable");
+            // Wire the crash log dir + install the panic hook before any
+            // command handler can run. Failures inside command handlers
+            // unwind into the panic hook + land on disk.
+            crash::set_crash_dir(dir.join("crashes"));
+            crash::install_panic_hook();
+            telemetry::set_settings_path(dir.join("telemetry.json"));
             let store = SnapshotStore::open(&dir).expect("opening snapshot store");
             app.manage(store);
             Ok(())
@@ -607,6 +615,12 @@ pub fn run() {
             session_suspend,
             session_resume,
             close_splashscreen,
+            crash::crash_list,
+            crash::crash_read,
+            crash::crash_log_frontend,
+            telemetry::telemetry_get,
+            telemetry::telemetry_set,
+            telemetry::telemetry_send_event,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

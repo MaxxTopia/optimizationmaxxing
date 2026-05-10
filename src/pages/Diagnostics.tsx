@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DpcLatencyCard } from '../components/DpcLatencyCard'
 import { IntelMicrocodeCard } from '../components/IntelMicrocodeCard'
+import { LastCrashCard } from '../components/LastCrashCard'
 import { PcieLinkCard } from '../components/PcieLinkCard'
 import { RamAdvisorCard } from '../components/RamAdvisorCard'
 import { UclkWarningCard } from '../components/UclkWarningCard'
@@ -262,6 +263,8 @@ export function Diagnostics() {
           <PcieLinkCard />
 
           <DpcLatencyCard />
+
+          <LastCrashCard />
 
           <p className="text-[11px] text-text-subtle text-center">
             Captured {new Date(snap.capturedAt).toLocaleTimeString()} ·{' '}
