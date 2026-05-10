@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.57',
+    date: '2026-05-10',
+    highlights: [
+      'PRICING RESTRUCTURE — VIP is now a one-time lifetime unlock, not a $8/mo subscription. Optimization tools are structurally one-shot value (apply tweaks → done) so subscription was the wrong shape. **$180 lifetime · summer maxximization sale $115 through 2026-05-31** (Element 115, BO3 Zombies inspired — the substance that turns dead PCs into living ones). New atomic-symbol visual treatment on the VIP card with cyan glow, "Mc · 115 · Moscovium" badge.',
+      'NEW launch buyer flow — Discord ticket → DM Diggy → pay via PayPal / BTC / Venmo / Cash App / whatever works → receive activation code. Card-checkout (Stripe) deferred to v0.1.58+ — TicketTool bot in Discord handles the launch round of buyers (personal touch, qualifies the buyer, lets you take any payment).',
+      'Pricing copy refresh — hero now anchors against gear spend ("you paid $150 for a Superlight to gain 0.5ms — pay $115 once for 12-22ms"). VIP_FEATURES list rewritten to match actual current capability (was promising NVPI integration which is still deferred). Comparison row gains Pricing model / Per-tweak measurement / /diff audit / Day-1 game configs cells.',
+    ],
+  },
+  {
     version: '0.1.56',
     date: '2026-05-10',
     highlights: [

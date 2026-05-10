@@ -3,33 +3,45 @@ import { useVipStore } from '../store/useVipStore'
 import { VipRedemptionPanel } from '../components/VipRedemptionPanel'
 
 /**
- * Pricing — modeled on Paragon's Free/Edge/Apex tier ladder but slimmed
- * to two clearly differentiated tiers: Free and VIP. Both list features,
- * VIP lists a sale crossover (regular vs current).
+ * Pricing — Free vs VIP (lifetime). Restructured 2026-05-10 from the
+ * earlier $8/mo subscription model (one-shot value product → sub was
+ * structurally wrong, see feedback_optimizationmaxxing_decisions.md).
  *
- * Phase 7: VIP unlock is a localStorage flag for now. Real Stripe Checkout
- * link wires up at v0.2 with webhook → Tauri-side receipt verification.
+ * Element 115 launch sale through 2026-05-31. Visual treatment riffs on
+ * BO3 Zombies — Element 115 in Treyarch lore is the substance that
+ * "creates undead" (great pun: turns dead PCs into living ones). Cyan
+ * glow + atomic-symbol box.
+ *
+ * VIP unlock paths during launch:
+ *   1. PayPal / BTC / etc via Discord ticket (TicketTool-bot) — Diggy
+ *      DMs back a code from `scripts/mint-unbound-codes.py`.
+ *   2. Existing dev-unlock for testing.
+ *   3. Stripe Checkout wires in at v0.1.58+ (ticket flow handles all
+ *      paying customers until volume makes it a chore).
  */
-const STRIPE_CHECKOUT_PLACEHOLDER =
-  'https://buy.stripe.com/optmaxxing-vip-placeholder'
+// TODO(v0.1.58): replace with real Discord invite once server is live.
+const DISCORD_TICKET_URL = 'https://discord.gg/optimizationmaxxing-placeholder'
 
 const FREE_FEATURES = [
-  '~50 safest tweaks (risk 1-2)',
-  'Single rig profile',
-  'Manual apply, no presets',
-  'No restore checkpoints',
+  '~70 safe tweaks (risk 1-2 + most rig-tier)',
+  'Auto rig-detect + tuned recommendations',
+  '/tune one-click apply (free subset)',
+  'Per-tweak before/after measurement',
+  'Asta Bench composite tracking',
+  'Restore Point — every tweak reversible',
+  'Auto-update + signed installer',
   'Community support (Discord)',
 ]
 
 const VIP_FEATURES = [
-  'Full 150-200 tweak catalog',
-  'All curated presets (Esports / BR / Streamer)',
-  'Unlimited restore checkpoints',
-  'Profile export & share',
-  'BIOS-level tweaks unlocked',
-  'NVIDIA Profile Inspector integration',
-  'Priority support',
-  'Future tweak-pack updates',
+  'Full ~96 tweak catalog (every Engine.ini, GameUserSettings.ini, IFEO, NIC)',
+  'All 11 curated + community presets (Esports / BR / Streamer / Asta Mode / etc.)',
+  '/tune wizard applies VIP tweaks too — close the last 30% latency gap',
+  'Asta Mode — the most aggressive bundled preset (~30 tweaks, anti-magic visual)',
+  'Tournament Audit + per-game compliance flags',
+  'Day-1 game configs as new titles drop',
+  'Priority Discord support',
+  'Lifetime — pay once, every future tweak pack included',
 ]
 
 export function Pricing() {
@@ -58,20 +70,23 @@ export function Pricing() {
   }
 
   function handleUpgrade() {
-    // Real flow: open Stripe Checkout in default browser (Tauri shell handles it),
-    // then a webhook updates the local store after success-redirect handshake.
-    // For now: open the placeholder URL externally so the user sees the flow.
-    window.open(STRIPE_CHECKOUT_PLACEHOLDER, '_blank', 'noopener')
+    // Discord-ticket flow during launch — TicketTool bot opens a private
+    // thread per buyer; Diggy DMs back a code after PayPal/BTC/Venmo
+    // payment. Stripe Checkout wires in at v0.1.58+ once volume is real.
+    window.open(DISCORD_TICKET_URL, '_blank', 'noopener')
   }
 
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <p className="text-xs uppercase tracking-widest text-text-subtle">unlock</p>
+        <p className="text-xs uppercase tracking-widest text-text-subtle">summer maxximization · 2026</p>
         <h1 className="text-3xl font-bold">Pricing</h1>
-        <p className="text-sm text-text-muted max-w-xl">
-          Free for life on the safest tweaks. VIP unlocks the full curated catalog, presets,
-          checkpoints, and BIOS-tier optimizations.
+        <p className="text-sm text-text-muted max-w-2xl">
+          Free for life on the safest tweaks — already a real upgrade for any rig. VIP is a{' '}
+          <strong className="text-text">one-time lifetime</strong> unlock for everyone ready to
+          maxximize their potential and chase a career this summer. You paid $150 for a
+          Superlight 2 to gain 0.5 ms — pay <strong className="text-text">$115 once</strong> for
+          12-22 ms off your click-to-pixel.
         </p>
       </header>
 
@@ -79,24 +94,25 @@ export function Pricing() {
         <PriceCard
           name="Free"
           price="$0"
-          tagline="Forever"
+          tagline="Forever · no card"
           features={FREE_FEATURES}
-          ctaLabel={isVip ? 'Downgrade' : 'Current plan'}
+          ctaLabel={isVip ? 'Downgrade' : 'You\'re here'}
           ctaDisabled={!isVip}
           onCta={isVip ? reset : undefined}
         />
         <PriceCard
           name="VIP"
-          price="$8"
-          regularPrice="$15"
-          tagline="USD / month"
+          price="$115"
+          regularPrice="$180"
+          tagline="One-time · lifetime · summer sale ends 2026-05-31"
           highlighted
-          highlightLabel={isVip ? 'Active' : 'Most Value'}
+          highlightLabel={isVip ? 'Active' : 'Element 115 launch'}
           features={VIP_FEATURES}
-          ctaLabel={isVip ? 'You are VIP' : 'Upgrade'}
+          ctaLabel={isVip ? 'You are VIP' : 'Open Discord ticket →'}
           ctaDisabled={isVip}
           onCta={isVip ? undefined : handleUpgrade}
           onPriceTap={handlePriceTap}
+          element115
         />
       </div>
 
@@ -104,34 +120,68 @@ export function Pricing() {
         <VipRedemptionPanel onClose={() => setShowRedemption(false)} />
       )}
 
-      <div className="surface-card p-4 text-xs text-text-subtle">
-        <p>
-          Stripe Checkout webhook integration lands at v0.2. For now,{' '}
+      <section
+        className="surface-card p-5 space-y-3"
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(58, 240, 240, 0.08) 0%, rgba(8, 18, 28, 0.6) 100%)',
+          borderColor: 'rgba(58, 240, 240, 0.32)',
+        }}
+      >
+        <p className="text-[10px] uppercase tracking-widest" style={{ color: '#7ad9d9' }}>
+          element 115 · the substance
+        </p>
+        <h2 className="text-lg font-semibold">Why $115?</h2>
+        <p className="text-sm text-text-muted leading-snug max-w-3xl">
+          BO3 Zombies fans know. <strong className="text-text">Element 115 (Mc · Moscovium)</strong>{' '}
+          is what turns dead things into living ones in Treyarch's lore — the perfect price
+          point for the substance that turns dead PCs into living ones. The number isn't an
+          accident, and the discount isn't fake-marketing. After 2026-05-31 it goes to $180 and
+          stays there.
+        </p>
+      </section>
+
+      <section className="surface-card p-5">
+        <p className="text-xs uppercase tracking-widest text-text-subtle mb-2">how to buy during launch</p>
+        <h2 className="text-lg font-semibold mb-3">Discord ticket → DM reply with code</h2>
+        <ol className="space-y-1.5 text-sm text-text-muted leading-snug">
+          <li>
+            <span className="text-accent font-semibold">1.</span> Click "Open Discord ticket" above. TicketTool bot spawns a private thread (only you + Diggy see it).
+          </li>
+          <li>
+            <span className="text-accent font-semibold">2.</span> Tell Diggy your preferred payment — PayPal, BTC, Venmo, Cash App, whatever works for you.
+          </li>
+          <li>
+            <span className="text-accent font-semibold">3.</span> Pay → Diggy DMs you a 16-char activation code → tap "$8" 5x on this page → paste code → first-claim-wins on your rig forever.
+          </li>
+        </ol>
+        <p className="text-[11px] text-text-subtle mt-3 leading-snug">
+          Card-checkout (Stripe) wires in at v0.1.58+ — keeps the launch personal-touch through
+          the first round of buyers. Existing dev-unlock still works for testing:{' '}
           <button
             onClick={unlockForDev}
             className="text-accent hover:underline"
           >
             dev-unlock VIP locally
-          </button>{' '}
-          to test VIP-gated tweaks + presets without a real charge.
+          </button>
+          .
         </p>
-      </div>
+      </section>
 
-      <div className="surface-card p-5">
+      <section className="surface-card p-5">
         <p className="text-xs uppercase tracking-widest text-text-subtle mb-2">comparison</p>
         <h2 className="text-lg font-semibold mb-3">vs. competitors</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
           <CompCell label="Bundle size" us="5 MB" them="81 MB Paragon · 90 MB+ Hone" win />
-          <CompCell label="Themes" us="4" them="1" win />
+          <CompCell label="Themes" us="5 + Asta Mode" them="1" win />
           <CompCell label="Per-tweak undo" us="yes" them="all-or-nothing" win />
           <CompCell label="Spec-aware curation" us="yes" them="generic" win />
+          <CompCell label="Pricing model" us="$115 lifetime" them="recurring sub" win />
+          <CompCell label="Per-tweak measurement" us="yes" them="no" win />
+          <CompCell label="/diff audit" us="yes" them="no" win />
+          <CompCell label="Day-1 game configs" us="VIP" them="—" win />
         </div>
-      </div>
-
-      <p className="text-xs text-text-subtle">
-        Pricing finalizes after pilot. Subscription vs. lifetime decision pending — Discord vote
-        tracked in <code className="text-accent">#optimizationmaxxer-tiers</code>.
-      </p>
+      </section>
     </div>
   )
 }
@@ -148,6 +198,7 @@ function PriceCard({
   highlighted,
   highlightLabel,
   onPriceTap,
+  element115,
 }: {
   name: string
   price: string
@@ -163,25 +214,106 @@ function PriceCard({
    * Pricing-page easter-egg counter. The element stays visually unchanged
    * — no hint that it's clickable. */
   onPriceTap?: () => void
+  /** Adds the periodic-table Element 115 visual treatment in the upper
+   * right corner — cyan glow, "Mc · 115" atomic-symbol box. Subtle for
+   * non-Zombies fans, dopamine hit for the ones who get the reference. */
+  element115?: boolean
 }) {
   return (
     <div
-      className={`surface-card p-6 flex flex-col gap-4 relative ${
+      className={`surface-card p-6 flex flex-col gap-4 relative overflow-hidden ${
         highlighted ? 'border-border-glow shadow-accent-glow' : ''
       }`}
+      style={
+        element115
+          ? {
+              background:
+                'linear-gradient(135deg, rgba(58, 240, 240, 0.06) 0%, rgba(8, 18, 28, 0.9) 60%, rgba(58, 240, 240, 0.04) 100%)',
+            }
+          : undefined
+      }
     >
+      {element115 && (
+        <div
+          className="absolute top-3 right-3 select-none pointer-events-none"
+          style={{
+            width: 56,
+            height: 56,
+            border: '2px solid rgba(58, 240, 240, 0.7)',
+            borderRadius: 6,
+            background:
+              'radial-gradient(circle at 35% 30%, rgba(58, 240, 240, 0.15) 0%, rgba(8, 18, 28, 0.95) 70%)',
+            boxShadow:
+              '0 0 14px rgba(58, 240, 240, 0.5), inset 0 0 12px rgba(58, 240, 240, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: '4px 6px',
+          }}
+          title="Element 115 (Moscovium) — BO3 Zombies launch tier"
+        >
+          <span
+            style={{
+              fontSize: 9,
+              fontFamily: 'ui-monospace, monospace',
+              color: '#7ad9d9',
+              letterSpacing: '0.05em',
+              alignSelf: 'flex-start',
+              lineHeight: 1,
+            }}
+          >
+            115
+          </span>
+          <span
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: '#cdf5f5',
+              textShadow: '0 0 8px rgba(58, 240, 240, 0.9)',
+              alignSelf: 'center',
+              lineHeight: 1,
+              fontFamily: '"Cinzel", serif',
+            }}
+          >
+            Mc
+          </span>
+          <span
+            style={{
+              fontSize: 7,
+              fontFamily: 'ui-monospace, monospace',
+              color: '#7ad9d9',
+              letterSpacing: '0.04em',
+              alignSelf: 'flex-end',
+              lineHeight: 1,
+            }}
+          >
+            Moscovium
+          </span>
+        </div>
+      )}
       {highlighted && highlightLabel && (
         <span className="absolute -top-2 left-6 text-[10px] uppercase tracking-widest text-bg-base bg-accent px-2 py-0.5 rounded">
           {highlightLabel}
         </span>
       )}
-      <div>
+      <div className={element115 ? 'pr-16' : ''}>
         <p className="text-xs uppercase tracking-widest text-text-subtle mb-1">{name}</p>
         <div className="flex items-baseline gap-2 flex-wrap">
           <p
             className="text-4xl font-bold text-text select-none"
             onClick={onPriceTap}
-            style={onPriceTap ? { cursor: 'default' } : undefined}
+            style={
+              onPriceTap
+                ? {
+                    cursor: 'default',
+                    ...(element115
+                      ? { textShadow: '0 0 12px rgba(58, 240, 240, 0.55)' }
+                      : {}),
+                  }
+                : element115
+                ? { textShadow: '0 0 12px rgba(58, 240, 240, 0.55)' }
+                : undefined
+            }
           >
             {price}
           </p>
