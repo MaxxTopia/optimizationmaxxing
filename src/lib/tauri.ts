@@ -686,3 +686,42 @@ export async function cpuPinPid(pid: number, cores: number[]): Promise<PinReport
 export async function cpuClearPin(pid: number): Promise<PinReport> {
   return invoke<PinReport>('cpu_clear_pin', { pid })
 }
+
+// ---------- Auto-pin daemon ----------
+
+export interface AutoPinRule {
+  processName: string
+  cores: number[]
+}
+
+export interface AutoPinConfig {
+  enabled: boolean
+  pollSeconds: number
+  rules: AutoPinRule[]
+}
+
+export interface AutoPinPinnedProc {
+  pid: number
+  processName: string
+  cores: number[]
+  pinnedAt: string
+}
+
+export interface AutoPinStatus {
+  running: boolean
+  lastPoll: string | null
+  pinned: AutoPinPinnedProc[]
+  config: AutoPinConfig
+}
+
+export async function autoPinStatus(): Promise<AutoPinStatus> {
+  return invoke<AutoPinStatus>('auto_pin_status')
+}
+
+export async function autoPinGetConfig(): Promise<AutoPinConfig> {
+  return invoke<AutoPinConfig>('auto_pin_get_config')
+}
+
+export async function autoPinSetConfig(config: AutoPinConfig): Promise<AutoPinConfig> {
+  return invoke<AutoPinConfig>('auto_pin_set_config', { config })
+}

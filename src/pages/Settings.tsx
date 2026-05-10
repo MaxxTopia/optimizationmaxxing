@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AutoPinSection } from '../components/AutoPinSection'
 import { CpuPinningSection } from '../components/CpuPinningSection'
 import { PROFILE_ORDER, profiles } from '../theme/profiles'
 import { useProfileStore } from '../store/useProfileStore'
@@ -140,6 +141,8 @@ export function Settings() {
       <StandbyCleanerSection />
 
       <CpuPinningSection />
+
+      <AutoPinSection />
 
       <TelemetrySection />
 

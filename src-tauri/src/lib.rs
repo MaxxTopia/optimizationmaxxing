@@ -1,6 +1,7 @@
 use serde::Serialize;
 use tauri::Manager;
 
+mod auto_pin;
 mod cpusets;
 mod crash;
 mod engine;
@@ -341,6 +342,25 @@ async fn lhm_sensors(app: tauri::AppHandle) -> Result<toolkit::LhmReport, String
         .map_err(|e| format!("lhm task failed: {e}"))
 }
 
+// ── Auto-pin daemon commands ─────────────────────────────────────────
+
+#[tauri::command]
+async fn auto_pin_status() -> Result<auto_pin::AutoPinStatus, String> {
+    Ok(auto_pin::get_status())
+}
+
+#[tauri::command]
+async fn auto_pin_get_config() -> Result<auto_pin::AutoPinConfig, String> {
+    Ok(auto_pin::get_config())
+}
+
+#[tauri::command]
+async fn auto_pin_set_config(
+    config: auto_pin::AutoPinConfig,
+) -> Result<auto_pin::AutoPinConfig, String> {
+    auto_pin::set_config(config).map_err(|e| format!("{:#}", e))
+}
+
 // ── CPU sets game-pinning commands ────────────────────────────────────
 
 #[tauri::command]
@@ -658,6 +678,11 @@ pub fn run() {
             crash::set_crash_dir(dir.join("crashes"));
             crash::install_panic_hook();
             telemetry::set_settings_path(dir.join("telemetry.json"));
+            // Auto-pin daemon: load persisted config + spawn the polling task.
+            // Daemon ticks every config.poll_seconds; pins are no-op when
+            // config.enabled is false.
+            auto_pin::init(dir.join("auto-pin.json"));
+            auto_pin::spawn_daemon();
             let store = SnapshotStore::open(&dir).expect("opening snapshot store");
             app.manage(store);
             Ok(())
@@ -711,6 +736,9 @@ pub fn run() {
             cpu_pin_foreground,
             cpu_pin_pid,
             cpu_clear_pin,
+            auto_pin_status,
+            auto_pin_get_config,
+            auto_pin_set_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

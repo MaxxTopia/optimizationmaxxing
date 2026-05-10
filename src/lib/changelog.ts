@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.66',
+    date: '2026-05-10',
+    highlights: [
+      'NEW **Per-game-name auto-pin daemon** — the v0.1.65 click-to-pin gets a daemon. New section in /settings (below click-to-pin): add rules for {processName, cores}, toggle daemon ON, every N seconds (default 5) the Rust-side polling task watches for matching game processes and pins them via SetProcessDefaultCpuSets. Set-and-forget. Config persists to %LOCALAPPDATA%\\\\optmaxxing\\\\auto-pin.json across app restarts. UI surfaces last-poll timestamp + currently-pinned PID list (live, refreshes every 5s while running).',
+      'New Rust module **auto_pin.rs** — long-running tokio task spawned at app startup. Static CONFIG + STATUS via parking_lot::Mutex + OnceLock. Uses sysinfo to enumerate processes by name. Tracks pinned PIDs to avoid re-pinning + drops dead PIDs from tracking each cycle. 3 new Tauri commands: auto_pin_status / auto_pin_get_config / auto_pin_set_config.',
+      'Quick-picker UI ships common-game presets (Fortnite / Valorant / CS2 / Apex / OW2 / Warzone) with their canonical .exe names plus a "+ custom" prompt for anything else. Per-rule core picker reuses the same per-core toggle UI as click-to-pin.',
+      'No UAC needed for the daemon — sysinfo + OpenProcess(PROCESS_SET_INFORMATION) work unelevated as long as the game wasn\'t launched with elevated privileges itself. Anti-cheat-safe: same SetProcessDefaultCpuSets path as v0.1.65.',
+    ],
+  },
+  {
     version: '0.1.65',
     date: '2026-05-10',
     highlights: [
