@@ -302,8 +302,8 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Clix',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Multi-FNCS finalist · public-facing pro Twitch stream',
-    voice: 'Trains in public — daily routine + settings are documented (ProSettings + community breakdowns) rather than rumored.',
+    credential: 'Cody "Clix" Conrod · NRG Esports · 5× World Cup qualifier · 2024 Forbes 30 Under 30 (youngest member) · 8M+ Twitch followers',
+    voice: 'NRG NA pro since 2019 (started on Misfits at 14). Public training routine + settings are documented at ProSettings + duelmasters. Built a real business stack alongside competing — apparel (Dr3amin), UEFN game studio (Clix Creative), co-owns XSET.',
     tier: 'top',
     rig: {
       dpi: 'see ProSettings',
@@ -313,12 +313,20 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     },
     insights: [
       {
+        text: '**Recent FNCS pedigree:** 2nd at FNCS Major 2 2025 NA Central Grand Finals ($25,500); 4th at FNCS Major 1 + Major 3 2024 North America ($30K each); 3rd at FNCS Major 1 2025 NA Central ($17K). Single biggest career payout: $112,500 — 18th in 2019 Fortnite World Cup Solo Finals at age 14.',
+        citation: { label: 'Esports Earnings — Clix', url: 'https://www.esportsearnings.com/players/62105-clix-cody-conrod' },
+      },
+      {
         text: 'In-game settings: **Brightness 117**, Performance render mode, V-Sync OFF, 240 FPS cap. All tuned for outline visibility + frame consistency rather than aesthetics.',
         citation: { label: 'ProSettings.net — Clix', url: 'https://prosettings.net/players/clix/' },
       },
       {
         text: 'Daily training cited at duelmasters.io: edit courses + retakes + scenario-focused 1v1s, not pure aim-trainer hours. Mechanics + decision-making are trained as separate reps.',
         citation: { label: 'duelmasters.io — Clix breakdown', url: 'https://www.duelmasters.io/blog/clix-fortnite-settings' },
+      },
+      {
+        text: 'Beyond compete: 2024 Forbes 30 Under 30 (youngest list member at 19), owns Dr3amin apparel + Clix Creative (UEFN game studio), co-owns XSET. The pro-to-business operator transition without leaving the FNCS circuit is unusual; most either go all-in on compete or pivot fully to creator.',
+        citation: { label: 'Famous Birthdays — Clix', url: 'https://www.famousbirthdays.com/people/clix.html' },
       },
     ],
     dailyRoutine: {
@@ -336,18 +344,27 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Reet',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Top controller pro · multi-FNCS finalist · public config at specs.gg',
-    voice: 'High-finish-rate controller pro. Settings + bind layout are documented at specs.gg rather than reverse-engineered from clips.',
+    credential: 'Nathan "Reet" Amundson · ~$400K career FNCS earnings · multi-FNCS-region winner · 5x S-Tier Grand Final podium',
+    voice: 'High-volume FNCS finals presence — 1st-place finishes in NA West (C2S8 + 2021 Grand Royale with Arkhram + EpikWhale) plus 2nd at FNCS Major 2 2024 NA Grand Finals with Ritual ($45K). Currently a free agent. Settings published at ProSettings.',
     tier: 'top',
     rig: {
-      dpi: 'controller',
+      dpi: '800',
       monitor: 'high refresh',
-      mouse: 'controller (preferred binds: V stairs, B cone, M4/M5 wall per specs.gg)',
+      mouse: 'Logitech G Pro X Superlight 2 (per ProSettings)',
+      keyboard: 'SteelSeries Apex Pro Mini',
     },
     insights: [
       {
-        text: 'Bind layout is documented at specs.gg — V stairs, B cone, M4/M5 wall. Customizing controller binds to your thumb travel matters more than KBM does because there are fewer keys; each one has to be perfectly placed.',
-        citation: { label: 'specs.gg — Reet config', url: 'https://specs.gg/Reet' },
+        text: '**Career bag: ~$400,680** across 100+ tournaments. Single biggest payout: **$45,000 — 2nd place at FNCS Major 2 2024 NA Grand Finals** (with Ritual). Two outright NA West FNCS wins back in C2S8 + 2021 Grand Royale.',
+        citation: { label: 'Esports Earnings — Reet', url: 'https://www.esportsearnings.com/players/80705-reet-nathan-amundson' },
+      },
+      {
+        text: 'Mouse + sens documented: Logitech G Pro X Superlight 2 @ 800 DPI / 1000 Hz, X+Y sens 6.4%, Targeting/Scope 58.9%. Pad: SteelSeries Apex Pro Mini. Crouch=C / Jump=Space / Sprint=L-Shift.',
+        citation: { label: 'ProSettings.net — Reet', url: 'https://prosettings.net/players/reet/' },
+      },
+      {
+        text: 'Region-shopped to NA Central in 2025 — placed 3rd at FNCS Major 2 2025 NA Central Grand Finals with Cooper + Curly ($17K). Also took 5th at Games of the Future 2025 with Cyrzr ($20K). Adapting across regions + format changes (duo → trio → duo) is the harder credential than peak skill in any one meta.',
+        citation: { label: 'Liquipedia — Reet results', url: 'https://liquipedia.net/fortnite/Reet' },
       },
     ],
     link: 'https://www.twitch.tv/reet',
@@ -378,19 +395,20 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Khanada',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Multi-FNCS finalist · long-tenured top-tier across multiple chapters',
-    voice: 'Long-tenured NA pro — competitive across multiple chapter resets, which itself is the rarer credential. Most pros peak in one meta and fade; staying relevant through three is the harder thing.',
-    tier: 'standard',
+    credential: 'Dignitas · 1st place FNCS 2026 Major 1 NA West Grand Finals (with VicterV) · long-tenured top-tier across multiple chapters',
+    voice: 'Came back to NA West and took the FNCS 2026 Major 1 Grand Finals with VicterV — 160 points clear of 2nd place ($30,000), two Victory Royales en route. Long-career US pro on Dignitas; competitive across multiple chapter resets is the rarer credential.',
+    tier: 'top',
     rig: {
       monitor: '240 Hz',
     },
     insights: [
       {
-        text: 'Heavy creative-mode hours, scrim-light. Inverse of Clix — proves the work can come from either lane. Match your training distribution to your specific mechanical gap, not to the most-streamed pro.',
+        text: '**FNCS 2026 Major 1 NA West win with VicterV** — 1st place by 160 points (the runaway margin in a 2-day event) for $30,000 each, two Victory Royales on the way. Result that re-established him as a top NA pro after multiple region + duo shuffles in earlier chapters.',
+        citation: { label: 'Sportskeeda — FNCS 2026 Major 1 Grand Finals NA + EU results', url: 'https://www.sportskeeda.com/fortnite/fortnite-fncs-2026-major-1-grand-finals-na-eu-results' },
       },
       {
         text: 'Career longevity > peak skill. Staying competitive across multiple chapter overhauls (each of which resets meta + mechanics) means re-learning movement, edits, and economy from scratch. Most "fell off" stories are just one meta away from "couldn\'t adapt".',
-        citation: { label: 'Khanada FNCS history', url: 'https://liquipedia.net/fortnite/Khanada' },
+        citation: { label: 'Liquipedia — Khanada full results', url: 'https://liquipedia.net/fortnite/Khanada/Results' },
       },
     ],
     link: 'https://www.twitch.tv/khanada',

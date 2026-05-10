@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.72',
+    date: '2026-05-10',
+    highlights: [
+      'CONTENT **/grind cards expanded** — Khanada / Reet / Clix all rewritten with cited, current facts.',
+      '**Khanada** — added the 1st-place finish at **FNCS 2026 Major 1 NA West Grand Finals** with VicterV (Dignitas duo, 160 points clear of 2nd, $30K each, two Victory Royales en route) per Sportskeeda + Liquipedia event log.',
+      '**Reet** — career bag $400,680 across 100+ tournaments (Esports Earnings); biggest single payout $45K at FNCS Major 2 2024 NA Grand Finals (2nd with Ritual). Two outright NA West FNCS wins (C2S8 + 2021 Grand Royale). Documented mouse + binds via ProSettings: Logitech G Pro X Superlight 2 @ 800 DPI, 6.4% sens.',
+      '**Clix** — added the 2024 Forbes 30 Under 30 (youngest member) credential, the business stack (Dr3amin apparel / Clix Creative UEFN studio / co-owns XSET), and the recent FNCS placements: 2nd at FNCS Major 2 2025 NA Central ($25.5K), 4th at Major 1 + Major 3 2024 NA ($30K each), 3rd at Major 1 2025 NA Central ($17K). Career-biggest single payout $112,500 from 2019 World Cup Solo Finals at age 14.',
+    ],
+  },
+  {
     version: '0.1.71',
     date: '2026-05-10',
     highlights: [
