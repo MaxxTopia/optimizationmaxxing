@@ -12,6 +12,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.55',
+    date: '2026-05-10',
+    highlights: [
+      'NEW Asta Bench history graph — pure-SVG line chart of composite over time on /benchmark. Linear-regression trend overlay tells you "rising / flat / falling" without us editorializing. Hover any point for label + timestamp.',
+      'NEW "I\'m Asta-modded" share card on /asta — Canvas-generated 1080×1080 PNG with your latest composite + before/after delta + Asta visual treatment (void bg, hairline cracks, crimson border pulse). Right-click → save → post to X/Discord. All local — nothing leaves the machine.',
+      'NEW Valorant in-game pro-settings guide — Vanguard fights config-dir writes so we ship no Valorant FileWrite tweak. This is the next-best path: TenZ/yay/Demon1/aspas consensus stack (HRTF on, Improve Clarity off, frame-rate-limit at 2× refresh, full graphics low).',
+      'NEW /grind entries — Khanada (controller pro), Th0masHD (EU pro/coach), Faxuty (mechanical specialist), ArcoTV podcast. Catalog grew from 8 to 12 cited sources.',
+      'NEW telemetry events wired — preset.applied (with anyVip flag) + bench.composite (with labelKind for before/after/run bucketing). Closes the data-loop gap from v0.1.54.',
+      'GLAMOUR Sonic + BO3 flourishes shipped — Sonic gets a 520ms speed-line sweep across .surface-card on first hover (kinetic signature). BO3 gets corner-bracket HUD frames via a new <HudFrame> wrapper, applied to RAM Advisor / DPC / VBS / Microcode cards on /diagnostics. No-op outside the matching profile.',
+      'POLISH RamAdvisor unknown-IC card now ships a "hop, not a dead-end" callout with Thaiphoon Burner + community part-DB links. Was just an amber badge.',
+      'DOC CLAUDE.md refreshed — replaced the v0.1.35-stale phase log with a never-rots stack/layout/release-flow doc. Per-release "what shipped" lives in changelog.ts; per-release intent lives in commit messages.',
+    ],
+  },
+  {
     version: '0.1.54',
     date: '2026-05-09',
     highlights: [

@@ -4,6 +4,7 @@ import { useIsVip } from '../store/useVipStore'
 import { applyBatch, listApplied, type BatchItem } from '../lib/tauri'
 import { catalog } from '../lib/catalog'
 import { presetById } from '../lib/presets'
+import { AstaShareCard } from '../components/AstaShareCard'
 import { TournamentAudit } from '../components/TournamentAudit'
 
 /**
@@ -180,6 +181,8 @@ export function Asta() {
       </section>
 
       <TournamentAudit />
+
+      <AstaShareCard />
 
       <section className="surface-card p-6 space-y-3">
         <p className="text-[10px] uppercase tracking-widest text-text-subtle">whats next</p>

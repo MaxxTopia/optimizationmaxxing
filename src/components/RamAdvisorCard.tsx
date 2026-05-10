@@ -140,6 +140,38 @@ function ModuleCard({ module: m }: { module: RamModule }) {
         <Stat label="Form" value={m.formFactor} />
       </div>
       <p className="text-xs text-text-muted leading-snug">{m.icCharacter}</p>
+      {isUnknown && (
+        <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2.5 mt-1 space-y-1">
+          <p className="text-[11px] text-amber-200/90 font-semibold uppercase tracking-widest">
+            Hop, not a dead-end
+          </p>
+          <p className="text-[11px] text-text-muted leading-snug">
+            We couldn't infer the IC die from the part number — boutique kits, custom binning,
+            and certain Crucial / Patriot SKUs publish part numbers our heuristic doesn't
+            recognize. Two reliable next moves:
+          </p>
+          <ul className="text-[11px] text-text-muted space-y-0.5 pl-3">
+            <li>
+              · Run{' '}
+              <a className="underline hover:text-text" href="https://www.softnology.biz/files.html" target="_blank" rel="noreferrer">
+                Thaiphoon Burner
+              </a>{' '}
+              → Read → it dumps the SPD directly with the actual IC name. 30-second job.
+            </li>
+            <li>
+              · Cross-reference your part number on{' '}
+              <a className="underline hover:text-text" href="https://benzhaomin.github.io/HynixModules/" target="_blank" rel="noreferrer">
+                Hynix Modules DB
+              </a>{' '}
+              or{' '}
+              <a className="underline hover:text-text" href="https://www.reddit.com/r/overclocking/wiki/index/ramoc/" target="_blank" rel="noreferrer">
+                r/overclocking RAM wiki
+              </a>{' '}
+              — community-maintained part-to-IC tables.
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

@@ -3,6 +3,7 @@ import {
   applyBatch,
   listApplied,
   revertTweak,
+  telemetrySendEvent,
   type AppliedTweak,
   type BatchItem,
 } from '../lib/tauri'
@@ -73,6 +74,13 @@ export function Presets() {
       }
       if (items.length > 0) await applyBatch(items)
       await refreshApplied()
+      telemetrySendEvent('preset.applied', {
+        presetId,
+        tweakCount: tweaks.length,
+        // VIP-gated presets get tagged so the operator side can split adoption
+        // funnel between free + VIP without us shipping a per-user flag.
+        anyVip: tweaks.some((t) => t.vipGate === 'vip'),
+      })
     } catch (e) {
       setError(formatErr(e))
     } finally {

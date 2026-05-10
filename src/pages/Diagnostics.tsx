@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { DpcLatencyCard } from '../components/DpcLatencyCard'
+import { HudFrame } from '../components/HudFrame'
 import { IntelMicrocodeCard } from '../components/IntelMicrocodeCard'
 import { LastCrashCard } from '../components/LastCrashCard'
 import { PcieLinkCard } from '../components/PcieLinkCard'
@@ -252,17 +253,17 @@ export function Diagnostics() {
             </div>
           </section>
 
-          <IntelMicrocodeCard />
+          <HudFrame><IntelMicrocodeCard /></HudFrame>
 
-          <VbsStatusCard />
+          <HudFrame><VbsStatusCard /></HudFrame>
 
           <UclkWarningCard spec={snap.spec} />
 
-          <RamAdvisorCard />
+          <HudFrame><RamAdvisorCard /></HudFrame>
 
           <PcieLinkCard />
 
-          <DpcLatencyCard />
+          <HudFrame><DpcLatencyCard /></HudFrame>
 
           <LastCrashCard />
 

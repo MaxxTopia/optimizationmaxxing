@@ -290,6 +290,85 @@ body.profile-dmc h2 {
   }
 }
 
+/* Sonic — kinetic. Speed-line sweep across .surface-card on first hover.
+ * The keyframe runs once per hover (animation-iteration-count: 1) so it
+ * reads as a "wake up" flash, not a busy loop. Per-card not per-page so
+ * it triggers anywhere the user mouses through. */
+body.profile-sonic .surface-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(255, 215, 0, 0.18) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  background-size: 250% 100%;
+  background-position: -75% 0;
+  opacity: 0;
+  transition: opacity 80ms ease-out;
+}
+body.profile-sonic .surface-card:hover::after {
+  opacity: 1;
+  animation: sonic-speed-sweep 520ms cubic-bezier(0.3, 0, 0.4, 1) 1 forwards;
+}
+@keyframes sonic-speed-sweep {
+  0%   { background-position: -75% 0; }
+  100% { background-position: 175% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.profile-sonic .surface-card::after,
+  body.profile-sonic .surface-card:hover::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* BO3 Zombies — Pack-a-Punch HUD corner brackets. Tag any card with
+ * .bo3-hud-frame to get the four corner clips. Brackets are positioned
+ * via ::before/::after on the wrapper; the wrapper provides .bo3-corner-tl
+ * .bo3-corner-tr .bo3-corner-bl .bo3-corner-br markers via inline divs.
+ * Pure CSS variant: ::before/::after handle two corners, the other two
+ * come from a child .bo3-hud-frame__inner that pseudo-elements off itself. */
+body.profile-bo3 .bo3-hud-frame {
+  position: relative;
+}
+body.profile-bo3 .bo3-hud-frame::before,
+body.profile-bo3 .bo3-hud-frame::after,
+body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::before,
+body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-style: solid;
+  border-color: rgba(212, 175, 55, 0.7);
+  pointer-events: none;
+}
+body.profile-bo3 .bo3-hud-frame::before {
+  top: -4px; left: -4px;
+  border-width: 2px 0 0 2px;
+}
+body.profile-bo3 .bo3-hud-frame::after {
+  top: -4px; right: -4px;
+  border-width: 2px 2px 0 0;
+}
+body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::before {
+  bottom: -4px; left: -4px;
+  border-width: 0 0 2px 2px;
+}
+body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::after {
+  bottom: -4px; right: -4px;
+  border-width: 0 2px 2px 0;
+}
+/* Outside BO3 the wrapper is a no-op — the .bo3-hud-frame__inner div is
+ * still in the DOM but invisible. Saves us a runtime branch in components. */
+
 /* Research-article body styling — applied to the rendered markdown. */
 .research-body h1,
 .research-body h2 {

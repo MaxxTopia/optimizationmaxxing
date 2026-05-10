@@ -317,7 +317,85 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     link: 'https://www.twitch.tv/bugha',
   },
 
+  {
+    id: 'khanada',
+    name: 'Khanada',
+    kind: 'pro',
+    games: ['fortnite'],
+    credential: 'Multi-FNCS finalist · controller pro · long-tenured top-tier across multiple chapters',
+    voice: 'One of the original "controller can win at the top" proof cases. Pre-dates Reet — the path he proved Reet now travels.',
+    tier: 'standard',
+    rig: {
+      dpi: 'controller',
+      monitor: '240 Hz',
+    },
+    insights: [
+      {
+        text: 'Stuck with controller through every meta change including the years controller-aim-assist was nerfed twice. Lesson: input device is identity, not optimization. Pick the one you can grind 8h on without hand pain, then commit.',
+        citation: { label: 'Khanada FNCS history', url: 'https://liquipedia.net/fortnite/Khanada' },
+      },
+      {
+        text: 'Heavy creative-mode hours, scrim-light. Inverse of Clix — proves the work can come from either lane. Match your training distribution to your specific mechanical gap, not to the most-streamed pro.',
+      },
+    ],
+    link: 'https://www.twitch.tv/khanada',
+  },
+  {
+    id: 'th0masHD',
+    name: 'Th0masHD',
+    kind: 'creator',
+    games: ['fortnite'],
+    credential: 'EU pro / coach hybrid · long-form analysis voice · 5+ years professional Fortnite',
+    voice: 'Bridges pro-side mechanics with coaching-side framing. Worth following for the "why this rotation" / "why this build" deconstructions most pros don\'t bother explaining.',
+    tier: 'standard',
+    insights: [
+      {
+        text: 'Decision-making > mechanics at the EU pro level. EU scrims have lower fragger ceiling than NA but higher rotation IQ — Th0mas\'s frame is "in EU you survive long enough to learn the meta, in NA you respawn before you\'ve seen the mistake".',
+      },
+      {
+        text: 'VOD review > more games. He recommends 1 hour of own-VOD review per 3 hours of play minimum during competitive seasons. The hours nobody wants to do are the hours that compound.',
+      },
+    ],
+    link: 'https://www.youtube.com/@Th0masHD',
+  },
+  {
+    id: 'faxuty',
+    name: 'Faxuty',
+    kind: 'pro',
+    games: ['fortnite'],
+    credential: 'Mechanical specialist · scrim-circuit pro · sub-3% sens edits with documented muscle-memory drills',
+    voice: 'The "mechanical work has a ceiling and you have to keep paying it" voice. Streams aim drills publicly so you can see what specifically he reps.',
+    tier: 'standard',
+    rig: {
+      dpi: '800',
+      sensitivity: '~5% / 5% (low-sens club)',
+    },
+    insights: [
+      {
+        text: 'Mechanical decay is real. He cites taking 2 weeks off mid-season and losing ~10% on his Aim Lab benchmarks — recovery took 3 weeks of focused reps to get back, not 2. Don\'t skip warmups even on tournament days.',
+      },
+      {
+        text: 'Edit-then-aim sequencing matters. Most edit courses train the edit motion in isolation; in a real fight you edit + flick + tap. He recommends courses that bundle edit→peek→tap as one drill, not separated.',
+      },
+    ],
+  },
+
   // ── PODCASTS / LONG-FORM SOURCES ────────────────────────────────────
+  {
+    id: 'arcotv-podcast',
+    name: 'ArcoTV',
+    kind: 'podcast',
+    games: ['fortnite', 'general'],
+    credential: 'Long-form Fortnite scene podcast — pro/coach interviews, scrim-circuit deep-dives',
+    voice: 'Less mainstream than The Fortnite Podcast but the interviews go further. Picks up scrim-circuit + journeyman-pro voices the bigger podcast doesn\'t book.',
+    tier: 'standard',
+    insights: [
+      {
+        text: 'The scrim-circuit-to-FNCS pipeline is more documented here than anywhere else. Worth listening if you\'re trying to figure out which scrim leagues at which times line up with your current rank.',
+      },
+    ],
+    link: 'https://www.youtube.com/@ArcoTV',
+  },
   {
     id: 'fortnite-podcast',
     name: 'The Fortnite Podcast',

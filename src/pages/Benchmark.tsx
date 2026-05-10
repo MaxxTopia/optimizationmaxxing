@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
+import { AstaBenchHistoryGraph } from '../components/AstaBenchHistoryGraph'
 import { ThirdPartyBenchLogger } from '../components/ThirdPartyBenchLogger'
 import {
   inTauri,
+  telemetrySendEvent,
   type CpuLatencySample,
   type PingJitterSample,
   type DpcSnapshot,
@@ -110,6 +112,17 @@ export function Benchmark() {
     const next = [snap, ...history].slice(0, 20)
     setHistory(next)
     localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(next))
+    telemetrySendEvent('bench.composite', {
+      composite,
+      cpuNsPerIter: cpu.nsPerIter,
+      dpcPct: dpc.totalDpcPercent,
+      pingP50Ms: ping.p50Ms,
+      pingStddevMs: ping.stddevMs,
+      framePaceStddevMs: framePaceStddev,
+      // Label kind only — not the timestamp suffix — so the worker side
+      // can bucket "before/after/run" snapshots separately.
+      labelKind: /^before/i.test(label) ? 'before' : /^after/i.test(label) ? 'after' : 'run',
+    })
   }
 
   const before = history.find((h) => /before/i.test(h.label))
@@ -213,6 +226,10 @@ export function Benchmark() {
       {before && after && (
         <BeforeAfterDiff before={before} after={after} />
       )}
+
+      <AstaBenchHistoryGraph
+        points={history.map((h) => ({ ts: h.ts, composite: h.composite, label: h.label }))}
+      />
 
       {history.length > 0 && (
         <section className="surface-card p-5 space-y-2">

@@ -18,6 +18,7 @@ import winring0AvExclusion from '../../resources/research/winring0-av-exclusion.
 import latencyBudget from '../../resources/research/latency-budget.md?raw'
 import grindLayer from '../../resources/research/grind-layer.md?raw'
 import fortniteProSettings from '../../resources/research/fortnite-pro-settings.md?raw'
+import valorantProSettings from '../../resources/research/valorant-pro-settings.md?raw'
 
 import type { GameId } from './games'
 
@@ -189,5 +190,14 @@ export const RESEARCH: ResearchArticle[] = [
     badge: 'FORTNITE',
     body: fortniteProSettings,
     applicableGames: ['fortnite'],
+  },
+  {
+    id: 'valorant-pro-settings',
+    title: 'Valorant — in-game pro settings (cited)',
+    blurb:
+      "Vanguard fights config-dir writes — we ship no FileWrite tweak. This is the next-best path: TenZ/yay/Demon1/aspas in-game consensus stack. HRTF on, Improve Clarity off, frame-rate-limit at 2× refresh, full graphics low.",
+    badge: 'VALORANT',
+    body: valorantProSettings,
+    applicableGames: ['valorant'],
   },
 ]
