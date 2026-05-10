@@ -626,3 +626,32 @@ export async function telemetrySendEvent(
   // Don't await — caller should not block on telemetry, ever.
   invoke('telemetry_send_event', { kind, payload }).catch(() => {})
 }
+
+// ---------- Background standby memory cleaner ----------
+
+export interface StandbyStatus {
+  /** True if the scheduled task exists. */
+  installed: boolean
+  /** Last time the task ran successfully (parsed from log file). */
+  lastRun: string | null
+  /** Last log line (status from the most recent purge). */
+  lastStatus: string | null
+  /** Path to the log file we read from. */
+  logPath: string
+}
+
+export async function standbyStatus(): Promise<StandbyStatus> {
+  return invoke<StandbyStatus>('standby_status')
+}
+
+export async function standbyInstall(intervalMinutes: number): Promise<StandbyStatus> {
+  return invoke<StandbyStatus>('standby_install', { intervalMinutes })
+}
+
+export async function standbyUninstall(): Promise<StandbyStatus> {
+  return invoke<StandbyStatus>('standby_uninstall')
+}
+
+export async function standbyRunNow(): Promise<StandbyStatus> {
+  return invoke<StandbyStatus>('standby_run_now')
+}

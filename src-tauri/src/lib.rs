@@ -6,6 +6,7 @@ mod engine;
 mod metrics;
 mod process_helpers;
 mod specs;
+mod standby;
 mod telemetry;
 mod toolkit;
 mod vip;
@@ -339,6 +340,56 @@ async fn lhm_sensors(app: tauri::AppHandle) -> Result<toolkit::LhmReport, String
         .map_err(|e| format!("lhm task failed: {e}"))
 }
 
+// ── Background standby memory cleaner commands ───────────────────────
+
+#[tauri::command]
+async fn standby_install(
+    app: tauri::AppHandle,
+    interval_minutes: u32,
+) -> Result<standby::StandbyStatus, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let script = resource_dir.join("resources/scripts/clear_standby.ps1");
+    let script_str = script.to_string_lossy().to_string();
+    tokio::task::spawn_blocking(move || -> Result<standby::StandbyStatus, String> {
+        standby::install_task(&script_str, interval_minutes).map_err(|e| format!("{:#}", e))?;
+        standby::status().map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("standby install task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn standby_uninstall() -> Result<standby::StandbyStatus, String> {
+    tokio::task::spawn_blocking(|| -> Result<standby::StandbyStatus, String> {
+        standby::uninstall_task().map_err(|e| format!("{:#}", e))?;
+        standby::status().map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("standby uninstall task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn standby_run_now() -> Result<standby::StandbyStatus, String> {
+    tokio::task::spawn_blocking(|| -> Result<standby::StandbyStatus, String> {
+        standby::run_now().map_err(|e| format!("{:#}", e))?;
+        // Brief beat so the log file gets the new line before we read it back.
+        std::thread::sleep(std::time::Duration::from_millis(800));
+        standby::status().map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("standby run-now task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn standby_status() -> Result<standby::StandbyStatus, String> {
+    tokio::task::spawn_blocking(|| standby::status().map_err(|e| format!("{:#}", e)))
+        .await
+        .map_err(|e| format!("standby status task failed: {e}"))?
+}
+
 /// Same probe but routed through the single-UAC elevation path so the
 /// WinRing0 driver loads. Returns full sensor coverage (CPU package +
 /// per-core + voltage rails) on success. Surfaces "driver failed to load"
@@ -621,6 +672,10 @@ pub fn run() {
             telemetry::telemetry_get,
             telemetry::telemetry_set,
             telemetry::telemetry_send_event,
+            standby_install,
+            standby_uninstall,
+            standby_run_now,
+            standby_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

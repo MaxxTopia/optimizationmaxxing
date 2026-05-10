@@ -451,6 +451,7 @@
       "vipGate": "vip",
       "anticheatRisk": "low",
       "rebootRequired": "reboot",
+      "anticheatCompatibility": { "battleye": "risk" },
       "actions": [
         {
           "kind": "registry_set",
@@ -1477,6 +1478,7 @@
       "rebootRequired": "reboot",
       "targets": { "osMinBuild": 19041 },
       "tournamentCompliance": { "valorant": "risk" },
+      "anticheatCompatibility": { "vanguard": "risk", "faceit": "risk" },
       "actions": [
         {
           "kind": "bcdedit_set",
@@ -1691,6 +1693,7 @@
       "anticheatRisk": "medium",
       "rebootRequired": "reboot",
       "tournamentCompliance": { "valorant": "risk", "warzone": "risk", "overwatch": "risk" },
+      "anticheatCompatibility": { "vanguard": "risk", "battleye": "risk", "faceit": "risk" },
       "actions": [
         {
           "kind": "registry_set",

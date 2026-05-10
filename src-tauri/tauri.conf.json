@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "optimizationmaxxing",
-  "version": "0.1.62",
+  "version": "0.1.63",
   "identifier": "com.maxxers.optimizationmaxxing",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -54,7 +54,8 @@
     ],
     "resources": [
       "resources/lhm/*.dll",
-      "resources/lhm/read_sensors.ps1"
+      "resources/lhm/read_sensors.ps1",
+      "resources/scripts/clear_standby.ps1"
     ],
     "windows": {
       "nsis": {

@@ -48,6 +48,26 @@ export type ComplianceVerdict = 'safe' | 'risk' | 'breaks'
  * tournament concept (e.g. osu!) simply stay omitted. */
 export type TournamentCompliance = Partial<Record<GameId, ComplianceVerdict>>
 
+/** Anti-cheat scanners we tag tweaks against. Intentionally separate from the
+ * `Anticheat` type in games.ts (which maps a game → its primary AC) — this set
+ * adds third-party services (FACEIT, ESEA) that layer on top of the game's
+ * primary AC with stricter scanning rules. A tweak might be `safe` for the
+ * in-game tournament ruleset but `breaks` against FACEIT's client. */
+export type AnticheatId =
+  | 'vanguard'   // Riot Vanguard (Valorant)
+  | 'eac'        // Easy Anti-Cheat (Fortnite, Apex, R6, etc)
+  | 'battleye'   // BattlEye (R6, PUBG, COD)
+  | 'vac'        // Valve Anti-Cheat (CS2, Steam)
+  | 'faceit'     // FACEIT third-party AC client (CS2)
+  | 'esea'       // ESEA third-party AC client (CS2)
+  | 'epic_ac'    // Epic's in-house AC (separate from EAC)
+
+/** Per-AC compatibility verdict. Independent of TournamentCompliance —
+ * tournament rules govern the in-game competitive ruleset; AC verdicts govern
+ * the kernel-level scanner. Only set when a tweak has a non-default
+ * interaction with that AC; absent = scanner doesn't care. */
+export type AnticheatCompatibility = Partial<Record<AnticheatId, ComplianceVerdict>>
+
 export interface TweakRecord {
   id: string
   title: string
@@ -68,6 +88,11 @@ export interface TweakRecord {
   /** Optional per-game tournament-eligibility verdict. Surfaces a warning pill
    * on the row + powers the "Hide tournament-breaking" filter. */
   tournamentCompliance?: TournamentCompliance
+  /** Optional per-anti-cheat scanner verdict. Independent of tournamentCompliance —
+   * a tweak might be safe for in-game tournament rules but flagged by a stricter
+   * third-party AC client (FACEIT, ESEA). Powers the "Anti-cheat:" filter chip
+   * on /tweaks. Absent = no documented AC interaction. */
+  anticheatCompatibility?: AnticheatCompatibility
 }
 
 export interface Catalog {

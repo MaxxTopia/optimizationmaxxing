@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.63',
+    date: '2026-05-10',
+    highlights: [
+      'NEW **Background standby cleaner** — integrated. New section in /settings: ONE UAC prompt registers a Windows scheduled task that calls `NtSetSystemInformation(MemoryPurgeStandbyList)` every 1/2/5 minutes. Same syscall RAMMap (Sysinternals) and Wagnard\'s ISLC use. Anti-cheat-safe: no driver, no kernel hooks, no game-process injection. PowerShell does the syscall via inline C# P/Invoke + EnablePrivilege(SeProfileSingleProcessPrivilege). After install, task runs silently on schedule. UI surfaces last-cleaned timestamp + "Run now" button + log file path. Removes the need for ISLC-as-3rd-party-tool that the v0.1.62 standby guide pointed users to.',
+      'NEW **Per-anti-cheat compatibility matrix** — schema groundwork. New `AnticheatCompatibility` type on `TweakRecord` lets us tag tweaks against Vanguard / EAC / BattlEye / VAC / FACEIT / ESEA / Epic AC independently of game-tournament compliance. `/tweaks` page gains an "Anti-cheat:" filter chip row + "hide tweaks <AC> flags" toggle. Initial tagging on the most AC-relevant catalog entries: HVCI off (vanguard/battleye/faceit risk), Hyper-V off (vanguard/faceit risk), HPET disable (battleye risk). Full audit pass to expand coverage is incremental.',
+      'Standby cleaner ships the `clear_standby.ps1` resource (bundled in installer). 4 new Tauri commands: `standby_install / _uninstall / _run_now / _status`. Closes the v0.1.62 articleware-only deferral.',
+    ],
+  },
+  {
     version: '0.1.62',
     date: '2026-05-10',
     highlights: [

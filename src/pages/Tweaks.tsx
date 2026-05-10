@@ -5,7 +5,7 @@ import { SuggestTweakModal } from '../components/SuggestTweakModal'
 import { TweakPreviewDrawer, type ResolvedPreview } from '../components/TweakPreviewDrawer'
 import { RiskLegend } from '../components/RiskLegend'
 import { auditMany, type TweakAudit } from '../lib/audit'
-import { catalog, tweakRequiresAdmin, type TweakCategory, type TweakRecord } from '../lib/catalog'
+import { catalog, tweakRequiresAdmin, type AnticheatId, type TweakCategory, type TweakRecord } from '../lib/catalog'
 import { GAMES, type GameId } from '../lib/games'
 import { useIsVip } from '../store/useVipStore'
 import { runBench, score } from '../lib/astaBench'
@@ -46,6 +46,8 @@ export function Tweaks() {
     return 'any'
   })
   const [hideTournamentBreaking, setHideTournamentBreaking] = useState(false)
+  const [activeAc, setActiveAc] = useState<AnticheatId | 'any'>('any')
+  const [hideAcBreaking, setHideAcBreaking] = useState(false)
   const [riskFilter, setRiskFilter] = useState<0 | 1 | 2 | 3 | 4>(0)
   const [adminFilter, setAdminFilter] = useState<'all' | 'admin' | 'no-admin'>('all')
   const [appliedFilter, setAppliedFilter] = useState<'all' | 'applied' | 'not-applied'>('all')
@@ -96,6 +98,10 @@ export function Tweaks() {
         const verdict = t.tournamentCompliance?.[activeGame]
         if (verdict === 'breaks') return false
       }
+      if (activeAc !== 'any') {
+        const acVerdict = t.anticheatCompatibility?.[activeAc]
+        if (hideAcBreaking && (acVerdict === 'breaks' || acVerdict === 'risk')) return false
+      }
       if (riskFilter !== 0 && t.riskLevel !== riskFilter) return false
       if (adminFilter !== 'all') {
         const needsAdmin = tweakRequiresAdmin(t)
@@ -120,7 +126,7 @@ export function Tweaks() {
       }
       return true
     })
-  }, [activeCategory, activeGame, hideTournamentBreaking, search, riskFilter, adminFilter, appliedFilter, appliedById, auditFilter, auditByTweakId])
+  }, [activeCategory, activeGame, hideTournamentBreaking, activeAc, hideAcBreaking, search, riskFilter, adminFilter, appliedFilter, appliedById, auditFilter, auditByTweakId])
 
   async function handleScan() {
     if (!inTauri()) {
@@ -311,6 +317,28 @@ export function Tweaks() {
                 className="accent-accent"
               />
               hide tournament-breaking
+            </label>
+          )}
+        </nav>
+
+        <nav className="flex flex-wrap gap-2 items-center">
+          <span className="text-text-subtle uppercase tracking-wider text-[10px] mr-1" title="Filter by anti-cheat scanner. Independent of game filter — a tweak may be tournament-safe but flagged by a stricter third-party AC client (FACEIT, ESEA).">
+            Anti-cheat:
+          </span>
+          {(['any', 'vanguard', 'eac', 'battleye', 'vac', 'faceit', 'esea'] as const).map((ac) => (
+            <CategoryChip key={ac} active={activeAc === ac} onClick={() => setActiveAc(ac)}>
+              {ac}
+            </CategoryChip>
+          ))}
+          {activeAc !== 'any' && (
+            <label className="ml-2 flex items-center gap-1.5 text-[11px] text-text-muted cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={hideAcBreaking}
+                onChange={(e) => setHideAcBreaking(e.target.checked)}
+                className="accent-accent"
+              />
+              hide tweaks {activeAc.toUpperCase()} flags
             </label>
           )}
         </nav>

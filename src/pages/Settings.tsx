@@ -5,9 +5,14 @@ import {
   inTauri,
   listApplied,
   revertAllApplied,
+  standbyInstall,
+  standbyRunNow,
+  standbyStatus,
+  standbyUninstall,
   telemetryGet,
   telemetrySet,
   type RevertAllReport,
+  type StandbyStatus,
   type TelemetrySettings,
 } from '../lib/tauri'
 
@@ -131,6 +136,8 @@ export function Settings() {
         </div>
       </section>
 
+      <StandbyCleanerSection />
+
       <TelemetrySection />
 
       {confirmOpen && (
@@ -162,6 +169,152 @@ export function Settings() {
         </div>
       )}
     </div>
+  )
+}
+
+function StandbyCleanerSection() {
+  const isNative = inTauri()
+  const [status, setStatus] = useState<StandbyStatus | null>(null)
+  const [intervalMin, setIntervalMin] = useState<1 | 2 | 5>(1)
+  const [busy, setBusy] = useState<'install' | 'uninstall' | 'run' | null>(null)
+  const [err, setErr] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isNative) return
+    standbyStatus().then(setStatus).catch((e) => setErr(String(e)))
+  }, [isNative])
+
+  if (!isNative) return null
+
+  async function handleInstall() {
+    setBusy('install')
+    setErr(null)
+    try {
+      const next = await standbyInstall(intervalMin)
+      setStatus(next)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function handleUninstall() {
+    setBusy('uninstall')
+    setErr(null)
+    try {
+      const next = await standbyUninstall()
+      setStatus(next)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function handleRunNow() {
+    setBusy('run')
+    setErr(null)
+    try {
+      const next = await standbyRunNow()
+      setStatus(next)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const installed = !!status?.installed
+  const lastStatusOk = status?.lastStatus?.startsWith('OK') ?? false
+
+  return (
+    <section className="space-y-3">
+      <div>
+        <h2 className="text-lg font-semibold">Background standby cleaner</h2>
+        <p className="text-sm text-text-muted max-w-3xl leading-snug">
+          Pros restart their game every 2-3 hours because Windows pages active game memory back to
+          the standby list during long sessions, causing mid-endgame frametime drops. This installs
+          a Windows scheduled task that calls{' '}
+          <code className="text-accent">NtSetSystemInformation(MemoryPurgeStandbyList)</code> every
+          N minute(s) — same syscall RAMMap (Sysinternals) and Wagnard's ISLC use. Anti-cheat-safe,
+          no driver, no kernel hooks, no game-process injection. Triggers ONE UAC prompt to
+          install + ONE to uninstall; the task itself runs silently on schedule.
+        </p>
+      </div>
+      <div className="surface-card p-6 space-y-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <div className="text-sm text-text-muted">Status</div>
+            <div className="text-3xl font-bold mt-1">
+              {installed ? (
+                <span className="text-emerald-300">Active</span>
+              ) : (
+                <span className="text-text-muted">Off</span>
+              )}
+            </div>
+            {status?.lastRun && (
+              <div className="mt-3 text-xs text-text-subtle">
+                Last cleaned: <span className={lastStatusOk ? 'text-emerald-300' : 'text-amber-300'}>{status.lastRun}</span>
+                {status.lastStatus && (
+                  <span className="block mt-0.5 font-mono text-[11px] text-text-subtle">{status.lastStatus}</span>
+                )}
+              </div>
+            )}
+            {!status?.lastRun && installed && (
+              <div className="mt-3 text-xs text-text-subtle italic">
+                Task installed — first run pending. Click "Run now" to test.
+              </div>
+            )}
+            {err && <div className="mt-3 text-xs text-accent">Error: {err}</div>}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {!installed && (
+              <select
+                value={intervalMin}
+                onChange={(e) => setIntervalMin(Number(e.target.value) as 1 | 2 | 5)}
+                className="px-2 py-1.5 rounded-md bg-bg-card border border-border text-sm"
+              >
+                <option value={1}>every 1 min</option>
+                <option value={2}>every 2 min</option>
+                <option value={5}>every 5 min</option>
+              </select>
+            )}
+            {installed ? (
+              <>
+                <button
+                  onClick={handleRunNow}
+                  disabled={!!busy}
+                  className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-sm disabled:opacity-50"
+                >
+                  {busy === 'run' ? '…' : 'Run now'}
+                </button>
+                <button
+                  onClick={handleUninstall}
+                  disabled={!!busy}
+                  className="px-3 py-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-sm text-amber-300 hover:border-amber-500 disabled:opacity-50"
+                >
+                  {busy === 'uninstall' ? '…' : 'Turn off'}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleInstall}
+                disabled={!!busy}
+                className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {busy === 'install' ? '…' : 'Turn on'}
+              </button>
+            )}
+          </div>
+        </div>
+        {status?.logPath && (
+          <div className="pt-3 border-t border-border text-[11px] text-text-subtle">
+            Log file: <code className="text-text-muted">{status.logPath}</code>
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
 
