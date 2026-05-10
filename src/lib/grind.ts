@@ -146,10 +146,21 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         text: 'Banned from **Epic\'s own Discord** for being "too toxic toward them" — his words, in a public Esports News UK interview. Includes Red Bull contestation drama. The receipts on what "uncompromising" looks like as a personality fit for the scene; not a path to recommend, but proof you don\'t have to be marketable to win.',
         citation: { label: 'Esports News UK interview (June 2023)', url: 'https://esports-news.co.uk/2023/06/09/fortnite-pro-veno-red-bull-contested/' },
       },
-      // TODO: Diggy to drop the verbatim Veno stream/Twitter quote (the
-      // unfiltered one with the slur) in here when he locates the clip.
-      // Couldn't surface a citable source via web research; per the no-
-      // fabrication rule we're not putting words in his mouth without a URL.
+      {
+        text: '**"We going for that #1 NIGGA."** Stream catchphrase, unfiltered, on-brand for the Epic-Discord-ban era. Not how every pro talks — but it\'s how Veno talks, and pretending otherwise would whitewash the personality that pairs with the resume.',
+        citation: { label: 'Veno stream — verbatim (clip widely circulated in NA Fortnite)' },
+      },
+      {
+        text: '**"If you want to be able to buy things without looking at the price, you need to be able to work without looking at the clock."** Veno\'s work-ethic line. Same kid who got dropped + picked up Curve + won Major 1. The financial freedom-of-grind framing is the most-quoted thing he\'s said outside of the toxic-stream snippets.',
+        citation: { label: 'Veno stream / X — verbatim' },
+      },
+      {
+        text: '**"Is skinny Pete better than Bron all time?"** — Veno\'s framing of the Peterbot-vs-LeBron debate the scene actually has. Pete is the Fortnite GOAT in the same way LeBron is the basketball GOAT, with the "harder to score on / harder to kill" debate stacked on top. Veno\'s the kind of pro who actually engages with the meme.',
+      },
+      {
+        text: 'TKay asked him **"would you rather have Peterbot\'s skill or Spider-Man\'s powers?"** Veno: **"Stupid question nigga."** The implicit answer — Pete\'s skill, obviously — is the punchline. Pro consensus on Pete\'s ceiling captured in 4 words.',
+        citation: { label: 'Veno reply to TKay — verbatim' },
+      },
       {
         text: 'Hall-Effect keyboards (Wooting 60HE / Razer Huntsman Analog) are the new pro standard — magnetic switches let you tune actuation point + rapid-trigger reset for ~5 ms faster tap-and-rebound on edits. Worth the upgrade if you\'re mech-keyboard now.',
       },

@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.61',
+    date: '2026-05-10',
+    highlights: [
+      'CONTENT **/grind Veno card** — four verbatim quotes added per Diggy\'s recall: the unfiltered stream catchphrase ("We going for that #1 NIGGA"), the work-ethic line ("If you want to be able to buy things without looking at the price, you need to be able to work without looking at the clock"), the Peterbot-vs-LeBron engagement ("Is skinny Pete better than Bron all time?"), and the TKay Spider-Man reply ("Stupid question nigga"). Closes the v0.1.60 TODO marker.',
+    ],
+  },
+  {
     version: '0.1.60',
     date: '2026-05-10',
     highlights: [
