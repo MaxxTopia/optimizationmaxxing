@@ -2,7 +2,9 @@
 
 > The only Windows tuner that shows its work. Every tweak traced to a Microsoft Learn doc or a vendor whitepaper. One UAC prompt applies the whole preset. Snapshot-backed revert, any tweak, any time.
 
-**[Download for Windows](https://maxxtopia.com/optimizationmaxxing)** · **[Manifesto](https://maxxtopia.com/manifesto)**
+**[Download for Windows](https://maxxtopia.com/optimizationmaxxing)** · **[Manifesto](https://maxxtopia.com/why)** · **[Community](https://discord.gg/S78eecbWdx)**
+
+Part of the [Maxxtopia](https://maxxtopia.com) suite — native gaming utilities for the players who count frame times.
 
 ## What it does
 
