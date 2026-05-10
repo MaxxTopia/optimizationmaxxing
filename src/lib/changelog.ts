@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.68',
+    date: '2026-05-10',
+    highlights: [
+      'HOTFIX **App-launch crash fix** — v0.1.67 panicked on every startup at `auto_pin.rs:107` ("there is no reactor running") because the v0.1.66 daemon scheduled itself with `tokio::task::spawn` from inside Tauri\'s synchronous `setup` closure, before the tokio runtime came up. Now uses `tauri::async_runtime::spawn`, which is safe to call from any context. Crash logged at `%LOCALAPPDATA%\\\\com.maxxers.optimizationmaxxing\\\\crashes\\\\` if you want to verify the boot loop matches.',
+    ],
+  },
+  {
     version: '0.1.67',
     date: '2026-05-10',
     highlights: [

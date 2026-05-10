@@ -103,8 +103,14 @@ pub fn init(config_path: PathBuf) {
 /// Start the daemon as a tokio background task. Polls every N seconds (per
 /// config.poll_seconds). When config.enabled is false, polls but doesn't
 /// pin anything (still maintains the running indicator).
+///
+/// MUST schedule via `tauri::async_runtime::spawn`, not `tokio::task::spawn`.
+/// We're called from Tauri's synchronous `setup` closure — the tokio runtime
+/// hasn't started yet, so `tokio::task::spawn` panics with "no reactor
+/// running". `tauri::async_runtime` wraps tokio rt-multi-thread and is safe
+/// to call from any context. (v0.1.67 shipped the broken version → boot loop.)
 pub fn spawn_daemon() {
-    tokio::task::spawn(async {
+    tauri::async_runtime::spawn(async {
         loop {
             let (enabled, interval, rules) = {
                 let cfg = cfg_lock().lock();
