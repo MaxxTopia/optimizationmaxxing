@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.64',
+    date: '2026-05-10',
+    highlights: [
+      'NEW **Tournament Mode** — temporal AC compliance toggle on /asta. Pick a game, set a match-start time, choose buffer minutes (default: revert at T-5min, restore at T+30min). At T-N: batch-reverts every applied tweak the chosen game\'s anti-cheat would flag. At T+M: re-applies the same set. Survives app restarts via localStorage. Polled every 15s. Removes the manual 5-min ritual most pros do before every Vanguard / BattlEye scrim. Preview panel shows exactly which tweaks will be reverted before you commit.',
+      'CONTENT **Per-AC matrix audit pass** — 9 new tweaks tagged (3 → 12 total). Risk-tagged: cpu-mitigations.disable-DANGER (vanguard/battleye/faceit/esea risk), exception-chain-validation.disable (vanguard/faceit), global-timer-resolution.allow (battleye), useplatformclock.disable (battleye), disabledynamictick.yes (battleye). Safe-tagged so users see the green pill: cs2.autoexec.optimize (vac/faceit/esea safe), apex.videoconfig.optimize (eac safe), fortnite.engine-ini.optimize (eac/epic_ac safe), fortnite.gus-ini.competitive (eac/epic_ac safe). Catalog v1.8.0 → v1.8.1.',
+      'Tournament Mode reads anticheatCompatibility first; falls back to tournamentCompliance[game] if no per-AC verdict. So even untagged tweaks with a tournamentCompliance entry still get reverted correctly when the user activates the mode.',
+    ],
+  },
+  {
     version: '0.1.63',
     date: '2026-05-10',
     highlights: [

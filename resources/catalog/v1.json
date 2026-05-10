@@ -1,7 +1,7 @@
 {
-  "version": "v1.8.0",
+  "version": "v1.8.1",
   "generated_at": "2026-05-10",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.0 adds gatekept-pro tier: MPO disable, per-NIC TCP ACK frequency + Nagle disable, DSCP/QoS Group Policy packet tagging.",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.1 adds per-AC matrix tags on the 12 most-AC-relevant tweaks (kernel mitigations, BCD timer/clock writes, game config FileWrites). Powers Tournament Mode auto-revert/restore on /asta.",
   "tweaks": [
     {
       "id": "display.mpo.disable",
@@ -575,6 +575,7 @@
       "vipGate": "vip",
       "anticheatRisk": "low",
       "rebootRequired": "reboot",
+      "anticheatCompatibility": { "battleye": "risk" },
       "actions": [
         {
           "kind": "bcdedit_set",
@@ -594,6 +595,7 @@
       "anticheatRisk": "low",
       "rebootRequired": "reboot",
       "targets": { "formFactor": ["desktop"] },
+      "anticheatCompatibility": { "battleye": "risk" },
       "actions": [
         {
           "kind": "bcdedit_set",
@@ -654,6 +656,7 @@
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
       "targets": { "osMinBuild": 22000 },
+      "anticheatCompatibility": { "battleye": "risk" },
       "actions": [
         {
           "kind": "registry_set",
@@ -677,6 +680,7 @@
       "rebootRequired": "reboot",
       "targets": { "cpuVendor": ["intel"] },
       "tournamentCompliance": { "fortnite": "risk", "valorant": "risk", "warzone": "risk", "overwatch": "risk" },
+      "anticheatCompatibility": { "vanguard": "risk", "battleye": "risk", "faceit": "risk", "esea": "risk" },
       "actions": [
         {
           "kind": "registry_set",
@@ -1455,6 +1459,7 @@
       "vipGate": "vip",
       "anticheatRisk": "low",
       "rebootRequired": "reboot",
+      "anticheatCompatibility": { "vanguard": "risk", "faceit": "risk" },
       "actions": [
         {
           "kind": "registry_set",
@@ -2092,6 +2097,7 @@
       "rebootRequired": "none",
       "applicableGames": ["cs2"],
       "tournamentCompliance": { "cs2": "safe" },
+      "anticheatCompatibility": { "vac": "safe", "faceit": "safe", "esea": "safe" },
       "actions": [
         {
           "kind": "file_write",
@@ -2112,6 +2118,7 @@
       "rebootRequired": "none",
       "applicableGames": ["apex"],
       "tournamentCompliance": { "apex": "safe" },
+      "anticheatCompatibility": { "eac": "safe" },
       "actions": [
         {
           "kind": "file_write",
@@ -2132,6 +2139,7 @@
       "rebootRequired": "none",
       "applicableGames": ["fortnite"],
       "tournamentCompliance": { "fortnite": "safe" },
+      "anticheatCompatibility": { "eac": "safe", "epic_ac": "safe" },
       "actions": [
         {
           "kind": "file_write",
@@ -2152,6 +2160,7 @@
       "rebootRequired": "none",
       "applicableGames": ["fortnite"],
       "tournamentCompliance": { "fortnite": "safe" },
+      "anticheatCompatibility": { "eac": "safe", "epic_ac": "safe" },
       "actions": [
         {
           "kind": "file_write",

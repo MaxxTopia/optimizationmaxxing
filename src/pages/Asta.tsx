@@ -6,6 +6,7 @@ import { catalog } from '../lib/catalog'
 import { presetById } from '../lib/presets'
 import { AstaShareCard } from '../components/AstaShareCard'
 import { TournamentAudit } from '../components/TournamentAudit'
+import { TournamentModePanel } from '../components/TournamentModePanel'
 
 /**
  * /asta — the manifesto + apply page for Asta Mode. Browsable for
@@ -181,6 +182,8 @@ export function Asta() {
       </section>
 
       <TournamentAudit />
+
+      <TournamentModePanel />
 
       <AstaShareCard />
 
