@@ -9,6 +9,7 @@
 
 export type HardwareCategory =
   | 'mouse'
+  | 'skates'
   | 'keyboard'
   | 'monitor'
   | 'mousepad'
@@ -68,12 +69,67 @@ export const HARDWARE: HardwareSection[] = [
         link: 'https://www.razer.com/gaming-mice/razer-viper-v2-pro',
       },
       {
+        name: 'Finalmouse UltralightX Prophecy',
+        price: '$199',
+        tier: 'pro',
+        why:
+          "**33g**, 8000 Hz, proprietary sensor, 3 sizes (classic / medium / small). The lightest serious competitive mouse you can buy. Configures entirely in your browser at **xpanel.finalmouse.com** — no driver install, no daemon to kill, settings save to the mouse. Same idea as Wooting's wootility-web for keyboards. Pick this if Synapse / G HUB / pulsarfusion eating background memory annoys you.",
+        link: 'https://finalmouse.com/products/ulx-pro-series-overview',
+        caveat: 'Finalmouse drops are notoriously limited — check stock before falling in love. Resale prices on out-of-stock SKUs get silly.',
+      },
+      {
         name: 'Pulsar X2 V2 / Lamzu Atlantis Mini',
         price: '$70-90',
         tier: 'budget',
         why:
           "Boutique 50-55g shells with PixArt PAW3395 sensor. Same flagship sensor as $150 mice — you're paying $80 less for less name recognition + sometimes worse QC, not less performance.",
         caveat: 'QC variance is real on boutique brands — check the return-window policy.',
+      },
+    ],
+  },
+  {
+    id: 'skates',
+    label: 'Mouse skates',
+    blurb:
+      "Stock skates wear in 3-9 months. Aftermarket = faster glide, controlled stop, no peeling-corner risk. Boardzy's 200+ mouse + accessory tierlist on YouTube is the best current consensus source. r/MouseReview backs the same picks.",
+    items: [
+      {
+        name: 'Tiger Arc / Arc 2',
+        price: '$10-15',
+        tier: 'goat',
+        why:
+          "Most-recommended default pick across r/MouseReview + Boardzy tierlists. Controlled glide, durable, won't peel at corners on aggressive flicks. The safe answer for any mouse you'd put them on.",
+        link: 'https://www.tigergamingofficial.com/',
+      },
+      {
+        name: 'Corepad Skatez Air',
+        price: '$8-12',
+        tier: 'pro',
+        why:
+          "100% PTFE, fastest glide tier. Has effectively replaced Hyperglide as the default fast-skate brand because Corepad ships day-one cuts for new mouse releases (Hyperglide is slow to release + stocks out constantly).",
+        link: 'https://corepad.com/',
+      },
+      {
+        name: 'Hyperglide',
+        price: '$10-15',
+        tier: 'pro',
+        why:
+          "The original PTFE-skate brand and still the speed reference where in-stock. Ships slowly and stocks out for popular mice — if you can't find them for your mouse, Corepad is the same tier.",
+        link: 'https://hyperglide.com/',
+      },
+      {
+        name: 'Hotline Games / X-Raypad Obsidian',
+        price: '$5-10',
+        tier: 'budget',
+        why:
+          "Hotline ships pre-cut skates for less-common mouse models nobody else stocks. X-Raypad Obsidian pairs natively with their pads (Equate / Aqua Control). Both are honest budget picks; expect 4-6 months of life vs Tiger's 6-9.",
+      },
+      {
+        name: 'Application: clean with 90%+ isopropyl, press 10s, wait 10min before use',
+        price: '—',
+        tier: 'principle',
+        why:
+          "The most common reason skates 'fail' isn't the skate — it's adhesive that didn't fully set. Clean the underside, press firmly with a finger for 10 seconds per skate, then leave the mouse off the pad for 10 minutes. Skip this step and your first quick swipe lifts a corner.",
       },
     ],
   },

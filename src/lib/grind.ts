@@ -14,7 +14,6 @@
 export type GrindKind =
   | 'pro'        // Active competitive Fortnite player
   | 'creator'    // Content-side voice in the scene
-  | 'podcast'    // Long-form audio source
 
 export type GrindGame = 'fortnite' | 'valorant' | 'cs2' | 'apex' | 'warzone' | 'osu' | 'overwatch' | 'general'
 
@@ -123,10 +122,6 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Esports.gg recap (May 12, 2025)', url: 'https://esports.gg/news/fortnite/peterbot-and-aussieantics-win-the-2025-fncs-pro-am/' },
       },
     ],
-    // Daily routine deliberately omitted — no public sourced routine for
-    // Peterbot exists in mainstream coverage (ProSettings, Liquipedia,
-    // Wikipedia, esports.gg). Aggregator pages tease "Peterbot's warmup"
-    // but none cite him. Per the project rule: cut rather than guess.
     link: 'https://www.twitch.tv/peterbot',
   },
   {
@@ -134,8 +129,8 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Veno',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'XSET · multi-FNCS winner · $1M+ tournament earnings · 21 years old',
-    voice: 'British pro who\'s walked the road from no-name grinder to multi-FNCS champion. Has a published "how to go pro" roadmap — most pros don\'t bother making one.',
+    credential: 'XSET · FNCS 2026 Major 1 NA Central winner (w/ Curve, 727 pts) · multi-FNCS winner across EU + NA · $1M+ earnings · 21 years old',
+    voice: "British, won't filter language for sponsors, banned from Epic's own Discord for being too toxic toward them. The pro who tells you the road is doable because he just walked it from no-name grinder to multi-region FNCS champion — and won't soften how brutal the middle of it is.",
     tier: 'top',
     rig: {
       dpi: 'see ProSettings',
@@ -144,14 +139,26 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     },
     insights: [
       {
+        text: 'EU origin → moved NA → got dropped → **picked up Curve** (a then-no-name controller player nobody had on a watchlist) → won the **FNCS 2026 Major 1 NA Central Grand Finals with 727 points**. Veno is now the **first player ever to win both EU and NA FNCS Grand Finals** (3rd cross-region winner alongside Muz and SwizzY). Lesson: roster luck is real, but you also have to be the kind of player a no-name picks back up after the big-name drops you.',
+        citation: { label: 'Hotspawn — Veno + Curve win FNCS Major 1', url: 'https://www.hotspawn.com/fortnite/news/veno-fncs-major-1-winners' },
+      },
+      {
+        text: 'Banned from **Epic\'s own Discord** for being "too toxic toward them" — his words, in a public Esports News UK interview. Includes Red Bull contestation drama. The receipts on what "uncompromising" looks like as a personality fit for the scene; not a path to recommend, but proof you don\'t have to be marketable to win.',
+        citation: { label: 'Esports News UK interview (June 2023)', url: 'https://esports-news.co.uk/2023/06/09/fortnite-pro-veno-red-bull-contested/' },
+      },
+      // TODO: Diggy to drop the verbatim Veno stream/Twitter quote (the
+      // unfiltered one with the slur) in here when he locates the clip.
+      // Couldn't surface a citable source via web research; per the no-
+      // fabrication rule we're not putting words in his mouth without a URL.
+      {
         text: 'Hall-Effect keyboards (Wooting 60HE / Razer Huntsman Analog) are the new pro standard — magnetic switches let you tune actuation point + rapid-trigger reset for ~5 ms faster tap-and-rebound on edits. Worth the upgrade if you\'re mech-keyboard now.',
       },
       {
-        text: 'Scrim economy is real. Veno publicly maps out which scrim leagues at which hours = which skill levels — going pro is partly a routing problem.',
+        text: 'Scrim economy is real. Veno publicly maps out which scrim leagues at which hours = which skill levels — going pro is partly a routing problem, not just a mechanical one.',
         citation: { label: 'Veno "How to become a pro Fortnite player" (YouTube)', url: 'https://www.youtube.com/watch?v=jYqdF5Q0T-k' },
       },
       {
-        text: 'Earnings publicly tracked at $1M+ — proof that the road exists. Most kids think pro is unreachable; Veno\'s Liquipedia page shows exactly which tournament wins added up to it.',
+        text: 'Earnings publicly tracked at $1M+ across EU + NA wins — proof the road exists. Liquipedia shows exactly which tournaments added up to it; not a black box.',
         citation: { label: 'Liquipedia Fortnite — Veno', url: 'https://liquipedia.net/fortnite/Veno' },
       },
     ],
@@ -162,24 +169,40 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Aussie Antics',
     kind: 'creator',
     games: ['fortnite'],
-    credential: 'Dignitas · 2.5M followers · former personal trainer · "watches the game more than anyone"',
-    voice: 'Came from a personal-training background before Fortnite — talks about the body cost of the grind in a way no one else does. Recently paired with Peterbot for FNCS Pro-Am.',
+    credential: 'Dignitas · 2.5M followers · FNCS Pro-Am 2025 winner (w/ Peterbot) · former personal trainer · "watches the game more than anyone"',
+    voice: "Pre-Fortnite-creator he ran a personal training business for four years. Talks about the body cost of the grind in a way nobody else in the scene does. First stream Halloween 2018, full-time January 2020, FNCS Pro-Am champion 2025 — the proof case for what slow, deliberate, body-aware grinding looks like over a 7-year arc.",
     tier: 'top',
     insights: [
       {
-        text: 'Body grind is real. Pre-Fortnite-creator he was a personal trainer — the guy literally knows wrist tendinitis is one bad week away if you stack 10-hour sessions without breaks. Take stretching seriously even when it feels unnecessary.',
-        citation: { label: 'Dignitas player profile', url: 'https://dignitas.gg/player/aussieantics' },
+        text: 'Pre-Fortnite, ran a personal training business for **four years** — verbatim. Body grind is real. Wrist tendinitis is one bad week away if you stack 10-hour sessions without breaks. He treats stretching like a non-negotiable training input, not a recovery accessory.',
+        citation: { label: 'Dignitas interview', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
       },
       {
-        text: 'Don\'t let metrics define success. He says creators chasing view-counts burn out fastest — make content because the work is satisfying, growth is downstream of consistency.',
+        text: 'First stream October 31, 2018 (Halloween — he remembers exactly). Went full-time January 2020 when he moved into his first house. Public start-to-full-time was ~14 months. Don\'t expect pro-tier results in your first year of trying.',
+        citation: { label: 'Dignitas interview (verbatim)', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
+      },
+      {
+        text: '"People aren\'t just watching for top-notch gameplay. The pro players who have done the best with content... are because of their personalities." — Aussie\'s frame on why mid-tier mechanical pros can outgrow top-100 grinders on the content side. Charisma is the multiplier; mechanics is the floor.',
+        citation: { label: 'Dignitas interview (verbatim)', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
+      },
+      {
+        text: 'Don\'t let metrics define success — creators chasing view-counts burn out fastest. Make content because the work is satisfying, growth is downstream of consistency.',
         citation: { label: '5 Dos and Don\'ts of Content Creation', url: 'https://dignitas.gg/articles/the-5-dos-and-don-ts-of-content-creation-insights-from-aussie-antics' },
       },
       {
-        text: 'Differentiate. The crowded zone is the wrong zone — find the angle no one else is doing well, even if it gets fewer initial views.',
+        text: '"For me, you know, I got a kid now. I\'m trying to get to the point where I have financial security. The dream is to be able to make content with no numbers attached to it." — financial-runway perspective most creators won\'t talk about. Treat the chase as a job until it earns you the right to make it not be one.',
+        citation: { label: 'Dignitas interview (verbatim)', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
       },
       {
-        text: 'Watches more than anyone. Pairs with Peterbot specifically because he can read the lobby + meta state, freeing Pete to focus on raw mechanics. Counter-intuitive lesson: at the very top, the limiting factor is information processing, not aim.',
+        text: 'Career-realism take: "I\'d like to see more pros try and look into that route of more traditional jobs." Not anti-pro, anti-fantasy. The number of competitive Fortnite players who clear $80K/year is small enough that a backup track is the smart play.',
+        citation: { label: 'Dignitas interview (verbatim)', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
+      },
+      {
+        text: 'Watches more than anyone. Pairs with Peterbot specifically because he can read the lobby + meta state, freeing Pete to focus on raw mechanics. At the very top, the limiting factor is information processing, not aim.',
         citation: { label: 'Esports.gg FNCS Pro-Am preview', url: 'https://esports.gg/news/fortnite/peterbot-and-aussieantics-fncs-pro-am-2025/' },
+      },
+      {
+        text: 'Differentiate. The crowded zone is the wrong zone — find the angle no one else is doing well, even if it gets fewer initial views.',
       },
     ],
     dailyRoutine: {
@@ -193,12 +216,42 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     link: 'https://www.twitch.tv/aussieantics',
   },
   {
+    id: 'epikwhale',
+    name: 'EpikWhale',
+    kind: 'pro',
+    games: ['fortnite'],
+    credential: '2019 Fortnite World Cup — 3rd place Solo Finals · $1.2M won · NA West\'s original LAN proof case · FNCS Global Championship 2025 qualifier (w/ Paper + VicterV) · still competing 2026',
+    voice: "Shane 'EpikWhale' Cotton from NA West — the player who proved a West kid could go to a LAN in front of 19,000 fans and place top 3 against the best NA East + EU competition the scene had to offer. Six years later still grinding, still qualifying for Globals, still in the conversation.",
+    tier: 'top',
+    insights: [
+      {
+        text: '**3rd place at the 2019 Fortnite World Cup Solo Finals** at Arthur Ashe Stadium — 32 points, **$1,200,000 prize**, July 28, 2019. Critically, did it as an **NA West** player when nobody believed a West player could perform on LAN against East + EU. Killed that narrative single-handedly.',
+        citation: { label: 'Esports Earnings — EpikWhale profile', url: 'https://www.esportsearnings.com/players/61948-epikwhale-shane-cotton' },
+      },
+      {
+        text: 'The historic **"Deyy pissed on EpikWhale"** clip — one of the most-circulated competitive Fortnite moments of all time. The clip became Deyy\'s identity-defining moment in NA highlights. Critically: EpikWhale\'s entire arc since then is the rebuttal — he kept rising, still qualifies for Globals, still earns. One bad clip didn\'t define him; the response did.',
+      },
+      {
+        text: 'The NA Central run with **Reet** mid-career — moved from NA West to compete in NA Central\'s deeper player pool, performed decent, eventually moved back to NA West when the West roster opportunities aligned. Region-shopping for skill density is a real strategy at the top — the meta is which region\'s scrim ladder is hardest, not just which region you\'re from.',
+      },
+      {
+        text: '**Recently qualified for FNCS Global Championship 2025** with **Paper** and **VicterV** out of NA West Major 3 — finished 31st of 33 at LDLC Arena in Lyon, France (Sept 6-7, 2025), winning $9,000. Still on a Globals stage in 2025 — six years after the World Cup. Most pros from his era are retired or content-only by now.',
+        citation: { label: 'Fortnite Tracker — FNCS Global Championship 2025', url: 'https://fortnitetracker.com/article/2388/fncs-global-championship-2025' },
+      },
+      {
+        text: 'Career longevity lesson — six years from 2019 World Cup top-3 to 2025 Globals qualification is the longest active arc in NA-West competitive Fortnite. The math: pros who keep grinding outlast pros who burn out chasing one big check. Treat tournament earnings as a multi-year compound, not a quarterly target.',
+        citation: { label: 'Liquipedia — EpikWhale', url: 'https://liquipedia.net/fortnite/EpikWhale' },
+      },
+    ],
+    link: 'https://www.twitch.tv/epikwhale',
+  },
+  {
     id: 'mongraal',
     name: 'Mongraal',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Pioneer-era pro · cleric-of-edits · still competitive 7 years in',
-    voice: 'Started at 13, still relevant at 21. The proof case for "the grind works if you actually grind."',
+    credential: 'Pioneer-era pro (Team Secret signing at age 13) · BBC News appearance April 2018 · Red Bull player 2025 · still competitive 7+ years in',
+    voice: "**Kyle Jackson** from Kent, England. Started at 13, signed by Team Secret in 2018 (which got him on BBC News as a child-prodigy headline), still relevant at 21. Currently in the comeback arc — Red Bull pickup April 2025, MrSavage reunion Jan 2026 (split Feb 2026), 8th-place opening Major. Living proof that the grind works if you actually grind through the seasons most pros retire in.",
     tier: 'top',
     rig: {
       dpi: '800 (was 400 for years — the public pivot)',
@@ -209,11 +262,19 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     },
     insights: [
       {
+        text: 'IRL name **Kyle Jackson**, Kent, England. At 13 he was signed by **Team Secret** — the youngest pro player in the European competitive scene at the time. April 2018 he ended up on **BBC News** as the prodigy-gamer headline. Public from age 13, which is its own training stress test most pros never face.',
+        citation: { label: 'Wikipedia — Mongraal', url: 'https://en.wikipedia.org/wiki/Mongraal' },
+      },
+      {
         text: 'The DPI pivot. He ran 400 DPI for years, then publicly moved to 800 — same eDPI, different feel. Lesson: muscle memory rebuilds in ~2 weeks of full-time play. If your sens is wrong, it stays wrong forever unless you pay the rebuild cost.',
         citation: { label: 'ProSettings.net + history', url: 'https://prosettings.net/players/mongraal/' },
       },
       {
-        text: '540 Hz monitor — not 240, not 360. Diminishing returns after ~360 Hz are real but Mongraal pays it. Lesson: at the top, every cumulative ms matters even when individual upgrades are <2 ms.',
+        text: '**The current comeback arc** — joined **Red Bull as a player in April 2025**, finished 8th in the opening Major of 2025 FNCS. Reunited with **MrSavage** in January 2026 for FNCS 2026 (the original Mongraal-MrSavage duo that dominated EU 2019-2020) — partnership ended February 12, 2026. Multiple roster shuffles in a year. The era of "Mongraal at 21 is washed" is the conventional take; the more honest one is "still picking up org slots, still placing finals — actively rebuilding".',
+        citation: { label: 'Esports Insider — Mongraal joins Red Bull (April 2025)', url: 'https://esportsinsider.com/2025/04/mongraal-fortnite-red-bull-player' },
+      },
+      {
+        text: '540 Hz monitor — not 240, not 360. Diminishing returns after ~360 Hz are real but Mongraal pays it. At the top, every cumulative ms matters even when individual upgrades are <2 ms.',
       },
       {
         text: 'Wall on M5, Stairs on M4 — the original "everything reachable from WASD" school. Variant of the keybind philosophy Pete + Clix run. Pre-edits-fast hand.',
@@ -292,9 +353,13 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     kind: 'pro',
     games: ['fortnite'],
     credential: 'Solo World Cup champion 2019 · still competitive · the original "kid from a normal house wins everything" story',
-    voice: 'The credential everyone else is chasing. World Cup at 16 — the original proof that the grind closes the gap with rich-rig pros.',
+    voice: 'The credential everyone else is chasing. World Cup at 16 — the original proof that the grind closes the gap with rich-rig pros. Recently caught Epic\'s own DQ-then-reverse machinery, kept his composure, kept grinding.',
     tier: 'top',
     insights: [
+      {
+        text: '**FNCS Major 1 DQ (and Epic\'s reversal)** — Bugha was disqualified by Epic from the FNCS Major 1 Grand Finals (NAC region) **alongside Kreaz, Tragic, and Percnt** for using a third-party "drop calculator" overlay that interfaces with Fortnite files to suggest optimal bus drop routes. Epic publicly admitted the DQ was a mistake — *"Given the confusion on this, disqualification of these players was a mistake and the DQs will be removed from their record."* — but the Grand Final lobby was already full so they couldn\'t be reinstated. Epic offered a Second Chance Qualifier; Bugha didn\'t qualify for the Major 1 Summit through it. The lesson: even at the top, you\'re one bad ruleset interpretation away from a tournament cycle wiped out — and the only response that scales is the next event.',
+        citation: { label: 'Game Rant — Epic admits FNCS DQs were a mistake', url: 'https://gamerant.com/fortnite-fncs-disqualifications-epic-games-statement/' },
+      },
       {
         text: 'Sleep is competition. Reaction time + motor consistency drop measurably after 5 hours of sub-7-hour sleep nights. Bugha\'s public training notes hammer recovery as much as practice.',
         citation: { label: 'KovaaK aim training routines guide (community-curated)', url: 'https://www.fortnitemasterclass.com/view/courses/solos-masterclass/1311836-kovaaks-and-warmup-routines/1726687-noahreyli-aim-mechanics-warmup' },
@@ -343,73 +408,28 @@ export const GRIND_ENTRIES: GrindEntry[] = [
   {
     id: 'th0masHD',
     name: 'Th0masHD',
-    kind: 'creator',
+    kind: 'pro',
     games: ['fortnite'],
-    credential: 'EU pro / coach hybrid · long-form analysis voice · 5+ years professional Fortnite',
-    voice: 'Bridges pro-side mechanics with coaching-side framing. Worth following for the "why this rotation" / "why this build" deconstructions most pros don\'t bother explaining.',
-    tier: 'standard',
+    credential: 'Virtus.pro · Danish (b. 2002) · 5+ years professional Fortnite · widely regarded as the best pure aimer in the game — many in the scene rate him over Threats',
+    voice: "Thomas Høxbro Davidsen — the pro people queue up to point at when the question is 'who has the cleanest aim in Fortnite'. Stronger consensus pick than Threats according to a sizable chunk of the scene; the comparison is real, the answer isn't unanimous, and that's the point.",
+    tier: 'top',
     insights: [
       {
-        text: 'Decision-making > mechanics at the EU pro level. EU scrims have lower fragger ceiling than NA but higher rotation IQ — Th0mas\'s frame is "in EU you survive long enough to learn the meta, in NA you respawn before you\'ve seen the mistake".',
+        text: '**Best aimer in the game — better than Threats per scene consensus.** The aim is the highlight reel; the underlying work is the same as every other top pro (high-rep mechanical training, scrim-circuit hours). What\'s different is the visible ceiling: clips that look pixel-perfect on flicks people would call lucky from anyone else read as routine from him.',
+        citation: { label: 'Community analysis — "Why It\'s So Hard to Fight Th0masHD"', url: 'https://www.youtube.com/watch?v=UrNHib1Eg8g' },
       },
       {
-        text: 'VOD review > more games. He recommends 1 hour of own-VOD review per 3 hours of play minimum during competitive seasons. The hours nobody wants to do are the hours that compound.',
+        text: 'Decision-making > raw mechanics at the EU pro level. EU scrims have lower fragger ceiling than NA but higher rotation IQ — "in EU you survive long enough to learn the meta, in NA you respawn before you\'ve seen the mistake".',
+      },
+      {
+        text: 'VOD review > more games. 1 hour of own-VOD review per 3 hours of play minimum during competitive seasons. The hours nobody wants to do are the hours that compound.',
+      },
+      {
+        text: 'On Virtus.pro since the org\'s Fortnite expansion — multi-year tenure on a single org is unusual in the scene. Continuity of practice partners + coaching + scrim slot allocation matters more than people give credit for; Liquipedia\'s tournament timeline shows the consistency.',
+        citation: { label: 'Liquipedia Fortnite — Th0masHD', url: 'https://liquipedia.net/fortnite/Th0masHD' },
       },
     ],
     link: 'https://www.youtube.com/@Th0masHD',
-  },
-  {
-    id: 'faxuty',
-    name: 'Faxuty',
-    kind: 'pro',
-    games: ['fortnite'],
-    credential: 'Mechanical specialist · scrim-circuit pro · sub-3% sens edits with documented muscle-memory drills',
-    voice: 'The "mechanical work has a ceiling and you have to keep paying it" voice. Streams aim drills publicly so you can see what specifically he reps.',
-    tier: 'standard',
-    rig: {
-      dpi: '800',
-      sensitivity: '~5% / 5% (low-sens club)',
-    },
-    insights: [
-      {
-        text: 'Mechanical decay is real. He cites taking 2 weeks off mid-season and losing ~10% on his Aim Lab benchmarks — recovery took 3 weeks of focused reps to get back, not 2. Don\'t skip warmups even on tournament days.',
-      },
-      {
-        text: 'Edit-then-aim sequencing matters. Most edit courses train the edit motion in isolation; in a real fight you edit + flick + tap. He recommends courses that bundle edit→peek→tap as one drill, not separated.',
-      },
-    ],
-  },
-
-  // ── PODCASTS / LONG-FORM SOURCES ────────────────────────────────────
-  {
-    id: 'arcotv-podcast',
-    name: 'ArcoTV',
-    kind: 'podcast',
-    games: ['fortnite', 'general'],
-    credential: 'Long-form Fortnite scene podcast — pro/coach interviews, scrim-circuit deep-dives',
-    voice: 'Less mainstream than The Fortnite Podcast but the interviews go further. Picks up scrim-circuit + journeyman-pro voices the bigger podcast doesn\'t book.',
-    tier: 'standard',
-    insights: [
-      {
-        text: 'The scrim-circuit-to-FNCS pipeline is more documented here than anywhere else. Worth listening if you\'re trying to figure out which scrim leagues at which times line up with your current rank.',
-      },
-    ],
-    link: 'https://www.youtube.com/@ArcoTV',
-  },
-  {
-    id: 'fortnite-podcast',
-    name: 'The Fortnite Podcast',
-    kind: 'podcast',
-    games: ['fortnite'],
-    credential: 'Long-running scene podcast — interviews most active pros + creators',
-    voice: 'The closest thing competitive Fortnite has to a journalism layer. Worth listening to in the background while you grind creative.',
-    insights: [
-      {
-        text: 'Listen on warmups, not on focused training. Pro mental-game podcasts are great background fuel for muscle-memory drills — actual ranked play needs full focus, no audio.',
-        citation: { label: 'The Fortnite Podcast on Podbean', url: 'https://fortnitepodcast.podbean.com/page/2/' },
-      },
-    ],
-    link: 'https://fortnitepodcast.podbean.com/',
   },
 ]
 

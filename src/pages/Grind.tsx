@@ -15,7 +15,6 @@ const KINDS: Array<{ id: GrindKind | 'all'; label: string }> = [
   { id: 'all', label: 'all' },
   { id: 'pro', label: 'pros' },
   { id: 'creator', label: 'creators' },
-  { id: 'podcast', label: 'podcasts' },
 ]
 
 export function Grind() {
@@ -36,8 +35,8 @@ export function Grind() {
         <h1 className="text-3xl font-bold">Grind</h1>
         <p className="text-text-muted text-sm max-w-2xl mt-1">
           Receipts. Not vibes. Curated insights from the pros + creators actually winning right
-          now — Peterbot, Veno, Aussie, Mongraal, Clix, Reet, Bugha. Every claim cites a real
-          source. Built to grow as more interviews + podcasts drop.
+          now — Peterbot, Veno, Aussie, EpikWhale, Mongraal, Clix, Reet, Bugha, Th0masHD. Every claim
+          cites a real source where one exists.
         </p>
       </header>
 

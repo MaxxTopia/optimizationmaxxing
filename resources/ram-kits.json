@@ -1,7 +1,7 @@
 {
-  "version": "v1.0.0-pilot",
-  "generated_at": "2026-05-06",
-  "source": "Hand-curated from Buildzoid timing DB + Hynix/Samsung/Micron die-decode references. PartNumber match is substring-based (case-insensitive).",
+  "version": "v1.1.0",
+  "generated_at": "2026-05-10",
+  "source": "Hand-curated from Buildzoid timing DB + Hynix/Samsung/Micron die-decode references + Crucial/Patriot/Klevv community SPD dumps. PartNumber match is substring-based (case-insensitive).",
   "kits": [
     {
       "match": "F5-6400J3239",
@@ -230,6 +230,157 @@
       ],
       "tm5_config": "BZ_4 / Anta777 Extreme",
       "notes": "Neo = AMD-binned B-die. The Ryzen DDR4 GOAT."
+    },
+    {
+      "match": "CP2K16G56C36U5",
+      "brand": "Crucial",
+      "model": "Pro DDR5 6000 CL36",
+      "family": "DDR5",
+      "die_inferred": "Micron 1Bnm",
+      "rated_speed_mts": 6000,
+      "rated_timings": "36-38-38-78",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 6000, "timings": "32-38-38-32", "voltage_v": 1.4, "platform": "AM5 (1:1) / Z790", "difficulty": "Easy", "notes": "Crucial publishes this kit conservatively. Manual CL drop is free perf." }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "Crucial Pro line — Micron 1Bnm. Caps lower than Hynix M-die (~6400) but easy to tighten at the rated speed."
+    },
+    {
+      "match": "CT2K16G52C42U5",
+      "brand": "Crucial",
+      "model": "DDR5 5200 CL42",
+      "family": "DDR5",
+      "die_inferred": "Micron 1Bnm",
+      "rated_speed_mts": 5200,
+      "rated_timings": "42-42-42-84",
+      "rated_voltage_v": 1.1,
+      "tunable_targets": [
+        { "speed_mts": 5600, "timings": "40-40-40-80", "voltage_v": 1.25, "platform": "Z690 / Z790 / AM5", "difficulty": "Medium", "notes": "JEDEC-spec kit. Tighten with patience; voltage helps but ceiling is real." }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "Crucial JEDEC kit — value tier. Don't expect 6000+ stable."
+    },
+    {
+      "match": "CT2K16G56C46U5",
+      "brand": "Crucial",
+      "model": "DDR5 5600 CL46",
+      "family": "DDR5",
+      "die_inferred": "Micron 1Bnm",
+      "rated_speed_mts": 5600,
+      "rated_timings": "46-45-45-90",
+      "rated_voltage_v": 1.1,
+      "tunable_targets": [
+        { "speed_mts": 6000, "timings": "38-40-40-80", "voltage_v": 1.35, "platform": "Z790 / AM5", "difficulty": "Medium", "notes": "JEDEC kit — tighten with patience. Micron DDR5 caps lower than Hynix" }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "JEDEC vendor kit. Decent ceiling but won't hit Hynix bins."
+    },
+    {
+      "match": "BLM2K16G44C19U4B",
+      "brand": "Crucial",
+      "model": "Ballistix MAX DDR4 4400 CL19",
+      "family": "DDR4",
+      "die_inferred": "Micron Rev E",
+      "rated_speed_mts": 4400,
+      "rated_timings": "19-19-19-46",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 4000, "timings": "16-18-18-32", "voltage_v": 1.45, "platform": "Z690 (1:1 IMC)", "difficulty": "Medium", "notes": "Drop to 4000 for 1:1 stability and tighten — usually faster than 4400 2:1" }
+      ],
+      "tm5_config": "BZ_4",
+      "notes": "Discontinued but still circulating. Micron Rev E — voltage-loving. Run y-cruncher to validate."
+    },
+    {
+      "match": "PVV532G620C32K",
+      "brand": "Patriot",
+      "model": "Viper Venom DDR5 6200 CL32",
+      "family": "DDR5",
+      "die_inferred": "Hynix A-die",
+      "rated_speed_mts": 6200,
+      "rated_timings": "32-39-39-80",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 6400, "timings": "32-38-38-32", "voltage_v": 1.4, "platform": "Z790", "difficulty": "Medium", "notes": "Hynix A-die scales with voltage — 1.4V unlocks 6400 cleanly" }
+      ],
+      "tm5_config": "BZ_DDR5 / Anta777 Extreme",
+      "notes": "Patriot's Viper Venom DDR5 line is Hynix A-die — same silicon as G.Skill Neo at lower price."
+    },
+    {
+      "match": "PVS416G440C9K",
+      "brand": "Patriot",
+      "model": "Viper Steel DDR4 4400 CL19",
+      "family": "DDR4",
+      "die_inferred": "Hynix DJR",
+      "rated_speed_mts": 4400,
+      "rated_timings": "19-19-19-39",
+      "rated_voltage_v": 1.45,
+      "tunable_targets": [
+        { "speed_mts": 4000, "timings": "16-19-19-36", "voltage_v": 1.45, "platform": "Z490+ (1:1)", "difficulty": "Medium", "notes": "1:1 IMC at 4000 beats 4400 2:1 on most boards" }
+      ],
+      "tm5_config": "BZ_4",
+      "notes": "Patriot Viper Steel high-bin = Hynix DJR. Solid DDR4 ceiling."
+    },
+    {
+      "match": "TF8D532G7200HC34BDC01",
+      "brand": "TeamGroup",
+      "model": "T-Force Delta RGB DDR5 7200 CL34",
+      "family": "DDR5",
+      "die_inferred": "Hynix A-die",
+      "rated_speed_mts": 7200,
+      "rated_timings": "34-42-42-84",
+      "rated_voltage_v": 1.4,
+      "tunable_targets": [
+        { "speed_mts": 7200, "timings": "32-40-40-32", "voltage_v": 1.45, "platform": "Z790 (top-tier IMC)", "difficulty": "Hard", "notes": "Past 7200 needs CUDIMM — use this as the ceiling" }
+      ],
+      "tm5_config": "BZ_DDR5 / Anta777 Extreme",
+      "notes": "A-die top bin from TeamGroup. Cheaper than equivalent G.Skill or Corsair."
+    },
+    {
+      "match": "KD5AGUA80",
+      "brand": "Klevv",
+      "model": "CRAS V RGB DDR5 6400 CL32",
+      "family": "DDR5",
+      "die_inferred": "Hynix A-die",
+      "rated_speed_mts": 6400,
+      "rated_timings": "32-39-39-102",
+      "rated_voltage_v": 1.4,
+      "tunable_targets": [
+        { "speed_mts": 6400, "timings": "30-38-38-30", "voltage_v": 1.45, "platform": "Z790", "difficulty": "Easy", "notes": "Klevv = Essencore = SK Hynix's own RAM brand. The A-die comes straight from the source." }
+      ],
+      "tm5_config": "BZ_DDR5 / Anta777 Extreme",
+      "notes": "Underrated kit — Klevv is SK Hynix's own brand so the A-die binning is first-party."
+    },
+    {
+      "match": "AX5U6000",
+      "brand": "ADATA",
+      "model": "XPG Lancer DDR5 6000 CL30",
+      "family": "DDR5",
+      "die_inferred": "Hynix M-die",
+      "rated_speed_mts": 6000,
+      "rated_timings": "30-40-40-76",
+      "rated_voltage_v": 1.35,
+      "tunable_targets": [
+        { "speed_mts": 6000, "timings": "28-36-36-28", "voltage_v": 1.4, "platform": "AM5 (1:1) / Z790", "difficulty": "Easy", "notes": "AM5 EXPO ready — Hynix M-die binning" }
+      ],
+      "tm5_config": "BZ_DDR5",
+      "notes": "ADATA's competitively priced AM5 kit. Same Hynix M-die as G.Skill 6000 / Corsair 6000."
+    },
+    {
+      "match": "F5-7200J3445",
+      "brand": "G.Skill",
+      "model": "Trident Z5 RGB 7200 CL34",
+      "family": "DDR5",
+      "die_inferred": "Hynix A-die",
+      "rated_speed_mts": 7200,
+      "rated_timings": "34-45-45-115",
+      "rated_voltage_v": 1.4,
+      "tunable_targets": [
+        { "speed_mts": 7200, "timings": "32-42-42-32", "voltage_v": 1.45, "platform": "Z790 (tier-S IMC)", "difficulty": "Hard", "notes": "Manual 32-CL on top A-die. CUDIMM territory above this." },
+        { "speed_mts": 7600, "timings": "34-44-44-34", "voltage_v": 1.5, "platform": "Z790 + CUDIMM-ready", "difficulty": "Hard", "notes": "Push only with binned CPU + tier-S board. Run RAMTest 1500% before trusting." }
+      ],
+      "tm5_config": "BZ_DDR5 / Anta777 Extreme",
+      "notes": "Top of A-die. Diminishing latency returns past 7200 unless CUDIMM."
     }
   ]
 }

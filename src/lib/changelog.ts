@@ -12,6 +12,23 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.60',
+    date: '2026-05-10',
+    highlights: [
+      'BUG-FIX **LibreHardwareMonitor probe** — was crashing with "argument \'drive\' is null" inside LHM\'s storage enumerator on rigs with locked BitLocker volumes / removable USB / 8+ drives. Storage subsystem is now disabled by default (we don\'t surface storage temps yet); each component\'s enable is wrapped in its own try; error context now includes the failing line. Probe survives subsystem failures instead of dying whole.',
+      'BUG-FIX **Duplicate guide title** — every research article rendered its title twice (once from card metadata, once from the markdown\'s leading `# Heading`). Universal across all 16 guides. Fixed in `md.ts` — strips a leading H1 since the title is already in the card header.',
+      'NEW **Auto-scroll-to-top on route change** — navigating from the bottom of `/grind` to `/hardware` no longer drops you halfway down the next page.',
+      'NEW **Median-of-3 bench mode** on `/benchmark` — runs the bench 3x and uses the median per metric. ~90s but cuts run-to-run variance from ±2-4 composite points to ~±1. The right call when measuring per-tweak before/after deltas; explained inline why two consecutive single runs can disagree.',
+      'CONTENT **NVIDIA Reflex guide** rewrite — added per-game settings table including Fortnite-specific "smaller delta but still positive" CPU-bound caveat; added the NVCP `Low Latency Mode` conflict warning (the kernel-of-truth behind "Reflex doesn\'t work in-game").',
+      'CONTENT **Gaming mice guide** — polling rate section rewritten with explicit Fortnite-endgame warning (8K Hz polling can cost 5-15% on stacked endgames on anything below 7800X3D); LOD section expanded with per-vendor paths + 60-second test; **Finalmouse UltralightX Prophecy** added with the xpanel.finalmouse.com browser-config story; new **mouse skates** section (Tiger Arc / Corepad / Hyperglide / Hotline / X-Raypad with application tips); Boardzy added as primary skate-consensus source.',
+      'NEW **/hardware → Mouse skates section** — Tiger Arc as default, Corepad for new mouse releases, Hyperglide for established models. Plus an application-tip "principle" entry (clean with iso, press 10s, wait 10min).',
+      'NEW **Finalmouse UltralightX Prophecy** added to the mouse tier ladder — 33g, 8000Hz, browser-configured. The "no driver / daemon to babysit" answer.',
+      'CONTENT **RAM advisor kit DB** expanded from 15 → 26 entries. Added Crucial Pro DDR5 6000 + Crucial JEDEC 5200/5600 + Ballistix MAX 4400, Patriot Viper Venom DDR5 6200 + Viper Steel DDR4 4400, TeamGroup T-Force Delta 7200, Klevv CRAS V (SK Hynix\'s own brand), ADATA XPG Lancer 6000, G.Skill Trident Z5 7200. The "we couldn\'t infer the IC" message should hit far fewer Crucial / Patriot / boutique kits now.',
+      'CONTENT **/grind page rewrites** — Veno: full path (EU origin → got dropped → picked up Curve → won FNCS Major 1 NA Central with 727 pts → first ever to win EU+NA Grand Finals), Epic-Discord-toxicity-ban context, hall-effect keyboard insight. **Aussie Antics**: same depth as Peterbot now — verbatim Dignitas-interview quotes (4-year personal-training career, Halloween-2018 first-stream date, financial-runway philosophy, "more pros should look at traditional jobs" career realism). **Mongraal**: full IRL framing (Kyle Jackson, BBC News at 13, Team Secret signing), current 2025 Red Bull pickup + Jan-Feb 2026 MrSavage reunion arc — "comeback in progress" not "washed". **Bugha**: added FNCS Major 1 DQ insight (drop-calculator overlay, Epic\'s "mistake" reversal, lobby-already-full caveat). **Th0masHD**: bumped to top tier — best aimer in the game, scene rates him over Threats. **NEW EpikWhale entry**: 2019 World Cup 3rd Solo / $1.2M / NA West-on-LAN proof case + the Deyy "pissed on" historic clip + the NA-Central-with-Reet arc + recent FNCS Globals 2025 qualification with Paper + VicterV.',
+      'REMOVED Faxuty, ArcoTV, The Fortnite Podcast — and the entire `podcast` GrindKind. Faxuty wasn\'t adding signal; the podcast section was filler the page didn\'t need. /grind chip filter drops the "podcasts" tab.',
+    ],
+  },
+  {
     version: '0.1.59',
     date: '2026-05-10',
     highlights: [

@@ -12,6 +12,7 @@ import {
   PING_COUNT,
   PING_TARGET,
   runBench,
+  runBenchMedian,
   scoreCpu,
   scoreDpc,
   scoreFrame,
@@ -53,6 +54,7 @@ export function Benchmark() {
   const [ping, setPing] = useState<PingJitterSample | null>(null)
   const [framePaceStddev, setFramePaceStddev] = useState<number | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const [medianRun, setMedianRun] = useState<{ idx: number; total: number } | null>(null)
   const [history, setHistory] = useState<BenchSnapshot[]>(() => {
     try {
       return JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || '[]')
@@ -94,6 +96,37 @@ export function Benchmark() {
     } catch (e) {
       setErr(typeof e === 'string' ? e : (e as Error).message ?? String(e))
       setStage('idle')
+    }
+  }
+
+  /** Run the bench 3 times and use the median per metric. ~90 s total
+   * but cuts run-to-run variance from ~3-4 composite points to ~1. The
+   * right call when measuring per-tweak deltas. */
+  async function runMedian3() {
+    if (!isNative) {
+      setErr('Bench requires the optimizationmaxxing.exe shell.')
+      return
+    }
+    setErr(null)
+    setCpu(null)
+    setDpc(null)
+    setPing(null)
+    setFramePaceStddev(null)
+    try {
+      const sample = await runBenchMedian(
+        3,
+        (idx, total) => setMedianRun({ idx, total }),
+        (s) => setStage(s),
+      )
+      setCpu(sample.cpu)
+      setDpc(sample.dpc)
+      setPing(sample.ping)
+      setFramePaceStddev(sample.framePaceStddevMs)
+    } catch (e) {
+      setErr(typeof e === 'string' ? e : (e as Error).message ?? String(e))
+      setStage('idle')
+    } finally {
+      setMedianRun(null)
     }
   }
 
@@ -147,7 +180,17 @@ export function Benchmark() {
             disabled={!isNative || (stage !== 'idle' && stage !== 'done')}
             className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold disabled:opacity-40"
           >
-            {stage === 'idle' || stage === 'done' ? 'Run Bench' : `Running… (${stage})`}
+            {stage === 'idle' || stage === 'done' ? 'Run Bench (~30s)' : `Running… (${stage})`}
+          </button>
+          <button
+            onClick={runMedian3}
+            disabled={!isNative || (stage !== 'idle' && stage !== 'done')}
+            className="px-3 py-2 rounded-md border border-border hover:border-border-glow text-sm text-text disabled:opacity-40"
+            title="Runs the bench 3 times and uses the median per metric. Cuts run-to-run noise from ~3-4 composite points to ~1. The right call when measuring per-tweak deltas."
+          >
+            {medianRun
+              ? `Median run ${medianRun.idx} / ${medianRun.total}…`
+              : 'Median of 3 (~90s)'}
           </button>
           {composite != null && (
             <span className={`text-3xl font-bold tabular-nums ${scoreColor(composite)}`}>
@@ -156,6 +199,11 @@ export function Benchmark() {
             </span>
           )}
         </div>
+        <p className="text-[11px] text-text-subtle leading-snug max-w-3xl">
+          Two consecutive single runs typically vary by ±2-4 composite points — CPU scheduler,
+          background processes, network jitter, browser compositor noise. Use <strong className="text-text">Median of 3</strong> when
+          you're measuring before/after a tweak; the noise drops to ~±1 and the delta becomes trustworthy.
+        </p>
 
         {err && (
           <div className="rounded-md border border-red-500/60 bg-red-500/10 px-3 py-2 text-xs text-red-300">

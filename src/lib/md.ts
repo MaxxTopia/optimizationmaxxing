@@ -58,6 +58,9 @@ function escapeBlock(s: string): string {
 export function renderMarkdown(src: string): string {
   // Strip optional YAML frontmatter
   src = src.replace(/^---\n[\s\S]*?\n---\n/, '')
+  // Strip a leading H1 — research-article cards already render the title
+  // from metadata, so the .md's `# Heading` would render twice on screen.
+  src = src.replace(/^\s*#\s+[^\n]+\n+/, '')
   const lines = src.split(/\r?\n/)
   const out: string[] = []
   let i = 0

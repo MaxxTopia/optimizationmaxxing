@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { MaxxerSidebar } from './MaxxerSidebar'
 import { ThemePicker } from './ThemePicker'
@@ -24,6 +24,13 @@ const NAV_LINKS = [
 
 export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
+
+  useEffect(() => {
+    // Reset to top of page on route change. Without this, navigating
+    // from the bottom of a long page (e.g. /grind) drops the user halfway
+    // down the next page.
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname])
 
   return (
     <div className="app-shell flex min-h-screen bg-bg-base text-text">

@@ -45,34 +45,58 @@ function Emit-Error($msg) {
     exit 0
 }
 
-if (-not (Test-Path $DllPath)) {
+# Wrap a single statement and emit a precise error with the failing line +
+# inner exception. Useful when LHM throws weird messages from inside its
+# own hardware-enumeration code (e.g. the storage subsystem's "argument
+# 'drive' is null" path on rigs with locked BitLocker volumes).
+function Try-Step($label, [scriptblock]$body) {
+    try { & $body }
+    catch {
+        $inner = $_.Exception.Message
+        $pos   = $_.InvocationInfo.PositionMessage
+        Emit-Error "$label : $inner :: $pos"
+    }
+}
+
+if (-not $DllPath -or [string]::IsNullOrWhiteSpace($DllPath)) {
+    Emit-Error "DllPath argument was empty or null"
+}
+
+if (-not (Test-Path -LiteralPath $DllPath)) {
     Emit-Error "LibreHardwareMonitorLib.dll not found at $DllPath"
 }
 
-try {
+Try-Step 'Unblock-DLLs' {
     Unblock-File -LiteralPath $DllPath -ErrorAction SilentlyContinue
     $hidPath = Join-Path (Split-Path $DllPath) 'HidSharp.dll'
-    if (Test-Path $hidPath) { Unblock-File -LiteralPath $hidPath -ErrorAction SilentlyContinue }
-    Add-Type -LiteralPath $DllPath
-} catch {
-    Emit-Error "Could not load DLL: $($_.Exception.Message)"
+    if (Test-Path -LiteralPath $hidPath) {
+        Unblock-File -LiteralPath $hidPath -ErrorAction SilentlyContinue
+    }
 }
 
-try {
-    $computer = New-Object LibreHardwareMonitor.Hardware.Computer
-    $computer.IsCpuEnabled         = $true
-    $computer.IsGpuEnabled         = $true
-    $computer.IsMemoryEnabled      = $true
-    $computer.IsMotherboardEnabled = $true
-    $computer.IsControllerEnabled  = $true
-    $computer.IsStorageEnabled     = $true
-    $computer.IsNetworkEnabled     = $true
-    $computer.IsBatteryEnabled     = $true
-    $computer.IsPsuEnabled         = $true
-    $computer.Open()
-} catch {
-    Emit-Error "Computer.Open failed: $($_.Exception.Message)"
+Try-Step 'Add-Type' {
+    Add-Type -LiteralPath $DllPath
 }
+
+# Each subsystem enabled inside its own try so a single bad subsystem
+# (Storage is the historic offender — see "argument 'drive' is null" issue
+# on rigs with removable USB / locked BitLocker volumes / 8+ drives)
+# doesn't kill the whole probe. Storage is OFF by default — we don't
+# surface storage temps in the UI yet, and it's the most failure-prone
+# path in LHM 0.9.6.
+$computer = $null
+Try-Step 'New-Computer' { $script:computer = New-Object LibreHardwareMonitor.Hardware.Computer }
+Try-Step 'Enable-CPU'         { $script:computer.IsCpuEnabled         = $true }
+Try-Step 'Enable-GPU'         { $script:computer.IsGpuEnabled         = $true }
+Try-Step 'Enable-Memory'      { $script:computer.IsMemoryEnabled      = $true }
+Try-Step 'Enable-Motherboard' { $script:computer.IsMotherboardEnabled = $true }
+try { $computer.IsControllerEnabled = $true } catch {}
+try { $computer.IsStorageEnabled    = $false } catch {}  # known-bad path on LHM 0.9.6
+try { $computer.IsNetworkEnabled    = $true } catch {}
+try { $computer.IsBatteryEnabled    = $true } catch {}
+try { $computer.IsPsuEnabled        = $true } catch {}
+
+Try-Step 'Computer.Open' { $script:computer.Open() }
 
 # Update every component once so sensor values populate.
 foreach ($hw in $computer.Hardware) {
