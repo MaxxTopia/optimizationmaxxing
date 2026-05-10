@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.75',
+    date: '2026-05-10',
+    highlights: [
+      'BUG-FIX **XGS-PON ONU stick error message readable** — when the stick was unreachable, the surfaced error included the entire PowerShell script body wrapped in Write-Error\'s verbose context formatter. Underlying error was a clean "The operation has timed out" but it got buried inside ~10 lines of script-body-as-context noise. Swapped `Write-Error $_.Exception.Message` for `[Console]::Error.WriteLine($_.Exception.Message)` — clean stderr write, no script-body wrapper. Now you see "The operation has timed out" + the helper "you don\'t have one? ignore this card" copy, not a wall of script.',
+    ],
+  },
+  {
     version: '0.1.74',
     date: '2026-05-10',
     highlights: [
