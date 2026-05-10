@@ -347,6 +347,29 @@ export async function onuStickMetrics(url: string): Promise<OnuStickReport> {
   return invoke<OnuStickReport>('onu_stick_metrics', { url })
 }
 
+/**
+ * v0.1.77 — auto-discovery. Tries the well-known XGS-PON stick management
+ * URLs in parallel via PowerShell ForEach-Object -Parallel. First HTTP-200
+ * wins. Returns { url } if found; { url: null } + per-attempt diagnostic
+ * if nothing on the user's subnet matches a known stick.
+ */
+export interface OnuDiscoveryAttempt {
+  url: string
+  ok: boolean
+  elapsedMs: number
+  error: string | null
+}
+export interface OnuDiscoveryResult {
+  /** Best-guess stick management URL — null if no candidate responded. */
+  url: string | null
+  elapsedMs: number
+  candidatesTried: number
+  attempts: OnuDiscoveryAttempt[]
+}
+export async function onuDiscoverStick(): Promise<OnuDiscoveryResult> {
+  return invoke<OnuDiscoveryResult>('onu_discover_stick')
+}
+
 export interface ThermalReading {
   source: string
   celsius: number

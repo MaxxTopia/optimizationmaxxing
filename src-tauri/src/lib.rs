@@ -318,6 +318,13 @@ async fn onu_stick_metrics(url: String) -> Result<toolkit::OnuStickReport, Strin
 }
 
 #[tauri::command]
+async fn onu_discover_stick() -> Result<toolkit::OnuDiscoveryResult, String> {
+    tokio::task::spawn_blocking(toolkit::discover_onu_stick)
+        .await
+        .map_err(|e| format!("onu discovery task failed: {e}"))
+}
+
+#[tauri::command]
 async fn live_thermals() -> Result<toolkit::LiveThermals, String> {
     tokio::task::spawn_blocking(toolkit::read_live_thermals)
         .await
@@ -712,6 +719,7 @@ pub fn run() {
             ping_probe,
             bufferbloat_probe,
             onu_stick_metrics,
+            onu_discover_stick,
             live_thermals,
             lhm_sensors,
             lhm_sensors_elevated,

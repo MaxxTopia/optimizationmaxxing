@@ -2031,6 +2031,145 @@ fn parse_onu_metrics(body: &str, elapsed_ms: u32) -> OnuStickReport {
     }
 }
 
+// ── 8311 ONU stick auto-discovery ─────────────────────────────────────
+// Tries the well-known stick management URLs in parallel via PowerShell
+// jobs. First HTTP-200 response wins — populates the URL field in the UI
+// so users don't have to type one in (or look one up). If none respond,
+// reports "no stick detected on your subnet — see pon.wiki" instead of
+// the generic timeout we used to surface.
+//
+// Why these specific URLs: the 8311 community firmware (default on most
+// Potron / EXEN / Hisense / BFW XGS-PON sticks) ships the metrics
+// endpoint at /cgi-bin/luci/8311/metrics under HTTPS with a self-signed
+// cert. The management IP varies by vendor + firmware revision; this is
+// the well-known shortlist documented at pon.wiki.
+
+const ONU_DISCOVERY_CANDIDATES: &[&str] = &[
+    "https://192.168.11.1/cgi-bin/luci/8311/metrics",   // 8311 firmware default (EXEN, most Potron)
+    "https://192.168.1.252/cgi-bin/luci/8311/metrics",  // some VFR-9506 / older Potron
+    "https://192.168.100.1/cgi-bin/luci/8311/metrics",  // some Hisense firmware variants
+    "https://192.168.5.1/cgi-bin/luci/8311/metrics",    // BFW Group / OE Solutions
+    "https://10.0.0.1/cgi-bin/luci/8311/metrics",       // pfSense / OPNsense bridged
+];
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OnuDiscoveryResult {
+    /// Best-guess stick management URL — Some if any candidate responded
+    /// with HTTP 200 + parseable JSON. None if every candidate timed out
+    /// or errored.
+    pub url: Option<String>,
+    /// Round-trip ms for the winning probe (or for the slowest probe if
+    /// nothing matched — useful as "we did try" diagnostic).
+    pub elapsed_ms: u32,
+    /// How many candidate URLs we tried.
+    pub candidates_tried: u32,
+    /// Human-readable summary of every candidate attempt for the UI to
+    /// drop into a debug dropdown if the user asks.
+    pub attempts: Vec<OnuDiscoveryAttempt>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OnuDiscoveryAttempt {
+    pub url: String,
+    pub ok: bool,
+    pub elapsed_ms: u32,
+    pub error: Option<String>,
+}
+
+pub fn discover_onu_stick() -> OnuDiscoveryResult {
+    use std::time::Instant;
+    let started = Instant::now();
+
+    // Single PowerShell process with a parallel ForEach-Object, 2s timeout
+    // per candidate. Output: one JSON line per candidate {url, ok,
+    // elapsedMs, err} so we get back a parseable summary in one round-trip
+    // (vs 5 sequential PS spawns = ~5s of pure overhead).
+    let urls_csv = ONU_DISCOVERY_CANDIDATES
+        .iter()
+        .map(|u| format!("'{}'", u.replace('\'', "''")))
+        .collect::<Vec<_>>()
+        .join(",");
+
+    let script = format!(
+        r#"
+$ErrorActionPreference = 'Continue'
+[Net.ServicePointManager]::ServerCertificateValidationCallback = {{ $true }}
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
+
+$urls = @({urls_csv})
+$results = $urls | ForEach-Object -Parallel {{
+    $u = $_
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $ok = $false
+    $err = ''
+    try {{
+        $r = Invoke-WebRequest -Uri $u -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+        if ($r.StatusCode -eq 200 -and $r.Content.Length -gt 10) {{ $ok = $true }}
+    }} catch {{
+        $err = $_.Exception.Message
+    }}
+    [pscustomobject]@{{ url = $u; ok = $ok; elapsedMs = [int]$sw.ElapsedMilliseconds; err = $err }}
+}} -ThrottleLimit 5
+
+$results | ConvertTo-Json -Compress -AsArray
+"#
+    );
+
+    let output = match hidden_powershell()
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            &script,
+        ])
+        .output()
+    {
+        Ok(o) => o,
+        Err(_) => {
+            return OnuDiscoveryResult {
+                url: None,
+                elapsed_ms: started.elapsed().as_millis() as u32,
+                candidates_tried: 0,
+                attempts: vec![],
+            };
+        }
+    };
+
+    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    #[derive(serde::Deserialize)]
+    struct RawAttempt {
+        url: String,
+        ok: bool,
+        #[serde(rename = "elapsedMs")]
+        elapsed_ms: i32,
+        err: String,
+    }
+
+    let raw: Vec<RawAttempt> = serde_json::from_str(&stdout).unwrap_or_default();
+    let attempts: Vec<OnuDiscoveryAttempt> = raw
+        .iter()
+        .map(|r| OnuDiscoveryAttempt {
+            url: r.url.clone(),
+            ok: r.ok,
+            elapsed_ms: r.elapsed_ms.max(0) as u32,
+            error: if r.err.is_empty() { None } else { Some(r.err.clone()) },
+        })
+        .collect();
+
+    let winner = raw.iter().find(|r| r.ok).map(|r| r.url.clone());
+
+    OnuDiscoveryResult {
+        url: winner,
+        elapsed_ms: started.elapsed().as_millis() as u32,
+        candidates_tried: ONU_DISCOVERY_CANDIDATES.len() as u32,
+        attempts,
+    }
+}
+
 #[cfg(test)]
 mod onu_tests {
     use super::*;

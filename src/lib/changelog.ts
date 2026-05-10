@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.77',
+    date: '2026-05-10',
+    highlights: [
+      'NEW **🔍 Detect stick auto-discovery for the XGS-PON ONU monitor** — new button next to the URL input fires off parallel HTTPS probes against the 5 well-known stick management URLs (192.168.11.1, 192.168.1.252, 192.168.100.1, 192.168.5.1, 10.0.0.1 — the documented endpoints across 8311 firmware / Hisense / BFW / pfSense-bridged setups). 2-second timeout per candidate, all fired in parallel via PowerShell ForEach-Object -Parallel. First HTTP-200 wins → URL auto-fills + an immediate poll fires so you see metrics with one click instead of three.',
+      'BETTER EMPTY STATE **for users without a stick** — if Detect finds nothing, surface a clean "no stick detected on your subnet" message + a collapsible per-URL diagnostic showing exactly which IPs we tried + how long each took + what error each returned. Two clear paths follow: "don\'t have one? expected" vs "do have one? see pon.wiki for routing".',
+      'Lifts the manual setup floor for the ~10% of users who DO have a stick: previously they had to look up + paste the right URL by hand; now Detect fills it for any of the 5 documented configurations.',
+    ],
+  },
+  {
     version: '0.1.76',
     date: '2026-05-10',
     highlights: [

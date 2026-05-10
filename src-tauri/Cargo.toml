@@ -1,6 +1,6 @@
 [package]
 name = "optimizationmaxxing"
-version = "0.1.76"
+version = "0.1.77"
 description = "PC optimization tool for competitive gamers"
 authors = ["Diggy"]
 edition = "2021"

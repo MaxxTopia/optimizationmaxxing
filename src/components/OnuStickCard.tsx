@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { inTauri, onuStickMetrics, type OnuStickReport } from '../lib/tauri'
+import {
+  inTauri,
+  onuDiscoverStick,
+  onuStickMetrics,
+  type OnuDiscoveryResult,
+  type OnuStickReport,
+} from '../lib/tauri'
 
 /**
  * 8311 X-ONU-SFPP stick monitor. The 8311 community firmware (default
@@ -24,6 +30,8 @@ export function OnuStickCard() {
   const [url, setUrl] = useState<string>(() => localStorage.getItem(URL_KEY) || DEFAULT_URL)
   const [report, setReport] = useState<OnuStickReport | null>(null)
   const [running, setRunning] = useState(false)
+  const [discovering, setDiscovering] = useState(false)
+  const [discovery, setDiscovery] = useState<OnuDiscoveryResult | null>(null)
   const [auto, setAuto] = useState(false)
   const [showRaw, setShowRaw] = useState(false)
   const isNative = inTauri()
@@ -32,6 +40,51 @@ export function OnuStickCard() {
   useEffect(() => {
     localStorage.setItem(URL_KEY, url)
   }, [url])
+
+  async function handleDiscover() {
+    if (!isNative) return
+    setDiscovering(true)
+    try {
+      const r = await onuDiscoverStick()
+      setDiscovery(r)
+      if (r.url) {
+        // Auto-fill the URL input + run a probe immediately so the user
+        // sees the metrics without an extra click.
+        setUrl(r.url)
+        setReport(null)
+        // Defer one tick so the URL state propagates before we probe.
+        setTimeout(() => probeWithUrl(r.url!), 50)
+      }
+    } catch (e) {
+      console.warn('[onu] discovery failed:', e)
+    } finally {
+      setDiscovering(false)
+    }
+  }
+
+  async function probeWithUrl(targetUrl: string) {
+    setRunning(true)
+    try {
+      const r = await onuStickMetrics(targetUrl)
+      setReport(r)
+    } catch (e) {
+      setReport({
+        temperatureC: null,
+        voltageV: null,
+        biasCurrentMa: null,
+        txPowerDbm: null,
+        rxPowerDbm: null,
+        state: null,
+        firmware: null,
+        serial: null,
+        rawJson: null,
+        error: typeof e === 'string' ? e : (e as Error).message ?? String(e),
+        fetchMs: 0,
+      })
+    } finally {
+      setRunning(false)
+    }
+  }
 
   async function probe() {
     if (!isNative) return
@@ -102,6 +155,14 @@ export function OnuStickCard() {
           className="flex-1 min-w-[18rem] px-3 py-1.5 rounded-md bg-bg-card border border-border focus:border-border-glow outline-none text-xs font-mono"
         />
         <button
+          onClick={handleDiscover}
+          disabled={discovering || !isNative}
+          title="Try the well-known XGS-PON stick management URLs in parallel; auto-fill the URL if any responds."
+          className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-text text-xs font-semibold disabled:opacity-40"
+        >
+          {discovering ? 'Detecting…' : '🔍 Detect stick'}
+        </button>
+        <button
           onClick={probe}
           disabled={running || !isNative}
           className="btn-chrome px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-40"
@@ -119,6 +180,43 @@ export function OnuStickCard() {
           auto-refresh (5 s)
         </label>
       </div>
+
+      {/* v0.1.77 — auto-discovery result. If we ran a Detect pass and
+          nothing responded, surface the diagnostic so the user knows we
+          actually tried (vs the card looking silent). */}
+      {discovery && !discovery.url && (
+        <div className="rounded-md border border-text-subtle/40 bg-bg-card/40 px-3 py-2 text-xs text-text-muted leading-snug">
+          <strong className="text-text">No XGS-PON stick detected on your subnet.</strong>{' '}
+          Tried {discovery.candidatesTried} known stick management URLs in parallel
+          ({discovery.elapsedMs} ms total).
+          <details className="mt-1.5">
+            <summary className="cursor-pointer text-[11px] text-text-subtle hover:text-text">
+              show per-URL attempts
+            </summary>
+            <ul className="mt-1 ml-2 space-y-0.5 text-[10.5px] font-mono text-text-subtle">
+              {discovery.attempts.map((a) => (
+                <li key={a.url}>
+                  <span className={a.ok ? 'text-emerald-300' : 'text-text-subtle'}>
+                    {a.ok ? '✓' : '✗'}
+                  </span>{' '}
+                  {a.url} <span className="text-text-subtle/70">({a.elapsedMs} ms)</span>
+                  {a.error && <span className="text-amber-300/80"> — {a.error.slice(0, 80)}</span>}
+                </li>
+              ))}
+            </ul>
+          </details>
+          <p className="mt-2">
+            <strong className="text-text">Don't have a stick?</strong> That's the expected outcome — most home users on ISP-issued routers don't.{' '}
+            <strong className="text-text">You do have one?</strong> It's on a non-standard IP / behind a route or VLAN your PC can't reach yet — see{' '}
+            <a href="https://pon.wiki/" target="_blank" rel="noreferrer" className="underline">pon.wiki</a> for the routing setup.
+          </p>
+        </div>
+      )}
+      {discovery?.url && (
+        <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200 leading-snug">
+          ✓ Stick detected at <code className="font-mono">{discovery.url}</code> — URL auto-filled, polling now.
+        </div>
+      )}
 
       {!isNative && (
         <p className="text-xs text-text-subtle italic">
