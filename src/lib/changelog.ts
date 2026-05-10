@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.58',
+    date: '2026-05-10',
+    highlights: [
+      'LIVE Discord — the Maxxtopia community hub is up at https://discord.gg/S78eecbWdx (67 members + growing). Pricing page CTA + Suggest-a-Tweak modal both now drop users into the real server. From there: open a TicketTool ticket in #open-ticket, Diggy DMs back the activation code after payment.',
+      'New server structure: `— purchase —` category (#open-ticket + #vip-claim-help) + `— vip lounge —` category (#vip-chat + #early-access — locked to @VIP role only). VIPs get day-1 game configs + beta builds + the unfiltered version of #general.',
+      'Welcome message in #welcome explains pricing per product honestly: optmaxxing one-shot lifetime ($115 launch / $180 reg) vs discordmaxxer continuous-service tier ladder ($4/$9/$17 monthly). No fake unified ladder.',
+    ],
+  },
+  {
     version: '0.1.57',
     date: '2026-05-10',
     highlights: [

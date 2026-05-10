@@ -2,18 +2,15 @@ import { useEffect, useState } from 'react'
 
 /**
  * Suggest-a-tweak feedback modal. Three submission paths:
- *   1. Copy as DM template — for Discord (manual paste once Discord exists)
- *   2. Open Discord invite — placeholder until the server is up
+ *   1. Copy as DM template — for Discord (manual paste into #feedback thread)
+ *   2. Open Maxxtopia Discord invite — drops user in #welcome of the suite hub
  *   3. Email lucidcobra@gmail.com — always works
  *
- * TODO: replace SUGGEST_DISCORD_URL with the real invite once the server
- * is created. Search the codebase for SUGGEST_DISCORD_URL to find every
- * place that links to it.
+ * Once in the server, users post tweak suggestions as new threads in
+ * #feedback (forum channel). Format: "[optmaxxing] short summary".
  */
 
-// PLACEHOLDER — see TODO comment above. Currently links to a generic
-// "join Discord" page; replace with the real invite when the server exists.
-const SUGGEST_DISCORD_URL = 'https://discord.gg/'
+const SUGGEST_DISCORD_URL = 'https://discord.gg/S78eecbWdx'
 const FEEDBACK_EMAIL = 'lucidcobra@gmail.com'
 
 interface Props {
