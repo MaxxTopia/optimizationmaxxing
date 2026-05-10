@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.67',
+    date: '2026-05-10',
+    highlights: [
+      'CONTENT **/grind Veno card** — 5th verbatim quote added per Diggy: **"Fuck off the region nigga, this is my region boy!"** Said at the **2026 Esports World Cup playing on EU with Curve** (2026-05-08). Cross-region history made literal — the NA-based, EU-origin pro defending his territorial claim on the same EU scrim ladder where he started his career.',
+    ],
+  },
+  {
     version: '0.1.66',
     date: '2026-05-10',
     highlights: [

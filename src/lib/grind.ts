@@ -162,6 +162,10 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Veno reply to TKay — verbatim' },
       },
       {
+        text: '**"Fuck off the region nigga, this is my region boy!"** Said during the **2026 Esports World Cup playing on EU with Curve** (2026-05-08). Cross-region history made literal — Veno (the NA-based, EU-origin pro who already won FNCS Grand Finals in both regions) defending his territorial claim on the same EU scrim ladder where he started his career. The Veno-as-region-bridge story isn\'t about diplomatic optics; it\'s about owning whichever region his team is in this season.',
+        citation: { label: 'Veno EWC stream — verbatim (2026-05-08)' },
+      },
+      {
         text: 'Hall-Effect keyboards (Wooting 60HE / Razer Huntsman Analog) are the new pro standard — magnetic switches let you tune actuation point + rapid-trigger reset for ~5 ms faster tap-and-rebound on edits. Worth the upgrade if you\'re mech-keyboard now.',
       },
       {
