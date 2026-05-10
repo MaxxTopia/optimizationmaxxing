@@ -1,6 +1,7 @@
 use serde::Serialize;
 use tauri::Manager;
 
+mod cpusets;
 mod crash;
 mod engine;
 mod metrics;
@@ -340,6 +341,36 @@ async fn lhm_sensors(app: tauri::AppHandle) -> Result<toolkit::LhmReport, String
         .map_err(|e| format!("lhm task failed: {e}"))
 }
 
+// ── CPU sets game-pinning commands ────────────────────────────────────
+
+#[tauri::command]
+async fn cpu_set_info() -> Result<cpusets::CpuSetInfo, String> {
+    tokio::task::spawn_blocking(|| cpusets::cpu_set_info().map_err(|e| format!("{:#}", e)))
+        .await
+        .map_err(|e| format!("cpu_set_info task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn cpu_pin_foreground(cores: Vec<u32>) -> Result<cpusets::PinReport, String> {
+    tokio::task::spawn_blocking(move || cpusets::pin_foreground_to_cores(&cores).map_err(|e| format!("{:#}", e)))
+        .await
+        .map_err(|e| format!("cpu_pin_foreground task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn cpu_pin_pid(pid: u32, cores: Vec<u32>) -> Result<cpusets::PinReport, String> {
+    tokio::task::spawn_blocking(move || cpusets::pin_pid_to_cores(pid, &cores).map_err(|e| format!("{:#}", e)))
+        .await
+        .map_err(|e| format!("cpu_pin_pid task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn cpu_clear_pin(pid: u32) -> Result<cpusets::PinReport, String> {
+    tokio::task::spawn_blocking(move || cpusets::clear_pin(pid).map_err(|e| format!("{:#}", e)))
+        .await
+        .map_err(|e| format!("cpu_clear_pin task failed: {e}"))?
+}
+
 // ── Background standby memory cleaner commands ───────────────────────
 
 #[tauri::command]
@@ -676,6 +707,10 @@ pub fn run() {
             standby_uninstall,
             standby_run_now,
             standby_status,
+            cpu_set_info,
+            cpu_pin_foreground,
+            cpu_pin_pid,
+            cpu_clear_pin,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

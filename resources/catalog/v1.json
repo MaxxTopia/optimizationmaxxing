@@ -1,7 +1,7 @@
 {
-  "version": "v1.8.1",
+  "version": "v1.8.2",
   "generated_at": "2026-05-10",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.1 adds per-AC matrix tags on the 12 most-AC-relevant tweaks (kernel mitigations, BCD timer/clock writes, game config FileWrites). Powers Tournament Mode auto-revert/restore on /asta.",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.2 expands AC matrix to 18 tagged tweaks (game-specific IFEOs explicit safe + universal-safe v0.1.62 tweaks tagged so users see green pills).",
   "tweaks": [
     {
       "id": "display.mpo.disable",
@@ -13,6 +13,7 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
+      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
       "actions": [
         {
           "kind": "registry_set",
@@ -34,6 +35,7 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
+      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
       "actions": [
         {
           "kind": "powershell_script",
@@ -52,6 +54,7 @@
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "none",
+      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
       "actions": [
         {
           "kind": "powershell_script",
@@ -1730,6 +1733,7 @@
       "rebootRequired": "none",
       "applicableGames": ["fortnite"],
       "tournamentCompliance": { "fortnite": "safe" },
+      "anticheatCompatibility": { "eac": "safe", "epic_ac": "safe" },
       "actions": [
         {
           "kind": "registry_set",
@@ -1753,6 +1757,7 @@
       "rebootRequired": "none",
       "applicableGames": ["valorant"],
       "tournamentCompliance": { "valorant": "safe" },
+      "anticheatCompatibility": { "vanguard": "safe" },
       "actions": [
         {
           "kind": "registry_set",
@@ -1776,6 +1781,7 @@
       "rebootRequired": "none",
       "applicableGames": ["cs2"],
       "tournamentCompliance": { "cs2": "safe" },
+      "anticheatCompatibility": { "vac": "safe", "faceit": "safe", "esea": "safe" },
       "actions": [
         {
           "kind": "registry_set",

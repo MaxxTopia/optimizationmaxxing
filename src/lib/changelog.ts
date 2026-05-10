@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.65',
+    date: '2026-05-10',
+    highlights: [
+      'NEW **Game core pinning (CPU Sets API)** — section in /settings. Modern Windows API (`SetProcessDefaultCpuSets`, Win10 1709+) — categorically better than legacy affinity masks because the scheduler treats off-set cores as unavailable for the pinned process AND prefers them for everything else. Net effect: your game gets cores effectively reserved instead of just constrained. UI: per-core toggle picker + presets (bottom half / top half / last 4 / all) + "Pin foreground game" button (we grab GetForegroundWindow → PID → SetProcessDefaultCpuSets) + active-pins list with per-pin "clear" buttons. Pin survives in OS scheduler until process exits.',
+      'NEW Rust module **cpusets.rs** — wraps GetForegroundWindow / GetWindowThreadProcessId / OpenProcess / SetProcessDefaultCpuSets / GetModuleBaseNameW. Four new Tauri commands: cpu_set_info / cpu_pin_foreground / cpu_pin_pid / cpu_clear_pin.',
+      'CONTENT **AC matrix audit pass round 2** — 12→18 tagged tweaks. Game-specific IFEO priority tweaks tagged explicit safe (process.fortnite.priority-high → eac/epic_ac safe; process.valorant.priority-high → vanguard safe; process.cs2.priority-high → vac/faceit/esea safe). Universal-safe v0.1.62 tweaks tagged across all 7 ACs (display.mpo.disable, network.tcp.ack-nodelay, network.qos.dscp-tag) so users see green pills. Catalog v1.8.1 → v1.8.2.',
+      'Per-game-name auto-pin daemon DEFERRED to v0.1.66+ — current pinning is one-shot click-to-pin per game launch. Surviving relaunch needs a polling daemon that watches for game-process names and pins automatically.',
+    ],
+  },
+  {
     version: '0.1.64',
     date: '2026-05-10',
     highlights: [

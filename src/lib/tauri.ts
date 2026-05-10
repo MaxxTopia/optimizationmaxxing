@@ -655,3 +655,34 @@ export async function standbyUninstall(): Promise<StandbyStatus> {
 export async function standbyRunNow(): Promise<StandbyStatus> {
   return invoke<StandbyStatus>('standby_run_now')
 }
+
+// ---------- CPU Sets game pinning ----------
+
+export interface CpuSetInfo {
+  logicalProcessorCount: number
+  cpuSetIds: number[]
+}
+
+export interface PinReport {
+  pid: number
+  processName: string
+  cores: number[]
+  ok: boolean
+  error: string | null
+}
+
+export async function cpuSetInfo(): Promise<CpuSetInfo> {
+  return invoke<CpuSetInfo>('cpu_set_info')
+}
+
+export async function cpuPinForeground(cores: number[]): Promise<PinReport> {
+  return invoke<PinReport>('cpu_pin_foreground', { cores })
+}
+
+export async function cpuPinPid(pid: number, cores: number[]): Promise<PinReport> {
+  return invoke<PinReport>('cpu_pin_pid', { pid, cores })
+}
+
+export async function cpuClearPin(pid: number): Promise<PinReport> {
+  return invoke<PinReport>('cpu_clear_pin', { pid })
+}
