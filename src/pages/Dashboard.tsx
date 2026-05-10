@@ -57,22 +57,23 @@ export function Dashboard() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              to="/tweaks"
+              to="/tune"
               className="btn-chrome px-5 py-2.5 rounded-md bg-accent text-bg-base font-semibold"
+              title="Scan your rig + apply every safe matching tweak in one UAC + see exact composite delta + see VIP gap. ~90 seconds."
+            >
+              Tune now (90 s) →
+            </Link>
+            <Link
+              to="/tweaks"
+              className="px-5 py-2.5 rounded-md border border-border text-text hover:border-border-glow transition"
             >
               Browse tweaks
             </Link>
             <Link
               to="/presets"
-              className="px-5 py-2.5 rounded-md border border-border text-text hover:border-border-glow transition"
-            >
-              Apply preset
-            </Link>
-            <Link
-              to="/profile"
               className="px-5 py-2.5 rounded-md text-text-muted hover:text-text transition"
             >
-              See your rig →
+              Curated presets →
             </Link>
           </div>
         </div>

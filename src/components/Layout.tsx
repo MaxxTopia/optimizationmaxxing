@@ -5,6 +5,7 @@ import { ThemePicker } from './ThemePicker'
 
 const NAV_LINKS = [
   { to: '/', label: 'Dashboard' },
+  { to: '/tune', label: 'Tune now' },
   { to: '/tweaks', label: 'Tweaks' },
   { to: '/presets', label: 'Presets' },
   { to: '/diff', label: 'Diff' },

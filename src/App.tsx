@@ -5,6 +5,7 @@ import { Layout } from './components/Layout'
 import { UpdateBanner } from './components/UpdateBanner'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { Dashboard } from './pages/Dashboard'
+import { TuneNow } from './pages/TuneNow'
 import { Tweaks } from './pages/Tweaks'
 import { Presets } from './pages/Presets'
 import { Profile } from './pages/Profile'
@@ -51,6 +52,7 @@ export default function App() {
         <UpdateBanner />
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/tune" element={<TuneNow />} />
           <Route path="/tweaks" element={<Tweaks />} />
           <Route path="/presets" element={<Presets />} />
           <Route path="/toolkit" element={<Toolkit />} />

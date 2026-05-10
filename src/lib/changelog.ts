@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.56',
+    date: '2026-05-10',
+    highlights: [
+      'NEW /tune page — the lazy-user one-click conversion path. Three steps, ~90 seconds: (1) Scan rig + initial Asta Bench (2) Apply every safe tweak that matches your rig under one UAC — not just top 6 like Dashboard recommendations (3) Auto re-bench + show before/after composite delta. After the apply: shows you exactly how many VIP-only tweaks you missed and the projected composite gain you left on the table. Linked from Dashboard hero CTA + nav. Game-agnostic — works for any title since the ~70 rig + Windows tweaks compound regardless.',
+      'POLISH Dashboard hero now leads with "Tune now (90s)" instead of "Browse tweaks". Lazy-user path is the default path; power users still get every other route from the nav.',
+      'Skipped from auto-apply: risk-4 tweaks (CPU mitigations off etc.) + tournament-breaking + high-anticheat-risk. You opt into those individually from /tweaks. Every applied tweak is one-click reversible from Settings → Restore Point.',
+      'VIP-gap projection uses your previously-measured per-tweak deltas (from the per-tweak measure button on /tweaks) where available, falls back to a conservative heuristic (+0.4 low-risk / +0.9 mid-risk per tweak). Outliers capped at ±5 composite per tweak so a single noisy measurement can\'t skew the projection.',
+    ],
+  },
+  {
     version: '0.1.55',
     date: '2026-05-10',
     highlights: [
