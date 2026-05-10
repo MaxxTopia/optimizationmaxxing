@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.74',
+    date: '2026-05-10',
+    highlights: [
+      'BUG-FIX **Standby cleaner no longer flashes a console window every interval** — the scheduled task ran `powershell.exe -WindowStyle Hidden` directly, but PowerShell can only hide the window AFTER it first paints. Task Scheduler triggered the paint, then PowerShell saw the flag too late → 100-300ms flash every 5 minutes (or whatever interval you picked). Fix: wraps the call in a tiny `wscript.exe` + `hide_launcher.vbs` shim. wscript is windowless from start, the .vbs spawns PowerShell with `SW_HIDE` so there\'s nothing to flash. **You need to re-install the cleaner once after upgrading** — Settings → Standby cleaner → Uninstall, then Install again. Existing scheduled tasks created by v0.1.73 and earlier still use the old direct-powershell command and will keep flashing until re-registered.',
+    ],
+  },
+  {
     version: '0.1.73',
     date: '2026-05-10',
     highlights: [

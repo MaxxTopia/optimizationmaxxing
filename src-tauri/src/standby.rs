@@ -35,17 +35,36 @@ pub struct StandbyStatus {
 /// Install the scheduled task. Triggers ONE UAC prompt. The task runs every
 /// `interval_minutes` minute(s) at HighestAvailable run-level under the current
 /// user account. Idempotent — re-installing replaces the prior task.
+///
+/// v0.1.74 — wraps the PowerShell call in a `wscript.exe` + `.vbs` launcher
+/// (`hide_launcher.vbs` next to `clear_standby.ps1`) so the console window
+/// doesn't flash every interval. PowerShell's `-WindowStyle Hidden` only
+/// hides the window AFTER the console first paints; Task Scheduler triggers
+/// the first paint, then PowerShell sees the flag — net effect was a
+/// 100-300 ms flash every 5 min. wscript is windowless from the start,
+/// SW_HIDE on the spawned PowerShell suppresses its window entirely.
 pub fn install_task(script_path: &str, interval_minutes: u32) -> Result<()> {
     if interval_minutes < 1 || interval_minutes > 60 {
         return Err(anyhow!(
             "interval_minutes must be 1..60 (Task Scheduler MINUTE granularity)"
         ));
     }
-    // Quote the script path for cmd.exe — paths with spaces (e.g. Program Files)
-    // need surrounding quotes inside the /TR argument.
+
+    // Locate the launcher .vbs alongside the .ps1. The Tauri resource
+    // bundling copies both into the same dir (resources/scripts/).
+    let launcher_path = std::path::Path::new(script_path)
+        .parent()
+        .map(|p| p.join("hide_launcher.vbs"))
+        .ok_or_else(|| anyhow!("script_path has no parent dir"))?;
+    let launcher_str = launcher_path.to_string_lossy();
+
+    // /TR runs `wscript.exe "<launcher.vbs>" "<clear_standby.ps1>"`.
+    // wscript opens windowless, the .vbs spawns powershell with SW_HIDE.
+    // Backslash-escaped quotes per /TR's parser; outer "..." wraps the
+    // whole /TR value at the schtasks level.
     let tr = format!(
-        "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \\\"{}\\\"",
-        script_path,
+        "wscript.exe \\\"{}\\\" \\\"{}\\\"",
+        launcher_str, script_path,
     );
     // schtasks /Create /TN <name> /TR <run> /SC MINUTE /MO <n> /RL HIGHEST /F
     // - /RL HIGHEST = HighestAvailable (admin token required at register time)
