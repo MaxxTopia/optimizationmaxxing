@@ -12,10 +12,11 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: '0.1.68',
+    version: '0.1.69',
     date: '2026-05-10',
     highlights: [
       'HOTFIX **App-launch crash fix** — v0.1.67 panicked on every startup at `auto_pin.rs:107` ("there is no reactor running") because the v0.1.66 daemon scheduled itself with `tokio::task::spawn` from inside Tauri\'s synchronous `setup` closure, before the tokio runtime came up. Now uses `tauri::async_runtime::spawn`, which is safe to call from any context. Crash logged at `%LOCALAPPDATA%\\\\com.maxxers.optimizationmaxxing\\\\crashes\\\\` if you want to verify the boot loop matches.',
+      'CI-FIX **NSIS installer hook now committed** — `installer-hooks.nsh` was referenced by `tauri.conf.json` but never staged in the v0.1.68 attempt, so CI failed at the bundling step ("system cannot find the file specified"). Hook itself wipes the per-user IconCache.db on install/uninstall via `ie4uinit.exe -ClearIconCache` so upgrades don\'t inherit a stale Start-Menu icon. v0.1.68 release was draft-only — no artifact ever shipped — so this is the first downloadable build with the boot-crash fix.',
     ],
   },
   {
