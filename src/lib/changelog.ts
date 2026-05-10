@@ -12,6 +12,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.62',
+    date: '2026-05-10',
+    highlights: [
+      'NEW catalog tweak **MPO disable** — `OverlayTestMode = 5` HKLM. Fixes the dual-monitor / multi-display stutter that has plagued NVIDIA + Intel Arc users since 2022. Most pros run dual-monitor (game + Discord/OBS) — disabling MPO eliminates a stutter source most users never trace. Single registry value, instantly reversible.',
+      'NEW catalog tweak **TCP ACK frequency + Nagle off (per-NIC)** — PowerShell script that iterates HKLM\\\\SYSTEM\\\\CurrentControlSet\\\\Services\\\\Tcpip\\\\Parameters\\\\Interfaces and sets `TcpAckFrequency = 1` + `TCPNoDelay = 1` on every NIC with a bound IP. Pro-circulated network tweak documented on r/CompetitiveApex for years but absent from every mainstream optimizer. Reverts cleanly via the inverse script.',
+      'NEW catalog tweak **DSCP / QoS packet tagging** (VIP) — `New-NetQosPolicy` rules tag outbound Fortnite/CS2/Valorant/Apex traffic with DSCP 46 (Expedited Forwarding). The single most-gatekept network tweak in pro-circle Discords; nobody publishes guides on it. Useless without a router that honors DSCP — companion guide covers ASUS / Netgear / TP-Link / Ubiquiti / pfSense / OpenWRT setup.',
+      'NEW guide **NVIDIA Profile Inspector — gatekept .nip files** — articleware on Calypto + community .nip profiles. Real 10-50ms wins via undocumented NVCP flags (Threaded Optimization OFF for Fortnite, FRL v3 mode for CS2, per-app prefer-max-performance for Valorant). Per-game callouts for Fortnite/CS2/Valorant/Apex. Tagged advanced.',
+      'NEW guide **Standby memory list — silent stutter pros clean every session** — explains why pros restart their game every 2-3 hours, links to ISLC (Wagnard) + Microsoft\'s RAMMap as the proven manual paths. Integrated standby cleaner with scheduled-task elevation ships v0.1.63+.',
+      'NEW guide **DSCP / QoS router companion** — per-router setup for the catalog\'s QoS tweak. Covers ASUS Adaptive QoS, Netgear Dynamic QoS, TP-Link Archer, Ubiquiti UniFi (Smart Queues / CAKE), pfSense Traffic Shaper, OpenWRT SQM. Tagged advanced.',
+      'Catalog version v1.7.4 → v1.8.0 (97 tweaks total).',
+    ],
+  },
+  {
     version: '0.1.61',
     date: '2026-05-10',
     highlights: [

@@ -1,8 +1,65 @@
 {
-  "version": "v1.7.4",
-  "generated_at": "2026-05-06",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion.",
+  "version": "v1.8.0",
+  "generated_at": "2026-05-10",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.0 adds gatekept-pro tier: MPO disable, per-NIC TCP ACK frequency + Nagle disable, DSCP/QoS Group Policy packet tagging.",
   "tweaks": [
+    {
+      "id": "display.mpo.disable",
+      "title": "Disable Multi-Plane Overlay (MPO)",
+      "category": "registry",
+      "description": "Disables the DWM Multi-Plane Overlay path on dual-monitor + multi-display rigs. MPO routes overlay surfaces through an extra composition layer that frequently stutters when one monitor changes refresh, when HDR toggles, or when capture software hooks the desktop. Most pros run dual-monitor (game + Discord/OBS) — disabling MPO eliminates a stutter source most users never trace.",
+      "rationale": "Microsoft + NVIDIA both acknowledge MPO + multi-monitor causes stutters. The fix has been documented across r/nvidia + Hardware Unboxed since 2022 but is gatekept inside the dual-monitor competitive scene. Single registry value, instantly reversible. Source: NVIDIA driver-team forum responses + Hardware Unboxed multi-monitor stutter coverage.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows\\Dwm",
+          "name": "OverlayTestMode",
+          "value_type": "dword",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "network.tcp.ack-nodelay",
+      "title": "TCP: immediate ACK + Nagle off (per-NIC)",
+      "category": "network",
+      "description": "Per-NIC: forces TcpAckFrequency=1 (ACK every packet instead of every 2nd / delayed-ACK) and TCPNoDelay=1 (disables Nagle's algorithm so small packets don't buffer). The two pair — Nagle off without ACK frequency tuning is half the fix. Real win for low-jitter game traffic; controversial only because pre-2010 Windows defaults differed.",
+      "rationale": "Pro-circulated network tweak documented on r/Windows10 + r/CompetitiveApex for years but absent from every mainstream optimizer. Iterates HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\<NIC GUID> and applies both keys to every interface that has an IP address bound (skips loopback / VPN tunnel adapters). Fully reversible — script accepts -Revert switch.",
+      "riskLevel": 2,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces' | ForEach-Object { $k = $_.PsPath; $ip = (Get-ItemProperty -Path $k -Name IPAddress -ErrorAction SilentlyContinue).IPAddress; $dhcp = (Get-ItemProperty -Path $k -Name DhcpIPAddress -ErrorAction SilentlyContinue).DhcpIPAddress; if (($ip -and $ip -ne '0.0.0.0') -or ($dhcp -and $dhcp -ne '0.0.0.0')) { New-ItemProperty -Path $k -Name TcpAckFrequency -PropertyType DWord -Value 1 -Force | Out-Null; New-ItemProperty -Path $k -Name TCPNoDelay -PropertyType DWord -Value 1 -Force | Out-Null } }; Write-Output 'OK'",
+          "revert": "Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces' | ForEach-Object { $k = $_.PsPath; Remove-ItemProperty -Path $k -Name TcpAckFrequency -ErrorAction SilentlyContinue; Remove-ItemProperty -Path $k -Name TCPNoDelay -ErrorAction SilentlyContinue }; Write-Output 'OK'"
+        }
+      ]
+    },
+    {
+      "id": "network.qos.dscp-tag",
+      "title": "QoS: DSCP packet tagging for game traffic (gatekept)",
+      "category": "network",
+      "description": "Creates a Group Policy QoS rule (`New-NetQosPolicy`) that tags outbound traffic from FortniteClient-Win64-Shipping.exe + cs2.exe + VALORANT.exe + r5apex.exe with DSCP 46 (Expedited Forwarding). On its own this is just a tag — the routing magic happens at your gateway, where any router that honors DSCP (most consumer routers since ~2018, all enterprise gear) prioritizes EF-tagged packets over your roommate's Netflix. The single most-gatekept network tweak in pro-circle Discords; nobody publishes guides on it.",
+      "rationale": "Pros use this paired with a router-side rule to crush packet loss + jitter spikes during shared-WAN endgame moments. Honest caveat: if your router doesn't honor DSCP, the tag is harmless — packets go out with DSCP=46 in the IP header, your ISP ignores it, no behavior change. We can't auto-config every router brand from the desktop, so the companion guide explains the matching rule for ASUS / Netgear / TP-Link / Ubiquiti / pfSense. Reverts via Remove-NetQosPolicy.",
+      "riskLevel": 2,
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$games = @(@{N='optmaxxing-fortnite';P='FortniteClient-Win64-Shipping.exe'},@{N='optmaxxing-cs2';P='cs2.exe'},@{N='optmaxxing-valorant';P='VALORANT-Win64-Shipping.exe'},@{N='optmaxxing-apex';P='r5apex.exe'}); foreach ($g in $games) { try { Remove-NetQosPolicy -Name $g.N -Confirm:$false -ErrorAction SilentlyContinue; New-NetQosPolicy -Name $g.N -AppPathNameMatchCondition $g.P -DSCPAction 46 -NetworkProfile All -Confirm:$false | Out-Null } catch { Write-Output \"WARN: $($g.N): $($_.Exception.Message)\" } }; Write-Output 'OK'",
+          "revert": "foreach ($n in @('optmaxxing-fortnite','optmaxxing-cs2','optmaxxing-valorant','optmaxxing-apex')) { try { Remove-NetQosPolicy -Name $n -Confirm:$false -ErrorAction SilentlyContinue } catch {} }; Write-Output 'OK'"
+        }
+      ]
+    },
     {
       "id": "ui.gamedvr.disable",
       "title": "Disable Game DVR & Game Bar",

@@ -19,6 +19,9 @@ import latencyBudget from '../../resources/research/latency-budget.md?raw'
 import grindLayer from '../../resources/research/grind-layer.md?raw'
 import fortniteProSettings from '../../resources/research/fortnite-pro-settings.md?raw'
 import valorantProSettings from '../../resources/research/valorant-pro-settings.md?raw'
+import nvidiaProfileInspector from '../../resources/research/nvidia-profile-inspector.md?raw'
+import standbyListCleaner from '../../resources/research/standby-list-cleaner.md?raw'
+import dscpRouterCompanion from '../../resources/research/dscp-router-companion.md?raw'
 
 import type { GameId } from './games'
 
@@ -47,6 +50,38 @@ export const RESEARCH: ResearchArticle[] = [
       'No. Reflex reduces input lag by 5–30 ms depending on workload. Use ON+BOOST.',
     badge: 'NVIDIA',
     body: nvidiaReflex,
+  },
+  {
+    id: 'nvidia-profile-inspector',
+    title: 'NVIDIA Profile Inspector — gatekept .nip files (10-50ms)',
+    blurb:
+      'NVCP exposes ~15% of driver knobs. The rest live in .nip profiles pros pass around (Calypto, Threaded Optimization OFF for Fortnite, FRL v3 mode). Real wins, articleware-only.',
+    badge: 'NVIDIA',
+    body: nvidiaProfileInspector,
+    advanced: true,
+    perGameCallouts: {
+      fortnite: 'Threaded Optimization OFF in NVPI fixes UE5 main-thread stutter that NVCP can\'t reach.',
+      cs2: 'NVPI Frame Rate Limiter v3 mode beats both in-game cap and NVCP UI cap.',
+      valorant: 'Per-app prefer-max-performance + Vanguard-safe NVPI changes.',
+      apex: 'Low-latency mode = Ultra on the per-game profile. ImperialHal-tier setting.',
+    },
+  },
+  {
+    id: 'standby-list-cleaner',
+    title: 'Standby memory list — silent stutter source pros clean every session',
+    blurb:
+      'Why pros restart their game every 2-3 hours. ISLC + RAMMap link out + the underlying NtSetSystemInformation API. Integrated standby cleaner ships v0.1.63+.',
+    badge: 'MEMORY',
+    body: standbyListCleaner,
+  },
+  {
+    id: 'dscp-router-companion',
+    title: 'DSCP / QoS router companion — make the catalog tag actually do something',
+    blurb:
+      'Our QoS catalog tweak tags game packets DSCP 46. This page covers the matching router-side rule for ASUS / Netgear / TP-Link / Ubiquiti / pfSense / OpenWRT.',
+    badge: 'NETWORK',
+    body: dscpRouterCompanion,
+    advanced: true,
   },
   {
     id: 'browsers',
