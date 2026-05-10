@@ -122,13 +122,65 @@ export function AutoPinSection() {
     <section className="space-y-3">
       <div>
         <h2 className="text-lg font-semibold">Auto-pin games (CPU Sets daemon)</h2>
-        <p className="text-sm text-text-muted max-w-3xl leading-snug">
-          Background polling task that watches for game processes by name and
-          pins them to your reserved cores automatically — no need to Alt-Tab and
-          click "Pin foreground game" every launch. Polls every N seconds (default 5).
-          Config persists across app restarts at{' '}
-          <code className="text-text-muted">%LOCALAPPDATA%\optmaxxing\auto-pin.json</code>.
-        </p>
+        <div className="text-sm text-text-muted max-w-3xl leading-snug space-y-2">
+          <p>
+            <strong className="text-text">What it does in plain English:</strong> a background
+            poll task that watches for specific game processes by their <code>.exe</code> name
+            and applies the right CPU Set pin <em>automatically</em> the moment the game
+            launches — no Alt-Tab + click required. Set up your rules once, every launch is
+            already pinned.
+          </p>
+          <p>
+            <strong className="text-text">Why this is better than click-to-pin:</strong> the
+            click-to-pin section above is one-shot; close the game + re-launch and you'd have
+            to re-pin. The daemon watches <em>continuously</em> so the second the game spawns
+            (even from Steam / Epic / Discord launches), it gets pinned before its render
+            thread does any real work.
+          </p>
+          <p>
+            <strong className="text-text">How to use it:</strong> Click "Add Fortnite" (or
+            another quick-pick) below, choose which cores to pin it to, then flip the daemon ON.
+            Polls every 5s by default. Config persists across app restarts at{' '}
+            <code className="text-text-muted">%LOCALAPPDATA%\optmaxxing\auto-pin.json</code>.
+          </p>
+        </div>
+
+        <div
+          className="mt-3 rounded-md border p-3 text-xs leading-snug max-w-3xl"
+          style={{
+            borderColor: 'rgba(255, 215, 0, 0.4)',
+            background: 'rgba(255, 215, 0, 0.04)',
+          }}
+        >
+          <p className="font-semibold text-text mb-1.5">🎯 Recommended Fortnite setup</p>
+          <ol className="list-decimal pl-5 space-y-1 text-text-muted">
+            <li>
+              Click the <strong className="text-text">"+ Fortnite"</strong> quick-pick chip
+              below — adds <code>FortniteClient-Win64-Shipping.exe</code> as a rule.
+            </li>
+            <li>
+              <strong className="text-text">Pick the right cores</strong> based on your CPU:
+              <ul className="mt-1 ml-2 list-disc pl-4 space-y-0.5">
+                <li><strong className="text-text">Intel hybrid (12th-15th gen / Core Ultra):</strong> pin to <strong>P-cores only</strong> (usually cores 0–N/2; check Task Manager → Performance → CPU graph to see which cores are P-cores). E-cores hurt UE5 by bouncing the render thread between heterogeneous cache topologies.</li>
+                <li><strong className="text-text">AMD X3D (7800X3D / 9800X3D / 7950X3D):</strong> pin to <strong>cores 0–7 (CCD0 only)</strong> — the cache die. Cross-CCD latency adds ~10ns per memory hop, fatal for Fortnite's main thread.</li>
+                <li><strong className="text-text">AMD non-X3D (7700X / 9700X / etc.):</strong> just check all cores; single CCD = no penalty.</li>
+                <li><strong className="text-text">Intel non-hybrid (10th-11th gen):</strong> all cores; optionally exclude HT siblings (1, 3, 5, 7…) but minor.</li>
+              </ul>
+            </li>
+            <li>
+              Flip the daemon to <strong className="text-text">ON</strong>.
+            </li>
+            <li>
+              Launch Fortnite normally. Within ~5s of process spawn, you'll see it appear in
+              the "currently pinned" list below. Done. Set + forget.
+            </li>
+          </ol>
+          <p className="mt-2 text-text-muted">
+            <strong className="text-text">Verify it's working:</strong> Task Manager → Details
+            tab → right-click <code>FortniteClient-Win64-Shipping.exe</code> → "Set affinity" —
+            the cores you reserved should be the only ones checked.
+          </p>
+        </div>
       </div>
       <div className="surface-card p-6 space-y-4">
         {err && <div className="text-xs text-accent">Error: {err}</div>}

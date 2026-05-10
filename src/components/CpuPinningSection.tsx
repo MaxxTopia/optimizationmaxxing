@@ -121,15 +121,73 @@ export function CpuPinningSection() {
     <section className="space-y-3">
       <div>
         <h2 className="text-lg font-semibold">Game core pinning (CPU Sets)</h2>
-        <p className="text-sm text-text-muted max-w-3xl leading-snug">
-          Modern Windows API ({' '}
-          <code className="text-accent">SetProcessDefaultCpuSets</code>
-          ) — better than legacy affinity masks because the scheduler treats off-set cores as
-          unavailable for the pinned process AND prefers them for everything else. Net effect:
-          your game gets the cores effectively reserved instead of just constrained. Pick which
-          cores to reserve, focus the game, click "Pin foreground game". Pin survives until the
-          process exits.
-        </p>
+        <div className="text-sm text-text-muted max-w-3xl leading-snug space-y-2">
+          <p>
+            <strong className="text-text">What it does in plain English:</strong> tells Windows
+            "run my game ONLY on these CPU cores, and run everything else (Discord, browser,
+            Spotify, AV, OS background work) on the OTHER cores". The game gets cores
+            effectively <em>reserved</em>, not just constrained.
+          </p>
+          <p>
+            <strong className="text-text">Why this is better than legacy affinity masks:</strong>{' '}
+            old-school <code>SetProcessAffinityMask</code> was a hard constraint on the game ONLY
+            — other processes could still pile onto the same cores and cause stutter. The modern
+            API (<code className="text-accent">SetProcessDefaultCpuSets</code>) tells the
+            scheduler to <em>prefer</em> off-set cores for everything else too. Real cache + L3
+            isolation, not just a kindly suggestion.
+          </p>
+          <p>
+            <strong className="text-text">How to use it:</strong> pick which cores to reserve
+            below, Alt-Tab to your game so it's focused, click "Pin foreground game". Pin lives
+            in the OS scheduler until the game closes (so you re-pin each launch — or use
+            Auto-pin below for set-and-forget by process name).
+          </p>
+        </div>
+
+        <div
+          className="mt-3 rounded-md border p-3 text-xs leading-snug max-w-3xl"
+          style={{
+            borderColor: 'rgba(255, 215, 0, 0.4)',
+            background: 'rgba(255, 215, 0, 0.04)',
+          }}
+        >
+          <p className="font-semibold text-text mb-1.5">🎯 Recommended for Fortnite (UE5)</p>
+          <p className="text-text-muted">
+            Fortnite is bottlenecked on the <strong className="text-text">render thread</strong>{' '}
+            (UE5's main game thread can't be parallelized further). What matters: maximum
+            <em> single-thread</em> performance + low contention from background apps.
+          </p>
+          <ul className="mt-2 ml-1 space-y-1 text-text-muted">
+            <li>
+              <strong className="text-text">Intel hybrid (12th gen / 13th gen / 14th gen / Core Ultra):</strong>{' '}
+              pin to the <strong className="text-text">P-cores only</strong>. E-cores hurt UE5
+              perf (the scheduler bounces the render thread between cores → cache thrash, frame
+              hitches). Click "bottom half" preset on most boards (P-cores enumerate first); on
+              Core Ultra, use the auto-pin daemon below + add per-game rules — Intel APO does
+              this automatically for whitelisted games but Fortnite isn't whitelisted.
+            </li>
+            <li>
+              <strong className="text-text">AMD X3D (7800X3D / 9800X3D / 7950X3D):</strong> pin
+              to the <strong className="text-text">first 8 cores</strong> (CCD0 — the cache
+              die). Cross-CCD latency murders Fortnite. The "bottom half" preset on a 16-core
+              7950X3D = exactly CCD0. ✓
+            </li>
+            <li>
+              <strong className="text-text">AMD non-X3D / single-CCD Ryzen:</strong> "all" is
+              fine. Single CCD = no cross-die latency to fight.
+            </li>
+            <li>
+              <strong className="text-text">Intel non-hybrid (10th–11th gen, etc.):</strong> "all"
+              is fine. Optionally exclude HT siblings (cores 1, 3, 5, 7…) but not worth the
+              hassle for most.
+            </li>
+          </ul>
+          <p className="mt-2 text-text-muted">
+            <strong className="text-text">If unsure:</strong> click <strong>bottom half</strong>{' '}
+            below + Pin foreground game. This is the right default for the majority of competitive
+            rigs (P-cores on Intel hybrid, CCD0 on Ryzen X3D).
+          </p>
+        </div>
       </div>
       <div className="surface-card p-6 space-y-4">
         {err && <div className="text-xs text-accent">Error: {err}</div>}

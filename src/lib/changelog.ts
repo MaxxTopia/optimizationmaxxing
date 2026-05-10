@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.73',
+    date: '2026-05-10',
+    highlights: [
+      'BUG-FIX **Bufferbloat probe** — previous PowerShell used `Start-Job` for the parallel download, then `Wait-Job | Receive-Job | Select-Object -Last 1` to grab the byte total. Two failure modes baked in: (1) Receive-Job returns the FULL pipeline output of the job, not just the function return — Select-Object -Last 1 would grab whatever was written last (often $null or a stream object), giving us 0 bytes + corrupted JSON; (2) Start-Job spawned a fresh PowerShell process per call, ~1.5s of pure overhead. Rewritten as single-process: HttpClient.GetAsync with ResponseHeadersRead + chunked Read in the foreground, ping every ~700ms during the read loop. Deterministic timing, deterministic output, surfaces script-side errors back to the UI ("HTTP 503", "GET timed out") instead of going blank.',
+      'UX **XGS-PON ONU stick monitor** — clarified the card is niche (XGS-PON SFP+ stick users only). "Couldn\'t reach the stick" error message now distinguishes between "you don\'t have one — ignore this card" vs "you do have one — here\'s the troubleshooting" with a link to pon.wiki. Most home users don\'t have an 8311 stick; the error was reading like a bug instead of "not your situation".',
+      'CONTENT **Game core pinning explanation expanded** — the /settings card now explains in plain English what CPU Sets do (run game on these cores, everything else on the OTHER cores), why it beats legacy affinity masks (real reservation, not just constraint), and adds a recommended-for-Fortnite section: P-cores only on Intel hybrid (E-cores hurt UE5), CCD0 only on AMD X3D (cross-CCD latency murders Fortnite), "all" fine on non-X3D Ryzen + Intel non-hybrid. "Bottom half" preset is the right default for most competitive rigs.',
+      'CONTENT **Auto-pin daemon explanation expanded** — same plain-English treatment + Fortnite-specific 4-step setup: add the FortniteClient quick-pick → pick cores per CPU class (P-cores on Intel hybrid, cores 0-7 on X3D, all on non-X3D Ryzen, all on Intel non-hybrid) → flip daemon ON → launch normally. Verify via Task Manager → Details → Set affinity.',
+      'BRAND **Discordmaxxer logo refreshed** — the suite-rail logo on the left was the old white silhouette mark. Swapped for the current horror-Clyde primary mark (with bullet holes) — same one shipping in the discordmaxxer client itself. Also updated on maxxtopia.com.',
+    ],
+  },
+  {
     version: '0.1.72',
     date: '2026-05-10',
     highlights: [

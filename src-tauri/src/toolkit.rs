@@ -773,50 +773,97 @@ pub struct BufferbloatReport {
     pub error: Option<String>,
 }
 
+// v0.1.73: rewrote without Start-Job. The previous Start-Job/Receive-Job/
+// Select-Object -Last 1 path had two failure modes:
+//   1. Receive-Job returns the full pipeline output of the job, not just
+//      the function return — Select-Object -Last 1 grabbed whatever
+//      PowerShell wrote LAST (often $null or a stream object), giving us
+//      "0 bytes" + corrupted JSON.
+//   2. Start-Job spawns a fresh PowerShell process per call, ~1.5s of
+//      pure overhead before the download even starts.
+//
+// Now: single-process. HttpClient with ResponseHeadersRead + chunked Read
+// in the foreground, ping every ~700ms during the read loop. Deterministic
+// timing, deterministic output. ConvertTo-Json -Depth 4 + AsArray-coerce
+// the ping arrays so single-element arrays don't unwrap to scalars.
 const BUFFERBLOAT_PS_SCRIPT: &str = r#"
-$ErrorActionPreference = 'Stop'
-$pingTarget = '1.1.1.1'
+$ErrorActionPreference = 'Continue'
 
-function Get-Ping([string]$host_) {
+Add-Type -AssemblyName System.Net.Http | Out-Null
+
+function Get-Ping([string]$h) {
     try {
-        $r = (New-Object System.Net.NetworkInformation.Ping).Send($host_, 1500)
+        $p = New-Object System.Net.NetworkInformation.Ping
+        $r = $p.Send($h, 1500)
         if ($r.Status -eq 'Success') { return [int]$r.RoundtripTime } else { return -1 }
     } catch { return -1 }
 }
 
-# Idle phase: 6 pings over ~6 seconds
-$idle = @()
-for ($i = 0; $i -lt 6; $i++) { $idle += (Get-Ping $pingTarget); Start-Sleep -Milliseconds 900 }
+$target = '1.1.1.1'
 
-# Loaded phase: kick off a 30 MB download, ping 10x while it streams
-$bytes = 0
-$loaded = @()
-$dlJob = Start-Job -ScriptBlock {
-    try {
-        $req = [System.Net.HttpWebRequest]::Create('https://speed.cloudflare.com/__down?bytes=30000000')
-        $req.Timeout = 12000
-        $resp = $req.GetResponse()
-        $stream = $resp.GetResponseStream()
-        $buf = New-Object byte[] 65536
-        $total = 0
-        while ($true) {
-            $n = $stream.Read($buf, 0, $buf.Length)
-            if ($n -le 0) { break }
-            $total += $n
-        }
-        $stream.Close(); $resp.Close()
-        return $total
-    } catch { return 0 }
+# Idle phase — 6 pings spaced ~900ms.
+$idle = New-Object System.Collections.ArrayList
+for ($i = 0; $i -lt 6; $i++) {
+    [void]$idle.Add((Get-Ping $target))
+    Start-Sleep -Milliseconds 900
 }
 
-Start-Sleep -Milliseconds 500
-for ($i = 0; $i -lt 10; $i++) { $loaded += (Get-Ping $pingTarget); Start-Sleep -Milliseconds 700 }
+# Loaded phase — single-process: stream the 30 MB chunked + ping
+# inline every ~700ms. Cap at 12s of streaming OR 10 pings.
+$loaded = New-Object System.Collections.ArrayList
+$bytes = 0
+$err = ''
+try {
+    $client = New-Object System.Net.Http.HttpClient
+    $client.Timeout = [TimeSpan]::FromSeconds(20)
+    $req = $client.GetAsync(
+        'https://speed.cloudflare.com/__down?bytes=30000000',
+        [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead)
+    if (-not $req.Wait(8000)) { throw 'GET timed out before headers' }
+    $resp = $req.Result
+    if (-not $resp.IsSuccessStatusCode) {
+        throw ("HTTP " + [int]$resp.StatusCode + " " + $resp.ReasonPhrase)
+    }
+    $streamTask = $resp.Content.ReadAsStreamAsync()
+    $streamTask.Wait(2000) | Out-Null
+    $stream = $streamTask.Result
+    $buf = New-Object byte[] 65536
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $nextPingMs = 500
+    while ($sw.ElapsedMilliseconds -lt 12000 -and $loaded.Count -lt 10) {
+        $n = $stream.Read($buf, 0, $buf.Length)
+        if ($n -le 0) { break }
+        $bytes += $n
+        if ($sw.ElapsedMilliseconds -ge $nextPingMs) {
+            [void]$loaded.Add((Get-Ping $target))
+            $nextPingMs += 700
+        }
+    }
+    # If download finished early but we don't have 10 ping samples yet,
+    # keep pinging to fill the array — gives a more honest "loaded p50"
+    # than 4 samples would. (Still loaded-ish: TCP connection + buffers
+    # take ~1-2s to fully drain.)
+    while ($loaded.Count -lt 10 -and $sw.ElapsedMilliseconds -lt 14000) {
+        [void]$loaded.Add((Get-Ping $target))
+        Start-Sleep -Milliseconds 700
+    }
+    $stream.Dispose()
+    $resp.Dispose()
+    $client.Dispose()
+} catch {
+    $err = $_.Exception.Message
+}
 
-$bytes = (Wait-Job $dlJob -Timeout 20 | Receive-Job) | Select-Object -Last 1
-if ($null -eq $bytes) { $bytes = 0 }
-Remove-Job $dlJob -Force | Out-Null
+# Coerce ArrayList to plain arrays so ConvertTo-Json emits [..] not {..}.
+$idleArr   = @($idle.ToArray())
+$loadedArr = @($loaded.ToArray())
 
-[pscustomobject]@{ idle = $idle; loaded = $loaded; bytes = $bytes } | ConvertTo-Json -Compress
+[pscustomobject]@{
+    idle   = $idleArr
+    loaded = $loadedArr
+    bytes  = [long]$bytes
+    err    = $err
+} | ConvertTo-Json -Compress -Depth 4
 "#;
 
 #[derive(serde::Deserialize)]
@@ -824,6 +871,8 @@ struct BufferbloatRaw {
     idle: Vec<i32>,
     loaded: Vec<i32>,
     bytes: u64,
+    #[serde(default)]
+    err: String,
 }
 
 pub fn run_bufferbloat_probe() -> BufferbloatReport {
@@ -913,7 +962,10 @@ pub fn run_bufferbloat_probe() -> BufferbloatReport {
         delta_ms,
         grade,
         bytes_downloaded: raw.bytes,
-        error: None,
+        // Surface the script's own caught error (HTTP non-200, network
+        // unreachable, etc.) so the UI shows "couldn't load Cloudflare"
+        // instead of a blank report.
+        error: if raw.err.is_empty() { None } else { Some(raw.err) },
     }
 }
 

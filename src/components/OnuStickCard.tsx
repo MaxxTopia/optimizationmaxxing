@@ -81,12 +81,14 @@ export function OnuStickCard() {
     <div className="surface-card p-5 space-y-3">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <p className="text-xs uppercase tracking-widest text-text-subtle">network · 8311</p>
+          <p className="text-xs uppercase tracking-widest text-text-subtle">network · 8311 · niche</p>
           <h3 className="text-lg font-semibold">XGS-PON ONU stick monitor</h3>
           <p className="text-sm text-text-muted max-w-2xl">
-            Reads the 8311 community firmware metrics endpoint. Drops temperature, optical
-            power, voltage, and PON state inline so you can spot a stick that's running too
-            hot before it cooks itself. Default URL targets the 8311 firmware management IP.
+            <strong className="text-text">Skip this card if you don't run an XGS-PON SFP+ stick.</strong>{' '}
+            For users with an 8311-firmware ONU (EXEN, Potron-based) plugged into a router/switch SFP+
+            cage: reads the community firmware's metrics endpoint inline so you spot a stick running
+            too hot (≥ 60 °C cooks the laser) before it dies. Most home users on regular ISP-issued
+            routers don't have one — the "couldn't reach the stick" error is normal and expected here.
           </p>
         </div>
       </div>
@@ -136,9 +138,12 @@ export function OnuStickCard() {
         <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 leading-snug">
           <strong>Couldn't reach the stick:</strong> {report.error}
           <p className="mt-1 text-amber-200/80">
-            Check the URL above. If the stick lives in your router, you may need to configure
-            a route or VLAN so this PC can reach <code>192.168.11.1</code>. Self-signed certs
-            are tolerated automatically.
+            <strong>Don't have an XGS-PON stick?</strong> Ignore this card — you're not the audience.
+            <br />
+            <strong>You do have one?</strong> Check the URL above; if your stick lives in your router,
+            you may need to configure a route or VLAN so this PC can reach <code>192.168.11.1</code>.
+            Self-signed certs are tolerated automatically. The 8311 community wiki documents the
+            full setup: <a href="https://pon.wiki/" target="_blank" rel="noreferrer" className="underline">pon.wiki</a>.
           </p>
         </div>
       )}
