@@ -57,3 +57,7 @@ vip-worker/node_modules/
 # secret (paste of the file's contents) to sign release artifacts.
 .tauri-signing-key
 .tauri-signing-key.pub
+
+# Founder codes — minted via scripts/mint-founder-codes.py, drop in DMs only
+scripts/.founder-codes.local.txt
+*.local.txt
