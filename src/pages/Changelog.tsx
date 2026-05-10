@@ -6,10 +6,10 @@ export function Changelog() {
   return (
     <div className="space-y-6 max-w-3xl">
       <header>
-        <p className="text-xs uppercase tracking-widest text-text-subtle">history</p>
-        <h1 className="text-2xl font-bold">Changelog</h1>
+        <p className="text-xs uppercase tracking-widest text-text-subtle">what changed</p>
+        <h1 className="text-2xl font-bold">Updates</h1>
         <p className="text-sm text-text-muted">
-          Currently running v{APP_VERSION}. Newest changes first.
+          You're on v{APP_VERSION}. Latest first — every release explained.
         </p>
       </header>
       <div className="space-y-5">

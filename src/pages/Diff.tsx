@@ -102,13 +102,15 @@ export function Diff() {
     <div className="space-y-5">
       <header className="flex items-end justify-between gap-3 flex-wrap">
         <div>
-          <p className="text-xs uppercase tracking-widest text-text-subtle">audit</p>
-          <h1 className="text-3xl font-bold">Diff vs Vanilla</h1>
+          <p className="text-xs uppercase tracking-widest text-text-subtle">your tune</p>
+          <h1 className="text-3xl font-bold">What you've changed</h1>
           <p className="text-sm text-text-muted max-w-2xl mt-1">
-            Every tweak you've applied from a vanilla Windows install — in one table, with the
-            actual current state of each registry/BCD value vs the target. Drift = something
-            else changed your tune (Windows Update / another tuner / your own BIOS reset).
-            On-target = clean. Click a row to expand per-action detail.
+            Every tweak you've applied, in one list. Each row tells you whether the change is{' '}
+            <strong className="text-emerald-300">still in place</strong> or whether something
+            <strong className="text-amber-300"> reverted it</strong> (Windows Update, another
+            tuner, or you yourself flipped it back). Click any row to see exactly which registry
+            keys or files were modified. Hit "Copy as text" to share your full setup in a Discord
+            DM.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -117,7 +119,7 @@ export function Diff() {
             disabled={loading}
             className="px-3 py-1.5 rounded-md border border-border text-xs hover:border-border-glow disabled:opacity-50"
           >
-            {loading ? 'Auditing…' : 'Re-audit'}
+            {loading ? 'Checking…' : 'Re-check'}
           </button>
           <button
             onClick={copyAsText}
@@ -185,10 +187,10 @@ function SummaryStrip({ rows }: { rows: DiffRow[] }) {
   return (
     <div className="surface-card p-3 flex flex-wrap gap-x-5 gap-y-1 text-xs items-center">
       <span className="text-text-subtle uppercase tracking-widest">summary</span>
-      <span className="text-emerald-300">✓ {onTarget} on-target</span>
-      {drift > 0 && <span className="text-red-400">✗ {drift} drift</span>}
-      {partial > 0 && <span className="text-amber-300">◐ {partial} partial</span>}
-      {unknown > 0 && <span className="text-text-subtle">? {unknown} unknown</span>}
+      <span className="text-emerald-300">✓ {onTarget} still in place</span>
+      {drift > 0 && <span className="text-red-400">✗ {drift} got reverted</span>}
+      {partial > 0 && <span className="text-amber-300">◐ {partial} partly in place</span>}
+      {unknown > 0 && <span className="text-text-subtle">? {unknown} can't tell</span>}
     </div>
   )
 }
@@ -206,14 +208,14 @@ function DiffRowCard({ row }: { row: DiffRow }) {
     ? 'text-amber-300'
     : 'text-text-subtle'
   const verdictLabel = !a
-    ? '? unknown'
+    ? "? can't tell"
     : a.status === 'matches'
-    ? '✓ on-target'
+    ? '✓ still in place'
     : a.status === 'differs'
-    ? '✗ drift'
+    ? '✗ got reverted'
     : a.status === 'partial'
-    ? `◐ ${a.matchCount}/${a.total}`
-    : '? unknown'
+    ? `◐ ${a.matchCount}/${a.total} in place`
+    : "? can't tell"
 
   return (
     <article className="surface-card p-4">

@@ -84,49 +84,49 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Peterbot',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Falcons · 2025 FNCS Pro-Am winner · widely called the GOAT of Fortnite',
-    voice: 'What\'s harder — scoring a basket on LeBron, or killing Pete in a Fortnite game? People actually have this debate. That\'s the level.',
+    credential: 'Falcons · 2024 FNCS Global Championship winner (w/ Pollo) · 2025 FNCS Pro-Am winner · widely called the GOAT',
+    voice: "What's harder — scoring a basket on LeBron, or killing Pete in a Fortnite game? People actually have this debate. That's the level.",
     tier: 'goat',
     rig: {
       dpi: '800',
-      sensitivity: '6.4% / 6.4% (X / Y)',
+      sensitivity: '6.4% / 6.4% (X / Y, ADS 45%)',
       pollingHz: 1000,
-      monitor: '1920×1080 @ 240 Hz, fullscreen',
-      mouse: 'Logitech G PRO X Superlight 2',
-      keyboard: 'SteelSeries Apex PRO TKL 2023',
+      monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz, DyAC+)',
+      mouse: 'Logitech G PRO X Superlight 2 (White)',
+      keyboard: 'SteelSeries Apex Pro TKL 2023',
     },
     insights: [
       {
-        text: '800 DPI + low single-digit sens. Mouse settings boring on purpose — every mechanical pro has converged to the same band because eDPI ~270 is what cm/360 muscle memory wants.',
-        citation: { label: 'ProSettings.net player profile (May 2026)', url: 'https://prosettings.net/players/peterbot/' },
+        text: 'Duo with **Pollo** (Miguel "Pollo" Moreno) — the same partnership that took the 2024 FNCS Global Championship. They reunited for the 2026 duo season after a stint in trios. Frag-and-frag duo, not a strats-and-frag duo.',
+        citation: { label: 'Hotspawn — Peterbot & Pollo to reunite for FNCS 2026', url: 'https://www.hotspawn.com/fortnite/news/peterbot-and-pollo-fncs-2026' },
       },
       {
-        text: 'Performance render mode + 240 fps cap on a 240 Hz monitor — not Cinematic / Epic. Pros sacrifice every visual setting that doesn\'t paint enemy outlines.',
-        citation: { label: 'specs.gg config (May 2026)', url: 'https://specs.gg/Peterbot' },
+        text: 'Coach: **Raz** (Dominik "RazZzero0o" Beckmann, Wave Esports). Works with Pete + Pollo + Flickzy. The on-record division of labor is "general performance/strategy coach" — anything more specific than that is fan speculation, so leave it there.',
+        citation: { label: 'Fortnite Esports Wiki — RazZzero0o', url: 'https://fortnite-esports.fandom.com/wiki/RazZzero0o' },
+      },
+      {
+        text: '800 DPI + low single-digit sens. Mouse settings boring on purpose — every mechanical pro has converged to the same band because eDPI ~270 is what cm/360 muscle memory wants.',
+        citation: { label: 'ProSettings.net (updated 2026-04-27)', url: 'https://prosettings.net/players/peterbot/' },
+      },
+      {
+        text: 'ZOWIE XL2566K @ 360 Hz with **DyAC+** (panel-side motion-blur reduction). Not a driver tweak, not a software setting — the monitor itself strobes the backlight to crush trail-blur on tracking. This is why peripheral cost matters past a point.',
+        citation: { label: 'Codelife — Peterbot UPDATED Settings 2026 (March 2026)', url: 'https://www.youtube.com/watch?v=T8cr2AEfofE' },
+      },
+      {
+        text: 'Performance render mode + 240 fps cap. Visual settings sacrificed for outline visibility, not aesthetics.',
       },
       {
         text: 'Builds-on-mouse-buttons keybind philosophy. Wall + Stairs on M5/M4 means your dominant hand never leaves WASD during build battles — frame advantage every retake.',
       },
       {
-        text: 'Lives at the top. Recently swept FNCS Pro-Am with Aussie Antics — paired with someone who studies the game more than anyone. The lesson: consistency at his level requires a partner who can read the meta for him while he plays.',
-        citation: { label: 'Esports.gg pre-Pro-Am interview (May 2025)', url: 'https://esports.gg/news/fortnite/peterbot-and-aussieantics-fncs-pro-am-2025/' },
+        text: '2025 FNCS Pro-Am win with AussieAntics — Aussie\'s own quote was "Peterbot\'s the greatest. I just focused on keeping pace." Coverage explicitly framed it as Pete fragging while Aussie stayed alive. The lesson is the opposite of what most people would guess: pair-Pro-Am proved Pete can carry someone who barely plays competitive, not that "great pros need meta-readers".',
+        citation: { label: 'Esports.gg recap (May 12, 2025)', url: 'https://esports.gg/news/fortnite/peterbot-and-aussieantics-win-the-2025-fncs-pro-am/' },
       },
     ],
-    dailyRoutine: {
-      morning: [
-        'Aim warmup 30 min — KovaaK / Aim Lab tracking + microflick scenarios',
-        'Edit course 20 min — free-build resets to wake the hands up',
-      ],
-      afternoon: [
-        'Creative 1v1s 2 hr — full-pressure scenarios, not just aim drills',
-        'Piece-control + retake reps 1 hr',
-      ],
-      evening: [
-        'Scrims 3-4 hr — competitive lobbies, no warmup substitute',
-        'VOD review 30-60 min — own deaths first, then opponent angles',
-      ],
-      recovery: ['Mechanical-keyboard wrist break every 90 min', 'Hard cutoff before midnight on tournament weeks'],
-    },
+    // Daily routine deliberately omitted — no public sourced routine for
+    // Peterbot exists in mainstream coverage (ProSettings, Liquipedia,
+    // Wikipedia, esports.gg). Aggregator pages tease "Peterbot's warmup"
+    // but none cite him. Per the project rule: cut rather than guess.
     link: 'https://www.twitch.tv/peterbot',
   },
   {

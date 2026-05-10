@@ -65,6 +65,8 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/updates" element={<Changelog />} />
+          {/* legacy route kept for any in-app deep-links from old modals */}
           <Route path="/changelog" element={<Changelog />} />
           <Route path="/diagnostics" element={<Diagnostics />} />
           <Route path="/session" element={<Session />} />

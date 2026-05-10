@@ -115,31 +115,38 @@ export const HARDWARE: HardwareSection[] = [
     id: 'monitor',
     label: 'Monitor',
     blurb:
-      "Refresh rate matters more than resolution for FPS. 1080p @ 240+ Hz is the converged pro choice — higher resolutions cost frames the player can't see anyway. HDR off (composition latency).",
+      "Refresh rate matters more than resolution for FPS. 1080p @ 240+ Hz is the converged pro choice. The other lever pros now obsess over: **DyAC+** (BenQ ZOWIE's panel-side motion-blur reduction). It strobes the backlight in sync with the refresh — eliminates trail-blur on tracking moves at the panel level, not via driver. Once you've tracked an enemy with DyAC+ on, going back to a regular IPS feels like dragging a smear.",
     items: [
       {
-        name: 'Alienware AW2524HF (500 Hz IPS)',
-        price: '$650',
+        name: 'BenQ ZOWIE XL2566K — 360 Hz + DyAC+',
+        price: '$550',
         tier: 'goat',
         why:
-          '500 Hz IPS at 1080p — 2.0 ms grey-to-grey. Diminishing returns past 360 Hz are real but Mongraal pays it. At the top, every cumulative ms compounds.',
-        citedPro: 'Mongraal (540 Hz tier)',
-        link: 'https://www.dell.com/en-us/shop/alienware-25-gaming-monitor-aw2524hf/apd/210-blcj/monitors-monitor-accessories',
+          'The pro standard. 360 Hz TN panel with DyAC+ motion-blur reduction. **What Peterbot runs.** TN sounds dated but at 360 Hz + DyAC+ the response time + motion clarity beats every IPS at this price. Small panel (24.5") on purpose — pro-eye-distance.',
+        citedPro: 'Peterbot',
+        link: 'https://zowie.benq.com/en-us/monitor/xl2566k.html',
       },
       {
-        name: 'LG 27GR75Q-B / Gigabyte M27Q X (240 Hz IPS)',
-        price: '$300-400',
+        name: 'BenQ ZOWIE XL2546K — 240 Hz + DyAC+',
+        price: '$400',
         tier: 'pro',
         why:
-          '240 Hz IPS at 1080p (LG) or 1440p (M27Q). 1ms response. Peterbot + Clix run 240 Hz — the realistic GOAT tier where price/perf turns over.',
-        citedPro: 'Peterbot · Clix',
+          "Same DyAC+ tech, one refresh tier down. 240 Hz still saturates competitive Fortnite (frame cap 240). If you can't justify the 360 Hz tier, this is the best price/perf with the motion-clarity tech intact.",
+        link: 'https://zowie.benq.com/en-us/monitor/xl2546k.html',
+      },
+      {
+        name: 'Alienware AW2524HF (500 Hz IPS, no DyAC)',
+        price: '$650',
+        tier: 'pro',
+        why:
+          "500 Hz IPS at 1080p. Higher refresh than the ZOWIE 360 but no DyAC+ — IPS panel response can't match strobed TN for tracking clarity. Pick this if you value color over motion (you stream + do creative work) or if Mongraal-tier 540 Hz aspirations matter to you.",
       },
       {
         name: 'Gigabyte G24F2 / AOC 24G15N (180 Hz IPS)',
         price: '$160-200',
         tier: 'budget',
         why:
-          "165-180 Hz IPS at 1080p. Real input-lag improvement over a 60 Hz default panel. If you're on a stock laptop screen, this is the single biggest 'feel' upgrade you can buy under $200.",
+          "165-180 Hz IPS at 1080p. No DyAC, IPS so blur trails on tracking — but: the jump from a stock 60 Hz laptop screen to a 180 Hz IPS is the single biggest 'feel' upgrade you can buy under $200. Get this first, save for a ZOWIE later.",
       },
       {
         name: 'HDR — turn it OFF',
@@ -148,35 +155,45 @@ export const HARDWARE: HardwareSection[] = [
         why:
           "HDR adds composition latency to the Windows display pipeline. Every cited pro config has it disabled. Doesn't matter how good your monitor is — HDR-on costs ~5 ms.",
       },
+      {
+        name: 'DyAC+ at full brightness — turn brightness DOWN',
+        price: '—',
+        tier: 'principle',
+        why:
+          "DyAC+ strobing dims the panel by ~30%. Most ZOWIE owners crank brightness to compensate, then complain motion looks 'flickery'. Lower brightness in a darker room = same perceived brightness with the strobe artifacts gone.",
+      },
     ],
   },
   {
     id: 'mousepad',
     label: 'Mousepad',
     blurb:
-      "Large pad (35×40+ cm) for low-eDPI players (250-300 band). Soft cloth control surface for Fortnite's fast flicking. Hard pads are speed-coded — most pros explicitly avoid.",
+      "Large pad (35×40+ cm) for low-eDPI players. Soft cloth, NOT hard plastic — Fortnite's flick-and-control demand a predictable stop. Pad surface affects feel more than mouse weight does past a certain point.",
     items: [
       {
-        name: 'Artisan Hien / Shidenkai (XL)',
+        name: 'GameSense Radar (Benjyfishy)',
+        price: '$60',
+        tier: 'goat',
+        why:
+          '**What Peterbot runs.** Mid-speed cloth, dense weave, large size. Designed by/for Benjyfishy and other top FNCS competitors. The pro-pad-of-record across the current FNCS field.',
+        citedPro: 'Peterbot',
+        link: 'https://gamesense.gg/products/radar',
+      },
+      {
+        name: 'Artisan Hien (Mid)',
         price: '$50-65',
         tier: 'goat',
         why:
-          'Japanese boutique. The pro-tier control pad. Soft, dense weave, predictable stop. Hien is mid-speed control; Shidenkai is slower / more grip — pick by your micro-adjust style.',
-        caveat: 'Real Artisan ships from Japan with $25 shipping. Many "Artisan" listings on Amazon are counterfeit.',
+          "**What Diggy runs for Fortnite.** Japanese boutique. Mid-speed, balanced control + glide. Pick Hien Mid for Fortnite's flick-then-track motion; Soft is too slow, Xsoft is too floaty. Cult-favorite for low-sens players for a decade running.",
+        caveat: 'Real Artisan ships from Japan (Amazon listings are mostly counterfeit). Order from artisan-jp.com or a verified reseller.',
+        link: 'https://artisan-jp.com/eng_hien.html',
       },
       {
-        name: 'Glorious Stealth XL / SteelSeries QcK Heavy XL',
-        price: '$25',
+        name: 'Wallhack Cloth',
+        price: '$35-45',
         tier: 'pro',
         why:
-          '90×40 cm fabric control pads. Not as refined as Artisan, but 80% of the feel for 40% of the price. Most paid pros run these on stream.',
-      },
-      {
-        name: 'Generic stitched-edge XL',
-        price: '$15',
-        tier: 'budget',
-        why:
-          "Get one with stitched edges (won't peel). Pad surface matters less than getting the SIZE right — a giant cheap cloth pad beats a small premium one for any low-sens player.",
+          "**What Diggy currently uses.** Mid-speed cloth, locally available, holds up. Good price/perf if you don't want to wait on an Artisan import.",
       },
     ],
   },

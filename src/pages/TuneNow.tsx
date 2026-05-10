@@ -418,7 +418,8 @@ function DoneState({
           >
             <p className="text-sm font-semibold">See exactly what changed</p>
             <p className="text-xs text-text-muted mt-1 leading-snug">
-              /diff lists every applied tweak vs vanilla state. Copy as text to share.
+              "Your Tune" lists every applied tweak with its current state — still in place,
+              reverted by Windows Update, etc. Copy as text to share in Discord.
             </p>
           </Link>
           <Link

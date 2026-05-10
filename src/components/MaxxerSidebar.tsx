@@ -19,6 +19,10 @@ import { MAXXER_PRODUCTS, monogram, type MaxxerProduct } from '../lib/maxxerProd
 
 const STORAGE_KEY = 'optmaxxing_sidebar_open'
 const ACTIVE_SLUG = 'optimizationmaxxing'
+// The Maxxtopia community Discord. Click on the suite-M logo opens it.
+// Update if the canonical invite ever changes (also lives in
+// optimizationmaxxing's Pricing.tsx + SuggestTweakModal).
+const MAXXTOPIA_DISCORD_INVITE = 'https://discord.gg/S78eecbWdx'
 
 export function MaxxerSidebar() {
   const [open, setOpen] = useState<boolean>(() => {
@@ -43,7 +47,13 @@ export function MaxxerSidebar() {
             className="maxxer-sidebar-close"
           />
 
-          <div className="maxxer-sidebar-root" aria-label="Maxxtopia home" title="Maxxers">
+          <button
+            type="button"
+            onClick={() => window.open(MAXXTOPIA_DISCORD_INVITE, '_blank', 'noopener')}
+            className="maxxer-sidebar-root"
+            aria-label="Join the Maxxtopia Discord"
+            title="Join the Maxxtopia Discord"
+          >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="sidebar-logo-glyph">
               <path
                 className="sidebar-logo-cyan"
@@ -63,7 +73,7 @@ export function MaxxerSidebar() {
                 strokeLinecap="round" strokeLinejoin="round" fill="none"
               />
             </svg>
-          </div>
+          </button>
 
           <div className="maxxer-sidebar-divider" />
 

@@ -1,13 +1,25 @@
 /**
- * Five named profile themes. Each is a complete colorway + typography
+ * Six named profile themes. Each is a complete colorway + typography
  * swap, applied by ProfileProvider via CSS custom properties on :root
  * plus a `profile-<id>` body class for component-level overrides.
  *
- * Inspired by aimmaxxer's profile-config pattern (per-game named snapshots)
- * but expressed visually rather than functionally.
+ * Migration note (v0.1.59): the previous `bo3` theme was renamed to
+ * `bumblebee` (its gold-yellow palette never matched what BO3 *Zombies*
+ * actually looked like — Pack-a-Punch gold IS bumblebee yellow + black
+ * accents). The NEW `element-115` theme is the proper Zombies treatment,
+ * inspired by Buried + Origins + the wonder-weapon arsenal: Element 115
+ * cyan as primary glow, Pack-a-Punch violet as secondary, candle-gold
+ * accents from Buried's western town, runic etch + electric arc as
+ * signature flourishes (see index.css). The profileStore migrates
+ * any localStorage value of `bo3` to `bumblebee` on next load.
+ *
+ * Akatsuki was repaletted (v0.1.59): dropped the gold secondary
+ * (Sharingan-inspired but visually wrong for the org — Akatsuki canon
+ * is black cloak + scarlet cloud + purple nail-polish nod). Now uses
+ * crimson + Itachi-purple, with a low-alpha cloud-pattern background.
  */
 
-export type ProfileId = 'val' | 'sonic' | 'dmc' | 'bo3' | 'akatsuki'
+export type ProfileId = 'val' | 'sonic' | 'dmc' | 'bumblebee' | 'element-115' | 'akatsuki'
 
 export interface ProfileTheme {
   id: ProfileId
@@ -103,15 +115,16 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
       '--font-heading': FONT_DMC,
     },
   },
-  bo3: {
-    id: 'bo3',
-    label: 'BO3 Zombies',
-    // Treyarch's Zombies design language — Pack-a-Punch gold over Origins
-    // crypt black, blood maroon walls, parchment text, eldritch Apothicon
-    // purple as a rare accent. The original BO3 multiplayer orange/olive
-    // never matched the dread the Zombies designers actually built.
-    blurb: 'Eldritch. Pack-a-Punch gold + blood maroon + parchment + Apothicon purple.',
-    bodyClass: 'profile-bo3',
+  bumblebee: {
+    id: 'bumblebee',
+    label: 'Bumblebee',
+    // The old `bo3` theme renamed for accuracy — this palette is
+    // Pack-a-Punch gold + blood maroon + parchment, which is bumblebee
+    // yellow-on-black at its core. Kept the same colorway because users
+    // liked it; just calling it what it is. The actual Zombies treatment
+    // moved to the new `element-115` profile.
+    blurb: 'Pack-a-Punch gold on black, parchment text. Bold and warm.',
+    bodyClass: 'profile-bumblebee',
     swatch: { primary: '#d4af37', secondary: '#5b1a1a', bg: '#080404' },
     vars: {
       '--bg-base': '#080404',
@@ -132,28 +145,65 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
       '--font-heading': FONT_ZOMBIES,
     },
   },
+  'element-115': {
+    id: 'element-115',
+    label: 'Element 115',
+    // Black Ops 3 Zombies — proper. Element 115 (the substance that
+    // animates the dead) reads as electric cyan in BO3-era canon
+    // (Origins / Der Eisendrache). Pack-a-Punch chamber violet as
+    // secondary. Buried's candle-warm gold for tertiary detail.
+    // Background: near-black with violet undertone to feel like a
+    // cracked-open PaP chamber. Signature flourishes (runic etch on
+    // hover, electric arc on focus, candle-flicker on CTAs) live in
+    // index.css under .profile-element-115.
+    blurb: 'Element 115 cyan + Pack-a-Punch violet + Buried candle-gold.',
+    bodyClass: 'profile-element-115',
+    swatch: { primary: '#3DDFE8', secondary: '#9D4DFF', bg: '#0F0A1A' },
+    vars: {
+      '--bg-base': '#0F0A1A',
+      '--bg-raised': '#1C1530',
+      '--bg-card': 'rgba(43, 27, 92, 0.45)',
+      '--accent': '#3DDFE8',
+      '--accent-soft': '#7FECF0',
+      '--accent-dark': '#1FA9B0',
+      '--accent-eldritch': '#9D4DFF',
+      '--secondary': '#9D4DFF',
+      '--secondary-dark': '#5C2A99',
+      '--text': '#D9C9A3',
+      '--text-muted': '#B0A085',
+      '--text-subtle': '#7A6E5A',
+      '--border': 'rgba(61, 223, 232, 0.25)',
+      '--border-glow': 'rgba(61, 223, 232, 0.6)',
+      '--font-body': FONT_INTER,
+      '--font-heading': FONT_ZOMBIES,
+    },
+  },
   akatsuki: {
     id: 'akatsuki',
     label: 'Akatsuki',
-    // Black robe + scarlet cloud + Sharingan gold ring. Crimson outlives
-    // every other "competitive red" theme on contrast alone.
-    blurb: 'Cloud-red on void. Scarlet clouds, Sharingan gold accents.',
+    // Reworked v0.1.59 — dropped Sharingan gold (visually wrong for the
+    // org). Akatsuki canonical: black cloak + scarlet cloud (red rain /
+    // blood rain symbolism) + Itachi-purple nail-polish nod. Background
+    // gets a low-alpha repeating cloud pattern (see index.css under
+    // .profile-akatsuki). "Akatsuki" literally means Daybreak —
+    // ironic given the org's dark nature, but a hook for marketing copy.
+    blurb: '"Daybreak". Black + crimson clouds + Itachi-purple. Antagonist-elegant.',
     bodyClass: 'profile-akatsuki',
-    swatch: { primary: '#c91f37', secondary: '#d4af37', bg: '#0a0606' },
+    swatch: { primary: '#B71C1C', secondary: '#4A2C4A', bg: '#0A0A0A' },
     vars: {
-      '--bg-base': '#0a0606',
-      '--bg-raised': '#14080a',
-      '--bg-card': 'rgba(40, 8, 12, 0.5)',
-      '--accent': '#c91f37',
-      '--accent-soft': '#e45669',
-      '--accent-dark': '#7a0a1a',
-      '--secondary': '#d4af37',
-      '--secondary-dark': '#9a7a1f',
-      '--text': '#f0e4d8',
-      '--text-muted': '#b9a487',
-      '--text-subtle': '#7e6b54',
-      '--border': 'rgba(201, 31, 55, 0.22)',
-      '--border-glow': 'rgba(201, 31, 55, 0.55)',
+      '--bg-base': '#0A0A0A',
+      '--bg-raised': '#161013',
+      '--bg-card': 'rgba(40, 12, 18, 0.55)',
+      '--accent': '#B71C1C',
+      '--accent-soft': '#E63946',
+      '--accent-dark': '#7A0A12',
+      '--secondary': '#4A2C4A',
+      '--secondary-dark': '#2A1828',
+      '--text': '#E8DED3',
+      '--text-muted': '#9F8E7E',
+      '--text-subtle': '#6B5C4F',
+      '--border': 'rgba(183, 28, 28, 0.25)',
+      '--border-glow': 'rgba(183, 28, 28, 0.6)',
       '--font-body': FONT_INTER,
       '--font-heading': FONT_AKATSUKI,
     },
@@ -161,4 +211,4 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
 }
 
 export const DEFAULT_PROFILE: ProfileId = 'val'
-export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bo3', 'akatsuki']
+export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bumblebee', 'element-115', 'akatsuki']

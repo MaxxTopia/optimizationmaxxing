@@ -182,7 +182,7 @@ export function Pricing() {
           <CompCell label="Spec-aware curation" us="yes" them="generic" win />
           <CompCell label="Pricing model" us="$115 lifetime" them="recurring sub" win />
           <CompCell label="Per-tweak measurement" us="yes" them="no" win />
-          <CompCell label="/diff audit" us="yes" them="no" win />
+          <CompCell label="Tune audit" us="yes" them="no" win />
           <CompCell label="Day-1 game configs" us="VIP" them="—" win />
         </div>
       </section>

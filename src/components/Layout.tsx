@@ -8,7 +8,7 @@ const NAV_LINKS = [
   { to: '/tune', label: 'Tune now' },
   { to: '/tweaks', label: 'Tweaks' },
   { to: '/presets', label: 'Presets' },
-  { to: '/diff', label: 'Diff' },
+  { to: '/diff', label: 'Your Tune' },
   { to: '/guides', label: 'Guides' },
   { to: '/grind', label: 'Grind' },
   { to: '/hardware', label: 'Hardware' },
@@ -19,7 +19,7 @@ const NAV_LINKS = [
   { to: '/profile', label: 'Profile' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/settings', label: 'Settings' },
-  { to: '/changelog', label: 'Changelog' },
+  { to: '/updates', label: 'Updates' },
 ]
 
 export function Layout({ children }: { children: ReactNode }) {

@@ -12,6 +12,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.59',
+    date: '2026-05-10',
+    highlights: [
+      'NEW theme: **Element 115** (BO3 Zombies — proper). Cyan substance-glow primary (#3DDFE8), Pack-a-Punch chamber violet secondary (#9D4DFF), Buried candle-gold tertiary. Signature flourishes: faint runic etch on card hover, electric arc on input focus, candle-flicker on primary CTAs. Inspired by Buried + Origins + the wonder-weapon arsenal. Cinzel display serifs.',
+      'Theme RENAME: `bo3` → `bumblebee`. The old "BO3" palette was Pack-a-Punch gold-on-black — that\'s bumblebee yellow, not the actual BO3 Zombies treatment. Same colorway, honest name. Existing users on `bo3` migrate transparently on next launch via profileStore rehydrate.',
+      'Theme REWORK: Akatsuki dropped its Sharingan-gold accent (visually wrong for the org). Now black + crimson (#B71C1C) + Itachi-purple (#4A2C4A). Subtle red-cloud-blob background pattern. Crimson ring sweep on card hover (mimics the Akatsuki ring band). Sourced from naruto.fandom corroborated visual references.',
+      'NEW: M logo on the left rail clicks → Maxxtopia Discord invite. Discordmaxxer item in the suite rail clicks → maxxtopia.com/discordmaxxer (already worked, just confirming the routing). Discordmaxxer logo updated to the current PNG mark.',
+      'RENAMES: `Changelog` → `Updates` (everywhere — nav, page header, route /updates with /changelog kept as legacy alias). `Diff` → `Your Tune` in the nav. The page itself reworked with plain-language copy: "still in place" / "got reverted" / "partly in place" / "can\'t tell" instead of "on-target / drift / partial / unknown".',
+      'CONTENT: /grind Peterbot section rewritten with current verified facts. **Duo: Pollo (2024 FNCS Global Champ partner, reunited 2026). Coach: Raz (Wave Esports).** Cut the previous bad take on the FNCS Pro-Am 2025 win with AussieAntics — Aussie\'s own quote was "I just focused on keeping pace", so the real story is Pete carrying, not "great pros need meta-readers". Updated rig to ZOWIE XL2566K (360 Hz + DyAC+) + GameSense Radar pad. Cut the made-up daily routine — no public sourced routine exists for Pete. Cited Codelife UPDATED Settings 2026 video.',
+      'CONTENT: /hardware monitors gained DyAC+ explainer + ZOWIE XL2566K (Peterbot\'s) + XL2546K. Mousepads gutted to only what pros actually run: GameSense Radar (Peterbot), Artisan Hien Mid (Diggy\'s Fortnite pad), Wallhack Cloth (Diggy\'s daily). Dropped generic + Glorious Stealth from the recommendations.',
+    ],
+  },
+  {
     version: '0.1.58',
     date: '2026-05-10',
     highlights: [

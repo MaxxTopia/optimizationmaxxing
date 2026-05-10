@@ -196,40 +196,140 @@ body.profile-dmc h2 {
 body.profile-dmc .surface-card {
   background-image: linear-gradient(180deg, rgba(179, 0, 12, 0.05), transparent 60%);
 }
-body.profile-bo3 .btn-chrome {
+body.profile-bumblebee .btn-chrome {
   border-radius: 2px; /* tactical, sharp */
 }
 
 /* Per-theme motion-glow tuning — same vocabulary, different tone.
  * Sonic = kinetic (faster glow), BO3 Zombies + DMC = heavy (slower glow). */
 body.profile-sonic { --motion-glow: 220ms ease-out; }
-body.profile-bo3   { --motion-glow: 460ms ease-out; }
+body.profile-bumblebee   { --motion-glow: 460ms ease-out; }
 body.profile-dmc   { --motion-glow: 420ms ease-out; }
 
-/* BO3 Zombies — Pack-a-Punch gold serifs with a faint blood-drip text-shadow
- * on the big display headings, plus a parchment fade at the top of every
- * surface card so the whole frame reads as Origins crypt rather than
- * BO3-multiplayer corporate. */
-body.profile-bo3 h1,
-body.profile-bo3 h2 {
+/* Bumblebee — Pack-a-Punch gold serifs over a near-black base, parchment
+ * fade on every card. Was the original `bo3` palette; renamed v0.1.59
+ * because it's bumblebee yellow-on-black, not the actual BO3 *Zombies*
+ * treatment. The proper Zombies theme is now `element-115` below. */
+body.profile-bumblebee h1,
+body.profile-bumblebee h2 {
   font-family: 'Pirata One', 'Cinzel', 'Cormorant Garamond', Georgia, serif;
   letter-spacing: 0.02em;
   text-shadow: 0 0 8px rgba(91, 26, 26, 0.5);
 }
-body.profile-bo3 .surface-card {
+body.profile-bumblebee .surface-card {
   background-image: linear-gradient(180deg, rgba(212, 175, 55, 0.04), transparent 70%);
 }
 
-/* Akatsuki — Cinzel display serifs over the void; .accent-glyph rule lets
- * the RingGauge SVGs paint a faint gold concentric ring (Sharingan tomoe). */
+/* ─── Element 115 (BO3 Zombies — proper) ──────────────────────────────
+ * Inspired by Buried + Origins + the BO3 wonder-weapon arsenal. Element
+ * 115 cyan as the substance-glow primary, Pack-a-Punch chamber violet as
+ * secondary, Buried candle-gold for tertiary detail. Signature flourishes:
+ *   - faint runic etch on .surface-card hover (Origins staff-glyph tone)
+ *   - electric arc on input focus (PaP chamber)
+ *   - candle-flicker on primary CTAs (Buried oil-lamp)
+ *   - 115 mist particles in hero areas (slow-drift cyan, very low alpha)
+ */
+body.profile-element-115 h1,
+body.profile-element-115 h2 {
+  font-family: 'Cinzel', 'Pirata One', 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(61, 223, 232, 0.45), 0 0 24px rgba(157, 77, 255, 0.25);
+}
+body.profile-element-115 .surface-card {
+  background-image:
+    linear-gradient(180deg, rgba(61, 223, 232, 0.05), transparent 60%),
+    linear-gradient(0deg, rgba(157, 77, 255, 0.04), transparent 50%);
+}
+/* Runic etch — drawn as a low-alpha repeating linear-gradient that fades
+ * up on hover. Origins staff-glyph reading without the literal glyphs. */
+body.profile-element-115 .surface-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image:
+    repeating-linear-gradient(45deg,
+      transparent 0px, transparent 11px,
+      rgba(61, 223, 232, 0.04) 11px, rgba(61, 223, 232, 0.04) 12px),
+    repeating-linear-gradient(135deg,
+      transparent 0px, transparent 11px,
+      rgba(157, 77, 255, 0.03) 11px, rgba(157, 77, 255, 0.03) 12px);
+  opacity: 0;
+  transition: opacity var(--motion-glow);
+}
+body.profile-element-115 .surface-card:hover::before {
+  opacity: 1;
+}
+/* Electric arc on input focus — chamber-style cyan glow ring. */
+body.profile-element-115 input:focus-visible,
+body.profile-element-115 textarea:focus-visible,
+body.profile-element-115 select:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(61, 223, 232, 0.55),
+    0 0 16px rgba(61, 223, 232, 0.4),
+    0 0 32px rgba(157, 77, 255, 0.25);
+}
+/* Candle-flicker on primary CTAs — gold accent oscillates 1.2s ease. */
+@keyframes element-115-candle-flicker {
+  0%, 100% { box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(232, 181, 71, 0.18); }
+  50% { box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(232, 181, 71, 0.32),
+    0 0 12px rgba(232, 181, 71, 0.18); }
+}
+body.profile-element-115 .btn-chrome.bg-accent {
+  animation: element-115-candle-flicker 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.profile-element-115 .btn-chrome.bg-accent { animation: none; }
+  body.profile-element-115 .surface-card::before,
+  body.profile-element-115 .surface-card:hover::before { transition: none; }
+}
+
+/* ─── Akatsuki ────────────────────────────────────────────────────────
+ * Reworked v0.1.59 — dropped the Sharingan-gold accent (visually wrong
+ * for the org). Black + crimson + Itachi-purple. Signature flourishes:
+ *   - low-alpha repeating cloud-blob pattern on body bg
+ *   - vertical katakana microcopy in card eyebrows (アカツキ)
+ *   - thin red ring sweep on .surface-card hover (mimics Akatsuki ring band)
+ */
 body.profile-akatsuki h1,
 body.profile-akatsuki h2 {
   font-family: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
   letter-spacing: 0.04em;
   font-weight: 600;
+  text-shadow: 0 0 8px rgba(183, 28, 28, 0.5);
 }
+/* Cloud-blob pattern — radial-gradient scallops repeated. SVG would be
+ * cleaner but a layered radial-gradient gets us 80% of the look without
+ * an asset. Very low alpha so it reads as texture, not pattern. */
+body.profile-akatsuki {
+  background-image:
+    radial-gradient(ellipse 28px 18px at 50% 60%, rgba(183, 28, 28, 0.045) 0%, transparent 65%),
+    radial-gradient(ellipse 22px 14px at 0% 0%,  rgba(183, 28, 28, 0.04)  0%, transparent 65%),
+    radial-gradient(ellipse 22px 14px at 100% 100%, rgba(183, 28, 28, 0.04) 0%, transparent 65%);
+  background-size: 110px 90px;
+  background-repeat: repeat;
+}
+/* Itachi-purple drop-shadow on accent SVGs (RingGauge etc.) */
 body.profile-akatsuki .accent-glyph {
-  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.35));
+  filter: drop-shadow(0 0 6px rgba(74, 44, 74, 0.45));
+}
+/* Ring-sweep on card hover — a thin crimson stroke that pulses across
+ * the border. Mimics the Akatsuki ring band. */
+body.profile-akatsuki .surface-card:hover {
+  box-shadow:
+    0 0 0 1px rgba(183, 28, 28, 0.55),
+    0 0 18px rgba(183, 28, 28, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 body.profile-sonic h1,
@@ -335,13 +435,13 @@ body.profile-sonic .surface-card:hover::after {
  * .bo3-corner-tr .bo3-corner-bl .bo3-corner-br markers via inline divs.
  * Pure CSS variant: ::before/::after handle two corners, the other two
  * come from a child .bo3-hud-frame__inner that pseudo-elements off itself. */
-body.profile-bo3 .bo3-hud-frame {
+body.profile-bumblebee .bo3-hud-frame {
   position: relative;
 }
-body.profile-bo3 .bo3-hud-frame::before,
-body.profile-bo3 .bo3-hud-frame::after,
-body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::before,
-body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::after {
+body.profile-bumblebee .bo3-hud-frame::before,
+body.profile-bumblebee .bo3-hud-frame::after,
+body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::before,
+body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   content: '';
   position: absolute;
   width: 14px;
@@ -350,19 +450,19 @@ body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::after {
   border-color: rgba(212, 175, 55, 0.7);
   pointer-events: none;
 }
-body.profile-bo3 .bo3-hud-frame::before {
+body.profile-bumblebee .bo3-hud-frame::before {
   top: -4px; left: -4px;
   border-width: 2px 0 0 2px;
 }
-body.profile-bo3 .bo3-hud-frame::after {
+body.profile-bumblebee .bo3-hud-frame::after {
   top: -4px; right: -4px;
   border-width: 2px 2px 0 0;
 }
-body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::before {
+body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::before {
   bottom: -4px; left: -4px;
   border-width: 0 0 2px 2px;
 }
-body.profile-bo3 .bo3-hud-frame > .bo3-hud-frame__inner::after {
+body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   bottom: -4px; right: -4px;
   border-width: 0 2px 2px 0;
 }

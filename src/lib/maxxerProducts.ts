@@ -6,7 +6,7 @@
  * needed here.
  *
  * Keep this in sync with maxxtopia. When discordmaxxer's logo updates,
- * re-copy public/logos/discordmaxxer.svg from the maxxtopia repo.
+ * re-copy public/logos/discordmaxxer-icon.png from the maxxtopia repo.
  */
 
 export type ProductStatus = 'live' | 'beta' | 'waitlist' | 'soon' | 'dev'
@@ -24,7 +24,7 @@ export interface MaxxerProduct {
 
 export const MAXXER_PRODUCTS: MaxxerProduct[] = [
   { slug: 'optimizationmaxxing', name: 'Optimizationmaxxing', status: 'live', accentHex: '#e25bff', logo: '/logos/optimizationmaxxing.svg' },
-  { slug: 'discordmaxxer',       name: 'Discordmaxxer',       status: 'live', accentHex: '#5865F2', logo: '/logos/discordmaxxer.svg' },
+  { slug: 'discordmaxxer',       name: 'Discordmaxxer',       status: 'live', accentHex: '#5865F2', logo: '/logos/discordmaxxer-icon.png' },
   { slug: 'clipmaxxer',          name: 'Clipmaxxer',          status: 'soon', accentHex: '#00d4ff' },
   { slug: 'dropmaxxer',          name: 'Dropmaxxer',          status: 'beta', accentHex: '#4c51f7' },
   { slug: 'aimmaxxer',           name: 'Aimmaxxer',           status: 'soon', accentHex: '#f3af19' },
