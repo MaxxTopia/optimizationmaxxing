@@ -302,8 +302,8 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Clix',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Most-watched arena pro on Twitch · multi-FNCS finalist',
-    voice: 'Streams the grind in public. The most-published "what does an actual pro day look like" data point.',
+    credential: 'Multi-FNCS finalist · public-facing pro Twitch stream',
+    voice: 'Trains in public — daily routine + settings are documented (ProSettings + community breakdowns) rather than rumored.',
     tier: 'top',
     rig: {
       dpi: 'see ProSettings',
@@ -313,15 +313,12 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     },
     insights: [
       {
-        text: 'Hours daily on retakes + piece control + 1v1s — NOT just KovaaK. Mechanics training without scenario practice is wasted time.',
-        citation: { label: 'duelmasters.io Clix breakdown', url: 'https://www.duelmasters.io/blog/clix-fortnite-settings' },
+        text: 'In-game settings: **Brightness 117**, Performance render mode, V-Sync OFF, 240 FPS cap. All tuned for outline visibility + frame consistency rather than aesthetics.',
+        citation: { label: 'ProSettings.net — Clix', url: 'https://prosettings.net/players/clix/' },
       },
       {
-        text: 'Brightness 117 + Performance mode + vsync off + 240 fps cap. Visual settings tuned for outline visibility, not aesthetics.',
-        citation: { label: 'Clix ProSettings', url: 'https://prosettings.net/players/clix/' },
-      },
-      {
-        text: 'Edit courses are mechanical, 1v1s are decision-making. Train both separately — they engage different parts of you.',
+        text: 'Daily training cited at duelmasters.io: edit courses + retakes + scenario-focused 1v1s, not pure aim-trainer hours. Mechanics + decision-making are trained as separate reps.',
+        citation: { label: 'duelmasters.io — Clix breakdown', url: 'https://www.duelmasters.io/blog/clix-fortnite-settings' },
       },
     ],
     dailyRoutine: {
@@ -339,25 +336,18 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Reet',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Best controller player in the world · multi-FNCS winner · ~1M Twitch followers',
-    voice: 'Proves that controller can win at the highest level — kills the "you have to be on KBM to compete" myth dead.',
+    credential: 'Top controller pro · multi-FNCS finalist · public config at specs.gg',
+    voice: 'High-finish-rate controller pro. Settings + bind layout are documented at specs.gg rather than reverse-engineered from clips.',
     tier: 'top',
     rig: {
       dpi: 'controller',
       monitor: 'high refresh',
-      mouse: 'controller (preferred binds: V stairs, B cone, M4/M5 wall)',
-      keyboard: '9800X3D / RX 9070 XT system',
+      mouse: 'controller (preferred binds: V stairs, B cone, M4/M5 wall per specs.gg)',
     },
     insights: [
       {
-        text: 'Controller is not handicap. Reet has multiple FNCS wins on a controller against the best KBM players in the world. The advantage is movement-aim consistency under pressure — a small edge that compounds in late-game endgames.',
-      },
-      {
-        text: 'Custom button mapping matters more on controller than KBM — fewer keys means each one has to be perfectly placed for your thumb travel. Spend 30 minutes tuning before you spend 30 hours grinding.',
-        citation: { label: 'specs.gg Reet config', url: 'https://specs.gg/Reet' },
-      },
-      {
-        text: 'Builds his own PC: 9800X3D + RX 9070 XT — flagship rig. Even controller pros at the top don\'t skimp on hardware. The compounding latency reduction is the same regardless of input device.',
+        text: 'Bind layout is documented at specs.gg — V stairs, B cone, M4/M5 wall. Customizing controller binds to your thumb travel matters more than KBM does because there are fewer keys; each one has to be perfectly placed.',
+        citation: { label: 'specs.gg — Reet config', url: 'https://specs.gg/Reet' },
       },
     ],
     link: 'https://www.twitch.tv/reet',
@@ -367,33 +357,19 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Bugha',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Solo World Cup champion 2019 · still competitive · the original "kid from a normal house wins everything" story',
-    voice: 'The credential everyone else is chasing. World Cup at 16 — the original proof that the grind closes the gap with rich-rig pros. Recently caught Epic\'s own DQ-then-reverse machinery, kept his composure, kept grinding.',
+    credential: 'Solo Fortnite World Cup champion 2019 · $3M prize · still competing professionally',
+    voice: 'Won Solo World Cup at 16. Career has spanned every major Chapter since — one of the few from the 2019 era still on the FNCS circuit.',
     tier: 'top',
     insights: [
       {
-        text: '**FNCS Major 1 DQ (and Epic\'s reversal)** — Bugha was disqualified by Epic from the FNCS Major 1 Grand Finals (NAC region) **alongside Kreaz, Tragic, and Percnt** for using a third-party "drop calculator" overlay that interfaces with Fortnite files to suggest optimal bus drop routes. Epic publicly admitted the DQ was a mistake — *"Given the confusion on this, disqualification of these players was a mistake and the DQs will be removed from their record."* — but the Grand Final lobby was already full so they couldn\'t be reinstated. Epic offered a Second Chance Qualifier; Bugha didn\'t qualify for the Major 1 Summit through it. The lesson: even at the top, you\'re one bad ruleset interpretation away from a tournament cycle wiped out — and the only response that scales is the next event.',
+        text: '**Solo World Cup champion 2019** — beat 100 of the world\'s top qualifiers in NYC at age 16, took home $3M (largest prize ever for a single esports tournament at the time). The credential the rest of the scene is still measured against.',
+        citation: { label: 'Wikipedia — Bugha (2019 Fortnite World Cup)', url: 'https://en.wikipedia.org/wiki/Bugha' },
+      },
+      {
+        text: '**FNCS Major 1 DQ + Epic\'s reversal** — Bugha was disqualified from the FNCS Major 1 Grand Finals (NAC) alongside Kreaz, Tragic, and Percnt for using a third-party "drop calculator" overlay. Epic publicly admitted the DQ was a mistake — *"Given the confusion on this, disqualification of these players was a mistake and the DQs will be removed from their record."* — but the Grand Final lobby was already full so they couldn\'t be reinstated. Epic offered a Second Chance Qualifier; Bugha didn\'t qualify for Major 1 Summit through it.',
         citation: { label: 'Game Rant — Epic admits FNCS DQs were a mistake', url: 'https://gamerant.com/fortnite-fncs-disqualifications-epic-games-statement/' },
       },
-      {
-        text: 'Sleep is competition. Reaction time + motor consistency drop measurably after 5 hours of sub-7-hour sleep nights. Bugha\'s public training notes hammer recovery as much as practice.',
-        citation: { label: 'KovaaK aim training routines guide (community-curated)', url: 'https://www.fortnitemasterclass.com/view/courses/solos-masterclass/1311836-kovaaks-and-warmup-routines/1726687-noahreyli-aim-mechanics-warmup' },
-      },
-      {
-        text: 'Split practice across two daily sessions. 1 hr morning + 1 hr afternoon beats 2 hrs straight — shorter sessions with full focus produce more measurable improvement than longer fatigued ones.',
-      },
-      {
-        text: 'Naps between sessions are legitimate training. If aim drops mid-session and you\'re tired, sleep beats grinding through.',
-      },
     ],
-    dailyRoutine: {
-      morning: ['Session 1 — 60 min focused play, full attention, no audio distractions'],
-      afternoon: ['20-min nap if morning session ran hot', 'Session 2 — 60 min focused play, separate from morning'],
-      recovery: [
-        '7+ hours of sleep is non-negotiable — reaction time drops measurably below this',
-        'Stop grinding when aim noticeably drops — fatigued reps build fatigued habits',
-      ],
-    },
     link: 'https://www.twitch.tv/bugha',
   },
 
@@ -424,22 +400,16 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Th0masHD',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Virtus.pro · Danish (b. 2002) · 5+ years professional Fortnite · widely regarded as the best pure aimer in the game — many in the scene rate him over Threats',
-    voice: "Thomas Høxbro Davidsen — the pro people queue up to point at when the question is 'who has the cleanest aim in Fortnite'. Stronger consensus pick than Threats according to a sizable chunk of the scene; the comparison is real, the answer isn't unanimous, and that's the point.",
+    credential: 'Virtus.pro · Danish (b. 2002) · long-tenured EU pro with documented competitive history',
+    voice: "Thomas Høxbro Davidsen — Danish EU pro on Virtus.pro. Career history + tournament placements are documented on Liquipedia rather than reverse-engineered from highlight clips.",
     tier: 'top',
     insights: [
       {
-        text: '**Best aimer in the game — better than Threats per scene consensus.** The aim is the highlight reel; the underlying work is the same as every other top pro (high-rep mechanical training, scrim-circuit hours). What\'s different is the visible ceiling: clips that look pixel-perfect on flicks people would call lucky from anyone else read as routine from him.',
-        citation: { label: 'Community analysis — "Why It\'s So Hard to Fight Th0masHD"', url: 'https://www.youtube.com/watch?v=UrNHib1Eg8g' },
+        text: 'On Virtus.pro for multi-year tenure — unusually long single-org stint in the Fortnite scene. Continuity of practice partners + coaching + scrim slot allocation tends to matter more than people give credit for; Liquipedia\'s tournament timeline shows the consistency.',
+        citation: { label: 'Liquipedia Fortnite — Th0masHD', url: 'https://liquipedia.net/fortnite/Th0masHD' },
       },
       {
-        text: 'Decision-making > raw mechanics at the EU pro level. EU scrims have lower fragger ceiling than NA but higher rotation IQ — "in EU you survive long enough to learn the meta, in NA you respawn before you\'ve seen the mistake".',
-      },
-      {
-        text: 'VOD review > more games. 1 hour of own-VOD review per 3 hours of play minimum during competitive seasons. The hours nobody wants to do are the hours that compound.',
-      },
-      {
-        text: 'On Virtus.pro since the org\'s Fortnite expansion — multi-year tenure on a single org is unusual in the scene. Continuity of practice partners + coaching + scrim slot allocation matters more than people give credit for; Liquipedia\'s tournament timeline shows the consistency.',
+        text: 'EU pro with consistent FNCS placements across multiple chapters — a track record that\'s harder to put together than a single peak season because each chapter resets meta + mechanics. Full event history at the cited link.',
         citation: { label: 'Liquipedia Fortnite — Th0masHD', url: 'https://liquipedia.net/fortnite/Th0masHD' },
       },
     ],

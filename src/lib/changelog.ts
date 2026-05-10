@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.71',
+    date: '2026-05-10',
+    highlights: [
+      'BUG-FIX **GPU spec detection now survives capture-card / driver-reload edge cases** — `Win32_VideoController` can return rows where the only display device is "Microsoft Basic Display Adapter" (during a driver reload), or a capture-card-registered display (Elgato / AverMedia). Previous filter rejected all of those, blowing up spec detection with "no usable Win32_VideoController row found" even though there WAS a row OM could have used. Added a fallback path: if the strict filter empties everything, accept the largest non-empty row. Also: better error when WMI returns 0 rows ("WMI service likely sick — `net stop winmgmt /y && net start winmgmt`").',
+      'CONTENT **/grind cards rewritten — Bugha, Reet, Clix, Th0masHD** — stripped unverified superlatives ("best in world", "best aimer per scene consensus", "most-watched arena pro") and kept only citation-backed facts. Bugha = Solo World Cup champion 2019 + the FNCS Major 1 DQ + Epic\'s reversal (cited). Reet = bind layout from specs.gg. Clix = ProSettings + duelmasters.io routine. Th0masHD = Virtus.pro long tenure + Liquipedia event history. Shorter cards, all sourced.',
+    ],
+  },
+  {
     version: '0.1.70',
     date: '2026-05-10',
     highlights: [

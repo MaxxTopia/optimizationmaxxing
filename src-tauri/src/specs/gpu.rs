@@ -22,10 +22,18 @@ pub fn detect(wmi: &WMIConnection) -> anyhow::Result<GpuInfo> {
         .raw_query("SELECT Name, AdapterRAM, DriverVersion FROM Win32_VideoController")
         .context("WMI Win32_VideoController query failed")?;
 
+    if rows.is_empty() {
+        return Err(anyhow::anyhow!(
+            "Win32_VideoController returned 0 rows — WMI service likely sick. \
+             Try `net stop winmgmt /y && net start winmgmt` in admin PowerShell, \
+             then Re-scan."
+        ));
+    }
+
     // Prefer a discrete GPU over the integrated (heuristic: largest AdapterRAM,
     // skipping Microsoft Basic Display + virtual adapters).
     let primary = rows
-        .into_iter()
+        .iter()
         .filter(|r| {
             let name = string_or_default(r, "Name").to_lowercase();
             !name.contains("microsoft basic")
@@ -34,7 +42,18 @@ pub fn detect(wmi: &WMIConnection) -> anyhow::Result<GpuInfo> {
                 && !name.is_empty()
         })
         .max_by_key(|r| u64_or_default(r, "AdapterRAM"))
-        .context("no usable Win32_VideoController row found")?;
+        .cloned()
+        // Fallback path — capture cards (Elgato / AverMedia / etc.) register
+        // display-class devices, and during a driver reload the only entry
+        // can be "Microsoft Basic Display Adapter". Rather than die, accept
+        // the largest non-empty row and let the user see what we found.
+        .or_else(|| {
+            rows.iter()
+                .filter(|r| !string_or_default(r, "Name").is_empty())
+                .max_by_key(|r| u64_or_default(r, "AdapterRAM"))
+                .cloned()
+        })
+        .context("Win32_VideoController returned rows but all had empty Name fields")?;
 
     let model = string_or_default(&primary, "Name");
     let vendor = infer_vendor(&model);
