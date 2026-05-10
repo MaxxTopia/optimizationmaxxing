@@ -656,6 +656,24 @@ export async function standbyRunNow(): Promise<StandbyStatus> {
   return invoke<StandbyStatus>('standby_run_now')
 }
 
+/**
+ * v0.1.76 — migration check. Tasks installed by v0.1.63-v0.1.73 used a
+ * direct `powershell.exe -WindowStyle Hidden` command, which causes a
+ * console flash every interval. v0.1.74+ wraps the call in a wscript
+ * launcher so there's no flash. This call surfaces whether the existing
+ * task needs re-registering.
+ *
+ * Returns null if no task exists. Otherwise returns { outdated, currentIntervalMinutes }.
+ */
+export interface StandbyMigrationInfo {
+  outdated: boolean
+  currentIntervalMinutes: number
+  taskToRun: string
+}
+export async function standbyCheckMigration(): Promise<StandbyMigrationInfo | null> {
+  return invoke<StandbyMigrationInfo | null>('standby_check_migration')
+}
+
 // ---------- CPU Sets game pinning ----------
 
 export interface CpuSetInfo {

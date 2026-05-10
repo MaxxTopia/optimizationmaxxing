@@ -7,6 +7,7 @@ import {
   inTauri,
   listApplied,
   revertAllApplied,
+  standbyCheckMigration,
   standbyInstall,
   standbyRunNow,
   standbyStatus,
@@ -14,6 +15,7 @@ import {
   telemetryGet,
   telemetrySet,
   type RevertAllReport,
+  type StandbyMigrationInfo,
   type StandbyStatus,
   type TelemetrySettings,
 } from '../lib/tauri'
@@ -182,13 +184,36 @@ function StandbyCleanerSection() {
   const isNative = inTauri()
   const [status, setStatus] = useState<StandbyStatus | null>(null)
   const [intervalMin, setIntervalMin] = useState<1 | 2 | 5>(1)
-  const [busy, setBusy] = useState<'install' | 'uninstall' | 'run' | null>(null)
+  const [busy, setBusy] = useState<'install' | 'uninstall' | 'run' | 'migrate' | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const [migration, setMigration] = useState<StandbyMigrationInfo | null>(null)
 
   useEffect(() => {
     if (!isNative) return
     standbyStatus().then(setStatus).catch((e) => setErr(String(e)))
+    // v0.1.76 — surface a one-click "Update task" banner if the existing
+    // scheduled task was registered by v0.1.63-v0.1.73 (powershell-direct,
+    // causes 100-300ms flash every interval). v0.1.74+ uses the wscript
+    // shim. Re-register replaces the /TR in-place with the new command.
+    standbyCheckMigration().then(setMigration).catch(() => {})
   }, [isNative])
+
+  async function handleMigrate() {
+    if (!migration) return
+    setBusy('migrate')
+    setErr(null)
+    try {
+      const next = await standbyInstall(migration.currentIntervalMinutes)
+      setStatus(next)
+      // Re-check after re-install — should now report outdated=false.
+      const updated = await standbyCheckMigration()
+      setMigration(updated)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(null)
+    }
+  }
 
   if (!isNative) return null
 
@@ -248,6 +273,35 @@ function StandbyCleanerSection() {
           install + ONE to uninstall; the task itself runs silently on schedule.
         </p>
       </div>
+      {migration?.outdated && (
+        <div
+          className="rounded-md border p-3 text-xs leading-snug flex items-start justify-between gap-3 flex-wrap"
+          style={{
+            borderColor: 'rgba(255, 215, 0, 0.55)',
+            background: 'rgba(255, 215, 0, 0.07)',
+          }}
+        >
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-text mb-1">
+              ⚡ One-click update available — kills the PowerShell flash
+            </p>
+            <p className="text-text-muted">
+              Your scheduled task was registered by an older build that runs PowerShell directly,
+              which causes a brief blue console flash every {migration.currentIntervalMinutes}{' '}
+              minute(s). Click "Update task" to re-register with the silent <code>wscript.exe</code>{' '}
+              launcher introduced in v0.1.74. Triggers ONE UAC prompt; same{' '}
+              {migration.currentIntervalMinutes}-min interval is preserved.
+            </p>
+          </div>
+          <button
+            onClick={handleMigrate}
+            disabled={!!busy}
+            className="px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-50 whitespace-nowrap"
+          >
+            {busy === 'migrate' ? 'Updating…' : 'Update task'}
+          </button>
+        </div>
+      )}
       <div className="surface-card p-6 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-0">

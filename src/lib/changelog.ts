@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.76',
+    date: '2026-05-10',
+    highlights: [
+      'UX **One-click "Update task" banner for the standby cleaner** — v0.1.74 fixed the PowerShell-window flash by switching to a `wscript.exe` shim, but existing scheduled tasks created by v0.1.63-v0.1.73 still had the OLD direct-PowerShell command stored in their /TR field. Required users to manually Uninstall→Install via the Settings UI to pick up the new launcher. Now: Settings page detects on mount whether the existing task is using the old format (parses `schtasks /Query /V /FO LIST` for the Task To Run line + Repeat interval), and surfaces a yellow ⚡ banner above the standby card with a single "Update task" button. One UAC prompt, same interval preserved, banner disappears once re-registered. v0.1.74 + v0.1.75 users can now skip the manual dance.',
+    ],
+  },
+  {
     version: '0.1.75',
     date: '2026-05-10',
     highlights: [

@@ -441,6 +441,13 @@ async fn standby_status() -> Result<standby::StandbyStatus, String> {
         .map_err(|e| format!("standby status task failed: {e}"))?
 }
 
+#[tauri::command]
+async fn standby_check_migration() -> Result<Option<standby::MigrationInfo>, String> {
+    tokio::task::spawn_blocking(|| Ok(standby::check_migration_needed()))
+        .await
+        .map_err(|e| format!("standby migration check task failed: {e}"))?
+}
+
 /// Same probe but routed through the single-UAC elevation path so the
 /// WinRing0 driver loads. Returns full sensor coverage (CPU package +
 /// per-core + voltage rails) on success. Surfaces "driver failed to load"
@@ -732,6 +739,7 @@ pub fn run() {
             standby_uninstall,
             standby_run_now,
             standby_status,
+            standby_check_migration,
             cpu_set_info,
             cpu_pin_foreground,
             cpu_pin_pid,

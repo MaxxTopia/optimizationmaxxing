@@ -126,6 +126,87 @@ fn schtasks_query_exists() -> bool {
     cmd.status().map(|s| s.success()).unwrap_or(false)
 }
 
+/// Migration check (v0.1.74+): scheduled tasks created by v0.1.63-v0.1.73
+/// stored a direct `powershell.exe -WindowStyle Hidden -File <ps1>` command
+/// in /TR, which causes a 100-300ms console flash every interval (Task
+/// Scheduler triggers the paint, PowerShell sees -WindowStyle Hidden too
+/// late). v0.1.74+ wraps the call in `wscript.exe <hide_launcher.vbs> <ps1>`
+/// which is windowless from start.
+///
+/// This function queries the existing task's verbose details and returns:
+///   - None if no task exists (nothing to migrate)
+///   - Some(MigrationInfo { outdated: false, .. }) if task exists + already
+///     uses the new wscript shim
+///   - Some(MigrationInfo { outdated: true, current_interval_minutes: N })
+///     if task exists + still uses the old powershell-direct command
+///
+/// Frontend uses this to surface a one-click "update task" banner so the
+/// user doesn't have to do the manual Uninstall→Install dance. We don't
+/// silently auto-migrate because re-registering needs UAC.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MigrationInfo {
+    pub outdated: bool,
+    pub current_interval_minutes: u32,
+    /// What the existing task's /TR field looks like (for diagnostic).
+    pub task_to_run: String,
+}
+
+pub fn check_migration_needed() -> Option<MigrationInfo> {
+    if !schtasks_query_exists() {
+        return None;
+    }
+    let mut cmd = hidden_cmd_no_window();
+    cmd.args(["/c", "schtasks", "/Query", "/TN", TASK_NAME, "/V", "/FO", "LIST"]);
+    let out = cmd.output().ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    // Output is a multi-line "Field: Value" listing. Parse the two we need:
+    // "Task To Run:" + "Repeat: Every:" (or "/SC MINUTE /MO N" — varies by
+    // locale; the verbose format is consistent on en-US but we double-check
+    // by also scanning the string for the wscript marker).
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut task_to_run = String::new();
+    let mut interval_minutes: u32 = 5; // sensible default
+
+    for line in text.lines() {
+        let trimmed = line.trim();
+        if let Some(rest) = trimmed.strip_prefix("Task To Run:") {
+            task_to_run = rest.trim().to_string();
+        }
+        // schtasks /V /FO LIST emits "Repeat: Every: 0 Hour(s), 5 Minute(s)"
+        // We just need the number before "Minute(s)".
+        if trimmed.contains("Minute(s)") {
+            // Find the LAST integer before "Minute(s)".
+            if let Some(pos) = trimmed.find("Minute(s)") {
+                let before = &trimmed[..pos];
+                let last_num: String = before.chars()
+                    .rev()
+                    .skip_while(|c| !c.is_ascii_digit())
+                    .take_while(|c| c.is_ascii_digit())
+                    .collect::<String>().chars().rev().collect();
+                if let Ok(n) = last_num.parse::<u32>() {
+                    if n >= 1 && n <= 60 {
+                        interval_minutes = n;
+                    }
+                }
+            }
+        }
+    }
+
+    // The new format always contains the wscript launcher path. The old
+    // format starts with `powershell.exe`. Check both for robustness.
+    let lower = task_to_run.to_lowercase();
+    let outdated = lower.contains("powershell.exe") && !lower.contains("wscript.exe");
+
+    Some(MigrationInfo {
+        outdated,
+        current_interval_minutes: interval_minutes,
+        task_to_run,
+    })
+}
+
 /// Read the last meaningful line of the log + extract the timestamp from it.
 fn read_log_tail(path: &std::path::Path) -> (Option<String>, Option<String>) {
     let Ok(content) = std::fs::read_to_string(path) else {
