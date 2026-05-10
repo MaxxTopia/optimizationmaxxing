@@ -222,15 +222,60 @@ pub fn run_elevated_revert_batch(
     run_elevated_lines(&lines)
 }
 
-/// Common runner: spawn ONE elevated cmd.exe with `&&`-joined script.
+/// Common runner: spawn ONE elevated cmd.exe that runs each line
+/// INDEPENDENTLY via a temp .cmd script.
+///
+/// History — v0.1.69 and earlier joined lines with `&&`, which is
+/// SHORT-CIRCUIT in cmd.exe. The first command that exited non-zero
+/// silently skipped every command after it. With 50+ HKLM tweaks queued
+/// from "Apply All", one early failure (Group Policy lock, unwriteable
+/// subkey, etc.) would silently skip ~30 tweaks; the audit correctly
+/// reported them as "would change" because they were never applied —
+/// but the user got no signal that anything went wrong.
+///
+/// v0.1.70: write a .cmd script with one line per command. cmd.exe's
+/// implicit per-line semantics run each independently, so a single
+/// failure doesn't block the rest. Each failing line appends to a log
+/// (via `|| echo FAIL: ... >> log`); the script's exit code is the
+/// number of failures, surfaced back through this fn so the caller can
+/// tell the user "50 of 52 applied; 2 failed — see log".
+///
+/// Side benefit: eliminates cmd.exe's 8191-char arg limit, which was
+/// being approached on the "Apply All" path.
 fn run_elevated_lines(lines: &[String]) -> anyhow::Result<()> {
     if lines.is_empty() {
         return Ok(());
     }
-    let script = lines.join(" && ");
+    let temp_dir = std::env::temp_dir();
+    let stamp = chrono::Utc::now().timestamp_millis();
+    let pid = std::process::id();
+    let script_path = temp_dir.join(format!("optmaxxing-elev-{pid}-{stamp}.cmd"));
+    let log_path = temp_dir.join(format!("optmaxxing-elev-{pid}-{stamp}.log"));
+
+    let log_path_str = log_path.to_string_lossy().to_string();
+    let mut script = String::new();
+    script.push_str("@echo off\r\n");
+    script.push_str("setlocal enabledelayedexpansion\r\n");
+    script.push_str("set FAILED=0\r\n");
+    for line in lines {
+        // Each line runs; on non-zero exit, log + bump counter. The
+        // outer parens prevent a `(reg add ...) || ...` line from being
+        // mis-parsed when the inner command itself uses parens.
+        script.push_str(&format!(
+            "({line}) || (echo FAIL: {line}>>\"{log_path_str}\" & set /a FAILED+=1)\r\n",
+        ));
+    }
+    script.push_str("exit /b !FAILED!\r\n");
+
+    std::fs::write(&script_path, script.as_bytes())
+        .context("writing elevated batch script to temp")?;
+
+    // Cleanup helper — always runs, even if PowerShell fails.
+    let cleanup_script = || { let _ = std::fs::remove_file(&script_path); };
+
     let outer = format!(
-        "Start-Process -FilePath cmd.exe -ArgumentList @('/c',{}) -Verb RunAs -Wait -WindowStyle Hidden",
-        ps_quote(&script),
+        "Start-Process -FilePath cmd.exe -ArgumentList @('/c','\"{}\"') -Verb RunAs -Wait -WindowStyle Hidden -PassThru | ForEach-Object {{ exit $_.ExitCode }}",
+        script_path.to_string_lossy().replace('\'', "''"),
     );
     let status = Command::new("powershell.exe")
         .arg(PS_HEADER)
@@ -238,12 +283,30 @@ fn run_elevated_lines(lines: &[String]) -> anyhow::Result<()> {
         .arg(&outer)
         .status()
         .context("spawning elevated powershell.exe")?;
-    if !status.success() {
+
+    cleanup_script();
+
+    let exit = status.code().unwrap_or(-1);
+    if exit < 0 {
+        // Negative = process didn't even run (UAC denied / killed).
         return Err(anyhow!(
-            "elevated apply exited with status {} (UAC denied?)",
-            status.code().unwrap_or(-1)
+            "elevated apply did not run (status {}). Likely UAC denied.",
+            exit,
         ));
     }
+    if exit > 0 {
+        // exit == failure-count. Read the log if it exists for diagnostic.
+        let detail = std::fs::read_to_string(&log_path).unwrap_or_default();
+        let _ = std::fs::remove_file(&log_path);
+        let head: String = detail.lines().take(5).collect::<Vec<_>>().join("\n");
+        return Err(anyhow!(
+            "{} of {} elevated commands failed. First few:\n{}",
+            exit,
+            lines.len(),
+            head,
+        ));
+    }
+    let _ = std::fs::remove_file(&log_path);
     Ok(())
 }
 

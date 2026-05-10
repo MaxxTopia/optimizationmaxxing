@@ -135,48 +135,81 @@ export function Toolkit() {
           <p className="text-xs uppercase tracking-widest text-text-subtle">drivers</p>
           <h2 className="text-lg font-semibold">Driver advisor</h2>
           <p className="text-sm text-text-muted">
-            We don't bundle stripped drivers — too risky to redistribute. We point you at the
-            tools the tuning community actually trusts.
+            We don't bundle stripped drivers — redistributing one wrong build for the wrong chipset bricks HDMI/audio. We tell you the right tool + the exact clicks.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-text-muted">
-          <div>
-            <p className="font-semibold text-text mb-1">NVIDIA</p>
-            <p>
-              Use{' '}
-              <a
-                href="https://www.techpowerup.com/nvcleanstall/"
-                target="_blank"
-                rel="noopener"
-                className="text-accent hover:underline"
-              >
-                NVCleanstall
-              </a>{' '}
-              from TechPowerUp. Picks the latest driver, lets you strip GeForce Experience +
-              telemetry + USB-C audio + HD audio if you don't need them. Result: smaller
-              installer, no background services.
-            </p>
-          </div>
-          <div>
-            <p className="font-semibold text-text mb-1">AMD</p>
-            <p>
-              Skip Adrenaline auto-install. Use{' '}
-              <a
-                href="https://www.amd.com/en/support"
-                target="_blank"
-                rel="noopener"
-                className="text-accent hover:underline"
-              >
-                AMD's driver page
-              </a>{' '}
-              + DDU (Display Driver Uninstaller) in Safe Mode for clean swaps.
-            </p>
-          </div>
+
+        {/* NVIDIA — full step-by-step. NVCleanstall is the biggest single
+            driver-side win for an NVIDIA gaming rig: stripped install, no
+            telemetry, no GFE background services. */}
+        <div className="rounded-md border border-border p-4 space-y-3">
+          <p className="font-semibold text-text">
+            NVIDIA — install with{' '}
+            <a
+              href="https://www.techpowerup.com/nvcleanstall/"
+              target="_blank"
+              rel="noopener"
+              className="text-accent hover:underline"
+            >
+              NVCleanstall
+            </a>
+          </p>
+          <ol className="list-decimal pl-5 space-y-2 text-sm text-text-muted">
+            <li>
+              Download NVCleanstall from TechPowerUp. Free, no install — just run the .exe as admin.
+            </li>
+            <li>
+              <span className="text-text font-medium">Pick a driver:</span>{' '}
+              <span className="text-text-muted">Latest production driver</span> (default — what you want for stability). Choose <span className="text-text-muted">latest beta</span> only if a specific game patch needs it.
+            </li>
+            <li>
+              <span className="text-text font-medium">Components — strip everything except:</span>
+              <ul className="mt-1 ml-2 list-disc pl-4 space-y-0.5 text-[13px]">
+                <li><span className="text-text">Display Driver</span> — required, can't remove</li>
+                <li><span className="text-text">PhysX System Software</span> — keep (UE4/UE5 games rely on it; Fortnite + most modern titles)</li>
+                <li><span className="text-text">HD Audio Driver</span> — keep <em>only</em> if you use HDMI/DisplayPort audio. Otherwise strip — fewer kernel-mode drivers.</li>
+                <li className="text-text-subtle">Strip everything else: GeForce Experience, NVIDIA Container, USB-C Audio, NVIDIA Update, nView, Telemetry — all background services with zero gaming benefit.</li>
+              </ul>
+            </li>
+            <li>
+              <span className="text-text font-medium">Tweaks page — enable these:</span>
+              <ul className="mt-1 ml-2 list-disc pl-4 space-y-0.5 text-[13px]">
+                <li>Disable Telemetry</li>
+                <li>Disable Driver Telemetry</li>
+                <li>Disable Installer Telemetry</li>
+                <li>Disable Ansel (unless you use the photo mode)</li>
+                <li>Disable HDCP (unless you stream Netflix-style protected content)</li>
+                <li><span className="text-text">Perform a clean install</span> — wipes the existing driver before installing. Equivalent to running DDU first; do this every time unless you're patch-level updating.</li>
+                <li><span className="text-text">Show extra tweaks</span> — flip this on so the above are visible.</li>
+              </ul>
+            </li>
+            <li>
+              Click <span className="text-text font-medium">Install</span> — downloads + strips + installs. ~3-5 min total.
+            </li>
+            <li>
+              Reboot. Then open <a href="/guides/nvidia-profile-inspector" className="text-accent hover:underline">NVIDIA Profile Inspector</a> and apply the .nip profile for your game (Calypto for Fortnite). NVCleanstall handles the install hygiene; NVPI handles the per-game knobs NVCP never exposed.
+            </li>
+          </ol>
+          <p className="text-[11px] text-text-subtle italic pt-1 border-t border-border">
+            <strong className="text-text-muted not-italic">Why this beats the official installer:</strong> stock NVIDIA install ships ~700 MB of stuff a competitive rig never uses — Container service, ShadowPlay, GFE login, telemetry pings every boot. Stripped install is ~250 MB, zero background services. RAM idle drops 80-150 MB, plus you stop fighting GFE for the keybinds you actually want.
+          </p>
         </div>
-        <p className="text-[11px] text-text-subtle italic">
-          Why no auto-apply: stripped drivers vary per build and per chipset. A wrong combo can
-          brick HDMI/audio output. We tell you the right tool; you decide the SKU.
-        </p>
+
+        <div className="rounded-md border border-border p-4 space-y-2 text-sm text-text-muted">
+          <p className="font-semibold text-text mb-1">AMD</p>
+          <p>
+            Skip Adrenaline's auto-install (bundles a launcher + telemetry by default). Download the bare driver from{' '}
+            <a
+              href="https://www.amd.com/en/support"
+              target="_blank"
+              rel="noopener"
+              className="text-accent hover:underline"
+            >
+              AMD's driver page
+            </a>
+            , and <strong className="text-text">use DDU (Display Driver Uninstaller) in Safe Mode</strong> for clean swaps between major versions. AMD doesn't have an NVCleanstall equivalent — DDU is the closest.
+          </p>
+        </div>
       </section>
 
       <section className="surface-card p-5 space-y-3">

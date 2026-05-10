@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.70',
+    date: '2026-05-10',
+    highlights: [
+      'BUG-FIX **"Apply All" silent skip-on-failure** — every elevated batch (HKLM / BCD / PS / FileWrite-to-admin-path) was joined with cmd.exe `&&`, which is **short-circuit**: the first command that exited non-zero silently skipped every command after it. Diggy hit this with 50+ HKLM tweaks queued — one tweak hits a Group Policy lock, the remaining 30+ silently no-op, audit shows them as "would change" because they were never applied. Fix: write a per-line `.cmd` script to TEMP, run each line independently, log failures, exit code = failure count. Caller surfaces "X of Y commands failed — first few:" instead of silent skip. Side benefit: eliminates cmd.exe\'s 8191-char arg limit which the "Apply All" path was approaching.',
+      'CONTENT **/grind Khanada card** — removed the controller-player labeling per Diggy. Card now leans on his actual durable credential: long-tenured top-tier across multiple chapter resets — staying competitive through three chapter overhauls (each resets meta + mechanics) is the rarer credential than peak skill in any one meta.',
+      'CONTENT **/guides reordering** — advanced + highest-leverage guides at the top (NVPI / SCEWIN / BIOS-per-chipset / tournament compliance / DSCP router companion / latency budget / standby cleaner). High-impact basics next (Reflex / AMD-Intel / per-game Windows / Fortnite + Valorant pro settings / mice / grind layer / gear). Niche + troubleshooting last (WinRing0 AV / Discord low-FPS / browsers / lightweight distros).',
+      'CONTENT **NVCleanstall step-by-step in Toolkit Driver Advisor** — replaced the 1-paragraph mention with a 6-step numbered guide: which driver to pick, which components to keep vs strip (Display + PhysX + HD Audio if HDMI), which Tweaks to flip on (telemetry off, Ansel off, HDCP off, Perform Clean Install on), and the chained NVPI step. Stripped install drops idle RAM 80-150 MB + kills GFE background services.',
+    ],
+  },
+  {
     version: '0.1.69',
     date: '2026-05-10',
     highlights: [

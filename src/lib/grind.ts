@@ -402,20 +402,19 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Khanada',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Multi-FNCS finalist · controller pro · long-tenured top-tier across multiple chapters',
-    voice: 'One of the original "controller can win at the top" proof cases. Pre-dates Reet — the path he proved Reet now travels.',
+    credential: 'Multi-FNCS finalist · long-tenured top-tier across multiple chapters',
+    voice: 'Long-tenured NA pro — competitive across multiple chapter resets, which itself is the rarer credential. Most pros peak in one meta and fade; staying relevant through three is the harder thing.',
     tier: 'standard',
     rig: {
-      dpi: 'controller',
       monitor: '240 Hz',
     },
     insights: [
       {
-        text: 'Stuck with controller through every meta change including the years controller-aim-assist was nerfed twice. Lesson: input device is identity, not optimization. Pick the one you can grind 8h on without hand pain, then commit.',
-        citation: { label: 'Khanada FNCS history', url: 'https://liquipedia.net/fortnite/Khanada' },
+        text: 'Heavy creative-mode hours, scrim-light. Inverse of Clix — proves the work can come from either lane. Match your training distribution to your specific mechanical gap, not to the most-streamed pro.',
       },
       {
-        text: 'Heavy creative-mode hours, scrim-light. Inverse of Clix — proves the work can come from either lane. Match your training distribution to your specific mechanical gap, not to the most-streamed pro.',
+        text: 'Career longevity > peak skill. Staying competitive across multiple chapter overhauls (each of which resets meta + mechanics) means re-learning movement, edits, and economy from scratch. Most "fell off" stories are just one meta away from "couldn\'t adapt".',
+        citation: { label: 'Khanada FNCS history', url: 'https://liquipedia.net/fortnite/Khanada' },
       },
     ],
     link: 'https://www.twitch.tv/khanada',
