@@ -163,7 +163,9 @@ fn constant_time_eq(a: &str, b: &str) -> bool {
 pub struct ClaimResult {
     pub ok: bool,
     /// "claimed" on first-time, "idempotent" on re-redeem from same hwid,
-    /// "already-claimed" when 409, "network-error" when worker unreachable,
+    /// "already-claimed" when 409, "expired" when subscription elapsed
+    /// (worker 410), "scope-mismatch" when 403 (code minted for the
+    /// other product), "network-error" when worker unreachable,
     /// "malformed" on 4xx response. The client uses status to drive the
     /// UI message; raw `error` carries the worker's text when present.
     pub status: String,
@@ -171,6 +173,20 @@ pub struct ClaimResult {
     pub bound_hwid: Option<String>,
     #[serde(default)]
     pub error: Option<String>,
+    /// Tier the worker granted (1=MAXXER, 2=MAXXER+, 3=MAXXER++). None
+    /// for legacy responses; client should default to TIER_MAXXER_PLUS_PLUS
+    /// when missing (matches pre-v0.6 worker behavior).
+    #[serde(default)]
+    pub tier: Option<u8>,
+    /// Unix epoch millis when the claim expires. None = lifetime.
+    /// Client stores this in its local binding cache and uses it to
+    /// proactively expire bindings client-side without waiting for the
+    /// worker re-validation cycle.
+    #[serde(default)]
+    pub expires_at: Option<i64>,
+    /// Product scope: "om" | "dm" | "both". None for legacy responses.
+    #[serde(default)]
+    pub scope: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -182,6 +198,12 @@ struct WorkerJson {
     bound_hwid: Option<String>,
     #[serde(default)]
     error: Option<String>,
+    #[serde(default)]
+    tier: Option<u8>,
+    #[serde(rename = "expiresAt", default)]
+    expires_at: Option<i64>,
+    #[serde(default)]
+    scope: Option<String>,
 }
 
 /// Drive the worker round-trip via hidden PowerShell + Invoke-WebRequest.
@@ -189,7 +211,18 @@ struct WorkerJson {
 /// Rust dependency surface small.
 pub fn claim_online(code: &str, hwid: &str) -> ClaimResult {
     let url = worker_url();
-    let body = serde_json::json!({ "code": code, "hwid": hwid }).to_string();
+    // Include product="om" so the worker's scope-enforcement layer
+    // accepts OM-scoped + both-scoped codes and rejects DM-scoped ones
+    // with a 403 "code scope mismatch" error. Legacy codes minted
+    // before the schema upgrade have no scope metadata; the worker
+    // treats them as scope=both, so this field is transparent to old
+    // codes.
+    let body = serde_json::json!({
+        "code": code,
+        "hwid": hwid,
+        "product": "om",
+    })
+    .to_string();
     // Use a here-string for the body so embedded quotes survive — single-
     // quoted to disable PS variable expansion. Closing '@ MUST be at col 0.
     let body_escaped = body.replace('\'', "''");
@@ -257,6 +290,9 @@ try {{
                 status: "network-error".to_string(),
                 bound_hwid: None,
                 error: Some(format!("powershell spawn failed: {e}")),
+                tier: None,
+                expires_at: None,
+                scope: None,
             };
         }
     };
@@ -272,6 +308,9 @@ try {{
             } else {
                 stderr
             }),
+            tier: None,
+            expires_at: None,
+            scope: None,
         };
     }
     #[derive(Deserialize)]
@@ -287,6 +326,9 @@ try {{
                 status: "network-error".to_string(),
                 bound_hwid: None,
                 error: Some(format!("ps envelope parse failed: {e}")),
+                tier: None,
+                expires_at: None,
+                scope: None,
             };
         }
     };
@@ -296,6 +338,9 @@ try {{
             status: "network-error".to_string(),
             bound_hwid: None,
             error: Some(env.body),
+            tier: None,
+            expires_at: None,
+            scope: None,
         };
     }
     let parsed: WorkerJson = match serde_json::from_str(&env.body) {
@@ -306,6 +351,9 @@ try {{
                 status: "network-error".to_string(),
                 bound_hwid: None,
                 error: Some(format!("worker payload parse failed: {e}; body={}", env.body)),
+                tier: None,
+                expires_at: None,
+                scope: None,
             };
         }
     };
@@ -314,7 +362,9 @@ try {{
         .clone()
         .unwrap_or_else(|| match env.status {
             200 => "claimed".to_string(),
+            403 => "scope-mismatch".to_string(),
             409 => "already-claimed".to_string(),
+            410 => "expired".to_string(),
             400 => "malformed".to_string(),
             404 => "not-found".to_string(),
             other => format!("http-{}", other),
@@ -324,6 +374,9 @@ try {{
         status: status_label,
         bound_hwid: parsed.bound_hwid,
         error: parsed.error,
+        tier: parsed.tier,
+        expires_at: parsed.expires_at,
+        scope: parsed.scope,
     }
 }
 

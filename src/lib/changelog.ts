@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.81',
+    date: '2026-05-11',
+    highlights: [
+      'NEW **VIP code subscription + product-scope schema (v0.6)** — the shared vip-worker now reads per-code metadata (tier, scope, durationMs) from KV, written at mint time by the new `/gen` / `/om` / `/33` slash commands in the Maxxtopia tickets-worker. OM lifetime codes (scope="om") get rejected if claimed via Discordmaxxer; DM subscription codes (scope="dm") get rejected if claimed via Optimizationmaxxing; founder codes are scope="both" and work for both products. Time-bound subscriptions (monthly/annual) get an expiresAt timestamp at first claim — local binding cache auto-drops to FREE once we\'re past expiry, no network round-trip needed.',
+      'BACKEND **client sends `product: "om"` on every /claim** — the worker uses this to enforce code scope. Legacy codes minted before the schema upgrade have no scope metadata; the worker treats them as scope="both" so old codes still work everywhere.',
+      'BACKEND **claim response carries `tier`, `expiresAt`, `scope`** — the WorkerJson + ClaimResult structs now propagate these through. New status codes surfaced: "scope-mismatch" (403 — wrong product) and "expired" (410 — subscription elapsed).',
+    ],
+  },
+  {
     version: '0.1.80',
     date: '2026-05-11',
     highlights: [

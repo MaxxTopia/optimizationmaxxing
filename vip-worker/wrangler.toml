@@ -2,6 +2,32 @@ name = "optmaxxing-vip"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
+# Auto-grant config (v3, 2026-05-10).
+# Same DISCORD_GUILD_ID + VIP_ROLE_ID as maxxtopia/tickets-worker —
+# Maxxtopia server (ID 794160379767947264), universal @VIP role
+# (ID 1502870738313674954). Per-tier ladder role IDs are optional;
+# fill them in via the Discord developer-mode right-click → Copy ID
+# on each role in the Maxxtopia server. Missing tier IDs cause that
+# specific tier role to be skipped silently — the universal @VIP
+# still gets granted.
+#
+# DISCORD_OAUTH_CLIENT_ID is the Maxx bot's app ID (per memory).
+# DISCORD_OAUTH_REDIRECT_URI must EXACTLY match what's whitelisted in
+# the Discord developer portal → OAuth2 → Redirects. Add it via
+# https://discord.com/developers/applications/1502451778426372116/oauth2
+[vars]
+DISCORD_GUILD_ID = "794160379767947264"
+VIP_ROLE_ID = "1502870738313674954"
+MAXXER_ROLE_ID = ""
+MAXXER_PLUS_ROLE_ID = ""
+MAXXER_PLUS_PLUS_ROLE_ID = ""
+DISCORD_OAUTH_CLIENT_ID = "1502451778426372116"
+DISCORD_OAUTH_REDIRECT_URI = "https://optmaxxing-vip.maxxtopia.workers.dev/discord-link"
+
+# Secrets to set (one-time):
+#   wrangler secret put DISCORD_BOT_TOKEN              # paste from .bot-setup.local.env
+#   wrangler secret put DISCORD_OAUTH_CLIENT_SECRET    # from Discord dev portal → OAuth2 → Reset Secret
+
 # KV namespace for the first-claim-wins ledger. Created via:
 #   wrangler kv namespace create vip-claims
 # Then paste the returned id below + run `wrangler deploy`.
