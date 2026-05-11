@@ -105,8 +105,10 @@ impl TweakAction {
 
     pub fn requires_admin(&self) -> bool {
         match self {
-            TweakAction::RegistrySet { hive, .. }
-            | TweakAction::RegistryDelete { hive, .. } => hive.requires_admin(),
+            TweakAction::RegistrySet { hive, path, .. }
+            | TweakAction::RegistryDelete { hive, path, .. } => {
+                hive.requires_admin() || hkcu_path_requires_admin(*hive, path)
+            }
             TweakAction::BcdeditSet { .. } => true,
             TweakAction::PowershellScript { .. } => true,
             TweakAction::FileWrite { path, .. } => {
@@ -117,6 +119,27 @@ impl TweakAction {
             }
         }
     }
+}
+
+/// Some HKCU subtrees have restrictive ACLs that deny write to standard
+/// users — Windows hardens them so non-admin processes can't self-grant
+/// Group-Policy-equivalent overrides. The classic offender is
+/// `HKCU\Software\Policies\*` (REG_OPTION_BACKUP_RESTORE-ish ACL: admins
+/// full, user read-only). Without this routing, an in-process winreg
+/// `create_subkey` would surface as "create_subkey ...: Access is denied"
+/// for any standard-user install. UAC elevation keeps the SAME user SID
+/// (HKCU is unchanged) but adds the privilege bits needed to write.
+///
+/// If we discover more locked HKCU subtrees, extend the prefix list here.
+fn hkcu_path_requires_admin(hive: Hive, path: &str) -> bool {
+    if hive != Hive::Hkcu {
+        return false;
+    }
+    let normalized = path.replace('/', "\\").to_ascii_lowercase();
+    const ADMIN_ONLY_HKCU_PREFIXES: &[&str] = &["software\\policies\\"];
+    ADMIN_ONLY_HKCU_PREFIXES
+        .iter()
+        .any(|p| normalized.starts_with(p))
 }
 
 /// Returned by `preview_tweak` — what the engine would do if asked to apply.
@@ -150,4 +173,76 @@ pub struct AppliedTweak {
     pub applied_at: String,
     pub status: String,
     pub kind: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn reg_set(hive: Hive, path: &str) -> TweakAction {
+        TweakAction::RegistrySet {
+            hive,
+            path: path.to_string(),
+            name: "X".to_string(),
+            value_type: RegValueType::Dword,
+            value: json!(1),
+        }
+    }
+
+    fn reg_delete(hive: Hive, path: &str) -> TweakAction {
+        TweakAction::RegistryDelete {
+            hive,
+            path: path.to_string(),
+            name: Some("X".to_string()),
+        }
+    }
+
+    #[test]
+    fn hkcu_policies_path_requires_admin() {
+        // Windows hardens HKCU\Software\Policies\* with an admin-only ACL.
+        // Standard-user write hits PermissionDenied → caught friend on
+        // v0.1.77 with three Edge / search / cloud-content tweaks.
+        for path in [
+            "Software\\Policies\\Microsoft\\Edge",
+            "Software\\Policies\\Microsoft\\Windows\\Explorer",
+            "Software\\Policies\\Microsoft\\Windows\\CloudContent",
+            // Mixed case + forward slash — normalize handles both.
+            "SOFTWARE\\policies\\foo",
+            "Software/Policies/bar",
+        ] {
+            assert!(
+                reg_set(Hive::Hkcu, path).requires_admin(),
+                "RegistrySet HKCU {path} should require admin",
+            );
+            assert!(
+                reg_delete(Hive::Hkcu, path).requires_admin(),
+                "RegistryDelete HKCU {path} should require admin",
+            );
+        }
+    }
+
+    #[test]
+    fn ordinary_hkcu_paths_do_not_require_admin() {
+        for path in [
+            "Software\\Microsoft\\GameBar",
+            "Control Panel\\Mouse",
+            "System\\GameConfigStore",
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+            // "policies" appearing later in the path is not the protected
+            // root — only the top-level Software\Policies tree is hardened.
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+        ] {
+            assert!(
+                !reg_set(Hive::Hkcu, path).requires_admin(),
+                "HKCU {path} should not require admin",
+            );
+        }
+    }
+
+    #[test]
+    fn hklm_always_requires_admin_regardless_of_path() {
+        assert!(reg_set(Hive::Hklm, "Software\\Foo").requires_admin());
+        assert!(reg_set(Hive::Hkcr, "CLSID\\{0000-0000}").requires_admin());
+    }
 }

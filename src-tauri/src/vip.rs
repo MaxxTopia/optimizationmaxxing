@@ -194,9 +194,21 @@ pub fn claim_online(code: &str, hwid: &str) -> ClaimResult {
     // quoted to disable PS variable expansion. Closing '@ MUST be at col 0.
     let body_escaped = body.replace('\'', "''");
     let url_escaped = url.replace('\'', "''");
+    // Force TLS 1.2+. Windows PowerShell 5.1 on un-patched Win10 LTSC /
+    // older builds defaults `ServicePointManager.SecurityProtocol` to
+    // SSL3+TLS 1.0, which Cloudflare flat-out rejects. Without this the
+    // claim call dies with "The request was aborted: Could not create SSL/
+    // TLS secure channel" and we fall through to the offline HMAC verify —
+    // which only works for the (older) HWID-bound code flavor and gives a
+    // generic "wrong code or fingerprint" message that doesn't hint at the
+    // real cause. -bor preserves whatever the system already enables (TLS
+    // 1.3 on Win11) instead of clamping to 1.2.
     let script = format!(
         r#"
 $ErrorActionPreference = 'Stop'
+try {{
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+}} catch {{}}
 $body = @'
 {body}
 '@

@@ -100,12 +100,32 @@ fn apply_registry_set(
     let root = predefined_key(hive);
     let (key, _disp) = root
         .create_subkey(path)
-        .with_context(|| format!("create_subkey {path}"))?;
+        .map_err(|e| friendly_registry_error(e, "create_subkey", path))?;
     let reg_value = encode_reg_value(value_type, value)
         .with_context(|| format!("encoding value for {name}"))?;
     key.set_raw_value(name, &reg_value)
-        .with_context(|| format!("set_raw_value {name}"))?;
+        .map_err(|e| friendly_registry_error(e, "set_raw_value", name))?;
     Ok(pre_state)
+}
+
+/// Map raw winreg io::Error into something users can act on. Access-denied
+/// on the in-process path means we picked the unelevated lane for a path
+/// that actually needs admin — usually a missed entry in
+/// `actions::hkcu_path_requires_admin`. Tell the user to flag the tweak
+/// to Diggy so the path gets added; falling back to "right-click → Run as
+/// administrator" only helps if they're an admin user, but we suggest it
+/// as the immediate workaround.
+fn friendly_registry_error(e: std::io::Error, op: &str, target: &str) -> anyhow::Error {
+    if e.kind() == std::io::ErrorKind::PermissionDenied {
+        return anyhow!(
+            "{op} {target}: access denied. This tweak's registry path is locked \
+             for standard users. Workaround: relaunch optimizationmaxxing as \
+             administrator (right-click → Run as administrator) and retry. \
+             Long-term: ping Diggy with this tweak ID so the path gets routed \
+             through UAC automatically."
+        );
+    }
+    anyhow::Error::new(e).context(format!("{op} {target}"))
 }
 
 fn revert_registry_set(

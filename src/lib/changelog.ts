@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.78',
+    date: '2026-05-10',
+    highlights: [
+      'BUG-FIX **VIP redemption "wrong code or fingerprint" on standard-user PCs** — the worker round-trip happens via PowerShell + Invoke-WebRequest, which on un-patched Windows 10 LTSC / older 5.1 builds defaults `ServicePointManager.SecurityProtocol` to SSL3+TLS 1.0. Cloudflare flat-out rejects sub-1.2 → claim died with "Could not create SSL/TLS secure channel" and we silently fell through to the offline HMAC verify (which only works for the older HWID-bound code flavor). Now: script forces TLS 1.2+ via `-bor [Net.SecurityProtocolType]::Tls12` before the request. Also: the fail card now exposes a "what failed" details pane (online-status + worker-error + offline-HMAC outcome) so you can paste the exact diagnostic into a DM instead of paraphrasing.',
+      'BUG-FIX **"create_subkey access is denied" when applying tweaks as a standard user** — three catalog tweaks (Edge background mode, Bing search-box suggestions, Cloud-content consumer features) write to `HKCU\\Software\\Policies\\*`, which Windows hardens with an admin-only ACL even though it lives under HKEY_CURRENT_USER. The engine was running them in-process unelevated → instant access-denied. Now: `requires_admin()` flags every `HKCU\\Software\\Policies\\*` action so they route through the existing UAC batch (one prompt). Side benefit: the in-process registry path now translates raw winreg PermissionDenied into an actionable message ("relaunch as administrator") instead of bare "create_subkey ...: Access is denied".',
+    ],
+  },
+  {
     version: '0.1.77',
     date: '2026-05-10',
     highlights: [

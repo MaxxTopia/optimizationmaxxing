@@ -14,6 +14,27 @@ import { useVipStore } from '../store/useVipStore'
 
 type Status = 'idle' | 'verifying' | 'ok' | 'fail' | 'claimed-elsewhere'
 
+// Discord OAuth target — opens the user's browser to Discord, comes back
+// to the worker with code+state, worker grants the @VIP role + tier role
+// in the Maxxtopia server. CLIENT_ID is the Maxx bot app id (same one
+// powering the tickets-worker). REDIRECT_URI must EXACTLY match what's
+// whitelisted in the Discord developer portal → OAuth2 → Redirects.
+const DISCORD_OAUTH_CLIENT_ID = '1502451778426372116'
+const VIP_WORKER_BASE = 'https://optmaxxing-vip.maxxtopia.workers.dev'
+const DISCORD_OAUTH_REDIRECT_URI = `${VIP_WORKER_BASE}/discord-link`
+
+function buildDiscordOAuthUrl(hwid: string): string {
+  const params = new URLSearchParams({
+    client_id: DISCORD_OAUTH_CLIENT_ID,
+    response_type: 'code',
+    scope: 'identify',
+    redirect_uri: DISCORD_OAUTH_REDIRECT_URI,
+    state: hwid,
+    prompt: 'none',
+  })
+  return `https://discord.com/api/oauth2/authorize?${params.toString()}`
+}
+
 export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
   const apply = useVipStore((s) => s.applyRedemption)
   const [hwid, setHwid] = useState<string | null>(null)
@@ -22,6 +43,10 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
   const [status, setStatus] = useState<Status>('idle')
   const [shake, setShake] = useState(false)
   const [confetti, setConfetti] = useState(false)
+  // Diagnostic captured on the most recent failed attempt — surfaced under
+  // the fail copy so a friend can DM Diggy something actionable instead of
+  // re-paraphrasing "it didn't work". Cleared on next attempt.
+  const [failDetail, setFailDetail] = useState<string | null>(null)
   const isNative = inTauri()
 
   useEffect(() => {
@@ -38,7 +63,11 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
     e.preventDefault()
     if (!hwid) return
     setStatus('verifying')
+    setFailDetail(null)
     const trimmed = code.trim()
+    // Captures whatever the worker / network told us so we can surface it
+    // alongside the offline-HMAC outcome if we end up in `fail`.
+    let onlineDetail: string | null = null
 
     // Try online (Cloudflare Worker first-claim ledger) first. Two reasons:
     //   1. Unbound codes (random + dropped in DMs) only work this way.
@@ -62,17 +91,20 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
         window.setTimeout(() => setShake(false), 500)
         return
       }
+      onlineDetail = `online: ${r.status}${r.error ? ` — ${r.error}` : ''}`
       // Network errors and 404 fall through to the offline path so a
       // user with the older HWID-bound code can still redeem if Diggy
       // hasn't deployed the worker yet.
       if (r.status !== 'network-error' && r.status !== 'not-found' && r.status !== 'malformed') {
         // 4xx other than 409 — give up; surface the error.
+        setFailDetail(onlineDetail)
         setStatus('fail')
         setShake(true)
         window.setTimeout(() => setShake(false), 500)
         return
       }
-    } catch {
+    } catch (err) {
+      onlineDetail = `online: invoke threw — ${err instanceof Error ? err.message : String(err)}`
       // fall through to offline path
     }
 
@@ -85,11 +117,21 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
         setConfetti(true)
         window.setTimeout(() => setConfetti(false), 1400)
       } else {
+        setFailDetail(
+          [onlineDetail, 'offline HMAC: code does not match this rig (mint-vip-code.py used a different HWID, or there is a typo)']
+            .filter(Boolean)
+            .join(' · '),
+        )
         setStatus('fail')
         setShake(true)
         window.setTimeout(() => setShake(false), 500)
       }
-    } catch {
+    } catch (err) {
+      setFailDetail(
+        [onlineDetail, `offline HMAC threw — ${err instanceof Error ? err.message : String(err)}`]
+          .filter(Boolean)
+          .join(' · '),
+      )
       setStatus('fail')
       setShake(true)
       window.setTimeout(() => setShake(false), 500)
@@ -185,7 +227,8 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
           </button>
           {status === 'fail' && (
             <span className="text-xs text-red-400">
-              Code didn't match. Re-check the spelling, or confirm you sent the right fingerprint.
+              Code didn't match this rig. Double-check the spelling, then DM Diggy
+              your fingerprint above + the exact code so he can re-mint if needed.
             </span>
           )}
           {status === 'claimed-elsewhere' && (
@@ -199,7 +242,50 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
             </span>
           )}
         </div>
+        {status === 'fail' && failDetail && (
+          <details className="text-[11px] text-text-subtle mt-1">
+            <summary className="cursor-pointer select-none hover:text-text-muted">
+              what failed (paste this to Diggy)
+            </summary>
+            <pre className="mt-1 whitespace-pre-wrap break-all bg-bg-base/60 rounded p-2 text-[10px] font-mono leading-snug">
+{failDetail}
+            </pre>
+          </details>
+        )}
       </form>
+
+      {status === 'ok' && hwid && (
+        <div
+          className="surface-card p-3 space-y-2"
+          style={{
+            borderColor: 'rgba(88, 101, 242, 0.45)',
+            background: 'linear-gradient(135deg, rgba(88, 101, 242, 0.08), rgba(88, 101, 242, 0.02))',
+          }}
+        >
+          <p className="text-[11px] uppercase tracking-widest text-text-subtle flex items-center gap-1.5">
+            <span aria-hidden="true">🔗</span>
+            One last step
+          </p>
+          <p className="text-xs text-text-muted leading-snug">
+            Link your Discord to claim your <span className="font-semibold text-text">@VIP</span>{' '}
+            role in Maxxtopia automatically. Unlocks #vip-chat + #early-access. One-shot,
+            HWID-bound — re-link goes through Diggy.
+          </p>
+          <button
+            type="button"
+            onClick={() => window.open(buildDiscordOAuthUrl(hwid), '_blank', 'noopener')}
+            className="px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5"
+            style={{
+              background: '#5865F2',
+              color: '#fff',
+              border: '1px solid rgba(88, 101, 242, 0.7)',
+            }}
+          >
+            <span aria-hidden="true">🎮</span>
+            Link Discord & grant my role
+          </button>
+        </div>
+      )}
 
       <p className="text-[11px] text-text-subtle pt-2 border-t border-border">
         Lost on a code? DM{' '}
