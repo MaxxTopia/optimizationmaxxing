@@ -68,9 +68,17 @@ if (-not (Test-Path -LiteralPath $DllPath)) {
 
 Try-Step 'Unblock-DLLs' {
     Unblock-File -LiteralPath $DllPath -ErrorAction SilentlyContinue
-    $hidPath = Join-Path (Split-Path $DllPath) 'HidSharp.dll'
-    if (Test-Path -LiteralPath $hidPath) {
-        Unblock-File -LiteralPath $hidPath -ErrorAction SilentlyContinue
+    # NOTE: Split-Path on Windows can't parse `\\?\`-prefixed (extended-
+    # length) paths returned by Tauri's resource_dir() — it errors out with
+    # "Cannot process argument because the value of argument 'drive' is
+    # null", killing the whole probe before LHM even loads. Use the .NET
+    # Path API instead; it handles both regular and `\\?\` paths cleanly.
+    $dllDir = [System.IO.Path]::GetDirectoryName($DllPath)
+    if ($dllDir) {
+        $hidPath = Join-Path $dllDir 'HidSharp.dll'
+        if (Test-Path -LiteralPath $hidPath) {
+            Unblock-File -LiteralPath $hidPath -ErrorAction SilentlyContinue
+        }
     }
 }
 

@@ -342,11 +342,22 @@ async fn lhm_sensors(app: tauri::AppHandle) -> Result<toolkit::LhmReport, String
         .map_err(|e| format!("resolve resource dir: {e}"))?;
     let script = resource_dir.join("resources/lhm/read_sensors.ps1");
     let dll = resource_dir.join("resources/lhm/LibreHardwareMonitorLib.dll");
-    let script_str = script.to_string_lossy().to_string();
-    let dll_str = dll.to_string_lossy().to_string();
+    let script_str = strip_verbatim_prefix(&script.to_string_lossy());
+    let dll_str = strip_verbatim_prefix(&dll.to_string_lossy());
     tokio::task::spawn_blocking(move || toolkit::probe_lhm_sensors(&script_str, &dll_str))
         .await
         .map_err(|e| format!("lhm task failed: {e}"))
+}
+
+/// Windows `\\?\` extended-length-path prefix breaks PowerShell's
+/// `Split-Path` and a few other path cmdlets. Tauri's `resource_dir()`
+/// returns paths with this prefix in installed builds (release NSIS), so
+/// every `*.ps1` resource we hand over has to be stripped first. Regular
+/// dev paths under `target/debug` don't have the prefix so this is a no-op
+/// there. Keep the original path if it doesn't start with the verbatim
+/// prefix.
+fn strip_verbatim_prefix(p: &str) -> String {
+    p.strip_prefix(r"\\?\").unwrap_or(p).to_string()
 }
 
 // ── Auto-pin daemon commands ─────────────────────────────────────────
@@ -539,8 +550,8 @@ async fn lhm_sensors_elevated(app: tauri::AppHandle) -> Result<toolkit::LhmRepor
         .map_err(|e| format!("resolve resource dir: {e}"))?;
     let script = resource_dir.join("resources/lhm/read_sensors.ps1");
     let dll = resource_dir.join("resources/lhm/LibreHardwareMonitorLib.dll");
-    let script_str = script.to_string_lossy().to_string();
-    let dll_str = dll.to_string_lossy().to_string();
+    let script_str = strip_verbatim_prefix(&script.to_string_lossy());
+    let dll_str = strip_verbatim_prefix(&dll.to_string_lossy());
     tokio::task::spawn_blocking(move || {
         toolkit::probe_lhm_sensors_elevated(&script_str, &dll_str)
     })

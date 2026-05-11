@@ -4,6 +4,7 @@ import { TweakRow } from '../components/TweakRow'
 import { SuggestTweakModal } from '../components/SuggestTweakModal'
 import { TweakPreviewDrawer, type ResolvedPreview } from '../components/TweakPreviewDrawer'
 import { RiskLegend } from '../components/RiskLegend'
+import { NextStepsBanner } from '../components/NextStepsBanner'
 import { auditMany, type TweakAudit } from '../lib/audit'
 import { catalog, tweakRequiresAdmin, type AnticheatId, type TweakCategory, type TweakRecord } from '../lib/catalog'
 import { GAMES, type GameId } from '../lib/games'
@@ -258,6 +259,11 @@ export function Tweaks() {
           <p className="text-text-muted text-sm">
             {catalog.tweaks.length} curated · {catalog.version}
           </p>
+          <p className="text-text-subtle text-[11px] mt-1 max-w-xl leading-snug">
+            Some tweaks need admin — Windows will pop a single UAC dialog when you click Apply.
+            Click <strong className="text-text">Yes</strong> and the whole batch runs in one shot.
+            Every tweak is reversible from <code className="text-accent">/diff</code>.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -280,6 +286,8 @@ export function Tweaks() {
           </button>
         </div>
       </header>
+
+      <NextStepsBanner appliedCount={Object.keys(appliedById).length} />
 
       <div className="space-y-3">
         <input

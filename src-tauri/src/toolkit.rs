@@ -2092,15 +2092,27 @@ pub fn discover_onu_stick() -> OnuDiscoveryResult {
         .collect::<Vec<_>>()
         .join(",");
 
+    // History: v0.1.77 used `ForEach-Object -Parallel`, which is **PowerShell
+    // 7+ only**. Windows ships PS 5.1, so on a stock rig the script errored
+    // with "A parameter cannot be found that matches parameter name
+    // 'Parallel'", $results was $null, and the UI's "show per-URL attempts"
+    // expander rendered an empty list — making it look like nothing was
+    // tried at all. v0.1.79: sequential with a tight 1.5s per-candidate
+    // timeout (max 7.5s total, typically 2-4s) so it works on every
+    // supported Windows. .NET's HttpWebRequest is happy with self-signed
+    // certs once the validation callback is short-circuited; the older 8311
+    // firmware ships a snake-oil cert so we MUST allow it.
     let script = format!(
         r#"
 $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::ServerCertificateValidationCallback = {{ $true }}
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
+try {{
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+}} catch {{}}
 
 $urls = @({urls_csv})
-$results = $urls | ForEach-Object -Parallel {{
-    $u = $_
+$results = New-Object System.Collections.Generic.List[object]
+foreach ($u in $urls) {{
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $ok = $false
     $err = ''
@@ -2110,10 +2122,20 @@ $results = $urls | ForEach-Object -Parallel {{
     }} catch {{
         $err = $_.Exception.Message
     }}
-    [pscustomobject]@{{ url = $u; ok = $ok; elapsedMs = [int]$sw.ElapsedMilliseconds; err = $err }}
-}} -ThrottleLimit 5
+    $results.Add([pscustomobject]@{{ url = $u; ok = $ok; elapsedMs = [int]$sw.ElapsedMilliseconds; err = $err }})
+    # Short-circuit on first success — no point probing the rest once we
+    # know which stick the user has. Remaining urls are NOT emitted into the
+    # attempts list, which is fine (the diagnostic UI only shows attempts
+    # when discovery FAILS).
+    if ($ok) {{ break }}
+}}
 
-$results | ConvertTo-Json -Compress -AsArray
+# Force array semantics: wrap in @() so even a single-element result
+# serializes as a JSON array (not a bare object). Original v0.1.77 used
+# ConvertTo-Json -AsArray, which is PowerShell 6+ only — PS 5.1 doesn't
+# recognize the flag and silently drops the bracket pair.
+$arrayWrapped = @($results.ToArray())
+ConvertTo-Json -InputObject $arrayWrapped -Compress -Depth 4
 "#
     );
 
@@ -2140,6 +2162,7 @@ $results | ConvertTo-Json -Compress -AsArray
     };
 
     let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
     #[derive(serde::Deserialize)]
     struct RawAttempt {
         url: String,
@@ -2150,7 +2173,7 @@ $results | ConvertTo-Json -Compress -AsArray
     }
 
     let raw: Vec<RawAttempt> = serde_json::from_str(&stdout).unwrap_or_default();
-    let attempts: Vec<OnuDiscoveryAttempt> = raw
+    let mut attempts: Vec<OnuDiscoveryAttempt> = raw
         .iter()
         .map(|r| OnuDiscoveryAttempt {
             url: r.url.clone(),
@@ -2159,6 +2182,29 @@ $results | ConvertTo-Json -Compress -AsArray
             error: if r.err.is_empty() { None } else { Some(r.err.clone()) },
         })
         .collect();
+
+    // If we got zero parsed attempts back, the script itself almost
+    // certainly errored out (PS version mismatch, blocked execution policy,
+    // AV killing the spawn, etc.). Surface stderr + raw stdout as a single
+    // pseudo-attempt so the UI's "show per-URL attempts" expander gives
+    // useful diagnostic instead of looking empty — which is exactly the
+    // v0.1.77 regression that prompted this rewrite.
+    if attempts.is_empty() {
+        let mut detail = stderr.clone();
+        if detail.is_empty() {
+            detail = if stdout.is_empty() {
+                "PowerShell returned no output — execution may be blocked".to_string()
+            } else {
+                format!("couldn't parse PS output: {}", stdout.chars().take(200).collect::<String>())
+            };
+        }
+        attempts.push(OnuDiscoveryAttempt {
+            url: "(discovery script)".to_string(),
+            ok: false,
+            elapsed_ms: started.elapsed().as_millis() as u32,
+            error: Some(detail),
+        });
+    }
 
     let winner = raw.iter().find(|r| r.ok).map(|r| r.url.clone());
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { openExternal } from '../lib/tauri'
 import { MAXXER_PRODUCTS, monogram, type MaxxerProduct } from '../lib/maxxerProducts'
 
 /**
@@ -49,7 +50,7 @@ export function MaxxerSidebar() {
 
           <button
             type="button"
-            onClick={() => window.open(MAXXTOPIA_DISCORD_INVITE, '_blank', 'noopener')}
+            onClick={() => { void openExternal(MAXXTOPIA_DISCORD_INVITE) }}
             className="maxxer-sidebar-root"
             aria-label="Join the Maxxtopia Discord"
             title="Join the Maxxtopia Discord"
@@ -105,11 +106,8 @@ function ProductItem({ product }: { product: MaxxerProduct }) {
 
   function handleClick() {
     if (isActive) return
-    if (product.deployedUrl) {
-      window.open(product.deployedUrl, '_blank', 'noopener')
-    } else {
-      window.open(`https://maxxtopia.com/${product.slug}`, '_blank', 'noopener')
-    }
+    const target = product.deployedUrl ?? `https://maxxtopia.com/${product.slug}`
+    void openExternal(target)
     // Re-trigger the zap animation on each click.
     const el = ref.current
     if (!el) return

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { inTauri, vipClaimOnline, vipHwid, vipVerify } from '../lib/tauri'
+import { inTauri, openExternal, vipClaimOnline, vipHwid, vipVerify } from '../lib/tauri'
 import { useVipStore } from '../store/useVipStore'
 
 /**
@@ -273,7 +273,7 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
           </p>
           <button
             type="button"
-            onClick={() => window.open(buildDiscordOAuthUrl(hwid), '_blank', 'noopener')}
+            onClick={() => { void openExternal(buildDiscordOAuthUrl(hwid)) }}
             className="px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5"
             style={{
               background: '#5865F2',

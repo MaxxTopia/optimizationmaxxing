@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.79',
+    date: '2026-05-11',
+    highlights: [
+      'BUG-FIX **External links did nothing inside the desktop app** — every "open Discord / pon.wiki / liquipedia / mailto" link in the app was a silent no-op in the Tauri webview because window.open()/<a target="_blank"> calls get swallowed unless explicitly routed through the shell plugin. plugin-shell was already a dependency + permission was already in capabilities/default.json — but no code actually imported it. Fix: new openExternal() helper in lib/tauri.ts, swapped at every window.open callsite (sidebar M, sidebar per-product items, Pricing ticket button, VIP redemption Discord-link button, Suggest-tweak email button). Plus a global anchor interceptor in App.tsx that catches ALL 32 `<a target="_blank">` links across the catalog without touching their JSX — pon.wiki, liquipedia, exen.sh, github, /research links, etc. all open in the system browser now.',
+      'BUG-FIX **Detect Stick "show per-URL attempts" expander was empty** — the v0.1.77 discovery script used `ForEach-Object -Parallel`, which is **PowerShell 7+ only**. Windows ships PS 5.1, so on stock rigs the param was unknown, the pipeline errored, $results was $null, and the attempts list rendered empty — making it look like nothing was tried. Rewrote as sequential probes (5 candidates × 2s timeout = max 10s, but short-circuits on first success — typically 2-4s). Plus: if the script still ends up returning zero attempts in the future, we surface stderr (or the raw stdout) as a single diagnostic pseudo-entry so the expander always shows *something*.',
+      'BUG-FIX **LibreHardwareMonitor probe "argument drive is null"** — Tauri\'s resource_dir() returns Windows extended-length paths with the `\\\\?\\` prefix in installed (NSIS) builds. PowerShell\'s `Split-Path` can\'t parse the prefix → returned null → `Join-Path null` errored → LHM never loaded → fell back to ACPI sensors with the LHM-failed banner shown. Fix: strip the verbatim-prefix in Rust (lib.rs::strip_verbatim_prefix) AND swap `Split-Path $DllPath` for `[System.IO.Path]::GetDirectoryName($DllPath)` in read_sensors.ps1 (handles both path styles). Belt + suspenders so future Tauri path-handling changes don\'t reopen this.',
+      'UX **Post-apply "next steps" banner** — once you\'ve applied ≥ 5 tweaks, a gold-tinted card surfaces above the Tweaks list pointing at the three highest-leverage things that live OUTSIDE the catalog (because they\'re external tools or BIOS-tier articleware): NVIDIA Profile Inspector, Standby memory cleaner, SCEWIN / BIOS tuning. Each links into the matching /guides article. Dismissible — comes back after 30 days in case you install a fresh tweak pack and want a reminder. Fixes the "applied everything → moved on → never explored guides" drop-off.',
+      'UX **Admin-prompt explainer above the Tweaks list** — single line above the catalog telling first-time users that *some tweaks need admin*, Windows pops a single UAC dialog when you click Apply, and click Yes to run the whole batch in one shot. Plus a reminder that every tweak is reversible from /diff. Combined with v0.1.78\'s HKCU\\Software\\Policies routing this finally gives standard-user friends a smooth first run.',
+    ],
+  },
+  {
     version: '0.1.78',
     date: '2026-05-10',
     highlights: [

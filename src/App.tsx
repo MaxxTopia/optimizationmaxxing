@@ -21,7 +21,7 @@ import { Settings } from './pages/Settings'
 import { Changelog } from './pages/Changelog'
 import { Diagnostics } from './pages/Diagnostics'
 import { Session } from './pages/Session'
-import { inTauri, telemetrySendEvent } from './lib/tauri'
+import { inTauri, openExternal, telemetrySendEvent } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 import { useProfileStore } from './store/useProfileStore'
 
@@ -44,6 +44,35 @@ export default function App() {
     telemetrySendEvent('app.launch', { profile: activeProfile })
     return () => window.clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Global anchor interceptor: route every `<a target="_blank">` click with
+  // an external URL through plugin-shell's open(). Tauri 2 silently no-ops
+  // popup-style navigations from the webview, so without this interceptor
+  // every "open pon.wiki / liquipedia / discord / etc." link in the catalog
+  // looks broken. 32 anchor sites in the app — handled here once instead of
+  // touching each one. In-app router links (relative hrefs) are left alone.
+  useEffect(() => {
+    if (!inTauri()) return
+    function isExternal(href: string): boolean {
+      return /^(https?:|mailto:|discord:)/i.test(href)
+    }
+    function onClick(e: MouseEvent) {
+      // Modifier keys / right-click / middle-click: respect default behavior.
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+        return
+      }
+      const target = (e.target as HTMLElement | null)?.closest('a')
+      if (!target) return
+      const href = target.getAttribute('href') ?? ''
+      const wantsNewTab =
+        target.target === '_blank' || target.hasAttribute('data-external')
+      if (!wantsNewTab || !isExternal(href)) return
+      e.preventDefault()
+      void openExternal(href)
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
   }, [])
 
   return (

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { openExternal } from '../lib/tauri'
+
 /**
  * Suggest-a-tweak feedback modal. Three submission paths:
  *   1. Copy as DM template — for Discord (manual paste into #feedback thread)
@@ -73,7 +75,7 @@ export function SuggestTweakModal({ open, onClose }: Props) {
   function handleEmail() {
     const subject = encodeURIComponent('optimizationmaxxing tweak suggestion')
     const body = encodeURIComponent(text.trim() || TEMPLATE_PLACEHOLDER)
-    window.open(`mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`, '_blank')
+    void openExternal(`mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`)
   }
 
   return (

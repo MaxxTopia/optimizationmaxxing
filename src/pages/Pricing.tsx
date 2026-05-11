@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useVipStore } from '../store/useVipStore'
 import { VipRedemptionPanel } from '../components/VipRedemptionPanel'
+import { openExternal } from '../lib/tauri'
 
 /**
  * Pricing — Free vs VIP (lifetime). Restructured 2026-05-10 from the
@@ -77,7 +78,7 @@ export function Pricing() {
     // Discord-ticket flow during launch — TicketTool bot opens a private
     // thread per buyer; Diggy DMs back a code after PayPal/BTC/Venmo
     // payment. Stripe Checkout wires in at v0.1.58+ once volume is real.
-    window.open(DISCORD_TICKET_URL, '_blank', 'noopener')
+    void openExternal(DISCORD_TICKET_URL)
   }
 
   return (

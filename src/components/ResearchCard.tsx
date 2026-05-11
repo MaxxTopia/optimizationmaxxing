@@ -27,6 +27,7 @@ export function ResearchCard({
 
   return (
     <article
+      id={article.id}
       className={`surface-card overflow-hidden transition-all ${
         open ? 'border-border-glow' : ''
       }`}

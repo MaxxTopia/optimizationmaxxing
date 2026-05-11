@@ -28,6 +28,30 @@ function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   return rawInvoke<T>(cmd, args)
 }
 
+/**
+ * Open a URL in the user's system browser. Inside Tauri, `window.open()` is
+ * silently no-op'd by the webview unless the URL is allowlisted in
+ * tauri.conf.json's CSP — so every external link in the app was visually
+ * broken (click = nothing). Plugin-shell's `open()` goes through the OS
+ * `ShellExecute`-equivalent path and works for any URL the user could open
+ * by hand. In browser preview we fall back to `window.open` so /pricing
+ * etc. still demo on maxxtopia.com.
+ *
+ * Capability `shell:allow-open` already in src-tauri/capabilities/default.json.
+ */
+export async function openExternal(url: string): Promise<void> {
+  if (inTauri()) {
+    try {
+      const { open } = await import('@tauri-apps/plugin-shell')
+      await open(url)
+      return
+    } catch (e) {
+      console.warn('[openExternal] shell.open failed, falling back to window.open:', e)
+    }
+  }
+  window.open(url, '_blank', 'noopener')
+}
+
 // ---------- Spec types ----------
 
 export interface CpuInfo {
