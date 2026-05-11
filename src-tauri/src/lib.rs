@@ -682,6 +682,37 @@ fn build_summary(action: &TweakAction, pre_state: &serde_json::Value) -> String 
             let new_size = (contents_b64.len() / 4) * 3 - pad;
             format!("Write {path} ({new_size} bytes) {prior}")
         }
+        TweakAction::DisplayRefresh {
+            device_match,
+            target_hz,
+            fallback_chain,
+        } => {
+            // Surface matched displays + their current Hz from the captured
+            // pre-state so the UI shows "what would change."
+            let matched_count = pre_state
+                .get("devices")
+                .and_then(|v| v.as_array())
+                .map(|a| a.len())
+                .unwrap_or(0);
+            let prior_summary: String = pre_state
+                .get("devices")
+                .and_then(|v| v.as_array())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|d| {
+                            let desc = d.get("description").and_then(|x| x.as_str())?;
+                            let hz = d.get("hz").and_then(|x| x.as_u64())?;
+                            Some(format!("{desc} ({hz}Hz)"))
+                        })
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                })
+                .unwrap_or_else(|| "(no current matches)".to_string());
+            format!(
+                "Bump refresh: match={:?} target={}Hz (fallback {:?}) — {} matched: {}",
+                device_match, target_hz, fallback_chain, matched_count, prior_summary
+            )
+        }
     }
 }
 

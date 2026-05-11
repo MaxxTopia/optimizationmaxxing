@@ -89,7 +89,38 @@ pub enum TweakAction {
         /// Base64-encoded file contents to write.
         contents_b64: String,
     },
+    /// Bump the refresh rate of one or more attached displays. Native
+    /// Win32 path via ChangeDisplaySettingsExW — UNELEVATED (per-user
+    /// setting, no UAC needed). Pre-state captures the current mode
+    /// of every matched display so revert restores exactly.
+    ///
+    /// Phase 4d initial use case: the aimmaxxer 2-PC setup feeds an
+    /// HDMI capture card from the gaming PC; bumping that output to
+    /// the highest supported refresh raises the source-rate ceiling
+    /// the capture card can deliver to the cheat PC. Also generally
+    /// useful for any monitor stuck at a default lower mode after a
+    /// driver update or display swap.
+    DisplayRefresh {
+        /// Pipe-separated list of substrings; case-insensitive match
+        /// against device name OR description. e.g.
+        /// "aver|gc573|live gamer" matches the GC573 capture card.
+        /// Use ".*" or "" to match every attached display.
+        device_match: String,
+        /// Desired refresh rate in Hz at 1920x1080. Falls back through
+        /// `fallback_chain` if not supported by the matched display +
+        /// cable + EDID combo.
+        target_hz: u32,
+        /// Ordered fallback list, tried after `target_hz`. Default
+        /// [240, 165, 144, 120]. Apply picks the first available in
+        /// the chain.
+        #[serde(default = "default_refresh_fallback")]
+        fallback_chain: Vec<u32>,
+    },
     // Phase 4d still TODO: ExternalToolInvoke, TimerResolution.
+}
+
+fn default_refresh_fallback() -> Vec<u32> {
+    vec![240, 165, 144, 120]
 }
 
 impl TweakAction {
@@ -100,6 +131,7 @@ impl TweakAction {
             TweakAction::BcdeditSet { .. } => "bcdedit_set",
             TweakAction::PowershellScript { .. } => "powershell_script",
             TweakAction::FileWrite { .. } => "file_write",
+            TweakAction::DisplayRefresh { .. } => "display_refresh",
         }
     }
 
@@ -117,6 +149,9 @@ impl TweakAction {
                 let expanded = super::file_write::expand_env(path).unwrap_or_else(|_| path.clone());
                 !super::file_write::is_user_profile_path(&expanded)
             }
+            // ChangeDisplaySettingsExW writes a per-user setting; standard
+            // user has full access. No UAC.
+            TweakAction::DisplayRefresh { .. } => false,
         }
     }
 }

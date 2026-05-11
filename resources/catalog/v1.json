@@ -1,8 +1,28 @@
 {
-  "version": "v1.8.2",
-  "generated_at": "2026-05-10",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.2 expands AC matrix to 18 tagged tweaks (game-specific IFEOs explicit safe + universal-safe v0.1.62 tweaks tagged so users see green pills).",
+  "version": "v1.8.3",
+  "generated_at": "2026-05-11",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80.",
   "tweaks": [
+    {
+      "id": "display.refresh.maximize",
+      "title": "Maximize Display Refresh Rate",
+      "category": "monitor",
+      "description": "Walks every attached monitor + finds the highest refresh rate Windows supports at the current resolution, then locks it in. The #1 cause of \"my 240Hz monitor feels like 60Hz\" is Windows defaulting to a lower mode after a driver update or display swap - this fixes it in one click. Native Win32 call (ChangeDisplaySettingsExW), no UAC prompt, instantly reversible from /diff.",
+      "rationale": "Display refresh rate is per-user state in Windows, but most users never click into Settings -> Display -> Advanced display to verify. After driver updates, monitor swaps, or HDMI cable changes Windows often re-negotiates down to the lowest common mode and stays there. Two-phase TEST -> APPLY guard rejects modes the cable/EDID can't actually handle, so we never strand you on a black screen. For 2-PC setups (e.g. running a capture card off your gaming PC) this also bumps the source rate the capture card sees - a Phase 4d wire-in for the broader aimmaxxer 2-PC workflow.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
+      "actions": [
+        {
+          "kind": "display_refresh",
+          "device_match": "*",
+          "target_hz": 240,
+          "fallback_chain": [240, 165, 144, 120]
+        }
+      ]
+    },
     {
       "id": "display.mpo.disable",
       "title": "Disable Multi-Plane Overlay (MPO)",

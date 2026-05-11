@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.80',
+    date: '2026-05-11',
+    highlights: [
+      'NEW **Maximize HDMI / monitor refresh rate** — single-click tweak that walks every attached display, queries the highest refresh rate Windows says is supported at the current resolution, and locks it in. Native ChangeDisplaySettingsExW Win32 call from Rust — **no UAC prompt** (per-user setting), instantly reversible from /diff, idempotent (a re-apply on an already-maxed monitor is a no-op). Two-phase TEST → APPLY guard so a cable / EDID that can\'t actually handle the requested mode is rejected cleanly instead of dropping the display off-signal. The most common cause of "I bought a 240Hz monitor and it\'s only running at 60Hz" is Windows defaulting to a lower mode after a driver swap; this nukes that in one click. Categorized under display, free tier, AC-safe across all anticheats.',
+      'NEW **DisplayRefresh engine action** — fifth TweakAction variant (after RegistrySet / RegistryDelete / BcdeditSet / PowershellScript / FileWrite). First non-registry/non-script native Windows API call in the engine. Pre-state captures the original mode of every matched display per device, so the revert path replays exactly what you had before — even if you applied across multiple monitors with mixed refresh rates.',
+    ],
+  },
+  {
     version: '0.1.79',
     date: '2026-05-11',
     highlights: [

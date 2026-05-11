@@ -120,6 +120,12 @@ pub fn build_apply_line(action: &TweakAction) -> anyhow::Result<String> {
         TweakAction::BcdeditSet { name, value } => Ok(bcdedit::apply_cmd_line(name, value)),
         TweakAction::PowershellScript { .. } => powershell::apply_cmd_line(action),
         TweakAction::FileWrite { .. } => file_write::apply_cmd_line(action),
+        // DisplayRefresh is unelevated — applied via in-process Win32
+        // call before the elevated batch runs. Should never reach this
+        // builder; rejected explicitly to catch routing bugs.
+        TweakAction::DisplayRefresh { .. } => Err(anyhow!(
+            "DisplayRefresh shouldn't reach build_apply_line — it's unelevated"
+        )),
     }
 }
 
@@ -143,6 +149,9 @@ pub fn build_revert_line(
         TweakAction::BcdeditSet { name, .. } => Ok(bcdedit::revert_cmd_line(name, pre_state)),
         TweakAction::PowershellScript { .. } => powershell::revert_cmd_line(action),
         TweakAction::FileWrite { .. } => file_write::revert_cmd_line(action, pre_state),
+        TweakAction::DisplayRefresh { .. } => Err(anyhow!(
+            "DisplayRefresh shouldn't reach build_revert_line — it's unelevated"
+        )),
     }
 }
 

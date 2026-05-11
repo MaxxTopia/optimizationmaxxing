@@ -11,6 +11,7 @@
 
 pub mod actions;
 pub mod bcdedit;
+pub mod display;
 pub mod elevation;
 pub mod file_write;
 pub mod powershell;
@@ -36,6 +37,7 @@ pub fn capture_pre_state(action: &TweakAction) -> anyhow::Result<serde_json::Val
         TweakAction::BcdeditSet { .. } => bcdedit::capture_pre_state(action),
         TweakAction::PowershellScript { .. } => Ok(serde_json::json!({})),
         TweakAction::FileWrite { .. } => file_write::capture_pre_state(action),
+        TweakAction::DisplayRefresh { .. } => display::capture_pre_state(action),
     }
 }
 
@@ -66,6 +68,7 @@ pub fn apply(action: &TweakAction) -> anyhow::Result<serde_json::Value> {
                 file_write::apply(action)
             }
         }
+        TweakAction::DisplayRefresh { .. } => display::apply(action),
     }
 }
 
@@ -81,6 +84,7 @@ pub fn apply_unelevated(action: &TweakAction) -> anyhow::Result<serde_json::Valu
             registry::apply(action)
         }
         TweakAction::FileWrite { .. } => file_write::apply(action),
+        TweakAction::DisplayRefresh { .. } => display::apply(action),
         // Bcd + PS always require admin and shouldn't reach this branch.
         TweakAction::BcdeditSet { .. } | TweakAction::PowershellScript { .. } => Err(
             anyhow::anyhow!("apply_unelevated called on action that requires admin"),
@@ -97,6 +101,7 @@ pub fn revert_unelevated(action: &TweakAction, pre_state: &serde_json::Value) ->
             registry::revert(action, pre_state)
         }
         TweakAction::FileWrite { .. } => file_write::revert(action, pre_state),
+        TweakAction::DisplayRefresh { .. } => display::revert(action, pre_state),
         TweakAction::BcdeditSet { .. } | TweakAction::PowershellScript { .. } => Err(
             anyhow::anyhow!("revert_unelevated called on action that requires admin"),
         ),
@@ -121,5 +126,6 @@ pub fn revert(action: &TweakAction, pre_state: &serde_json::Value) -> anyhow::Re
                 file_write::revert(action, pre_state)
             }
         }
+        TweakAction::DisplayRefresh { .. } => display::revert(action, pre_state),
     }
 }
