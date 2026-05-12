@@ -22,6 +22,7 @@ import valorantProSettings from '../../resources/research/valorant-pro-settings.
 import nvidiaProfileInspector from '../../resources/research/nvidia-profile-inspector.md?raw'
 import standbyListCleaner from '../../resources/research/standby-list-cleaner.md?raw'
 import dscpRouterCompanion from '../../resources/research/dscp-router-companion.md?raw'
+import rgbShutoff from '../../resources/research/rgb-shutoff.md?raw'
 
 import type { GameId } from './games'
 
@@ -210,6 +211,14 @@ export const RESEARCH: ResearchArticle[] = [
       "If Live Thermals shows 'probe failed' or CPU package temp won't appear after Enable, your AV is blocking the WinRing0 driver. Add-MpPreference snippet inside.",
     badge: 'TROUBLESHOOTING',
     body: winring0AvExclusion,
+  },
+  {
+    id: 'rgb-shutoff',
+    title: 'Turn RGB off persistently — without leaving software running',
+    blurb:
+      "LEDs aren't the input-delay tax — iCUE / Synapse / Aura polling USB at 60-1000 Hz is. Catalog tweak kills the autostart; this guide handles persistent LED-off via vendor save-to-flash. T-Force RAM specific flow included.",
+    badge: 'PERIPHERAL',
+    body: rgbShutoff,
   },
   {
     id: 'discord-low-fps',

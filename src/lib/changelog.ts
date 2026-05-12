@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.82',
+    date: '2026-05-12',
+    highlights: [
+      'NEW **Disable RGB control apps at startup** — single tweak sweeps Run / RunOnce keys across HKCU + HKLM (incl. WOW6432Node) **and** Windows scheduled tasks, matching ~25 keywords across every major RGB vendor: Asus Aura / Armoury Crate, Corsair iCUE, MSI Mystic Light / MSI Center, Gigabyte RGB Fusion / AORUS, Razer Synapse, Logitech G HUB, T-Force Blitz, NZXT CAM, EVGA Precision X1, Cooler Master MasterPlus, OpenRGB, SignalRGB, OMEN Lighting Studio, AlienFX. Pre-state stashes to `%LOCALAPPDATA%\\\\optmaxxing\\\\backups\\\\rgb-autostart-stash.json` so revert restores every Run-key value byte-for-byte and re-enables every disabled task. The apps still launch on demand — they just don\'t auto-spawn at login. Real DPC + USB-polling tax recovery (iCUE + Synapse are the documented worst offenders).',
+      'NEW **/guides/rgb-shutoff — turn LEDs off persistently, no software running** — companion articleware to the new tweak. Opens with the honest claim audit (LEDs themselves don\'t cause measurable input delay; vendor software polling does), then the T-Force RAM-specific save-to-flash workflow (install Blitz → set black → Save to Flash → uninstall — LEDs stay off forever), per-vendor BIOS RGB toggle paths (ASUS / MSI / Gigabyte / ASRock), GPU / AIO / peripheral save-to-flash playbooks, OpenRGB fallback with explicit "don\'t run during ranked" anti-cheat caveat, and the unplug-the-header last resort.',
+    ],
+  },
+  {
     version: '0.1.81',
     date: '2026-05-11',
     highlights: [

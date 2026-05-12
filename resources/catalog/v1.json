@@ -1,7 +1,7 @@
 {
-  "version": "v1.8.3",
-  "generated_at": "2026-05-11",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80.",
+  "version": "v1.8.4",
+  "generated_at": "2026-05-12",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash.",
   "tweaks": [
     {
       "id": "display.refresh.maximize",
@@ -2192,6 +2192,25 @@
           "kind": "file_write",
           "path": "%LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\GameUserSettings.ini",
           "contents_b64": "Wy9TY3JpcHQvRm9ydG5pdGVHYW1lLkZvcnRHYW1lVXNlclNldHRpbmdzXQpGcmFtZVJhdGVMaW1pdD0yNDAuMDAwMDAwCmJVc2VGaXhlZEZyYW1lUmF0ZT1GYWxzZQpiVXNlTWF4RnJhbWVSYXRlPVRydWUKYk1vdGlvbkJsdXI9RmFsc2UKYlNob3dHcmFzcz1GYWxzZQpiVXNlSERSRGlzcGxheU91dHB1dD1GYWxzZQpiVXNlRHluYW1pY1Jlc29sdXRpb249RmFsc2UKClsvU2NyaXB0L0VuZ2luZS5HYW1lVXNlclNldHRpbmdzXQpiVXNlVlN5bmM9RmFsc2UKYlVzZUR5bmFtaWNSZXNvbHV0aW9uPUZhbHNlClJlc29sdXRpb25TaXplWD0xOTIwClJlc29sdXRpb25TaXplWT0xMDgwCkxhc3RVc2VyQ29uZmlybWVkUmVzb2x1dGlvblNpemVYPTE5MjAKTGFzdFVzZXJDb25maXJtZWRSZXNvbHV0aW9uU2l6ZVk9MTA4MApXaW5kb3dQb3NYPS0xCldpbmRvd1Bvc1k9LTEKRnVsbHNjcmVlbk1vZGU9MApMYXN0Q29uZmlybWVkRnVsbHNjcmVlbk1vZGU9MApQcmVmZXJyZWRGdWxsc2NyZWVuTW9kZT0wClZlcnNpb249NQ=="
+        }
+      ]
+    },
+    {
+      "id": "peripherals.rgb-control-apps.autostart-disable",
+      "title": "Disable RGB control apps at startup (Aura / iCUE / Mystic Light / Synapse / G-Hub / T-Force Blitz / NZXT CAM / OpenRGB / SignalRGB)",
+      "category": "process",
+      "description": "Sweeps every Run/RunOnce autostart entry in HKCU + HKLM (plus WOW6432Node) AND every Scheduled Task whose name matches a known RGB control-app keyword (Aura, Armoury Crate, iCUE, Mystic Light, MSI Center, RGB Fusion, AORUS, Razer Synapse, Logitech G HUB, T-Force, BLITZ, NZXT CAM, EVGA Precision, Cooler Master MasterPlus, OpenRGB, SignalRGB, OMEN Lighting, AlienFX). Each match is stashed to %LOCALAPPDATA%\\optmaxxing\\backups\\rgb-autostart-stash.json before removal — revert restores Run-key values + re-enables tasks. The apps still launch on demand; they just don't auto-spawn at login.",
+      "rationale": "RGB control software is the actual input-delay tax people blame on RGB. The LEDs themselves draw ~negligible USB bus time. The vendor apps polling at 60-1000Hz to push color frames + monitor temps DO cause measurable DPC spikes and 50-200MB+ steady RAM (iCUE and Razer Synapse are repeat offenders — Hardware Unboxed + Gamers Nexus DPC pulls have shown 200µs+ spikes correlated with iCUE running). Companion guide /guides/rgb-shutoff covers persistent LED-off via save-to-flash so you never need to launch the vendor app again after the one-time setup. Two halves of the same fix — this tweak handles the software tax, the guide handles the lighting.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$ErrorActionPreference='SilentlyContinue'; $stashDir=\"$env:LOCALAPPDATA\\optmaxxing\\backups\"; New-Item -ItemType Directory -Path $stashDir -Force | Out-Null; $stashFile=\"$stashDir\\rgb-autostart-stash.json\"; $kw=@('Aura','Armoury','ArmouryCrate','ROG Live','LightingService','iCUE','Corsair','Mystic','MSI Center','RGB Fusion','GIGABYTE Control','AORUS','Razer','RzPlatform','Logitech G HUB','LGHUB','T-Force','TForce','BLITZ','NZXT CAM','NZXT','EVGA Precision','MasterPlus','Cooler Master','OpenRGB','SignalRGB','OMEN Lighting','OmenLighting','AlienFX','Alienware Command'); $runKeys=@('HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run','HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce','HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run','HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce','HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run'); $stash=@{runKeyEntries=@();scheduledTasks=@()}; foreach ($p in $runKeys) { if (-not (Test-Path $p)) { continue }; $props=Get-ItemProperty -Path $p; foreach ($n in $props.PSObject.Properties.Name) { if ($n -like 'PS*') { continue }; $hay=\"$n $($props.$n)\"; $hit=$false; foreach ($k in $kw) { if ($hay -like \"*$k*\") { $hit=$true; break } }; if ($hit) { $stash.runKeyEntries+=@{key=$p;name=$n;data=[string]$props.$n}; Remove-ItemProperty -Path $p -Name $n -Force } } }; try { $tasks=Get-ScheduledTask -ErrorAction Stop; foreach ($t in $tasks) { if ([string]$t.State -eq 'Disabled') { continue }; $hay=\"$($t.TaskName) $($t.TaskPath)\"; $hit=$false; foreach ($k in $kw) { if ($hay -like \"*$k*\") { $hit=$true; break } }; if ($hit) { $stash.scheduledTasks+=@{path=$t.TaskPath;name=$t.TaskName}; Disable-ScheduledTask -TaskPath $t.TaskPath -TaskName $t.TaskName | Out-Null } } } catch {}; ($stash | ConvertTo-Json -Depth 6) | Set-Content -Path $stashFile -Encoding UTF8; Write-Output (\"OK removed=\"+$stash.runKeyEntries.Count+\" disabledTasks=\"+$stash.scheduledTasks.Count)",
+          "revert": "$ErrorActionPreference='SilentlyContinue'; $stashFile=\"$env:LOCALAPPDATA\\optmaxxing\\backups\\rgb-autostart-stash.json\"; if (-not (Test-Path $stashFile)) { Write-Output 'NOSTASH'; return }; $stash=Get-Content $stashFile -Raw | ConvertFrom-Json; foreach ($e in $stash.runKeyEntries) { if (-not (Test-Path $e.key)) { New-Item -Path $e.key -Force | Out-Null }; New-ItemProperty -Path $e.key -Name $e.name -Value $e.data -PropertyType String -Force | Out-Null }; foreach ($t in $stash.scheduledTasks) { try { Enable-ScheduledTask -TaskPath $t.path -TaskName $t.name | Out-Null } catch {} }; Remove-Item $stashFile -Force -ErrorAction SilentlyContinue; Write-Output 'OK'"
         }
       ]
     }
