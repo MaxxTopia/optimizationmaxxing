@@ -6,6 +6,7 @@
 import nvidiaReflex from '../../resources/research/nvidia-reflex.md?raw'
 import browsers from '../../resources/research/browsers.md?raw'
 import gamingMice from '../../resources/research/gaming-mice.md?raw'
+import hallEffectKeyboards from '../../resources/research/hall-effect-keyboards.md?raw'
 import perGameWindows from '../../resources/research/per-game-windows-version.md?raw'
 import amdIntel from '../../resources/research/amd-intel-features.md?raw'
 import biosPerChipset from '../../resources/research/bios-per-chipset.md?raw'
@@ -23,6 +24,7 @@ import nvidiaProfileInspector from '../../resources/research/nvidia-profile-insp
 import standbyListCleaner from '../../resources/research/standby-list-cleaner.md?raw'
 import dscpRouterCompanion from '../../resources/research/dscp-router-companion.md?raw'
 import rgbShutoff from '../../resources/research/rgb-shutoff.md?raw'
+import ramBiosRecipes from '../../resources/research/ram-bios-recipes.md?raw'
 
 import type { GameId } from './games'
 
@@ -72,6 +74,15 @@ export const RESEARCH: ResearchArticle[] = [
       'SCEWIN exports your full BIOS in plain text — irreplaceable for diagnostics + before-you-flash backup. Article-only; we never auto-edit BIOS at runtime.',
     badge: 'ADVANCED',
     body: scewinAdvanced,
+    advanced: true,
+  },
+  {
+    id: 'ram-bios-recipes',
+    title: 'RAM tightening — copy-paste BIOS recipes per IC',
+    blurb:
+      'SAFE Buildzoid/DRAM-Calculator timings for Samsung B-die / Hynix A-die / M-die / DJR / CJR / Micron Rev.E. DDR4 + DDR5 tables. Type these into BIOS, validate with TestMem5. The 5-8% FPS win the catalog can\'t auto-apply.',
+    badge: 'BIOS',
+    body: ramBiosRecipes,
     advanced: true,
   },
   {
@@ -170,6 +181,20 @@ export const RESEARCH: ResearchArticle[] = [
     badge: 'VALORANT',
     body: valorantProSettings,
     applicableGames: ['valorant'],
+  },
+  {
+    id: 'hall-effect-keyboards',
+    title: 'Hall-Effect keyboard tier list (2026)',
+    blurb:
+      'Wooting 80HE / 60HE+ vs Apex Pro Gen 3 vs Drunkdeer G75 vs Endgame KB65HE. Tier list, per-game actuation / rapid-trigger settings, software comparison, pro adoption rates. Every Major top-10 finalist runs HE in 2026.',
+    badge: 'PERIPHERAL',
+    body: hallEffectKeyboards,
+    perGameCallouts: {
+      fortnite: 'Build keys → actuation 0.2 mm + RT 0.1 mm for edit speed. WASD → 1.0 mm. Veno + Khanada on Wooting.',
+      valorant: 'WASD → 0.5 mm + RT 0.1 mm = pure counter-strafe. Abilities → 1.5 mm to avoid mis-taps.',
+      cs2: 'Same as Valorant — every Major top-10 finalist on HE in 2026.',
+      apex: 'WASD → 0.3 mm + RT 0.1 mm for tap-strafe / lurch timing. Crouch/slide → 0.8 mm.',
+    },
   },
   {
     id: 'gaming-mice',

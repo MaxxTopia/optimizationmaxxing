@@ -157,7 +157,7 @@ export function Pricing() {
             <span className="text-accent font-semibold">2.</span> Tell Diggy your preferred payment — PayPal, BTC, Venmo, Cash App, whatever works for you.
           </li>
           <li>
-            <span className="text-accent font-semibold">3.</span> Pay → Diggy DMs you a 16-char activation code → tap "$8" 5x on this page → paste code → first-claim-wins on your rig forever.
+            <span className="text-accent font-semibold">3.</span> Pay → Diggy DMs you a 16-char activation code → tap the <span className="text-accent">$115</span> price 5x on this page → paste code → first-claim-wins on your rig forever.
           </li>
         </ol>
         <p className="text-[11px] text-text-subtle mt-3 leading-snug">

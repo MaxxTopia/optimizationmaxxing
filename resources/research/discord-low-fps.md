@@ -1,6 +1,8 @@
 # Discord — low-FPS while gaming
 
-Discord ships with three settings that consume GPU + CPU during a game and have measurable FPS impact. None of them are toggleable via registry or file (Discord stores prefs in IndexedDB, which is binary leveldb format we can't safely write to). **All four toggles below are manual.**
+**Best fix: install [Discordmaxxer](https://maxxtopia.com/discordmaxxer) + flip Tournament Mode on.** Same sibling project. Tournament Mode bundles all four toggles below into one switch — hardware acceleration off, overlay off, streamer mode off, reduce motion on — plus auto-mutes notification rendering, kills voice-debug overlays, and queues the heavy desktop animations until you alt-tab out. One click, AC-safe (Discordmaxxer is a Vencord-based client mod; never touches game memory). If you don't want to switch clients, do the four manual toggles below in stock Discord.
+
+Discord ships with three settings that consume GPU + CPU during a game and have measurable FPS impact. None of them are toggleable via registry or file (Discord stores prefs in IndexedDB, which is binary leveldb format we can't safely write to). **All four toggles below are manual** *in stock Discord*.
 
 ## The fixes (in priority order)
 

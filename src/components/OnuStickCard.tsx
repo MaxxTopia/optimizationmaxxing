@@ -205,11 +205,28 @@ export function OnuStickCard() {
               ))}
             </ul>
           </details>
-          <p className="mt-2">
-            <strong className="text-text">Don't have a stick?</strong> That's the expected outcome — most home users on ISP-issued routers don't.{' '}
-            <strong className="text-text">You do have one?</strong> It's on a non-standard IP / behind a route or VLAN your PC can't reach yet — see{' '}
-            <a href="https://pon.wiki/" target="_blank" rel="noreferrer" className="underline">pon.wiki</a> for the routing setup.
-          </p>
+          <div className="mt-2 space-y-1.5">
+            <p>
+              <strong className="text-text">Don't have a stick?</strong> Expected — most ISP-issued installs don't expose stick metrics to the LAN at all (Frontier / AT&amp;T / Verizon / Lumen lock it down). Skip this card.
+            </p>
+            <p>
+              <strong className="text-text">Have an 8311 community stick (EXEN / Potron-based)?</strong> The default URL is{' '}
+              <code className="font-mono text-text">https://192.168.11.1/cgi-bin/luci/8311/metrics</code> — paste your stick's actual management IP in the box above if it lives elsewhere. Self-signed certs are tolerated.
+            </p>
+            <p>
+              <strong className="text-text">Just want to check ONU health on an ISP-issued install?</strong> The metrics live in your <em>router's</em> web UI, not the stick itself:
+            </p>
+            <ul className="ml-3 list-disc text-[11px] text-text-subtle space-y-0.5">
+              <li><strong>Calix Gigaspire</strong> → 192.168.1.1 → Advanced → WAN Info → Fiber Info</li>
+              <li><strong>Nokia Beacon / 7368</strong> → 192.168.1.254 → Status → ONT</li>
+              <li><strong>AT&amp;T BGW320</strong> → 192.168.1.254 → Broadband → Status</li>
+              <li><strong>Frontier eero</strong> → no LAN UI; check the <em>myFrontier</em> app</li>
+              <li><strong>Verizon CR1000A</strong> → 192.168.1.1 → Status → Fios</li>
+            </ul>
+            <p className="mt-1">
+              Full XGS-PON routing setup at <a href="https://pon.wiki/" target="_blank" rel="noreferrer" className="underline">pon.wiki</a>.
+            </p>
+          </div>
         </div>
       )}
       {discovery?.url && (

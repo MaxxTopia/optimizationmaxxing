@@ -91,7 +91,7 @@ export function auditAction(
         return {
           index,
           status: 'unknown',
-          detail: 'BCD probe needs elevation — run preview to surface',
+          detail: 'BCD value needs admin to read — relaunch as admin to see current state',
         }
       }
       const obj = pre as { value?: unknown }
@@ -105,14 +105,14 @@ export function auditAction(
       return {
         index,
         status: 'unknown',
-        detail: 'BCD pre-state opaque — apply to verify',
+        detail: 'BCD value differs in a way we can\'t parse cleanly — apply + revert is safe to verify',
       }
     }
     case 'powershell_script':
       return {
         index,
         status: 'unknown',
-        detail: 'PowerShell scripts run logic — current state not derivable',
+        detail: 'Script-based tweak (e.g. clears caches, kills services) — has no static "before" value to compare. Snapshot stores the pre-state so revert still works.',
       }
     case 'file_write': {
       // pre_state shape: { existed: bool, contents_b64?: string, sha256?: string, size_bytes?: number }

@@ -1,5 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-import { crashLogFrontend, inTauri } from '../lib/tauri'
+import { crashLogFrontend, inTauri, openExternal } from '../lib/tauri'
+
+const MAXXTOPIA_DISCORD = 'https://discord.gg/S78eecbWdx'
 
 /**
  * App-root error boundary. When a render-tree exception escapes (typed wrong
@@ -50,27 +52,42 @@ export class CrashBoundary extends Component<Props, State> {
           <p className="text-sm text-text-muted">
             The app caught an unexpected error and stopped to avoid making it worse. The
             full stack trace was written to your local crash log — Diagnostics → "Last
-            crash" has a one-click copy.
+            crash" has a one-click copy. Paste it in our Discord support thread and we'll
+            triage same-day.
           </p>
           {this.state.message && (
             <pre className="text-xs bg-bg-raised border border-border rounded p-3 overflow-x-auto whitespace-pre-wrap text-text-muted">
               {this.state.message}
             </pre>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => window.location.reload()}
               className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold"
             >
               Reload app
             </button>
+            <button
+              onClick={() => {
+                if (inTauri()) openExternal(MAXXTOPIA_DISCORD)
+                else window.open(MAXXTOPIA_DISCORD, '_blank', 'noopener')
+              }}
+              className="px-4 py-2 rounded-md border border-border text-sm text-text-muted hover:text-text hover:border-border-glow transition"
+            >
+              Report on Discord
+            </button>
             <a
               href="#/diagnostics"
-              className="text-xs underline text-text-muted hover:text-text"
+              className="text-xs underline text-text-muted hover:text-text ml-1"
             >
               Open Diagnostics →
             </a>
           </div>
+          <p className="text-[11px] text-text-subtle pt-2 border-t border-border leading-snug">
+            Recovery: if a tweak you applied is the cause, Settings → Restore Point
+            reverts every applied receipt newest-first. Snapshots are stored locally —
+            even a hard crash doesn't lose them.
+          </p>
         </div>
       </div>
     )

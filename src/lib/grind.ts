@@ -166,9 +166,6 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Veno EWC stream — verbatim (2026-05-08)' },
       },
       {
-        text: 'Hall-Effect keyboards (Wooting 60HE / Razer Huntsman Analog) are the new pro standard — magnetic switches let you tune actuation point + rapid-trigger reset for ~5 ms faster tap-and-rebound on edits. Worth the upgrade if you\'re mech-keyboard now.',
-      },
-      {
         text: 'Scrim economy is real. Veno publicly maps out which scrim leagues at which hours = which skill levels — going pro is partly a routing problem, not just a mechanical one.',
         citation: { label: 'Veno "How to become a pro Fortnite player" (YouTube)', url: 'https://www.youtube.com/watch?v=jYqdF5Q0T-k' },
       },
@@ -303,7 +300,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     kind: 'pro',
     games: ['fortnite'],
     credential: 'Cody "Clix" Conrod · NRG Esports · 5× World Cup qualifier · 2024 Forbes 30 Under 30 (youngest member) · 8M+ Twitch followers',
-    voice: 'NRG NA pro since 2019 (started on Misfits at 14). Public training routine + settings are documented at ProSettings + duelmasters. Built a real business stack alongside competing — apparel (Dr3amin), UEFN game studio (Clix Creative), co-owns XSET.',
+    voice: 'NRG NA pro since 2019 (started on Misfits at 14). Worst pro at the top of the scene, best content creator in it — that\'s the consensus take. Nobody else is streaming at his hours AND competing at his bracket AND pulling those numbers. The 4th-place memes write themselves; the views don\'t.',
     tier: 'top',
     rig: {
       dpi: 'see ProSettings',
@@ -313,7 +310,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     },
     insights: [
       {
-        text: '**Recent FNCS pedigree:** 2nd at FNCS Major 2 2025 NA Central Grand Finals ($25,500); 4th at FNCS Major 1 + Major 3 2024 North America ($30K each); 3rd at FNCS Major 1 2025 NA Central ($17K). Single biggest career payout: $112,500 — 18th in 2019 Fortnite World Cup Solo Finals at age 14.',
+        text: '**Famous 4th places.** 4th at FNCS Major 1 + Major 3 2024 NA ($30K each). 2nd at Major 2 2025 NA Central ($25.5K). 3rd at Major 1 2025 NA Central ($17K). The pattern that became the meme: makes the finals, can\'t close it. Single biggest career payout is still **$112.5K — 18th in 2019 Fortnite World Cup Solo Finals at age 14**, which means his peak result is older than half the lobby he\'s currently competing against.',
         citation: { label: 'Esports Earnings — Clix', url: 'https://www.esportsearnings.com/players/62105-clix-cody-conrod' },
       },
       {
@@ -325,7 +322,13 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'duelmasters.io — Clix breakdown', url: 'https://www.duelmasters.io/blog/clix-fortnite-settings' },
       },
       {
-        text: 'Beyond compete: 2024 Forbes 30 Under 30 (youngest list member at 19), owns Dr3amin apparel + Clix Creative (UEFN game studio), co-owns XSET. The pro-to-business operator transition without leaving the FNCS circuit is unusual; most either go all-in on compete or pivot fully to creator.',
+        text: '**The cheated-by-teammate / cheated-by-Epic narrative.** Scene takes (which Clix has streamed his side of): teammates costing him finals, Epic format changes punishing his playstyle, lobbies he didn\'t deserve. Some of it is real, some is cope — but the persistence of the narrative on stream is part of what built the parasocial bond with his viewer base. Underdog framing is sticky.',
+      },
+      {
+        text: '**The "big shitter" rep + recent duds.** Trios uncon at Globals Supernova POI didn\'t go his way. Recent duos run with WonKeeland uncon ended in another dud. Scene takes circulate the "big shitter" label after each finals stumble. The pro-skill ceiling and the content-creator ceiling have decoupled — he\'s closer to top of one and bottom of the other than he\'s ever been.',
+      },
+      {
+        text: '**Best CC in the scene, period.** Nobody else at his competitive bracket pulls his viewership. Nobody at his viewership pulls his competitive bracket. The 5x World Cup qualifier + 8M Twitch + Forbes 30 Under 30 + Dr3amin apparel + Clix Creative UEFN studio + XSET co-ownership stack is unique in Fortnite. The split-attention concern is real but he is still here.',
         citation: { label: 'Famous Birthdays — Clix', url: 'https://www.famousbirthdays.com/people/clix.html' },
       },
     ],
@@ -375,12 +378,21 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     kind: 'pro',
     games: ['fortnite'],
     credential: 'Solo Fortnite World Cup champion 2019 · $3M prize · still competing professionally',
-    voice: 'Won Solo World Cup at 16. Career has spanned every major Chapter since — one of the few from the 2019 era still on the FNCS circuit.',
+    voice: 'Won Solo World Cup at 16 on a heavy-sniper headshot + refresh — luck pasted on top of a kid who already wouldn\'t lose. The personality is quiet on stream and loud in the practice habits: goes into VODs, learns the timings of the teams he plays against, rotates the lobby around their patterns. Doesn\'t broadcast that he cares about the game. Cares about the game.',
     tier: 'top',
     insights: [
       {
         text: '**Solo World Cup champion 2019** — beat 100 of the world\'s top qualifiers in NYC at age 16, took home $3M (largest prize ever for a single esports tournament at the time). The credential the rest of the scene is still measured against.',
         citation: { label: 'Wikipedia — Bugha (2019 Fortnite World Cup)', url: 'https://en.wikipedia.org/wiki/Bugha' },
+      },
+      {
+        text: '**The lucky-snipe World Cup moment.** Heavy snipers in the 2019 meta were one-hit headshot kills. Bugha hit one, got the refresh on the kill, and that swing was a meaningful chunk of the 32-point Solo Finals total. The greatest-tournament-of-all-time story has a "rolled a 20" beat in the middle of it. Doesn\'t diminish the credential — the practice volume around it is what let him be in the position to hit the shot. Luck rewards the rep count.',
+      },
+      {
+        text: '**Studies VODs, rotates around teams.** The on-stream Bugha is reserved; the off-stream training is the opposite. Goes back through tournament VODs, learns specific teams\' timings + rotation tendencies, plans his own rotates around what he knows the lobby is about to do. The "doesn\'t care anymore" stream takes are wrong — the practice habits say someone who cares enough to do unglamorous information work.',
+      },
+      {
+        text: '**Recent move to 0-ping Dallas on a 1-year lease.** Picked up housing closer to the central US server pop, on a year-long commitment — the kind of move a player who\'s done makes, except it\'s the opposite. Then **didn\'t make Summit LAN**, which the doomers ran with, then **got 2nd in a div cup right after**. Pattern: missed peak when the lobby was easiest, beat the lobby when it was harder. Read the trend, not the snapshot.',
       },
       {
         text: '**FNCS Major 1 DQ + Epic\'s reversal** — Bugha was disqualified from the FNCS Major 1 Grand Finals (NAC) alongside Kreaz, Tragic, and Percnt for using a third-party "drop calculator" overlay. Epic publicly admitted the DQ was a mistake — *"Given the confusion on this, disqualification of these players was a mistake and the DQs will be removed from their record."* — but the Grand Final lobby was already full so they couldn\'t be reinstated. Epic offered a Second Chance Qualifier; Bugha didn\'t qualify for Major 1 Summit through it.',
@@ -395,8 +407,8 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Khanada',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Dignitas · 1st place FNCS 2026 Major 1 NA West Grand Finals (with VicterV) · long-tenured top-tier across multiple chapters',
-    voice: 'Came back to NA West and took the FNCS 2026 Major 1 Grand Finals with VicterV — 160 points clear of 2nd place ($30,000), two Victory Royales en route. Long-career US pro on Dignitas; competitive across multiple chapter resets is the rarer credential.',
+    credential: 'Dignitas · 1st place FNCS 2026 Major 1 NA West Grand Finals (with VicterV) · long-tenured top-tier across multiple chapters · near-perfect FNCS qualification record',
+    voice: 'Confidence is the primary weapon. Delusional in the technical sense — believes outcomes that other pros wouldn\'t bet on — and the delusion is what gets him to the outcomes. The "I came here to shit on you" bit at LAN isn\'t a meme he leans into; it\'s how he actually plays the bracket.',
     tier: 'top',
     rig: {
       monitor: '240 Hz',
@@ -405,6 +417,12 @@ export const GRIND_ENTRIES: GrindEntry[] = [
       {
         text: '**FNCS 2026 Major 1 NA West win with VicterV** — 1st place by 160 points (the runaway margin in a 2-day event) for $30,000 each, two Victory Royales on the way. Result that re-established him as a top NA pro after multiple region + duo shuffles in earlier chapters.',
         citation: { label: 'Sportskeeda — FNCS 2026 Major 1 Grand Finals NA + EU results', url: 'https://www.sportskeeda.com/fortnite/fortnite-fncs-2026-major-1-grand-finals-na-eu-results' },
+      },
+      {
+        text: '**Confidence-as-delusion-as-weapon.** Scene story — at DreamHack Sweden, Khanada conned Janniz off spawn over and over, won the bracket, then yelled "SHIT ON" at the top of his lungs telling Janniz to get out of the room. The framing: "I came to DreamHack Sweden just to shit on you." Most pros don\'t enter LAN with that kind of public callout energy; the ones who do either implode or win. Khanada wins. The confidence isn\'t marketing — it\'s the input that produces the output.',
+      },
+      {
+        text: '**Near-perfect FNCS qualification record.** Across the field of active NA pros, the players who reliably qualify for every FNCS Grand Finals are a tiny set; Khanada is one of them. Show-up rate matters more than people credit — most "fell off" stories are pros who started missing qual cups, not pros who lost mechanical edge. Showing up every season is its own meta.',
       },
       {
         text: 'Career longevity > peak skill. Staying competitive across multiple chapter overhauls (each of which resets meta + mechanics) means re-learning movement, edits, and economy from scratch. Most "fell off" stories are just one meta away from "couldn\'t adapt".',

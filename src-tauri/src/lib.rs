@@ -580,6 +580,13 @@ async fn vbs_report() -> Result<toolkit::VbsReport, String> {
         .map_err(|e| format!("vbs task failed: {e}"))?
 }
 
+#[tauri::command]
+async fn monitor_inventory() -> Result<toolkit::MonitorReport, String> {
+    tokio::task::spawn_blocking(|| toolkit::read_monitor_inventory().map_err(|e| format!("{:#}", e)))
+        .await
+        .map_err(|e| format!("monitor task failed: {e}"))?
+}
+
 /// Closes the splash window and shows the main window. Called by the React
 /// app from its first-mount useEffect. The 1200ms delay on the React side
 /// guarantees the neon-ripple animation gets at least one full sweep before
@@ -775,6 +782,7 @@ pub fn run() {
             pcie_links,
             microcode_report,
             vbs_report,
+            monitor_inventory,
             list_session_candidates,
             session_suspend,
             session_resume,

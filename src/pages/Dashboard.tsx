@@ -102,6 +102,10 @@ export function Dashboard() {
         />
       </section>
 
+      <HowItWorks />
+
+      <QuickStart />
+
       <SystemHealth spec={spec} />
 
       <RecommendedForRig spec={spec} />
@@ -113,8 +117,6 @@ export function Dashboard() {
       <AstaBenchHud />
 
       <AstaCard />
-
-      <QuickStart />
 
       {/* GAME-BENCHMARK CLAIMS */}
       <section className="space-y-4">
@@ -149,7 +151,6 @@ export function Dashboard() {
         </div>
       </section>
 
-      <HowItWorks />
       <WhyUs />
     </div>
   )

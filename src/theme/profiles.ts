@@ -19,7 +19,7 @@
  * crimson + Itachi-purple, with a low-alpha cloud-pattern background.
  */
 
-export type ProfileId = 'val' | 'sonic' | 'dmc' | 'bumblebee' | 'element-115' | 'akatsuki'
+export type ProfileId = 'val' | 'sonic' | 'dmc' | 'bumblebee' | 'element-115' | 'akatsuki' | 'adventure-time'
 
 export interface ProfileTheme {
   id: ProfileId
@@ -38,6 +38,7 @@ const FONT_INTER = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans
 const FONT_DMC = "'Cormorant Garamond', Georgia, serif"
 const FONT_ZOMBIES = "'Pirata One', 'Cinzel', 'Cormorant Garamond', Georgia, serif"
 const FONT_AKATSUKI = "'Cinzel', 'Cormorant Garamond', Georgia, serif"
+const FONT_ADVENTURE = "'Fredoka', 'Bungee', 'Comic Sans MS', system-ui, sans-serif"
 
 export const profiles: Record<ProfileId, ProfileTheme> = {
   val: {
@@ -178,6 +179,36 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
       '--font-heading': FONT_ZOMBIES,
     },
   },
+  'adventure-time': {
+    id: 'adventure-time',
+    label: 'Adventure Time',
+    // Inspired by Cartoon Network's Adventure Time — Finn's blue shirt + bear
+    // hat, PB pink, Jake yellow, BMO teal, candy-night sky. Heading font is
+    // Fredoka for the cartoony-rounded look. Signature flourishes: a Finn
+    // hat perched on the top-right of the first .surface-card on each page,
+    // sparkles drifting across the background, BMO-green focus rings.
+    blurb: "Finn-blue + candy night. Bear hat on the first card, sparkles drift across. Mathematical!",
+    bodyClass: 'profile-adventure-time',
+    swatch: { primary: '#4FC3F7', secondary: '#FF8FA3', bg: '#1A1F3A' },
+    vars: {
+      '--bg-base': '#1A1F3A',
+      '--bg-raised': '#252C4F',
+      '--bg-card': 'rgba(70, 88, 142, 0.40)',
+      '--accent': '#4FC3F7',
+      '--accent-soft': '#8FD9FA',
+      '--accent-dark': '#2B8FBF',
+      '--accent-eldritch': '#2EC4B6',
+      '--secondary': '#FF8FA3',
+      '--secondary-dark': '#C46479',
+      '--text': '#FFF8E7',
+      '--text-muted': '#D4C9A6',
+      '--text-subtle': '#9892BC',
+      '--border': 'rgba(79, 195, 247, 0.28)',
+      '--border-glow': 'rgba(79, 195, 247, 0.6)',
+      '--font-body': FONT_INTER,
+      '--font-heading': FONT_ADVENTURE,
+    },
+  },
   akatsuki: {
     id: 'akatsuki',
     label: 'Akatsuki',
@@ -211,4 +242,4 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
 }
 
 export const DEFAULT_PROFILE: ProfileId = 'val'
-export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bumblebee', 'element-115', 'akatsuki']
+export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bumblebee', 'element-115', 'akatsuki', 'adventure-time']

@@ -308,17 +308,16 @@ body.profile-akatsuki h2 {
   font-weight: 600;
   text-shadow: 0 0 8px rgba(183, 28, 28, 0.5);
 }
-/* Cloud-blob pattern — radial-gradient scallops repeated. SVG would be
- * cleaner but a layered radial-gradient gets us 80% of the look without
- * an asset. Very low alpha so it reads as texture, not pattern. */
+/* Akatsuki red-cloud SVG pattern — the org's actual signature symbol.
+ * Scalloped top, curl-tail bottom, crimson fill, soft white outline.
+ * Tiled at ~280px so it reads as a watermark, not wallpaper. Low alpha
+ * (0.06 fill + 0.04 outline) keeps it texture-not-pattern. */
 body.profile-akatsuki {
-  background-image:
-    radial-gradient(ellipse 28px 18px at 50% 60%, rgba(183, 28, 28, 0.045) 0%, transparent 65%),
-    radial-gradient(ellipse 22px 14px at 0% 0%,  rgba(183, 28, 28, 0.04)  0%, transparent 65%),
-    radial-gradient(ellipse 22px 14px at 100% 100%, rgba(183, 28, 28, 0.04) 0%, transparent 65%);
-  background-size: 110px 90px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70'%3E%3Cpath d='M 20 40 Q 18 28 30 24 Q 28 15 40 18 Q 42 10 52 14 Q 56 8 65 14 Q 75 12 78 22 Q 88 25 85 38 Q 90 50 75 55 Q 70 60 60 56 Q 52 64 42 58 Q 30 62 25 52 Q 15 50 20 40 Z' fill='%23b71c1c' fill-opacity='0.07' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='1.2'/%3E%3C/svg%3E");
+  background-size: 280px 196px;
   background-repeat: repeat;
 }
+
 /* Itachi-purple drop-shadow on accent SVGs (RingGauge etc.) */
 body.profile-akatsuki .accent-glyph {
   filter: drop-shadow(0 0 6px rgba(74, 44, 74, 0.45));
@@ -330,6 +329,101 @@ body.profile-akatsuki .surface-card:hover {
     0 0 0 1px rgba(183, 28, 28, 0.55),
     0 0 18px rgba(183, 28, 28, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Big crimson Akatsuki cloud perched on the top-right of the first
+ * surface-card on every page — the org's symbol announcing the theme.
+ * Tilts on card hover. ::after (not ::before — ::before is reserved
+ * for other val/element-115 effects across the codebase). */
+body.profile-akatsuki .surface-card:first-of-type {
+  position: relative;
+  overflow: visible;
+}
+body.profile-akatsuki .surface-card:first-of-type::after {
+  content: '';
+  position: absolute;
+  top: -28px;
+  right: 24px;
+  width: 88px;
+  height: 62px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 70'%3E%3Cpath d='M 20 40 Q 18 28 30 24 Q 28 15 40 18 Q 42 10 52 14 Q 56 8 65 14 Q 75 12 78 22 Q 88 25 85 38 Q 90 50 75 55 Q 70 60 60 56 Q 52 64 42 58 Q 30 62 25 52 Q 15 50 20 40 Z' fill='%23c8102e' stroke='%23f4ecd8' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+  transform-origin: bottom right;
+  transition: transform var(--motion-arc);
+  pointer-events: none;
+  z-index: 1;
+}
+body.profile-akatsuki .surface-card:first-of-type:hover::after {
+  transform: rotate(4deg) translateY(-2px);
+}
+
+/* Itachi's crows — three silhouettes drifting across the top of the
+ * viewport. Fixed-position so they sit on the page regardless of scroll.
+ * Slow rightward drift loop (one full cycle = 26s) for ambient motion.
+ * Pointer-events:none so they never block clicks. */
+body.profile-akatsuki::before {
+  content: '';
+  position: fixed;
+  top: 24px;
+  left: -120px;
+  width: 100vw;
+  height: 70px;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 24'%3E%3Cpath d='M 4 18 Q 10 6 16 16 L 22 13 Q 27 4 32 13 L 38 13 Q 43 4 48 13 Q 54 6 56 18' stroke='%230a0a0a' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 24'%3E%3Cpath d='M 4 18 Q 10 6 16 16 L 22 13 Q 27 4 32 13 L 38 13 Q 43 4 48 13 Q 54 6 56 18' stroke='%230a0a0a' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 24'%3E%3Cpath d='M 4 18 Q 10 6 16 16 L 22 13 Q 27 4 32 13 L 38 13 Q 43 4 48 13 Q 54 6 56 18' stroke='%230a0a0a' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0% 30px, 35% 0px, 68% 38px;
+  background-size: 52px 22px, 38px 16px, 44px 18px;
+  opacity: 0.55;
+  animation: akatsuki-crow-drift 26s linear infinite;
+}
+@keyframes akatsuki-crow-drift {
+  0%   { transform: translateX(-40px); opacity: 0.0; }
+  6%   { opacity: 0.55; }
+  94%  { opacity: 0.55; }
+  100% { transform: translateX(40vw); opacity: 0.0; }
+}
+
+/* Sharingan flicker — accent border on cards picks up a fast red pulse
+ * on first focus-within (when you tab into a card). 1-iteration so it
+ * reads as a "wake up" beat, not a busy loop. */
+body.profile-akatsuki .surface-card:focus-within {
+  animation: akatsuki-sharingan-pulse 700ms cubic-bezier(0.4, 0, 0.2, 1) 1;
+}
+@keyframes akatsuki-sharingan-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(183, 28, 28, 0.0); }
+  35%  { box-shadow: 0 0 0 3px rgba(183, 28, 28, 0.55), 0 0 24px rgba(183, 28, 28, 0.45); }
+  100% { box-shadow: 0 0 0 1px rgba(183, 28, 28, 0.4),  0 0 12px rgba(183, 28, 28, 0.25); }
+}
+
+/* Katakana watermark in the bottom-right of the viewport — アカツキ
+ * (Akatsuki = "Daybreak"). Subtle, fixed, decorative. Confirms the
+ * theme name in canonical script for fans, ignorable for everyone else. */
+body.profile-akatsuki::after {
+  content: 'アカツキ';
+  position: fixed;
+  bottom: 12px;
+  right: 16px;
+  font-family: 'Cinzel', 'Cormorant Garamond', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.6em;
+  color: rgba(183, 28, 28, 0.32);
+  text-shadow: 0 0 8px rgba(183, 28, 28, 0.25);
+  pointer-events: none;
+  z-index: 1;
+  writing-mode: vertical-rl;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.profile-akatsuki::before { animation: none; opacity: 0.4; transform: translateX(0); }
+  body.profile-akatsuki .surface-card:focus-within { animation: none; }
+  body.profile-akatsuki .surface-card:first-of-type::after,
+  body.profile-akatsuki .surface-card:first-of-type:hover::after { transition: none; transform: none; }
 }
 
 body.profile-sonic h1,
@@ -955,4 +1049,345 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
 .has-dmc-tooltip:hover .dmc-tooltip {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* =====================================================================
+ * Adventure Time — Cartoon-Network-inspired theme.
+ *
+ *   - Headings get Fredoka rounded cartoon font + a Finn-hat shadow underline.
+ *   - Candy-night background with drifting twinkle sparkles (pure CSS, two
+ *     radial-gradient layers offset + animated for parallax shimmer).
+ *   - First .surface-card on each page gets a Finn hat perched on its top-right
+ *     corner (inline SVG via base64, no asset). The hat tilts on card hover.
+ *   - BMO-teal focus ring on inputs (vs the default Finn-blue glow), so form
+ *     interactions feel like a different colorway than passive elements.
+ *   - Hovered cards: pink (PB) inner ring + slight bounce-up — bouncier than
+ *     the rest of the suite, in line with the cartoony tone.
+ * ===================================================================== */
+body.profile-adventure-time {
+  /* Candy-night drifting twinkles — two layered radial-gradient maps that
+   * scroll across the body at slightly different rates for parallax. Pure
+   * CSS so it works offline + costs zero JS. Very low alpha so it reads as
+   * texture, not pattern. */
+  background-image:
+    radial-gradient(circle 1.5px at 12% 18%, rgba(255, 248, 231, 0.55), transparent 60%),
+    radial-gradient(circle 1px   at 78% 33%, rgba(143, 217, 250, 0.45), transparent 60%),
+    radial-gradient(circle 1.2px at 41% 71%, rgba(255, 143, 163, 0.40), transparent 60%),
+    radial-gradient(circle 1px   at 63% 84%, rgba(255, 248, 231, 0.45), transparent 60%),
+    radial-gradient(circle 0.8px at 92% 9%,  rgba(46, 196, 182, 0.55), transparent 60%),
+    radial-gradient(circle 1.4px at 24% 47%, rgba(255, 184, 77, 0.35), transparent 60%);
+  background-size: 600px 480px, 720px 560px, 540px 420px, 660px 500px, 480px 380px, 700px 540px;
+  background-repeat: repeat;
+  animation: at-twinkle-drift 80s linear infinite;
+}
+@keyframes at-twinkle-drift {
+  0%   { background-position:   0   0,   0   0,   0   0,   0   0,   0   0,   0   0; }
+  100% { background-position: 600px 480px, -720px 560px, 540px -420px, -660px 500px, 480px -380px, -700px 540px; }
+}
+
+body.profile-adventure-time h1,
+body.profile-adventure-time h2,
+body.profile-adventure-time h3 {
+  font-family: 'Fredoka', 'Bungee', 'Comic Sans MS', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  text-shadow: 0 1px 0 rgba(255, 143, 163, 0.18), 0 0 14px rgba(79, 195, 247, 0.25);
+}
+
+/* Card surface — cartoon-thick border + bouncy hover. */
+body.profile-adventure-time .surface-card {
+  border-width: 1.5px;
+  transition: transform var(--motion-arc), box-shadow var(--motion-arc), border-color var(--motion-arc);
+}
+body.profile-adventure-time .surface-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1.5px rgba(255, 143, 163, 0.65),
+    0 8px 28px rgba(79, 195, 247, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* THE FINN HAT — perched on the top-right of the first .surface-card on
+ * any page. Inline SVG as data: URL so we don't ship a binary asset.
+ * Two bear-ear circles + a rounded hat body. White fill, dark cartoon outline.
+ * Card hover tilts the hat ~6° for a "tip your hat" wink. */
+body.profile-adventure-time .surface-card:first-of-type {
+  position: relative;
+  overflow: visible;
+}
+body.profile-adventure-time .surface-card:first-of-type::before {
+  content: '';
+  position: absolute;
+  top: -32px;
+  right: 18px;
+  width: 86px;
+  height: 50px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 70'%3E%3Ccircle cx='32' cy='20' r='12' fill='%23ffffff' stroke='%231b1f2a' stroke-width='3'/%3E%3Ccircle cx='88' cy='20' r='12' fill='%23ffffff' stroke='%231b1f2a' stroke-width='3'/%3E%3Cpath d='M14 60 Q14 30 30 24 Q44 18 60 18 Q76 18 90 24 Q106 30 106 60 Z' fill='%23ffffff' stroke='%231b1f2a' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.35));
+  transform-origin: bottom center;
+  transition: transform var(--motion-arc);
+  pointer-events: none;
+  z-index: 1;
+}
+body.profile-adventure-time .surface-card:first-of-type:hover::before {
+  transform: rotate(-6deg) translateY(-2px);
+}
+
+/* BMO-teal input focus — distinct from the Finn-blue body accent so forms
+ * read as their own "object" (BMO is the device, not the person). */
+body.profile-adventure-time input:focus-visible,
+body.profile-adventure-time textarea:focus-visible,
+body.profile-adventure-time select:focus-visible {
+  border-color: #2EC4B6 !important;
+  box-shadow: 0 0 0 2px rgba(46, 196, 182, 0.45);
+}
+
+/* Sidebar / link active state — PB pink, since the active path = where
+ * you are right now, and PB is the leader. */
+body.profile-adventure-time .accent-active,
+body.profile-adventure-time .text-accent {
+  color: #4FC3F7;
+}
+
+/* CTA buttons — Jake-yellow shadow base, Finn-blue surface. The shadow
+ * mimics a cartoon's "weighted" button. */
+body.profile-adventure-time .btn-chrome.bg-accent {
+  box-shadow: 0 3px 0 0 #C46479, 0 0 18px rgba(79, 195, 247, 0.35);
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+}
+body.profile-adventure-time .btn-chrome.bg-accent:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 0 #C46479, 0 0 12px rgba(79, 195, 247, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.profile-adventure-time { animation: none; }
+  body.profile-adventure-time .surface-card:first-of-type::before,
+  body.profile-adventure-time .surface-card:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* =====================================================================
+ * DMC — Devil May Cry deep cuts.
+ *
+ * "Jackpot." Theme now actually feels like DMC instead of generic gothic:
+ *   - Ebony & Ivory crossed-pistols on the first card every page
+ *   - Red orb particles drifting upward across the body (slow ambient)
+ *   - "SSS" stylish-rank watermark fixed bottom-right
+ *   - Devil Trigger violet flash on input focus
+ *   - "Dante coat" red-white edge stripe on the first card top
+ * ===================================================================== */
+
+/* Red orb particles — drifting upward, very low alpha. Three layered
+ * gradient maps offset for parallax. */
+body.profile-dmc {
+  background-image:
+    radial-gradient(circle 2px at 18% 92%, rgba(230, 57, 70, 0.40), transparent 60%),
+    radial-gradient(circle 1.4px at 62% 78%, rgba(230, 57, 70, 0.35), transparent 60%),
+    radial-gradient(circle 1px at 38% 64%, rgba(230, 57, 70, 0.30), transparent 60%),
+    radial-gradient(circle 1.6px at 84% 50%, rgba(230, 57, 70, 0.32), transparent 60%),
+    radial-gradient(circle 1px at 22% 38%, rgba(244, 236, 216, 0.20), transparent 60%);
+  background-size: 540px 720px, 620px 800px, 480px 640px, 580px 760px, 520px 680px;
+  background-repeat: repeat;
+  animation: dmc-red-orb-rise 28s linear infinite;
+}
+@keyframes dmc-red-orb-rise {
+  0%   { background-position: 0 0,         0 0,         0 0,         0 0,         0 0; }
+  100% { background-position: 0 -720px,    0 -800px,    0 -640px,    0 -760px,    0 -680px; }
+}
+
+/* Ebony & Ivory — crossed-pistols silhouette perched on first card.
+ * Ebony (black) angles left, Ivory (white) angles right. Hover tilts. */
+body.profile-dmc .surface-card:first-of-type {
+  position: relative;
+  overflow: visible;
+}
+body.profile-dmc .surface-card:first-of-type::after {
+  content: '';
+  position: absolute;
+  top: -32px;
+  right: 20px;
+  width: 110px;
+  height: 56px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 70'%3E%3C!-- Ebony (black, angled left) --%3E%3Cg transform='translate(20 40) rotate(-22)'%3E%3Crect x='-30' y='-4' width='52' height='10' rx='2' fill='%231a0e10' stroke='%23f4ecd8' stroke-width='1'/%3E%3Crect x='14' y='-7' width='10' height='4' fill='%23b3000c'/%3E%3Cpath d='M -20 6 L -18 22 L -8 22 L -6 6 Z' fill='%231a0e10' stroke='%23f4ecd8' stroke-width='1'/%3E%3Ctext x='-26' y='2' font-family='serif' font-size='4' fill='%23f4ecd8' font-weight='700'%3EEBONY%3C/text%3E%3C/g%3E%3C!-- Ivory (white, angled right) --%3E%3Cg transform='translate(120 40) rotate(22) scale(-1 1)'%3E%3Crect x='-30' y='-4' width='52' height='10' rx='2' fill='%23f4ecd8' stroke='%231a0e10' stroke-width='1'/%3E%3Crect x='14' y='-7' width='10' height='4' fill='%23b3000c'/%3E%3Cpath d='M -20 6 L -18 22 L -8 22 L -6 6 Z' fill='%23f4ecd8' stroke='%231a0e10' stroke-width='1'/%3E%3Ctext x='-28' y='2' font-family='serif' font-size='4' fill='%231a0e10' font-weight='700' transform='scale(-1 1)'%3EIVORY%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+  transform-origin: bottom center;
+  transition: transform var(--motion-arc);
+  pointer-events: none;
+  z-index: 1;
+}
+body.profile-dmc .surface-card:first-of-type:hover::after {
+  transform: translateY(-3px) rotate(-2deg);
+}
+
+/* "Dante's coat" — red-and-bone edge stripe along the top of the first
+ * card. Tiny, decorative, recognizable to anyone who's played DMC3+. */
+body.profile-dmc .surface-card:first-of-type {
+  border-top: 2px solid;
+  border-image: linear-gradient(90deg,
+    transparent 0%,
+    #b3000c 18%, #b3000c 40%,
+    #f4ecd8 40%, #f4ecd8 60%,
+    #b3000c 60%, #b3000c 82%,
+    transparent 100%
+  ) 1;
+}
+
+/* Devil Trigger — violet pulse on focused inputs. DT-mode purple chroma
+ * spreads from the focus ring outward, settles to a hum. */
+body.profile-dmc input:focus-visible,
+body.profile-dmc textarea:focus-visible,
+body.profile-dmc select:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(179, 0, 12, 0.5),
+    0 0 18px rgba(107, 39, 55, 0.55),
+    0 0 32px rgba(150, 60, 200, 0.25);
+}
+
+/* Stylish rank watermark — fixed bottom-right, the iconic "SSS" rank
+ * with a slow throb that mimics the in-game SSS sustain. */
+body.profile-dmc::after {
+  content: 'SSS';
+  position: fixed;
+  bottom: 16px;
+  right: 24px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 22px;
+  color: rgba(230, 57, 70, 0.55);
+  text-shadow: 0 0 12px rgba(230, 57, 70, 0.6), 0 0 24px rgba(230, 57, 70, 0.3);
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  z-index: 1;
+  animation: dmc-sss-throb 2.2s ease-in-out infinite;
+}
+@keyframes dmc-sss-throb {
+  0%, 100% { transform: scale(1);    text-shadow: 0 0 12px rgba(230, 57, 70, 0.6), 0 0 24px rgba(230, 57, 70, 0.3); }
+  50%      { transform: scale(1.08); text-shadow: 0 0 18px rgba(230, 57, 70, 0.85), 0 0 36px rgba(150, 60, 200, 0.45); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.profile-dmc { animation: none; }
+  body.profile-dmc::after { animation: none; }
+  body.profile-dmc .surface-card:first-of-type::after { transition: none; }
+}
+
+/* =====================================================================
+ * Element-115 — animated liquid divinium vial in the corner.
+ *
+ * Vertical glass tube in the bottom-left of the viewport. Cyan liquid
+ * fills up over 6s, holds at full for 1s, drains over 2s, holds empty for
+ * 1s — loops forever. Mimics the divinium charging meter from BO3 Origins
+ * / Buried. Pure CSS, no JS, no image asset.
+ *
+ * Plus a periodic-table "Mc · 115" tile fixed bottom-right (the IUPAC
+ * symbol for Moscovium = real Element 115). And a Pack-a-Punch violet
+ * swirl on card hover.
+ * ===================================================================== */
+
+/* Vial container — fixed left-bottom, ~90px tall. Glass frame via border
+ * + radius + inner shadow. Background = 2 stacked gradients:
+ *   1. The DIVINIUM gradient (cyan top → violet bottom), 200% tall —
+ *      we animate background-position-y to slide it up/down through the
+ *      visible window. position 200% = liquid below the vial (empty);
+ *      position 100% = liquid fills the vial fully.
+ *   2. Static glass-sheen gradient on top for the "tube" depth read.
+ * Animation: 10s cycle. 0-40% fill, 40-55% hold full, 55-85% drain,
+ * 85-100% hold empty. */
+body.profile-element-115::before {
+  content: '';
+  position: fixed;
+  left: 18px;
+  bottom: 32px;
+  width: 22px;
+  height: 90px;
+  border: 1.5px solid rgba(61, 223, 232, 0.55);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg,
+      rgba(127, 236, 240, 0.95) 0%,
+      rgba(61, 223, 232, 0.85) 40%,
+      rgba(157, 77, 255, 0.75) 100%
+    ),
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(15, 10, 26, 0.65) 100%
+    );
+  background-size: 100% 200%, 100% 100%;
+  background-position: 0 200%, 0 0;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 10px rgba(61, 223, 232, 0.35),
+    0 0 20px rgba(61, 223, 232, 0.3),
+    0 0 36px rgba(157, 77, 255, 0.2);
+  animation: e115-divinium-fill 10s ease-in-out infinite;
+}
+@keyframes e115-divinium-fill {
+  /* Empty — gradient pushed off the bottom of the vial */
+  0%   { background-position: 0 200%, 0 0; box-shadow: inset 0 0 8px rgba(61, 223, 232, 0.25), 0 0 14px rgba(61, 223, 232, 0.2); }
+  /* Filling — gradient rises to fully visible (full vial) */
+  40%  { background-position: 0 100%, 0 0; box-shadow: inset 0 0 14px rgba(61, 223, 232, 0.55), 0 0 28px rgba(61, 223, 232, 0.55); }
+  /* Hold full — violet undertone glow swells */
+  55%  { background-position: 0 100%, 0 0; box-shadow: inset 0 0 16px rgba(157, 77, 255, 0.5), 0 0 34px rgba(157, 77, 255, 0.55); }
+  /* Drain — gradient slides back down */
+  85%  { background-position: 0 200%, 0 0; box-shadow: inset 0 0 8px rgba(61, 223, 232, 0.25), 0 0 14px rgba(61, 223, 232, 0.2); }
+  /* Hold empty */
+  100% { background-position: 0 200%, 0 0; }
+}
+
+/* "115" label under the vial */
+body.profile-element-115::after {
+  content: '115';
+  position: fixed;
+  left: 8px;
+  bottom: 12px;
+  width: 42px;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(61, 223, 232, 0.9);
+  text-shadow: 0 0 8px rgba(61, 223, 232, 0.7), 0 0 16px rgba(157, 77, 255, 0.4);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Mc · 115 periodic-table tile — top-right of the first surface-card. */
+body.profile-element-115 .surface-card:first-of-type {
+  position: relative;
+  overflow: visible;
+}
+body.profile-element-115 .surface-card:first-of-type::after {
+  content: '';
+  position: absolute;
+  top: -22px;
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect x='3' y='3' width='74' height='74' rx='6' fill='%230F0A1A' stroke='%233DDFE8' stroke-width='2.5'/%3E%3Ctext x='8' y='18' font-family='Inter, sans-serif' font-size='10' fill='%23D9C9A3' font-weight='600'%3E115%3C/text%3E%3Ctext x='40' y='52' text-anchor='middle' font-family='Inter, sans-serif' font-size='32' fill='%233DDFE8' font-weight='700'%3EMc%3C/text%3E%3Ctext x='40' y='68' text-anchor='middle' font-family='Inter, sans-serif' font-size='8' fill='%239D4DFF' font-weight='500'%3EMoscovium%3C/text%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 0 12px rgba(61, 223, 232, 0.45)) drop-shadow(0 0 24px rgba(157, 77, 255, 0.25));
+  transition: transform var(--motion-arc);
+  pointer-events: none;
+  z-index: 1;
+}
+body.profile-element-115 .surface-card:first-of-type:hover::after {
+  transform: rotate(-4deg) translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.profile-element-115::before { animation: none; }
+  body.profile-element-115 .surface-card:first-of-type::after { transition: none; transform: none; }
 }

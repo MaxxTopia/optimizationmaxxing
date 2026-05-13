@@ -107,8 +107,8 @@ export function AstaCard() {
           </span>
           <span className="text-xs text-asta-bone-soft">
             {isVip
-              ? 'Open for the manifesto + apply'
-              : 'Tap the $8 price 5x within 3s on Pricing to redeem a code'}
+              ? 'Open for the creed + apply'
+              : 'Tap the $115 price 5x within 3s on Pricing to redeem a code'}
           </span>
         </div>
       </div>

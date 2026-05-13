@@ -184,7 +184,7 @@ export function TweakRow({
                           : 'text-text-subtle'
                       }`}
                     >
-                      {a.status === 'matches' ? '✓' : a.status === 'differs' ? '✗' : '?'}
+                      {a.status === 'matches' ? '✓' : a.status === 'differs' ? '✗' : '◇'}
                     </span>
                     <span className="text-text-muted leading-snug">
                       <span className="text-text-subtle">action {a.index + 1}:</span> {a.detail}
@@ -393,7 +393,7 @@ function AuditBadge({ audit }: { audit: TweakAudit }) {
       : status === 'partial'
       ? `${matchCount}/${total} actions already match — applying would change the rest`
       : status === 'unknown'
-      ? `Current state can't be derived without applying (PowerShell / BCD)`
+      ? `Script-based or admin-only tweak — no static "before" value to compare. Snapshot still captures pre-state so revert works either way.`
       : 'Audit error — refresh and retry'
   if (status === 'matches') {
     return (
@@ -431,7 +431,7 @@ function AuditBadge({ audit }: { audit: TweakAudit }) {
         title={tooltip}
         className="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border border-border text-text-subtle"
       >
-        ? unknown
+        ◇ script · not pre-checkable
       </span>
     )
   }

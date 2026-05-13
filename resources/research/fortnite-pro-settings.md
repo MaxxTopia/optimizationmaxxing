@@ -1,5 +1,13 @@
 # Fortnite — in-game pro settings (cited)
 
+> **Settings keep getting reset after the catalog tweak?** Fortnite rewrites `GameUserSettings.ini` from its encrypted cloud profile on every launch. Fix: set the file read-only after the tweak applies. **PowerShell (one line):**
+>
+> ```
+> attrib +R "$env:LOCALAPPDATA\FortniteGame\Saved\Config\WindowsClient\GameUserSettings.ini"
+> ```
+>
+> Untick read-only (`attrib -R "<same path>"`) when you want to retune in-game; re-tick after. The "everything Low, View Distance Far" stack is captured in the Graphics table below — that's the spec you want stuck. Full read-only flow is at the bottom of this guide.
+
 The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag wins live inside Fortnite's own Settings menu — the values you have to flip yourself because they're stored in encrypted player profiles, not user-editable INI files. This is the consensus stack from Peterbot, Clix, Bugha, and Mongraal's published configs.
 
 ## Display tab
@@ -40,6 +48,28 @@ The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag w
 - **Music Volume: 0.** Always. The footstep + reload audio is information; music is decoration.
 - **Voice Chat Notification Sounds: off.** They mask gunshot directionality.
 - **Visualize Sound Effects: ON.** Free directional indicators for footsteps + shots. Used by every cited pro.
+
+## Cosmetics — what actually costs FPS
+
+**Top pros don't run default skin.** Peterbot, Clix, Mongraal, Veno, Khanada all play with their preferred skin every match including FNCS finals. The "default skin = lowest delay" line is folklore — the delta on modern hardware is sub-1 FPS for typical skins, invisible past 144 FPS.
+
+What *does* cost FPS is **heavy-VFX cosmetics**:
+
+| Cosmetic type | Real FPS cost | Recommendation |
+|---|---|---|
+| **Skin — low-poly / no VFX** (Renegade Raider, basic Battle Pass skins, OG colorways) | ~0 FPS | Wear what looks good. |
+| **Skin — heavy VFX / particle effects** (DJ Bop, holographic Marvel mythics, animated Icon skins) | -2 to -5 FPS in dense fights | Skip during FNCS / scrims. Save for pubs. |
+| **Back bling — animated / pet** (anything with a pet animation, particle trail, glowing elements) | -1 to -3 FPS | Pick a static back bling or none. |
+| **Back bling — static** (Battle Pass crystals, basic backpacks) | ~0 FPS | Free. |
+| **Pickaxe — basic mesh** (default, Renegade Raider, common-rarity pickaxes) | ~0 FPS | Pick what looks good. |
+| **Pickaxe — heavy VFX** (animated rotating pickaxes, particle-trail pickaxes) | -1 FPS during pickaxe-out moments | Pickaxe-out is the third-most-common visible weapon — picking a simple mesh adds up. |
+| **Weapon wrap — solid color** (Reactive Slurp ON tier 1, Default, basic colors) | ~0 FPS | Free win. |
+| **Weapon wrap — animated** (holographic / fire / Slurp tier 3+ / Refract) | -1 to -2 FPS during shotgun fights | The most-visible cosmetic. Solid wraps are the pro standard. |
+| **Glider trail / contrail** | Negligible | Wear what you want. |
+
+**The "zero-delay pickaxe" claim is a myth.** The pickaxe pull-out animation length + input registration frame is identical across every pickaxe in the game. The TikTok "0-delay pickaxe tier list" videos compare pickaxe-out FPS without accounting for the underlying scene render — the deltas are within FPS-counter noise.
+
+**The real cosmetic rule**: avoid **animated wraps**, **heavy-VFX skins**, and **pet/particle back blings** during competitive sessions. Within that constraint, wear what feels right. Mongraal runs ICON Series Mongraal skin in FNCS. Pete runs his Falcons skin. The aesthetic-as-superstition tax is real — pros pick their drip.
 
 ## What this guide *won't* tell you to do
 

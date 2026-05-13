@@ -9,9 +9,9 @@ import { TournamentAudit } from '../components/TournamentAudit'
 import { TournamentModePanel } from '../components/TournamentModePanel'
 
 /**
- * /asta — the manifesto + apply page for Asta Mode. Browsable for
- * non-VIP users (so they see what they could unlock — that's the upsell),
- * but Apply is hard-gated behind the existing VIP store.
+ * /asta — the creed + apply page for Asta Mode. Browsable for non-VIP users
+ * (so they see what they could unlock — that's the upsell), but Apply is
+ * hard-gated behind the existing VIP store.
  */
 
 const QUOTES = [
@@ -21,21 +21,21 @@ const QUOTES = [
   '"Every drop of sweat and every scar can\'t become a lie."',
 ] as const
 
-const ASTA_PHILOSOPHY = `Born without magic into a world full of it. Black robe, white hair, no cheat
-codes. Just a kid swinging a sword that shouldn't even cut.
+const ASTA_PHILOSOPHY = `No magic. No cheat codes. No silver-spoon rig.
+A kid in a black robe swinging a sword that shouldn't even cut — and
+the lobby never sees him quit.
 
-He won by refusing to lose more times than the world refused to let him in.
-That's the model.
+This is the mode for the gen that refuses to roll over for the ones
+born holding the controller. Stock 1660 Ti, 144 Hz IPS, friend's
+hand-me-down, still planning to make Champion League. Asta Mode pulls
+every software lever this app can reach — the polite Tournament FPS
+preset, but cranked. ~12-22 ms off your click-to-pixel, +25-35 average
+FPS in Fortnite endgames, +12-20 on 1% lows. Closes ~70% of the gap to
+a $5K rig. The other 30% is silicon, refresh, and where your house is.
 
-This mode is for the kids on a 1660 Ti and a 144 Hz IPS who still plan to
-make Champion League. Asta Mode pushes every software lever this app can
-reach — the polite Tournament FPS preset, but louder. ~12-22 ms off your
-click-to-pixel, ~25-35 average FPS in Fortnite endgames, ~12-20 1% lows
-on a tuned stock-to-mid budget rig. Reaches 70% of the gap to a $5K rig.
-The other 30% is silicon lottery + monitor refresh + ISP geography.
-
-What's left after Asta Mode is BIOS (RAM tightening, CO undervolt) and the
-grind layer (sleep, warmups, sessions). Those have their own pages.`
+What's left after Asta Mode lives on /diagnostics (RAM tightening, CO
+undervolt) and /grind (sleep, warmups, session cadence). Those are
+real, and they're free.`
 
 export function Asta() {
   const isVip = useIsVip()
@@ -87,9 +87,9 @@ export function Asta() {
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 surface-card p-6 space-y-4">
-          <p className="text-[10px] uppercase tracking-widest text-text-subtle">manifesto</p>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-text-subtle">the creed</p>
           <h2
-            className="text-2xl font-bold leading-tight"
+            className="text-3xl md:text-4xl font-bold leading-tight asta-anti-magic"
             style={{ fontFamily: "'Pirata One', 'Cinzel', serif" }}
           >
             We don't quit. So we built the mode.
@@ -128,7 +128,7 @@ export function Asta() {
             {!isVip && (
               <div className="mt-4 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 leading-snug">
                 <strong>VIP required.</strong> Open <Link to="/pricing" className="underline">
-                Pricing</Link>, tap the $8 price 5 times within 3 seconds, paste a code from
+                Pricing</Link>, tap the $115 price 5 times within 3 seconds, paste a code from
                 Diggy.
               </div>
             )}
@@ -259,6 +259,31 @@ function Hero() {
 
       <style>{`
         .text-asta-bone-soft { color: #b9a487; }
+
+        /* Asta anti-magic text effect — black blade aura + crimson flicker.
+           Layered text-shadow simulates the dark-anti-magic glow that bleeds
+           off the sword in Black Clover. Animated flicker for "alive" feel. */
+        .asta-anti-magic {
+          color: #f0e4d8;
+          background: linear-gradient(180deg, #f4ebdc 0%, #c2a47a 60%, #6a3a3a 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow:
+            0 0 1px rgba(201, 31, 55, 0.5),
+            0 0 8px rgba(201, 31, 55, 0.45),
+            0 0 22px rgba(89, 13, 26, 0.7),
+            0 1px 0 rgba(4, 0, 2, 0.95);
+          filter: drop-shadow(0 0 6px rgba(201, 31, 55, 0.35));
+          animation: asta-flicker 4.5s ease-in-out infinite;
+          position: relative;
+        }
+        @keyframes asta-flicker {
+          0%, 100% { filter: drop-shadow(0 0 6px rgba(201, 31, 55, 0.35)); }
+          45%      { filter: drop-shadow(0 0 14px rgba(201, 31, 55, 0.6)); }
+          50%      { filter: drop-shadow(0 0 4px rgba(89, 13, 26, 0.5)); }
+          55%      { filter: drop-shadow(0 0 14px rgba(201, 31, 55, 0.6)); }
+        }
       `}</style>
     </section>
   )

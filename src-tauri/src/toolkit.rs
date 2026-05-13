@@ -435,9 +435,16 @@ pub struct MicrocodeReport {
     /// "final mitigation" announcement). 0x12F is the latest 2024/2025
     /// supplemental fix.
     pub min_safe_revision: Option<String>,
-    /// Headline status: "ok" | "outdated" | "unknown" | "not-affected".
+    /// Headline status: "ok" | "outdated" | "unknown" | "not-affected" |
+    /// "active-degradation" (microcode at floor OR below, but WHEA event
+    /// frequency > 5 over last 30 days = clock-tree degradation in progress).
     pub status: String,
     pub note: String,
+    /// Count of WHEA-Logger events in the System event log over the last
+    /// 30 days. None = couldn't read (event log access denied, no PS).
+    /// >5 on a 13/14-gen K-class chip is the canonical "active Raptor Lake
+    /// degradation" signature. Surfaced only for affected-family CPUs.
+    pub whea_events_30d: Option<u32>,
 }
 
 /// Reads the running microcode revision + maps to known-affected CPU families.
@@ -476,6 +483,14 @@ pub fn read_microcode_report() -> anyhow::Result<MicrocodeReport> {
         None
     };
 
+    // Only spend the PS query cost on affected families — non-affected CPUs
+    // don't need the WHEA signal for this card.
+    let whea_events_30d: Option<u32> = if is_affected_family {
+        whea_count_last_30_days()
+    } else {
+        None
+    };
+
     let (status, note) = match (&running_revision, is_affected_family) {
         (_, false) => (
             "not-affected".to_string(),
@@ -487,13 +502,29 @@ pub fn read_microcode_report() -> anyhow::Result<MicrocodeReport> {
         ),
         (Some(rev), true) => {
             let rev_num = u32::from_str_radix(rev.trim_start_matches("0x"), 16).unwrap_or(0);
-            if rev_num >= 0x12B {
+            let whea = whea_events_30d.unwrap_or(0);
+            let active_degradation = whea > 5;
+
+            if active_degradation {
+                (
+                    "active-degradation".to_string(),
+                    format!(
+                        "{whea} WHEA-Logger events in the last 30 days. On an Intel 13/14gen K-class \
+                         CPU this is the canonical fingerprint of active Vmin Shift degradation — \
+                         the clock-tree circuit is deteriorating. Microcode {rev} is the current \
+                         load. Microcode updates HALT further degradation but cannot reverse what \
+                         has already happened. If you're still under Intel's extended 5-year \
+                         warranty (announced Aug 2024), file an RMA now."
+                    ),
+                )
+            } else if rev_num >= 0x12B {
                 (
                     "ok".to_string(),
                     format!(
                         "Running microcode {rev} — at or above the 0x12B Intel-mitigation floor. \
-                         You're protected from further Vmin Shift degradation. Verify BIOS \
-                         'Intel Default Settings' / 'Intel Baseline' profile is also active."
+                         WHEA events last 30d: {whea}. You're protected from further Vmin Shift \
+                         degradation. Verify BIOS 'Intel Default Settings' / 'Intel Baseline' \
+                         profile is also active."
                     ),
                 )
             } else {
@@ -501,10 +532,10 @@ pub fn read_microcode_report() -> anyhow::Result<MicrocodeReport> {
                     "outdated".to_string(),
                     format!(
                         "Running microcode {rev} — BELOW the 0x12B mitigation floor. \
-                         Update BIOS from your motherboard vendor's site immediately and \
-                         apply the 'Intel Default Settings' / 'Intel Baseline' profile. \
-                         Already-degraded CPUs are not repairable; RMA is the only fix once \
-                         instability is observed."
+                         WHEA events last 30d: {whea}. Update BIOS from your motherboard vendor's \
+                         site immediately and apply the 'Intel Default Settings' / 'Intel \
+                         Baseline' profile. Already-degraded CPUs are not repairable; RMA is \
+                         the only fix once instability is observed."
                     ),
                 )
             }
@@ -518,7 +549,33 @@ pub fn read_microcode_report() -> anyhow::Result<MicrocodeReport> {
         min_safe_revision,
         status,
         note,
+        whea_events_30d,
     })
+}
+
+/// Counts WHEA-Logger events in the System event log over the last 30
+/// days via PowerShell shell-out. Returns None if the query fails (Get-
+/// WinEvent unavailable, no permissions, etc). Slow — adds ~1-2s to the
+/// microcode probe but only on Intel 13/14-gen K-class CPUs where it
+/// matters.
+fn whea_count_last_30_days() -> Option<u32> {
+    let ps_script =
+        "$cutoff = (Get-Date).AddDays(-30); \
+         $events = Get-WinEvent -LogName System -ErrorAction SilentlyContinue \
+           | Where-Object { $_.ProviderName -eq 'WHEA-Logger' -and $_.TimeCreated -gt $cutoff }; \
+         if ($null -eq $events) { 0 } else { @($events).Count }";
+    let output = crate::process_helpers::hidden_powershell()
+        .arg("-NoProfile")
+        .arg("-NonInteractive")
+        .arg("-Command")
+        .arg(ps_script)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let s = String::from_utf8_lossy(&output.stdout);
+    s.trim().parse::<u32>().ok()
 }
 
 fn brand_is_intel_13_14_affected(brand: &str) -> bool {
@@ -2286,4 +2343,214 @@ fn wmi_vbs_status() -> anyhow::Result<u32> {
         }
     }
     Ok(0)
+}
+
+// ──────────────────────────────────────────────────────────────────────
+//  Monitor inventory + firmware-update reminders.
+//
+// Windows doesn't expose monitor firmware versions in any standard API.
+// What we CAN do: read EDID via `root\wmi → WmiMonitorID`, identify the
+// vendor + model + manufacture date, and tell the user where to look for
+// firmware updates (vendor app or product support page). This is
+// articleware-with-detection: we surface what we know, the user runs
+// the actual update via the vendor's tool.
+// ──────────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MonitorInfo {
+    /// 3-letter EDID PNP vendor code (e.g. "GSM", "SAM", "AUS").
+    pub vendor_code: String,
+    /// Resolved vendor name (LG / Samsung / ASUS / MSI / etc) — "Unknown" if unmapped.
+    pub vendor_name: String,
+    /// User-friendly model name from EDID (e.g. "LG ULTRAGEAR").
+    pub model: String,
+    /// EDID product code (vendor-internal SKU).
+    pub product_code: String,
+    /// Serial number from EDID (may be blank on cheap panels).
+    pub serial: String,
+    pub manufacture_year: Option<u32>,
+    pub manufacture_week: Option<u32>,
+    /// Rough age in years from manufacture date — None if year unknown.
+    pub age_years: Option<u32>,
+    /// Vendor's support / firmware page URL (best-effort by PNP code).
+    pub firmware_url: Option<String>,
+    /// Vendor's required firmware tool name + download page.
+    pub firmware_tool: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MonitorReport {
+    pub monitors: Vec<MonitorInfo>,
+    /// Top-line note for the UI (no monitors / probe failed / # detected).
+    pub note: String,
+}
+
+pub fn read_monitor_inventory() -> anyhow::Result<MonitorReport> {
+    let ps_script = r#"
+$ErrorActionPreference = 'SilentlyContinue'
+$mons = Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorID
+if ($null -eq $mons) { Write-Output '[]'; exit 0 }
+$out = New-Object System.Collections.ArrayList
+foreach ($m in @($mons)) {
+    $man = if ($m.ManufacturerName) { -join (($m.ManufacturerName | Where-Object { $_ -ne 0 }) | ForEach-Object { [char]$_ }) } else { '' }
+    $ufn = if ($m.UserFriendlyName) { -join (($m.UserFriendlyName | Where-Object { $_ -ne 0 }) | ForEach-Object { [char]$_ }) } else { '' }
+    $pid = if ($m.ProductCodeID)    { -join (($m.ProductCodeID    | Where-Object { $_ -ne 0 }) | ForEach-Object { [char]$_ }) } else { '' }
+    $sn  = if ($m.SerialNumberID)   { -join (($m.SerialNumberID   | Where-Object { $_ -ne 0 }) | ForEach-Object { [char]$_ }) } else { '' }
+    [void]$out.Add([pscustomobject]@{
+        vendorCode = $man
+        model      = $ufn
+        productCode = $pid
+        serial     = $sn
+        weekOfManufacture = [int]$m.WeekOfManufacture
+        yearOfManufacture = [int]$m.YearOfManufacture
+    })
+}
+ConvertTo-Json -InputObject @($out.ToArray()) -Compress -Depth 4
+"#;
+    let output = crate::process_helpers::hidden_powershell()
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy", "Bypass",
+            "-Command", ps_script,
+        ])
+        .output()
+        .context("spawn PowerShell for WmiMonitorID query")?;
+    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if stdout.is_empty() || stdout == "[]" {
+        return Ok(MonitorReport {
+            monitors: vec![],
+            note: "No EDID-reporting monitors detected. Some virtual displays / KVM passthroughs hide from WmiMonitorID.".to_string(),
+        });
+    }
+
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct RawMon {
+        vendor_code: String,
+        model: String,
+        product_code: String,
+        serial: String,
+        week_of_manufacture: Option<u32>,
+        year_of_manufacture: Option<u32>,
+    }
+    // PS will emit `{...}` for a single-element array on PS 5.1 even after
+    // @() — try array-decode first, fall back to single-decode.
+    let raws: Vec<RawMon> = match serde_json::from_str::<Vec<RawMon>>(&stdout) {
+        Ok(v) => v,
+        Err(_) => match serde_json::from_str::<RawMon>(&stdout) {
+            Ok(single) => vec![single],
+            Err(e) => return Err(anyhow::anyhow!("parse WmiMonitorID JSON: {e}; stdout={stdout}")),
+        },
+    };
+
+    let now_year: u32 = chrono::Utc::now().format("%Y").to_string().parse().unwrap_or(2026);
+    let monitors: Vec<MonitorInfo> = raws
+        .into_iter()
+        .map(|r| {
+            let (vendor_name, firmware_url, firmware_tool) = vendor_lookup(&r.vendor_code);
+            let age_years = r.year_of_manufacture.map(|y| now_year.saturating_sub(y));
+            MonitorInfo {
+                vendor_code: r.vendor_code.trim().to_string(),
+                vendor_name,
+                model: r.model.trim().to_string(),
+                product_code: r.product_code.trim().to_string(),
+                serial: r.serial.trim().to_string(),
+                manufacture_year: r.year_of_manufacture,
+                manufacture_week: r.week_of_manufacture,
+                age_years,
+                firmware_url,
+                firmware_tool,
+            }
+        })
+        .collect();
+
+    let note = format!("{} monitor(s) detected via EDID", monitors.len());
+    Ok(MonitorReport { monitors, note })
+}
+
+/// Map 3-letter EDID PNP vendor codes to vendor name + firmware update path.
+fn vendor_lookup(code: &str) -> (String, Option<String>, Option<String>) {
+    let code = code.trim().to_uppercase();
+    match code.as_str() {
+        // LG — two codes seen in the wild
+        "GSM" | "LGD" | "LGE" | "LGM" => (
+            "LG".to_string(),
+            Some("https://www.lg.com/us/support".to_string()),
+            Some("LG OnScreen Control".to_string()),
+        ),
+        "SAM" | "SDC" | "SEC" => (
+            "Samsung".to_string(),
+            Some("https://www.samsung.com/us/support/downloads/".to_string()),
+            Some("Samsung Magician / Samsung Easy Setting Box".to_string()),
+        ),
+        "ACI" | "AUS" | "AUO" => (
+            "ASUS".to_string(),
+            Some("https://www.asus.com/support/".to_string()),
+            Some("ASUS DisplayWidget Center".to_string()),
+        ),
+        "MSI" | "MAG" => (
+            "MSI".to_string(),
+            Some("https://www.msi.com/support".to_string()),
+            Some("MSI Center / MSI Display Kit".to_string()),
+        ),
+        "GBT" | "AOR" => (
+            "Gigabyte / AORUS".to_string(),
+            Some("https://www.gigabyte.com/Support".to_string()),
+            Some("OSD Sidekick".to_string()),
+        ),
+        "DEL" | "DELL" => (
+            "Dell".to_string(),
+            Some("https://www.dell.com/support/home/en-us?app=drivers".to_string()),
+            Some("Dell Display Manager (DDM)".to_string()),
+        ),
+        "AOC" => (
+            "AOC".to_string(),
+            Some("https://www.aoc.com/us/support/firmware".to_string()),
+            Some("AOC G-Menu (or vendor firmware ZIP)".to_string()),
+        ),
+        "ACR" => (
+            "Acer".to_string(),
+            Some("https://www.acer.com/us-en/support".to_string()),
+            Some("Acer Display Widget / Acer Care Center".to_string()),
+        ),
+        "HWP" | "HPN" => (
+            "HP".to_string(),
+            Some("https://support.hp.com".to_string()),
+            Some("HP Display Center".to_string()),
+        ),
+        "BNQ" => (
+            "BenQ".to_string(),
+            Some("https://www.benq.com/en-us/support".to_string()),
+            Some("Display Pilot".to_string()),
+        ),
+        "PHL" => (
+            "Philips".to_string(),
+            Some("https://www.philips.com/c-w/support-home.html".to_string()),
+            Some("SmartControl".to_string()),
+        ),
+        "VSC" => (
+            "ViewSonic".to_string(),
+            Some("https://www.viewsonic.com/us/support/product-support/".to_string()),
+            Some("ViewSonic vDisplayManager".to_string()),
+        ),
+        "ZOW" | "BNQ_Z" => (
+            "BenQ ZOWIE".to_string(),
+            Some("https://zowie.benq.com/en-us/support/download.html".to_string()),
+            Some("Manual firmware via USB-C/USB-B (model-specific)".to_string()),
+        ),
+        "RZR" => (
+            "Razer".to_string(),
+            Some("https://www.razer.com/support".to_string()),
+            Some("Razer Synapse 4".to_string()),
+        ),
+        "ALN" | "ALW" => (
+            "Alienware (Dell)".to_string(),
+            Some("https://www.dell.com/support/home/en-us?app=drivers".to_string()),
+            Some("Alienware Command Center / DDM".to_string()),
+        ),
+        _ => ("Unknown vendor".to_string(), None, None),
+    }
 }

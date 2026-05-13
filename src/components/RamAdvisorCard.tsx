@@ -120,15 +120,19 @@ function ModuleCard({ module: m }: { module: RamModule }) {
             {m.manufacturer || 'Unknown'} <span className="font-mono text-sm text-text-muted">{m.partNumber}</span>
           </h3>
         </div>
-        <span
-          className={`text-[11px] uppercase tracking-widest px-2 py-0.5 rounded font-semibold ${
-            isUnknown
-              ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40'
-              : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/40'
-          }`}
-        >
-          {m.icType}
-        </span>
+        {isUnknown ? (
+          <span className="text-[11px] uppercase tracking-widest px-2 py-0.5 rounded font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/40">
+            {m.icType}
+          </span>
+        ) : (
+          <a
+            href="#/guides?game=any#ram-bios-recipes"
+            title={`Open the per-IC BIOS recipe for ${m.icType}`}
+            className="text-[11px] uppercase tracking-widest px-2 py-0.5 rounded font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/20 transition no-underline"
+          >
+            {m.icType} · recipe →
+          </a>
+        )}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs pt-1">
         <Stat label="Capacity" value={`${m.capacityGb} GB`} />

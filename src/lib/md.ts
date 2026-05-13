@@ -23,6 +23,11 @@ function escapeHtml(s: string): string {
 function renderInline(s: string): string {
   // Code spans first (won't double-escape inside)
   let out = s.replace(/`([^`]+)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`)
+  // Links [text](url) — http(s) only, escape href as a URL attr
+  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_m, text, url) => {
+    const safeHref = url.replaceAll('"', '%22').replaceAll('<', '%3C').replaceAll('>', '%3E')
+    return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${text}</a>`
+  })
   // Bold
   out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   // Italic (single * or _, not greedy across newlines)
@@ -69,6 +74,18 @@ export function renderMarkdown(src: string): string {
     // blank → close any list / paragraph
     if (line.trim() === '') {
       i++
+      continue
+    }
+    // fenced code block ```lang ... ```
+    if (/^```/.test(line)) {
+      i++
+      const code: string[] = []
+      while (i < lines.length && !/^```/.test(lines[i])) {
+        code.push(lines[i])
+        i++
+      }
+      if (i < lines.length) i++ // consume closing fence
+      out.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`)
       continue
     }
     // heading
@@ -122,7 +139,15 @@ export function renderMarkdown(src: string): string {
     }
     // paragraph
     const para: string[] = []
-    while (i < lines.length && lines[i].trim() !== '' && !/^#{1,6}\s/.test(lines[i]) && !/^\s*-\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i]) && !lines[i].trim().startsWith('|')) {
+    while (
+      i < lines.length &&
+      lines[i].trim() !== '' &&
+      !/^#{1,6}\s/.test(lines[i]) &&
+      !/^\s*-\s+/.test(lines[i]) &&
+      !/^\s*\d+\.\s+/.test(lines[i]) &&
+      !lines[i].trim().startsWith('|') &&
+      !/^```/.test(lines[i])
+    ) {
       para.push(lines[i])
       i++
     }

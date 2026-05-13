@@ -560,9 +560,12 @@ export interface MicrocodeReport {
   runningRevision: string | null
   isAffectedFamily: boolean
   minSafeRevision: string | null
-  /** "ok" | "outdated" | "unknown" | "not-affected" */
+  /** "ok" | "outdated" | "unknown" | "not-affected" | "active-degradation" */
   status: string
   note: string
+  /** WHEA-Logger event count in System log over last 30 days (null if not
+   * queryable). >5 on affected family = active-degradation signal. */
+  wheaEvents30d: number | null
 }
 
 /** Reads the running microcode revision from
@@ -570,6 +573,35 @@ export interface MicrocodeReport {
  *  maps Intel 13/14gen affected models against the 0x12B mitigation floor. */
 export async function microcodeReport(): Promise<MicrocodeReport> {
   return invoke<MicrocodeReport>('microcode_report')
+}
+
+export interface MonitorInfo {
+  /** 3-letter EDID PNP vendor code, e.g. "GSM" for LG. */
+  vendorCode: string
+  vendorName: string
+  model: string
+  productCode: string
+  serial: string
+  manufactureYear: number | null
+  manufactureWeek: number | null
+  ageYears: number | null
+  /** Vendor's firmware / support page URL. null = vendor not mapped. */
+  firmwareUrl: string | null
+  /** Name of the vendor's display firmware/control tool. null = vendor not mapped. */
+  firmwareTool: string | null
+}
+
+export interface MonitorReport {
+  monitors: MonitorInfo[]
+  note: string
+}
+
+/** Reads EDID via WmiMonitorID, identifies vendor + model + manufacture
+ *  date for each connected display. Maps PNP code → vendor name + firmware
+ *  tool / support URL. Windows doesn't expose monitor firmware *version*
+ *  through any standard API — this is articleware-with-detection. */
+export async function monitorInventory(): Promise<MonitorReport> {
+  return invoke<MonitorReport>('monitor_inventory')
 }
 
 export interface VbsReport {

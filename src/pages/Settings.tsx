@@ -6,6 +6,7 @@ import { useProfileStore } from '../store/useProfileStore'
 import {
   inTauri,
   listApplied,
+  openExternal,
   revertAllApplied,
   standbyCheckMigration,
   standbyInstall,
@@ -19,6 +20,8 @@ import {
   type StandbyStatus,
   type TelemetrySettings,
 } from '../lib/tauri'
+
+const MAXXTOPIA_DISCORD = 'https://discord.gg/S78eecbWdx'
 
 export function Settings() {
   const activeProfile = useProfileStore((s) => s.activeProfile)
@@ -148,6 +151,8 @@ export function Settings() {
 
       <TelemetrySection />
 
+      <HelpSection />
+
       {confirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="surface-card p-6 max-w-md w-full space-y-4">
@@ -177,6 +182,60 @@ export function Settings() {
         </div>
       )}
     </div>
+  )
+}
+
+function HelpSection() {
+  return (
+    <section className="space-y-3">
+      <div>
+        <h2 className="text-lg font-semibold">Help &amp; bug reports</h2>
+        <p className="text-sm text-text-muted">
+          Found a bug, want a tweak added, or have a feature request? Join the Maxxtopia
+          Discord — every report is read, and triaged same-day if it's reproducible.
+        </p>
+      </div>
+      <div className="surface-card p-6 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="rounded-md border border-border bg-bg-raised/40 p-4 space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-accent">report bugs · request features</p>
+            <p className="text-sm text-text leading-snug">
+              The Maxxtopia community Discord hosts <code className="text-accent">#optmaxxing-feedback</code>{' '}
+              for bug reports and <code className="text-accent">#optmaxxing-requests</code> for tweaks
+              you want us to add. Drop a thread, paste your crash log if you have one, get a reply.
+            </p>
+            <button
+              onClick={() => openExternal(MAXXTOPIA_DISCORD)}
+              className="btn-chrome mt-1 px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold"
+            >
+              Open Discord →
+            </button>
+          </div>
+
+          <div className="rounded-md border border-border bg-bg-raised/40 p-4 space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-text-subtle">crash logs · recovery</p>
+            <p className="text-sm text-text-muted leading-snug">
+              Every Rust panic + frontend exception writes to{' '}
+              <code className="text-text">%LOCALAPPDATA%\optmaxxing\crashes\&lt;ts&gt;.log</code>{' '}
+              with version + location + stack. No network egress. Diagnostics → "Last crash" has
+              one-click copy. If a tweak destabilized your rig, <strong className="text-text">Restore Point</strong>{' '}
+              above replays every captured pre-state.
+            </p>
+            <a
+              href="#/diagnostics"
+              className="inline-block mt-1 px-3 py-1.5 rounded-md border border-border text-xs text-text-muted hover:text-text hover:border-border-glow transition"
+            >
+              Open Diagnostics →
+            </a>
+          </div>
+        </div>
+        <p className="text-[11px] text-text-subtle leading-snug">
+          Telemetry (above) is off by default — opt-in to send anonymous crash + applied-tweak events
+          to our worker so we can spot patterns across users. We never see your IP or hardware ID;
+          a salted hash is used as a session key.
+        </p>
+      </div>
+    </section>
   )
 }
 

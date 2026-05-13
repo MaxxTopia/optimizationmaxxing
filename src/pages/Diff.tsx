@@ -248,7 +248,7 @@ function DiffRowCard({ row }: { row: DiffRow }) {
                     : 'text-text-subtle'
                 }`}
               >
-                {act.status === 'matches' ? '✓' : act.status === 'differs' ? '✗' : '?'}
+                {act.status === 'matches' ? '✓' : act.status === 'differs' ? '✗' : '◇'}
               </span>
               <span className="text-text-muted leading-snug">
                 <span className="text-text-subtle">action {act.index + 1}:</span> {act.detail}
