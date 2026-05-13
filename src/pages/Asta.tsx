@@ -107,7 +107,7 @@ export function Asta() {
           </pre>
         </div>
 
-        <div className="surface-card p-6 space-y-3 relative overflow-hidden">
+        <div className="theme-stage-asta surface-card p-6 space-y-3 relative overflow-hidden">
           <div
             aria-hidden="true"
             className="absolute inset-0 pointer-events-none opacity-30"

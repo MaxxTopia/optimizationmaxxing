@@ -42,7 +42,7 @@ export function Dashboard() {
   return (
     <div className="space-y-10">
       {/* HERO — name, tagline, primary CTAs */}
-      <section className="relative overflow-hidden rounded-2xl p-8 md:p-10 surface-card">
+      <section className="theme-stage-hero relative overflow-hidden rounded-2xl p-8 md:p-10 surface-card">
         <div className="hero-gradient" />
         <div className="relative">
           <p className="text-xs uppercase tracking-widest text-text-subtle mb-3">

@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.84',
+    date: '2026-05-13',
+    highlights: [
+      'UX **Theme expert-designer pass** — every-first-card overuse killed across 4 themes. Each theme now anchors its signature mark to exactly ONE surface where it makes brand sense: Adventure Time hat → Dashboard hero (card actually *wears* the hat — brim sits flush across the top edge, dome covers full card width, bear ears extend up), Akatsuki cloud → Asta apply card (Asta = "Daybreak push", Akatsuki literally = "Daybreak"), Element-115 Mc·Moscovium tile → Pricing $115 VIP card (the lore tie is literal — Element 115 is the substance AND the price), DMC Ebony & Ivory → Asta apply card. Three new class hooks (`theme-stage-hero` / `theme-stage-pricing` / `theme-stage-asta`) replace the brittle `:first-of-type` targeting.',
+      'UX **DMC Ebony & Ivory pistols re-drawn anatomically** — were flat rectangles, now full M1911 silhouettes with slide serrations, front + rear sights, cocked hammer, trigger inside trigger guard, and grip engravings reading "FOR TONY / REDGRAVE" (Dante\'s original DMC3-anime alias). Ebony: black slide + ivory engraved grip; Ivory: bone slide + black grip. Mirrored to form a proper X-cross. Red muzzle-dot on each. Subtle recoil-twitch animation every 5.5s.',
+      'UX **Akatsuki cloud + Sharingan watermark redesigned** — cloud SVG now uses a radial crimson→deep-red gradient with proper stroke highlights instead of flat fill, drop-shadow grounds it on the card surface, slow 9s float loop. Background tile redrawn at 360px so the watermark crests are visible. Katakana watermark in the bottom-right replaced with a **spinning Sharingan tomoe wheel** (three commas around a black pupil, 22s rotation, drop-shadow glow) — same name-recognition hit, more on-brand mark. Crow flock pruned from 3 to 2 (cleaner read).',
+      'UX **Element-115 Mc tile glow-up** — bigger (84×84 vs 56×56), radial-gradient cyan→Pack-a-Punch violet background, atomic mass `[288]` + tiny "HIGHLY RADIOACTIVE" subscript added. Pulses scale + glow every 4.5s like an actual sample emitting. Periodic-table aesthetic is locked in. Vial in bottom-left of viewport stays as-is.',
+      'UX **Adventure Time card-wearing-the-hat structure** — Dashboard hero now has the Finn bear-hat as a structural element rather than a sticker. SVG uses `preserveAspectRatio=\'none\'` so the hat stretches exactly to the card\'s width on any screen size. Dark band at the brim base sits flush across the top border. Inner top-edge shadow on the card sells "the hat is sitting ON me". Slow bob loop for "alive" feel.',
+    ],
+  },
+  {
     version: '0.1.83',
     date: '2026-05-13',
     highlights: [

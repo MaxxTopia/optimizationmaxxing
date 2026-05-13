@@ -228,7 +228,7 @@ function PriceCard({
     <div
       className={`surface-card p-6 flex flex-col gap-4 relative overflow-hidden ${
         highlighted ? 'border-border-glow shadow-accent-glow' : ''
-      }`}
+      } ${element115 ? 'theme-stage-pricing' : ''}`}
       style={
         element115
           ? {
