@@ -23,9 +23,18 @@ function escapeHtml(s: string): string {
 function renderInline(s: string): string {
   // Code spans first (won't double-escape inside)
   let out = s.replace(/`([^`]+)`/g, (_m, code) => `<code>${escapeHtml(code)}</code>`)
-  // Links [text](url) — http(s) only, escape href as a URL attr
-  out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_m, text, url) => {
+  // Links [text](url) — http(s) absolute OR site-relative paths (start with /).
+  // Site-relative links pointing at a downloadable file (.nip, .zip, .json, etc)
+  // get a `download` attribute so the webview saves rather than navigates,
+  // and skip target=_blank since Tauri opens those in the system browser.
+  out = out.replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (_m, text, url) => {
     const safeHref = url.replaceAll('"', '%22').replaceAll('<', '%3C').replaceAll('>', '%3E')
+    const isRelative = safeHref.startsWith('/')
+    const isDownload = /\.(nip|zip|exe|json|pdf|csv|xml|cfg|ini|sh|ps1|bat|reg)$/i.test(safeHref)
+    if (isRelative) {
+      const dl = isDownload ? ` download` : ''
+      return `<a href="${safeHref}"${dl}>${text}</a>`
+    }
     return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${text}</a>`
   })
   // Bold

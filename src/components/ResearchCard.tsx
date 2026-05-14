@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { renderMarkdown } from '../lib/md'
 import type { ResearchArticle } from '../lib/research'
 import { GAMES, type GameId } from '../lib/games'
+import { NvpiDownloadsPanel } from './NvpiDownloadsPanel'
 
 /**
  * Collapsible research-article card. Renders the .md body via our
@@ -107,6 +108,11 @@ export function ResearchCard({
                   </div>
                 )
               })}
+            </div>
+          )}
+          {article.id === 'nvidia-profile-inspector' && (
+            <div className="mb-4">
+              <NvpiDownloadsPanel />
             </div>
           )}
           <div

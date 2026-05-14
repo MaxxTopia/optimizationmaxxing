@@ -12,6 +12,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.86',
+    date: '2026-05-14',
+    highlights: [
+      'NEW **Cosmo & Wanda theme** — 8th profile in the picker. Cosmo-green + Wanda-pink dual-accent on a starry-night purple void. Fredoka cartoon headings. Signature: hand-drawn Cosmo + Wanda SVG fairies (full anatomy — crowns, wings, gold-star wands, Cosmo\'s green spiky hair, Wanda\'s pink curl) perch above the Dashboard hero card, 5.5s hover loop. Background drifts six layers of gold/pink/green/cream sparkles (90s parallax). Primary CTAs grant a gold-star wish burst on click (600ms scale+rotate+fade).',
+      'FIX **BMO card — Jake\'s paw removed** — per request: BMO stands alone on the QuickStart card. Jake now lives in the bottom-right viewport as the new tips toast.',
+      'NEW **Jake the Dog tips toast — replaces NEPTR** — per request (NEPTR was annoying). Jake\'s SVG avatar (yellow body, ears, white eyes, casual smirk, tongue peek) + 8 rotating in-app tips in Jake\'s laid-back-older-brother voice ("Bro, the secret is..."). Pure DOM-free on every other theme. Pie-toss spring animation replaced with Jake-stretch-in (matches his stretchy mechanic).',
+      'NEW **NVPI guide downloads panel** — fixes the broken `.nip` links. The markdown renderer\'s old regex only matched `https://` URLs so relative-path downloads rendered as literal text. Two fixes: (1) `lib/md.ts` now matches site-relative paths starting with `/` and adds the `download` attribute for `.nip`/`.zip`/`.exe`/etc; (2) a new `NvpiDownloadsPanel` React component renders above the NVPI article body with 4 explicit download buttons (Fortnite pinnacle highlighted) that use `fetch + Blob + URL.createObjectURL` for reliable cross-platform save. Every binding + setting count + blurb surfaced inline.',
+      'NEW **DMC deepening pass v2** — three new references: (1) **Devil Trigger purple flame** outline on every primary CTA button (hover/focus reveals a violet+crimson radial aura with 0.8s flicker — mimics DMC4/5 DT-mode), (2) **Rebellion + Yamato crossed swords** silhouette on the Asta apply card behind the Ebony & Ivory pistols (heavy Rebellion blade with skull pommel + curved Yamato katana with circular tsuba), (3) **"JACKPOT." catchphrase** in the bottom-left viewport corner — italic serif, faint glow, the Dante finisher line.',
+      'UX **Asta page reframed** — "the creed" → "the path". Philosophy intro rewritten from Black-Clover-only ("kid in a black robe swinging a sword that shouldn\'t even cut") to PC-relatable ("No 4090. No DLSS. No dad-built PC. Just a kid on a stock GPU, a hand-me-down monitor, and Wi-Fi that probably shouldn\'t qual — who refuses to lose"). AstaCard chip on Dashboard updated to match.',
+      'UX **Readability bump on dark themes** — `--text-muted` lifted 8-15% on Akatsuki (#9F8E7E → #b8a896), DMC (#c4b89a → #d4c8a4), Element-115 (#B0A085 → #c4b598), and Bumblebee (#bda87a → #cdbb8a). Long-form research articles + tweak descriptions read sharper now. Theme identity preserved (the warm-cream / warm-bone vibes stay; the dim-gray is just gone).',
+    ],
+  },
+  {
     version: '0.1.85',
     date: '2026-05-13',
     highlights: [

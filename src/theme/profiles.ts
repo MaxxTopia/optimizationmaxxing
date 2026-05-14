@@ -19,7 +19,7 @@
  * crimson + Itachi-purple, with a low-alpha cloud-pattern background.
  */
 
-export type ProfileId = 'val' | 'sonic' | 'dmc' | 'bumblebee' | 'element-115' | 'akatsuki' | 'adventure-time'
+export type ProfileId = 'val' | 'sonic' | 'dmc' | 'bumblebee' | 'element-115' | 'akatsuki' | 'adventure-time' | 'cosmo-wanda'
 
 export interface ProfileTheme {
   id: ProfileId
@@ -209,6 +209,36 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
       '--font-heading': FONT_ADVENTURE,
     },
   },
+  'cosmo-wanda': {
+    id: 'cosmo-wanda',
+    label: 'Cosmo & Wanda',
+    // Fairly OddParents — Cosmo (green hair, dumb) + Wanda (pink hair,
+    // smart). Both fairies, both fly, both grant wishes. Color is a
+    // green + pink dual-accent on a starry-night-purple void (the
+    // sky their wands light up). Heading font: Fredoka (same playful
+    // cartoon weight as Adventure Time, fits the FOP energy).
+    blurb: "Cosmo green + Wanda pink + starry-purple void. Wish granted.",
+    bodyClass: 'profile-cosmo-wanda',
+    swatch: { primary: '#5db94a', secondary: '#ff77bb', bg: '#1c1330' },
+    vars: {
+      '--bg-base': '#1c1330',
+      '--bg-raised': '#2a1d48',
+      '--bg-card': 'rgba(82, 56, 130, 0.40)',
+      '--accent': '#5db94a',
+      '--accent-soft': '#7dd167',
+      '--accent-dark': '#3a7a2e',
+      '--accent-eldritch': '#ff77bb',
+      '--secondary': '#ff77bb',
+      '--secondary-dark': '#c44a8a',
+      '--text': '#fff5e1',
+      '--text-muted': '#e0d4b8',
+      '--text-subtle': '#a89cc4',
+      '--border': 'rgba(255, 215, 0, 0.30)',
+      '--border-glow': 'rgba(255, 215, 0, 0.60)',
+      '--font-body': FONT_INTER,
+      '--font-heading': FONT_ADVENTURE,
+    },
+  },
   akatsuki: {
     id: 'akatsuki',
     label: 'Akatsuki',
@@ -242,4 +272,4 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
 }
 
 export const DEFAULT_PROFILE: ProfileId = 'val'
-export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bumblebee', 'element-115', 'akatsuki', 'adventure-time']
+export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bumblebee', 'element-115', 'akatsuki', 'adventure-time', 'cosmo-wanda']

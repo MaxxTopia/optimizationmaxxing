@@ -1300,30 +1300,9 @@ body.profile-adventure-time .theme-stage-bmo .text-text-subtle {
   color: #1a3a32 !important;
 }
 
-/* JAKE THE DOG peeks out from the right edge of the BMO card. Yellow
- * stretchy "paw arm" extends from outside the card, gripping the
- * upper-right corner — pure Jake mechanic (he's stretchy, he hangs out
- * with BMO constantly). Wags / stretches on hover. */
-body.profile-adventure-time .theme-stage-bmo {
-  --jake-stretch: 0px;
-}
-body.profile-adventure-time .theme-stage-bmo:hover {
-  --jake-stretch: 12px;
-}
-body.profile-adventure-time .theme-stage-bmo > .jake-paw,
-body.profile-adventure-time .theme-stage-bmo {
-  /* Use an inline pseudo via background instead — add Jake to the
-   * top-right corner of the BMO card via an absolute-positioned
-   * background image. */
-}
-body.profile-adventure-time .theme-stage-bmo {
-  background-image:
-    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 80'%3E%3C!-- Jake yellow paw + arm reaching in from outside --%3E%3Cpath d='M 140 40 Q 100 30 70 38 Q 50 44 38 38' stroke='%23f7b94a' stroke-width='18' fill='none' stroke-linecap='round'/%3E%3C!-- Hand/paw --%3E%3Ccircle cx='34' cy='38' r='14' fill='%23f7b94a' stroke='%23c48b22' stroke-width='2'/%3E%3C!-- Fingers --%3E%3Ccircle cx='25' cy='30' r='4' fill='%23f7b94a' stroke='%23c48b22' stroke-width='1.5'/%3E%3Ccircle cx='22' cy='38' r='4' fill='%23f7b94a' stroke='%23c48b22' stroke-width='1.5'/%3E%3Ccircle cx='25' cy='46' r='4' fill='%23f7b94a' stroke='%23c48b22' stroke-width='1.5'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, #5db4a3 0%, #4ea08f 100%) !important;
-  background-repeat: no-repeat, no-repeat;
-  background-position: top -8px right -20px, 0 0;
-  background-size: 140px 80px, 100% 100%;
-}
+/* (Jake's paw removed v0.1.86 — BMO stands alone on the QuickStart card.
+ * Jake now lives elsewhere: the Tips Toast in the bottom-right viewport,
+ * which replaced NEPTR.) */
 
 /* BMO-teal input focus — distinct from the Finn-blue body accent so forms
  * read as their own "object" (BMO is the device, not the person). */
@@ -1610,3 +1589,197 @@ body.profile-element-115 .btn-chrome.bg-accent:active::before {
   body.profile-element-115::before { animation: none; }
   body.profile-element-115 .btn-chrome.bg-accent::before { animation: none; opacity: 0 !important; }
 }
+
+/* =====================================================================
+ * Cosmo & Wanda — Fairly OddParents theme.
+ *
+ * Cosmo = green-haired fairy guy + crown + wand. Wanda = pink-haired
+ * fairy woman + crown + wand. Both fly with little wings; their wands
+ * have gold stars on top. Color scheme: dual green/pink accent on a
+ * starry-night purple void. Signature: Cosmo + Wanda perch on the
+ * Dashboard hero card, both holding wands toward the headline.
+ * Wand-sparkle particles drift across the background. CTAs get a gold
+ * star-burst on click (wish granted). Reduced-motion drops the bg
+ * animation but keeps the static perch.
+ * ===================================================================== */
+
+/* Starry sparkle background — pure CSS, six gradient layers offset for
+ * parallax twinkle. Drifts diagonally over 90s. */
+body.profile-cosmo-wanda {
+  background-image:
+    radial-gradient(circle 1.6px at 18% 22%, rgba(255, 215, 0, 0.65), transparent 60%),
+    radial-gradient(circle 1px at 74% 36%, rgba(255, 119, 187, 0.50), transparent 60%),
+    radial-gradient(circle 1.4px at 42% 70%, rgba(93, 185, 74, 0.55), transparent 60%),
+    radial-gradient(circle 1px at 64% 86%, rgba(255, 215, 0, 0.55), transparent 60%),
+    radial-gradient(circle 0.8px at 91% 12%, rgba(255, 245, 225, 0.7), transparent 60%),
+    radial-gradient(circle 1.4px at 26% 50%, rgba(255, 119, 187, 0.45), transparent 60%);
+  background-size: 620px 500px, 740px 580px, 540px 440px, 660px 520px, 480px 400px, 700px 540px;
+  background-repeat: repeat;
+  animation: cw-starry-drift 90s linear infinite;
+}
+@keyframes cw-starry-drift {
+  0%   { background-position: 0 0,         0 0,        0 0,         0 0,        0 0,         0 0; }
+  100% { background-position: 620px 500px, -740px 580px, 540px -440px, -660px 520px, 480px -400px, -700px 540px; }
+}
+
+body.profile-cosmo-wanda h1,
+body.profile-cosmo-wanda h2,
+body.profile-cosmo-wanda h3 {
+  font-family: 'Fredoka', 'Bungee', 'Comic Sans MS', system-ui, sans-serif;
+  font-weight: 600;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.35), 0 0 24px rgba(255, 119, 187, 0.25);
+}
+
+/* Cosmo + Wanda perch on the Dashboard hero. SVG renders both fairies
+ * with their wings, crowns, and wand-stars, side-by-side floating above
+ * the card. Slow up-down hover loop. */
+body.profile-cosmo-wanda .theme-stage-hero {
+  position: relative;
+  overflow: visible;
+  margin-top: 5rem;
+}
+body.profile-cosmo-wanda .theme-stage-hero::before {
+  content: '';
+  position: absolute;
+  top: -76px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 100px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 100'%3E%3C!-- Cosmo (left) — green hair, crown, wand --%3E%3Cg%3E%3C!-- wings --%3E%3Cellipse cx='80' cy='52' rx='14' ry='22' fill='%23ffffff' opacity='0.85' transform='rotate(-25 80 52)' stroke='%231a1f3a' stroke-width='1.5'/%3E%3Cellipse cx='112' cy='52' rx='14' ry='22' fill='%23ffffff' opacity='0.85' transform='rotate(25 112 52)' stroke='%231a1f3a' stroke-width='1.5'/%3E%3C!-- body --%3E%3Cellipse cx='96' cy='62' rx='16' ry='24' fill='%23ffe0c2' stroke='%231a1f3a' stroke-width='2'/%3E%3C!-- shirt --%3E%3Cpath d='M 80 70 Q 80 88 96 90 Q 112 88 112 70 Z' fill='%231a1f3a'/%3E%3C!-- head --%3E%3Ccircle cx='96' cy='44' r='17' fill='%23ffe0c2' stroke='%231a1f3a' stroke-width='2'/%3E%3C!-- hair (green spiky) --%3E%3Cpath d='M 82 32 L 86 22 L 90 30 L 94 18 L 98 30 L 102 20 L 106 32 L 110 26 Q 112 38 96 38 Q 80 38 82 32 Z' fill='%235db94a' stroke='%231a1f3a' stroke-width='2'/%3E%3C!-- crown --%3E%3Cpath d='M 88 22 L 92 14 L 96 20 L 100 14 L 104 22 Z' fill='%23ffd700' stroke='%231a1f3a' stroke-width='1.5'/%3E%3C!-- eyes --%3E%3Ccircle cx='90' cy='44' r='2.5' fill='%231a1f3a'/%3E%3Ccircle cx='102' cy='44' r='2.5' fill='%231a1f3a'/%3E%3C!-- mouth --%3E%3Cpath d='M 92 50 Q 96 54 100 50' stroke='%231a1f3a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C!-- wand --%3E%3Cline x1='72' y1='62' x2='62' y2='42' stroke='%231a1f3a' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M 62 32 L 66 40 L 74 40 L 67 46 L 70 54 L 62 49 L 54 54 L 57 46 L 50 40 L 58 40 Z' fill='%23ffd700' stroke='%231a1f3a' stroke-width='1.5'/%3E%3C/g%3E%3C!-- Wanda (right) — pink hair, crown, wand --%3E%3Cg%3E%3C!-- wings --%3E%3Cellipse cx='168' cy='52' rx='14' ry='22' fill='%23ffffff' opacity='0.85' transform='rotate(-25 168 52)' stroke='%231a1f3a' stroke-width='1.5'/%3E%3Cellipse cx='200' cy='52' rx='14' ry='22' fill='%23ffffff' opacity='0.85' transform='rotate(25 200 52)' stroke='%231a1f3a' stroke-width='1.5'/%3E%3C!-- body --%3E%3Cellipse cx='184' cy='62' rx='16' ry='24' fill='%23ffe0c2' stroke='%231a1f3a' stroke-width='2'/%3E%3C!-- shirt --%3E%3Cpath d='M 168 70 Q 168 88 184 90 Q 200 88 200 70 Z' fill='%231a1f3a'/%3E%3C!-- head --%3E%3Ccircle cx='184' cy='44' r='17' fill='%23ffe0c2' stroke='%231a1f3a' stroke-width='2'/%3E%3C!-- hair (pink curled top) --%3E%3Cpath d='M 170 32 Q 168 22 178 22 Q 184 12 190 22 Q 200 22 198 32 Q 200 36 196 38 Q 184 36 172 38 Q 168 36 170 32 Z' fill='%23ff77bb' stroke='%231a1f3a' stroke-width='2'/%3E%3C!-- side curls --%3E%3Cpath d='M 169 38 Q 165 42 168 46 Q 172 42 170 38' fill='%23ff77bb' stroke='%231a1f3a' stroke-width='1.5'/%3E%3Cpath d='M 199 38 Q 203 42 200 46 Q 196 42 198 38' fill='%23ff77bb' stroke='%231a1f3a' stroke-width='1.5'/%3E%3C!-- crown --%3E%3Cpath d='M 176 22 L 180 14 L 184 20 L 188 14 L 192 22 Z' fill='%23ffd700' stroke='%231a1f3a' stroke-width='1.5'/%3E%3C!-- eyes --%3E%3Ccircle cx='178' cy='44' r='2.5' fill='%231a1f3a'/%3E%3Ccircle cx='190' cy='44' r='2.5' fill='%231a1f3a'/%3E%3C!-- mouth --%3E%3Cpath d='M 180 50 Q 184 53 188 50' stroke='%231a1f3a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C!-- wand --%3E%3Cline x1='208' y1='62' x2='218' y2='42' stroke='%231a1f3a' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M 218 32 L 222 40 L 230 40 L 223 46 L 226 54 L 218 49 L 210 54 L 213 46 L 206 40 L 214 40 Z' fill='%23ffd700' stroke='%231a1f3a' stroke-width='1.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+  z-index: 2;
+  animation: cw-fairy-hover 5.5s ease-in-out infinite;
+}
+@keyframes cw-fairy-hover {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-6px); }
+}
+
+/* CTA wish-grant — gold star burst on click. Star SVG scales + fades. */
+body.profile-cosmo-wanda .btn-chrome.bg-accent {
+  position: relative;
+  z-index: 0;
+  overflow: visible;
+}
+body.profile-cosmo-wanda .btn-chrome.bg-accent::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M 50 8 L 58 38 L 90 38 L 64 56 L 74 88 L 50 68 L 26 88 L 36 56 L 10 38 L 42 38 Z' fill='%23ffd700' stroke='%23ff8c00' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  z-index: -1;
+}
+body.profile-cosmo-wanda .btn-chrome.bg-accent:active::after {
+  animation: cw-wish-burst 600ms ease-out 1 forwards;
+}
+@keyframes cw-wish-burst {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(0deg); }
+  30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.4) rotate(180deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2) rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.profile-cosmo-wanda { animation: none; }
+  body.profile-cosmo-wanda .theme-stage-hero::before { animation: none; transform: translateX(-50%); }
+  body.profile-cosmo-wanda .btn-chrome.bg-accent::after { display: none; }
+}
+
+/* =====================================================================
+ * DMC deepening pass v2 — Devil Trigger flame + Rebellion/Yamato cross
+ * + "JACKPOT" microcopy + red orb particles on CTA hover.
+ * ===================================================================== */
+
+/* Devil Trigger purple flame outline on focused/active primary CTAs.
+ * Mimics DMC4/5 DT-mode aura. */
+body.profile-dmc .btn-chrome.bg-accent {
+  position: relative;
+  z-index: 0;
+}
+body.profile-dmc .btn-chrome.bg-accent::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(150, 60, 200, 0.45) 0%,
+    rgba(179, 0, 12, 0.30) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 200ms ease-out;
+  filter: blur(4px);
+}
+body.profile-dmc .btn-chrome.bg-accent:hover::before,
+body.profile-dmc .btn-chrome.bg-accent:focus-visible::before {
+  opacity: 1;
+  animation: dmc-dt-flicker 0.8s ease-in-out infinite;
+}
+@keyframes dmc-dt-flicker {
+  0%, 100% { opacity: 1; filter: blur(4px); }
+  50%      { opacity: 0.75; filter: blur(6px); }
+}
+
+/* "JACKPOT" microcopy in the bottom-left viewport corner — adjacent
+ * to the SSS rank in the bottom-right. Italic red serif, faint glow.
+ * The DMC catchphrase Dante drops after finishers. */
+body.profile-dmc::before {
+  content: 'JACKPOT.';
+  position: fixed;
+  bottom: 18px;
+  left: 20px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 14px;
+  color: rgba(230, 57, 70, 0.4);
+  text-shadow: 0 0 8px rgba(230, 57, 70, 0.35);
+  letter-spacing: 0.18em;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Rebellion + Yamato crossed-swords silhouette on the Asta apply card
+ * (where E&I already lives — the full Devil Hunter armory). Behind
+ * the pistols, smaller scale, just a subtle stamp. */
+body.profile-dmc .theme-stage-asta::before {
+  content: '';
+  position: absolute;
+  top: -32px;
+  left: 24px;
+  width: 96px;
+  height: 64px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 64'%3E%3C!-- Rebellion (left blade) — heavy demon sword with skull pommel --%3E%3Cg transform='translate(34 40) rotate(-30)'%3E%3C!-- blade --%3E%3Cpath d='M 0 -28 L 4 -28 L 4 20 L 0 20 Z' fill='%23c4b89a' stroke='%231a0e10' stroke-width='1.2'/%3E%3C!-- blade midline --%3E%3Cline x1='2' y1='-26' x2='2' y2='18' stroke='%23f4ecd8' stroke-width='0.5'/%3E%3C!-- crossguard --%3E%3Crect x='-10' y='18' width='24' height='4' fill='%231a0e10'/%3E%3C!-- handle --%3E%3Crect x='0' y='22' width='4' height='10' fill='%23b3000c'/%3E%3C!-- skull pommel --%3E%3Ccircle cx='2' cy='34' r='3' fill='%23f4ecd8' stroke='%231a0e10' stroke-width='1'/%3E%3C/g%3E%3C!-- Yamato (right blade) — katana, narrow, no guard hat --%3E%3Cg transform='translate(66 40) rotate(30)'%3E%3C!-- blade (slight curve) --%3E%3Cpath d='M 0 -28 Q 1 -10 0 18 L 2 18 Q 3 -10 2 -28 Z' fill='%23dce4ec' stroke='%231a0e10' stroke-width='1.2'/%3E%3C!-- crossguard (circular tsuba) --%3E%3Ccircle cx='1' cy='20' r='4' fill='%231a0e10'/%3E%3Ccircle cx='1' cy='20' r='2' fill='%23dce4ec'/%3E%3C!-- handle (dark wrap) --%3E%3Crect x='-1' y='24' width='4' height='10' fill='%231a0e10'/%3E%3C!-- handle wrap lines --%3E%3Cline x1='-1' y1='26' x2='3' y2='26' stroke='%23f4ecd8' stroke-width='0.4'/%3E%3Cline x1='-1' y1='28' x2='3' y2='28' stroke='%23f4ecd8' stroke-width='0.4'/%3E%3Cline x1='-1' y1='30' x2='3' y2='30' stroke='%23f4ecd8' stroke-width='0.4'/%3E%3Cline x1='-1' y1='32' x2='3' y2='32' stroke='%23f4ecd8' stroke-width='0.4'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.45;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.profile-dmc .btn-chrome.bg-accent::before { animation: none; }
+}
+
+/* =====================================================================
+ * Readability bump on dark themes — text-muted alpha was too low for
+ * gray-on-gray combos in long-form research bodies. Lifted 8-15%.
+ * ===================================================================== */
+body.profile-akatsuki   { --text-muted: #b8a896; }   /* was #9F8E7E */
+body.profile-dmc        { --text-muted: #d4c8a4; }   /* was #c4b89a */
+body.profile-element-115 { --text-muted: #c4b598; }  /* was #B0A085 */
+body.profile-bumblebee  { --text-muted: #cdbb8a; }   /* was #bda87a */

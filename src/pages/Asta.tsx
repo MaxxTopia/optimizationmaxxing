@@ -9,7 +9,7 @@ import { TournamentAudit } from '../components/TournamentAudit'
 import { TournamentModePanel } from '../components/TournamentModePanel'
 
 /**
- * /asta — the creed + apply page for Asta Mode. Browsable for non-VIP users
+ * /asta — the path + apply page for Asta Mode. Browsable for non-VIP users
  * (so they see what they could unlock — that's the upsell), but Apply is
  * hard-gated behind the existing VIP store.
  */
@@ -21,17 +21,18 @@ const QUOTES = [
   '"Every drop of sweat and every scar can\'t become a lie."',
 ] as const
 
-const ASTA_PHILOSOPHY = `No magic. No cheat codes. No silver-spoon rig.
-A kid in a black robe swinging a sword that shouldn't even cut — and
-the lobby never sees him quit.
+const ASTA_PHILOSOPHY = `No 4090. No DLSS. No dad-built PC. Just a kid on a stock GPU,
+a hand-me-down monitor, and Wi-Fi that probably shouldn't qual —
+who refuses to lose more times than the lobby refuses to let him in.
 
-This is the mode for the gen that refuses to roll over for the ones
-born holding the controller. Stock 1660 Ti, 144 Hz IPS, friend's
-hand-me-down, still planning to make Champion League. Asta Mode pulls
-every software lever this app can reach — the polite Tournament FPS
-preset, but cranked. ~12-22 ms off your click-to-pixel, +25-35 average
-FPS in Fortnite endgames, +12-20 on 1% lows. Closes ~70% of the gap to
-a $5K rig. The other 30% is silicon, refresh, and where your house is.
+That's the model. That's the path.
+
+This is the mode for the gen running 1660 Ti, 144 Hz IPS, basement
+ping, still planning to make Champion League. Asta Mode pulls every
+software lever this app can reach — the polite Tournament FPS preset,
+but cranked. ~12-22 ms off your click-to-pixel, +25-35 average FPS in
+Fortnite endgames, +12-20 on 1% lows. Closes ~70% of the gap to a $5K
+rig. The other 30% is silicon, refresh, and where your house is.
 
 What's left after Asta Mode lives on /diagnostics (RAM tightening, CO
 undervolt) and /grind (sleep, warmups, session cadence). Those are
@@ -87,7 +88,7 @@ export function Asta() {
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 surface-card p-6 space-y-4">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-text-subtle">the creed</p>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-text-subtle">the path</p>
           <h2
             className="text-3xl md:text-4xl font-bold leading-tight asta-anti-magic"
             style={{ fontFamily: "'Pirata One', 'Cinzel', serif" }}
