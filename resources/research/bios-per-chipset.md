@@ -31,7 +31,7 @@ Boot into BIOS → look for "Save Profile" / "Backup CMOS" / "Export to USB". Sa
 
 ## AMD X670E / X870E
 - **EXPO** (or DOCP equivalent): ON. Loads XMP-equivalent profile.
-- **Curve Optimizer:** -10 to -30 negative offset per core. Validate via Cinebench R23 30-min + OCCT 1-hour.
+- **Curve Optimizer:** -10 to -30 negative offset per core. Validate via [Cinebench R23](https://www.maxon.net/en/downloads/cinebench-r23-downloads) 30-min + [OCCT](https://www.ocbase.com/) 1-hour.
 - **PBO:** Enabled, motherboard or scalar 10x.
 - **PBO Limits:** Custom — PPT 230W, TDC 160A, EDC 225A is a healthy 7950X target.
 - **FCLK / UCLK:** Lock 1:1 with memory speed up to 6000 MT/s. Above that drops to 2:1 — Intel territory.

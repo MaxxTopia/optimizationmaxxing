@@ -604,6 +604,36 @@ export async function monitorInventory(): Promise<MonitorReport> {
   return invoke<MonitorReport>('monitor_inventory')
 }
 
+export interface DriverEntry {
+  classLabel: string
+  deviceName: string
+  vendor: string
+  rawVersion: string
+  /** User-facing version when we can derive it (NVIDIA today). null otherwise. */
+  friendlyVersion: string | null
+  /** ISO yyyy-mm-dd, null when WMI returned an unparseable date. */
+  driverDate: string | null
+  ageDays: number | null
+  stale: boolean
+  /** Short reason if this driver is on the bundled known-bad list. */
+  knownBad: string | null
+  knownGood: boolean
+}
+
+export interface DriverHealthReport {
+  drivers: DriverEntry[]
+  staleCount: number
+  knownBadCount: number
+  note: string
+}
+
+/** Walks Win32_PnPSignedDriver and flags stale / known-bad drivers per
+ *  class (GPU / chipset / audio / network / storage). NVIDIA gets its
+ *  user-facing version extracted from the WMI Microsoft-internal version. */
+export async function driverHealth(): Promise<DriverHealthReport> {
+  return invoke<DriverHealthReport>('driver_health')
+}
+
 export interface VbsReport {
   /** 0 = off, 1 = configured but not running, 2 = running. */
   vbsStatus: number

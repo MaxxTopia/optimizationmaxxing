@@ -89,7 +89,7 @@ Note variables that look out-of-range or that you don't recognize. Cross-referen
 
 ### 4. Apply changes in BIOS UI
 
-Take the list from step 3 into BIOS. Change **one setting at a time**, reboot, validate stability with TestMem5 (RAM) or OCCT (voltage / current). Bundling changes is how you spend a weekend chasing a phantom crash to one of three things you flipped at once.
+Take the list from step 3 into BIOS. Change **one setting at a time**, reboot, validate stability with [TestMem5](https://github.com/CoolCmd/TestMem5) (RAM) or [OCCT](https://www.ocbase.com/) (voltage / current). Bundling changes is how you spend a weekend chasing a phantom crash to one of three things you flipped at once.
 
 Hit **Save & Exit**, not Discard. Some boards stack a "Save changes?" confirm dialog on top of the F10 hotkey — if you miss it, the change rolls back.
 

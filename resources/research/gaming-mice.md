@@ -107,11 +107,11 @@ default profile. Same for Endgame Gear's surface tuning.
 
 | Mouse | Weight | Polling | Sensor | Verdict |
 |---|---|---|---|---|
-| Logitech G Pro X Superlight 2 | 60 g | 8000 Hz | HERO 2 | All-rounder GOAT — Peterbot / Mongraal / Veno / Reet |
-| Razer Viper V3 Pro | 54 g | 8000 Hz | Focus Pro 35K | Fastest sensor on the market |
-| Pulsar X2 V3 | 52 g | 8000 Hz | XS-1 | Best price-perf flagship |
-| Endgame Gear OP1 8K | 52 g | 8000 Hz | PAW3950 | Minimal shape, hardcore |
-| ZOWIE EC2-CW / EC3-CW | 70–77 g | 1000 Hz | 3370 | CS-tier classic ergo |
+| [Logitech G Pro X Superlight 2](https://www.logitechg.com/en-us/products/gaming-mice/pro-x-superlight-2-wireless-lightspeed.html) | 60 g | 8000 Hz | HERO 2 | All-rounder GOAT — Peterbot / Mongraal / Veno / Reet |
+| [Razer Viper V3 Pro](https://www.razer.com/gaming-mice/razer-viper-v3-pro) | 54 g | 8000 Hz | Focus Pro 35K | Fastest sensor on the market |
+| [Pulsar X2 V3](https://pulsar.gg/products/x2-v3) | 52 g | 8000 Hz | XS-1 | Best price-perf flagship |
+| [Endgame Gear OP1 8K](https://endgamegear.com/gaming-mice/op1-8k) | 52 g | 8000 Hz | PAW3950 | Minimal shape, hardcore |
+| [ZOWIE EC2-CW / EC3-CW](https://zowie.benq.com/en-us/peripheral/mouse.html) | 70–77 g | 1000 Hz | 3370 | CS-tier classic ergo |
 | **Finalmouse UltralightX Prophecy** | 33 g | 8000 Hz | proprietary | **Lightest serious competitive mouse — and configures via [xpanel.finalmouse.com](https://xpanel.finalmouse.com) in your browser, no software install. Same model in 3 sizes (classic / medium / small).** |
 
 **Why the Finalmouse XPANEL matters:** zero driver/daemon to install, kill,

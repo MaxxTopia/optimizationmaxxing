@@ -8,7 +8,7 @@
 
 ### E-cores
 - **Default: keep enabled.** Intel Thread Director routes game threads to P-cores correctly.
-- **Process Lasso pin** if you see stutter: pin game .exe to P-cores only via "CPU Affinity → Always". 13900K/14900K = cores 0-15.
+- **[Process Lasso](https://bitsum.com/) pin** if you see stutter: pin game .exe to P-cores only via "CPU Affinity → Always". 13900K/14900K = cores 0-15. Our own `/auto-pin → Fortnite → Auto-pick` does the same with no third-party install.
 - **Disable in BIOS only as last resort** for pre-Win11 23H2 machines that don't have Thread Director support.
 - 15th gen (Core Ultra 200): Thread Director v2 + APO (Application Optimization). Leave E-cores on, install APO.
 
@@ -17,13 +17,13 @@
 - Requires Win11 23H2+.
 
 ### Performance Cores Boost / Thermal Velocity Boost
-- BIOS-level. Leave on stock unless you've validated thermals at full load (20-min Cinebench R23 + 20-min OCCT).
+- BIOS-level. Leave on stock unless you've validated thermals at full load (20-min [Cinebench R23](https://www.maxon.net/en/downloads/cinebench-r23-downloads) + 20-min [OCCT](https://www.ocbase.com/)).
 
 ## AMD (Zen 3 / 4 / 5)
 
 ### Simultaneous Multi-Threading (SMT)
 - **Keep ON** for most titles.
-- Edge case: 5800X3D / 7800X3D / 7950X3D — large L3 victim cache; some CS2 / R6 testing shows SMT-off + Process Lasso pin to CCD0 wins 5-8% in 1% lows. Test both.
+- Edge case: 5800X3D / 7800X3D / 7950X3D — large L3 victim cache; some CS2 / R6 testing shows SMT-off + Process Lasso (or our `/auto-pin`) pin to CCD0 wins 5-8% in 1% lows. Test both.
 
 ### Precision Boost Overdrive (PBO)
 - **Enable** in BIOS. Free perf scaling.

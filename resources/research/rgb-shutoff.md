@@ -109,10 +109,10 @@ Per-device, set static color to black or to an "off" / "static-off"
 mode, save the profile **to the device's onboard memory** (every modern
 gaming peripheral has this). After saving, uninstall the vendor app.
 
-- **Logitech G HUB:** Onboard Memory Mode → set color black → save
-- **Razer Synapse:** Set to "None" effect → save to onboard profile slot
-- **Corsair iCUE:** Hardware Profile tab → set lighting off → save to device
-- **SteelSeries GG:** Engine → CONFIGURE → lighting off → save to device
+- **[Logitech G HUB](https://www.logitechg.com/en-us/innovation/g-hub.html):** Onboard Memory Mode → set color black → save
+- **[Razer Synapse](https://www.razer.com/synapse-4):** Set to "None" effect → save to onboard profile slot
+- **[Corsair iCUE](https://www.corsair.com/us/en/s/icue):** Hardware Profile tab → set lighting off → save to device
+- **[SteelSeries GG](https://steelseries.com/gg):** Engine → CONFIGURE → lighting off → save to device
 
 This is the single biggest "background app tax" recovery you'll feel.
 Razer Synapse and iCUE are the most expensive RGB apps on a stock rig.

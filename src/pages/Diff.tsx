@@ -108,9 +108,10 @@ export function Diff() {
             Every tweak you've applied, in one list. Each row tells you whether the change is{' '}
             <strong className="text-emerald-300">still in place</strong> or whether something
             <strong className="text-amber-300"> reverted it</strong> (Windows Update, another
-            tuner, or you yourself flipped it back). Click any row to see exactly which registry
-            keys or files were modified. Hit "Copy as text" to share your full setup in a Discord
-            DM.
+            tuner, or you yourself flipped it back). Registry + file writes can be re-read directly;
+            script + BCD edits show <span className="text-text-muted">◇ applied (no re-read)</span>{' '}
+            because they ran imperatively or need admin to query. Click any row for the per-action
+            detail. "Copy as text" pastes the full setup into a Discord DM.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -173,24 +174,45 @@ function SummaryStrip({ rows }: { rows: DiffRow[] }) {
   let onTarget = 0
   let drift = 0
   let partial = 0
-  let unknown = 0
+  let trustOnly = 0
+  let errored = 0
   for (const r of rows) {
-    if (!r.audit) {
-      unknown++
+    if (!r.audit || r.audit.status === 'error') {
+      errored++
       continue
     }
-    if (r.audit.status === 'matches') onTarget++
-    else if (r.audit.status === 'differs') drift++
+    if (r.audit.status === 'matches') {
+      // Did the match come from a verifiable source (registry/file) or a
+      // trust-only source (PS script / BCD-without-admin)? Count those
+      // separately so the user knows what fraction of "still in place"
+      // they can actually see proof of.
+      const hasTrustOnly = r.audit.actions.some(
+        (a) => a.status === 'matches' && /^(Script ran on apply|BCD .* applied via admin)/.test(a.detail),
+      )
+      if (hasTrustOnly && r.audit.actions.every((a) => /^(Script ran on apply|BCD .* applied via admin)/.test(a.detail))) {
+        trustOnly++
+      } else {
+        onTarget++
+      }
+    } else if (r.audit.status === 'differs') drift++
     else if (r.audit.status === 'partial') partial++
-    else unknown++
+    else trustOnly++
   }
   return (
     <div className="surface-card p-3 flex flex-wrap gap-x-5 gap-y-1 text-xs items-center">
       <span className="text-text-subtle uppercase tracking-widest">summary</span>
-      <span className="text-emerald-300">✓ {onTarget} still in place</span>
+      <span className="text-emerald-300">✓ {onTarget} verified in place</span>
       {drift > 0 && <span className="text-red-400">✗ {drift} got reverted</span>}
       {partial > 0 && <span className="text-amber-300">◐ {partial} partly in place</span>}
-      {unknown > 0 && <span className="text-text-subtle">? {unknown} can't tell</span>}
+      {trustOnly > 0 && (
+        <span
+          className="text-text-muted"
+          title="Script / BCD actions — the apply succeeded but the change can't be re-read without admin or doesn't leave a persistent value to check."
+        >
+          ◇ {trustOnly} applied (no re-read)
+        </span>
+      )}
+      {errored > 0 && <span className="text-text-subtle">! {errored} check failed</span>}
     </div>
   )
 }
@@ -198,24 +220,34 @@ function SummaryStrip({ rows }: { rows: DiffRow[] }) {
 function DiffRowCard({ row }: { row: DiffRow }) {
   const [expanded, setExpanded] = useState(false)
   const a = row.audit
+  const trustOnlyActions = a?.actions.filter((x) =>
+    /^(Script ran on apply|BCD .* applied via admin)/.test(x.detail),
+  ).length ?? 0
+  const allTrustOnly = !!(a && trustOnlyActions > 0 && trustOnlyActions === a.actions.length)
   const verdictColor = !a
     ? 'text-text-subtle'
     : a.status === 'matches'
-    ? 'text-emerald-300'
+    ? allTrustOnly
+      ? 'text-text-muted'
+      : 'text-emerald-300'
     : a.status === 'differs'
     ? 'text-red-400'
     : a.status === 'partial'
     ? 'text-amber-300'
     : 'text-text-subtle'
   const verdictLabel = !a
-    ? "? can't tell"
+    ? '! check failed'
     : a.status === 'matches'
-    ? '✓ still in place'
+    ? allTrustOnly
+      ? '◇ applied (no re-read)'
+      : '✓ verified in place'
     : a.status === 'differs'
     ? '✗ got reverted'
     : a.status === 'partial'
     ? `◐ ${a.matchCount}/${a.total} in place`
-    : "? can't tell"
+    : a.status === 'error'
+    ? '! check failed'
+    : '◇ applied (no re-read)'
 
   return (
     <article className="surface-card p-4">

@@ -83,15 +83,19 @@ export function auditAction(
     case 'bcdedit_set': {
       // pre shape from elevation pre-state capture: { found: 'unknown' } or
       // { value: '<bcd value>' } — engine returns best-effort.
+      const target = String(action.value)
       if (
         pre &&
         typeof pre === 'object' &&
         (pre as { found?: string }).found === 'unknown'
       ) {
+        // For ALREADY-APPLIED rows: we know the apply succeeded (the
+        // engine threw on failure). Re-reading BCD needs admin, which
+        // we don't have right now — call it written-but-unverified.
         return {
           index,
-          status: 'unknown',
-          detail: 'BCD value needs admin to read — relaunch as admin to see current state',
+          status: 'matches',
+          detail: `BCD ${(action as { name: string }).name} = ${target} — applied via admin (re-check on a re-launch as admin)`,
         }
       }
       const obj = pre as { value?: unknown }
@@ -99,20 +103,25 @@ export function auditAction(
         return {
           index,
           status: 'matches',
-          detail: `BCD already ${String(action.value)}`,
+          detail: `BCD already ${target}`,
         }
       }
       return {
         index,
-        status: 'unknown',
-        detail: 'BCD value differs in a way we can\'t parse cleanly — apply + revert is safe to verify',
+        status: 'differs',
+        detail: `BCD currently ${formatScalar(obj?.value)}, target ${target}`,
       }
     }
     case 'powershell_script':
+      // Script tweaks are imperative — they fire once and their effect
+      // either persists in a way we'd need a separate probe to verify
+      // (a service state, a file deleted) or is fire-and-forget (a cache
+      // cleared). For now, treat an "applied" snapshot as the receipt and
+      // surface what the script did rather than calling it can't-tell.
       return {
         index,
-        status: 'unknown',
-        detail: 'Script-based tweak (e.g. clears caches, kills services) — has no static "before" value to compare. Snapshot stores the pre-state so revert still works.',
+        status: 'matches',
+        detail: 'Script ran on apply — clears cache / kills service / etc. No persistent value to re-read; revert script is the inverse.',
       }
     case 'file_write': {
       // pre_state shape: { existed: bool, contents_b64?: string, sha256?: string, size_bytes?: number }

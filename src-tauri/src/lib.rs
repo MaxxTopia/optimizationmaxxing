@@ -4,6 +4,7 @@ use tauri::Manager;
 mod auto_pin;
 mod cpusets;
 mod crash;
+mod drivers;
 mod engine;
 mod metrics;
 mod process_helpers;
@@ -587,6 +588,17 @@ async fn monitor_inventory() -> Result<toolkit::MonitorReport, String> {
         .map_err(|e| format!("monitor task failed: {e}"))?
 }
 
+#[tauri::command]
+async fn driver_health() -> Result<drivers::DriverHealthReport, String> {
+    tokio::task::spawn_blocking(|| {
+        let com_con = wmi::COMLibrary::new().map_err(|e| format!("COM init: {e:#}"))?;
+        let wmi_con = wmi::WMIConnection::new(com_con).map_err(|e| format!("WMI: {e:#}"))?;
+        drivers::read_driver_health(&wmi_con).map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("driver_health task failed: {e}"))?
+}
+
 /// Closes the splash window and shows the main window. Called by the React
 /// app from its first-mount useEffect. The 1200ms delay on the React side
 /// guarantees the neon-ripple animation gets at least one full sweep before
@@ -783,6 +795,7 @@ pub fn run() {
             microcode_report,
             vbs_report,
             monitor_inventory,
+            driver_health,
             list_session_candidates,
             session_suspend,
             session_resume,

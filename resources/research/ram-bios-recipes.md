@@ -1,6 +1,6 @@
 # RAM tightening — copy-paste BIOS recipes per IC
 
-The RAM Advisor card on `/diagnostics` identifies your IC die from the part number. **Match the IC below to the BIOS recipe**. Type these values into your motherboard's DRAM timing menu, then run TestMem5 (anta777 extreme config) for 1–2 hours to validate before tournament use. Never auto-flash; never copy a recipe blindly into XMP/EXPO+ overrides without verifying the IC first.
+The RAM Advisor card on `/diagnostics` identifies your IC die from the part number. **Match the IC below to the BIOS recipe**. Type these values into your motherboard's DRAM timing menu, then run [TestMem5](https://github.com/CoolCmd/TestMem5) (anta777 extreme config) for 1–2 hours to validate before tournament use. Never auto-flash; never copy a recipe blindly into XMP/EXPO+ overrides without verifying the IC first.
 
 The numbers below are the **SAFE** Buildzoid/DRAM-Calculator consensus. FAST/EXTREME tiers exist for daily-driver overclockers; they're not appropriate here.
 
