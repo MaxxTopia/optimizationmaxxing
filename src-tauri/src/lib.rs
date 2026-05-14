@@ -7,6 +7,7 @@ mod crash;
 mod drivers;
 mod engine;
 mod metrics;
+mod network_audit;
 mod process_helpers;
 mod specs;
 mod standby;
@@ -589,6 +590,15 @@ async fn monitor_inventory() -> Result<toolkit::MonitorReport, String> {
 }
 
 #[tauri::command]
+async fn network_audit_probe() -> Result<network_audit::NetworkAudit, String> {
+    tokio::task::spawn_blocking(|| {
+        network_audit::read_network_audit().map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("network_audit task failed: {e}"))?
+}
+
+#[tauri::command]
 async fn driver_health() -> Result<drivers::DriverHealthReport, String> {
     tokio::task::spawn_blocking(|| {
         let com_con = wmi::COMLibrary::new().map_err(|e| format!("COM init: {e:#}"))?;
@@ -796,6 +806,7 @@ pub fn run() {
             vbs_report,
             monitor_inventory,
             driver_health,
+            network_audit_probe,
             list_session_candidates,
             session_suspend,
             session_resume,

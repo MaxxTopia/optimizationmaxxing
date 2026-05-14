@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.97',
+    date: '2026-05-14',
+    highlights: [
+      'NEW **Network Audit card on /diagnostics** — pro-Fortnite setup punch-list that runs `Get-NetRoute` + `Get-NetAdapter` + `Get-NetNeighbor` + a Cloudflare cdn-cgi trace in one pass, then surfaces each check as ✓ pass / ◐ warn / ✗ fail / ◇ unknown with one-line fix guidance. Checks: **wired vs Wi-Fi** (Wi-Fi at gaming time fails — concrete fix), **link speed** (warns under 1 Gbps), **CGNAT** (flags 100.64.0.0/10 public IPs → call ISP), **first-hop RTT** (gateway ping, pass <2ms / warn <5ms), **WAS-110 stick subnet reachability** (the exact answer to "why does 192.168.11.1 time out in my browser").',
+      'NEW **Router-vendor detection + tips** — gateway MAC OUI lookup matched against a bundled 40-entry table covering **Ubiquiti / ASUS / Netgear / TP-Link / MikroTik / Netgate (pfSense) / Eero / Google Nest WiFi / AT&T BGW320 / Verizon FiOS / Xfinity / Apple AirPort / Synology / Cisco-Linksys**. When matched, the card surfaces a per-vendor tips block with concrete Fortnite-optimization steps (CAKE Smart Queues % for UDM, mangle DSCP marking for MikroTik, the "bridge mode" steps for Xfinity XB7/8, etc.) plus a "this is an AT&T BGW320 — bypass it via WAS-110" callout when the gateway is still the carrier device.',
+      'FIX **WAS-110 / ONU stick "192.168.11.1 timed out" — clear fix-it block** — when the configured URL is a `192.168.11.x` address AND the error message mentions timeout/unreachable, the OnuStickCard now renders an in-place explanation: "this is a routing problem, not a dead stick" + 3 ordered fixes (static route on your router / use router CLI for DDMI / direct-plug a laptop into the stick host port). Cross-references the new Network Audit\'s subnet check so users can see exactly what their PC\'s actual subnet is.',
+      'NEW **`network_audit_probe` Tauri command** — single PowerShell roundtrip, ~1-2s per probe, no extra deps. 7 unit tests cover OUI lookup + CGNAT detection + subnet reachability. 65/65 cargo tests passing.',
+    ],
+  },
+  {
     version: '0.1.96',
     date: '2026-05-14',
     highlights: [

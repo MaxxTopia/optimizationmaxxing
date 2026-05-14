@@ -5,6 +5,7 @@ import { HudFrame } from '../components/HudFrame'
 import { IntelMicrocodeCard } from '../components/IntelMicrocodeCard'
 import { LastCrashCard } from '../components/LastCrashCard'
 import { MonitorFirmwareCard } from '../components/MonitorFirmwareCard'
+import { NetworkAuditCard } from '../components/NetworkAuditCard'
 import { PcieLinkCard } from '../components/PcieLinkCard'
 import { RamAdvisorCard } from '../components/RamAdvisorCard'
 import { UclkWarningCard } from '../components/UclkWarningCard'
@@ -258,6 +259,8 @@ export function Diagnostics() {
           <HudFrame><IntelMicrocodeCard /></HudFrame>
 
           <HudFrame><DriverHealthCard /></HudFrame>
+
+          <HudFrame><NetworkAuditCard /></HudFrame>
 
           <HudFrame><MonitorFirmwareCard /></HudFrame>
 

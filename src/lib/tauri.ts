@@ -626,6 +626,33 @@ export interface DriverHealthReport {
   note: string
 }
 
+export interface NetworkAudit {
+  adapterName: string | null
+  /** "Ethernet" | "Wifi" | "Other" — bucketed from the WMI media type. */
+  mediaType: string | null
+  linkSpeedMbps: number | null
+  localMac: string | null
+  localIpv4: string | null
+  gatewayIpv4: string | null
+  gatewayMac: string | null
+  /** Router brand guessed from gateway MAC OUI. Bundled lookup. */
+  gatewayVendor: string | null
+  gatewayRttMs: number | null
+  publicIpv4: string | null
+  /** True if public IP is inside RFC 6598 CGNAT (100.64.0.0/10). */
+  cgnat: boolean | null
+  /** True if the local subnet is `192.168.11.0/24` — the WAS-110 stick's
+   *  default mgmt subnet. False = need a static route to reach the stick. */
+  stickSubnetReachable: boolean | null
+}
+
+/** Probes default gateway, adapter, link speed, public IP, CGNAT, and
+ *  whether the WAS-110 stick's 192.168.11.x mgmt subnet is reachable from
+ *  this rig. Used by the NetworkAuditCard on /diagnostics. */
+export async function networkAuditProbe(): Promise<NetworkAudit> {
+  return invoke<NetworkAudit>('network_audit_probe')
+}
+
 /** Walks Win32_PnPSignedDriver and reports each signed driver's version +
  *  install date, plus a known-bad flag matched against a bundled blocklist.
  *  The "is this outdated?" decision is made client-side by comparing

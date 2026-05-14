@@ -250,15 +250,59 @@ export function OnuStickCard() {
       )}
 
       {report?.error && (
-        <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 leading-snug">
-          <strong>Couldn't reach the stick:</strong> {report.error}
-          <p className="mt-1 text-amber-200/80">
-            <strong>Don't have an XGS-PON stick?</strong> Ignore this card — you're not the audience.
-            <br />
-            <strong>You do have one?</strong> Check the URL above; if your stick lives in your router,
-            you may need to configure a route or VLAN so this PC can reach <code>192.168.11.1</code>.
-            Self-signed certs are tolerated automatically. The 8311 community wiki documents the
-            full setup: <a href="https://pon.wiki/" target="_blank" rel="noreferrer" className="underline">pon.wiki</a>.
+        <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 leading-snug space-y-2">
+          <p>
+            <strong>Couldn't reach the stick:</strong> {report.error}
+          </p>
+          {/192\.168\.11\./.test(url) && /timeout|timed out|unreachable|host/i.test(report.error) && (
+            <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-2 space-y-1.5">
+              <p className="text-amber-100">
+                <strong>This is almost certainly a routing problem, not a dead stick.</strong> The
+                WAS-110's management IP <code>192.168.11.1</code> is on its own /24 subnet. If your
+                PC's IP starts with anything else (e.g. <code>192.168.1.x</code>), Windows has no
+                route to <code>192.168.11.0/24</code> and the connection times out — same as if you
+                tried to reach <code>10.99.99.1</code>.
+              </p>
+              <p className="text-amber-100">
+                <strong>Three fixes, easiest first:</strong>
+              </p>
+              <ol className="ml-4 list-decimal text-[11px] space-y-1">
+                <li>
+                  <strong>Add a static route on your router</strong> — destination{' '}
+                  <code>192.168.11.0/24</code>, gateway = the router's SFP+ LAN IP (the IP your
+                  router has on the link the WAS-110 plugs into). On UDM: Settings → Routing →
+                  Static Routes. On pfSense / OPNsense: System → Routing → Static Routes.
+                  Mikrotik:{' '}
+                  <code>/ip route add dst-address=192.168.11.0/24 gateway=&lt;sfp-iface&gt;</code>.
+                </li>
+                <li>
+                  <strong>Use your router's CLI</strong> to read DDMI directly — every halfway
+                  modern router with an SFP+ cage exposes the optical metrics there (UDM:{' '}
+                  <code>show sfp X</code>; Mikrotik:{' '}
+                  <code>/interface ethernet print stats</code> on the SFP iface; OPNsense:{' '}
+                  <code>ifconfig &lt;iface&gt;</code> + the SFP+ driver verbose output).
+                </li>
+                <li>
+                  <strong>Direct-plug a laptop</strong> into the host port of the WAS-110 (with
+                  the stick OUT of the router temporarily). The stick's mgmt interface is in DHCP
+                  mode by default, your laptop pulls a <code>192.168.11.x</code> address, web UI
+                  loads at <code>https://192.168.11.1</code>. Slot it back into the router after.
+                </li>
+              </ol>
+              <p className="text-[11px] text-amber-200/80">
+                Open <code className="text-text">/diagnostics → Network audit</code> for the
+                live subnet-reachability check — it shows your PC's actual local IP + whether the
+                stick's subnet is reachable.
+              </p>
+            </div>
+          )}
+          <p className="text-amber-200/80 text-[11px]">
+            <strong>Don't have an XGS-PON stick?</strong> Ignore this card. Stock Azores firmware
+            on the WAS-110 doesn't expose the 8311 metrics endpoint — see{' '}
+            <a href="https://pon.wiki/guides/install-the-8311-community-firmware-on-the-was-110/" target="_blank" rel="noreferrer" className="underline">
+              pon.wiki's 8311 install guide
+            </a>{' '}
+            for the firmware flash that makes this card light up.
           </p>
         </div>
       )}
