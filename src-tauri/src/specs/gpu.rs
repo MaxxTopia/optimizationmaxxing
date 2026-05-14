@@ -31,22 +31,28 @@ pub fn detect(wmi: &WMIConnection) -> anyhow::Result<GpuInfo> {
     }
 
     // Prefer a discrete GPU over the integrated (heuristic: largest AdapterRAM,
-    // skipping Microsoft Basic Display + virtual adapters).
+    // skipping Microsoft Basic Display + virtual adapters + capture cards).
+    //
+    // Capture cards register as Win32_VideoController display-class devices
+    // even though they're video INPUT (HDMI / SDI sinks), not GPUs. Without
+    // filtering, the Diagnostics page can land on an AVerMedia GC573 as the
+    // "primary GPU" instead of the real RTX next to it.
     let primary = rows
         .iter()
         .filter(|r| {
             let name = string_or_default(r, "Name").to_lowercase();
-            !name.contains("microsoft basic")
+            !name.is_empty()
+                && !name.contains("microsoft basic")
                 && !name.contains("remote display")
                 && !name.contains("virtual")
-                && !name.is_empty()
+                && !is_capture_card(&name)
         })
         .max_by_key(|r| u64_or_default(r, "AdapterRAM"))
         .cloned()
-        // Fallback path — capture cards (Elgato / AverMedia / etc.) register
-        // display-class devices, and during a driver reload the only entry
-        // can be "Microsoft Basic Display Adapter". Rather than die, accept
-        // the largest non-empty row and let the user see what we found.
+        // Fallback path — during a driver reload the only entry can be
+        // "Microsoft Basic Display Adapter" or a lone capture card. Rather
+        // than die, relax the capture-card filter so the user sees what
+        // we found (but the real GPU should resurface on the next refresh).
         .or_else(|| {
             rows.iter()
                 .filter(|r| !string_or_default(r, "Name").is_empty())
@@ -78,6 +84,28 @@ pub fn detect(wmi: &WMIConnection) -> anyhow::Result<GpuInfo> {
         driver_version,
         arch,
     })
+}
+
+/// Capture cards register as display-class devices via WMI even though they
+/// don't render frames. Substring match against the vendor + product strings
+/// that show up in the wild. Lowercased input.
+fn is_capture_card(lower_name: &str) -> bool {
+    const CAPTURE_NEEDLES: &[&str] = &[
+        "avermedia",
+        "avt gc",        // AVerMedia Live Gamer series (GC573, GC550 Plus, etc.)
+        "live gamer",
+        "elgato",
+        "game capture",
+        "cam link",
+        "magewell",
+        "blackmagic",
+        "decklink",      // Blackmagic capture-card product line
+        "datapath",
+        "epiphan",
+        "yuan high-tech",
+        "logitech screen share",
+    ];
+    CAPTURE_NEEDLES.iter().any(|n| lower_name.contains(n))
 }
 
 fn infer_vendor(name: &str) -> String {
@@ -141,6 +169,33 @@ fn infer_arch(vendor: &str, model: &str) -> Option<String> {
             }
         }
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn is_capture_card_matches_avermedia_gc573() {
+        assert!(is_capture_card("avermedia avt gc573 live gamer 4k 2.1"));
+        assert!(is_capture_card("avt gc573 live gamer"));
+    }
+
+    #[test]
+    fn is_capture_card_matches_elgato_and_others() {
+        assert!(is_capture_card("elgato hd60 x"));
+        assert!(is_capture_card("elgato game capture 4k60 pro"));
+        assert!(is_capture_card("blackmagic decklink mini"));
+        assert!(is_capture_card("magewell pro capture hdmi"));
+    }
+
+    #[test]
+    fn is_capture_card_passes_real_gpus() {
+        assert!(!is_capture_card("nvidia geforce rtx 4070 ti"));
+        assert!(!is_capture_card("amd radeon rx 7900 xtx"));
+        assert!(!is_capture_card("intel arc a770"));
+        assert!(!is_capture_card("intel(r) uhd graphics 770"));
     }
 }
 

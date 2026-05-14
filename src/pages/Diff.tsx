@@ -318,8 +318,12 @@ function DiffRowCard({
   onReapply: () => void
   reapplying: boolean
 }) {
-  const [expanded, setExpanded] = useState(false)
   const a = row.audit
+  // Drifted rows auto-expand so the per-action "Currently X / target Y"
+  // breakdown is visible without an extra click — that's the actionable
+  // detail the user actually wants when something\'s reverted.
+  const isDrifted = !!a && (a.status === 'differs' || a.status === 'partial')
+  const [expanded, setExpanded] = useState(isDrifted)
   const trustOnlyActions = a?.actions.filter((x) =>
     /^(Script ran on apply|BCD .* applied via admin)/.test(x.detail),
   ).length ?? 0

@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.94',
+    date: '2026-05-14',
+    highlights: [
+      'FIX **Capture cards no longer hijack the "Primary GPU" slot** — Win32_VideoController exposes capture cards (AVerMedia GC573, Elgato HD60 X, Blackmagic Decklink, Magewell, etc.) as display-class devices, so the Diagnostics page could land on the capture card as the "primary GPU" instead of the real RTX/Radeon next to it. New `is_capture_card()` filter in `specs/gpu.rs` skips them in the primary-GPU heuristic. Falls back to the lone-capture-card case during driver reloads so the panel still shows *something* useful. 3 new unit tests guard the matcher.',
+      'IMPROVE **Auto-pin core grid — 8-wide rows + quick-select chips** — the core picker was a single `flex-wrap` row that wrapped at viewport width, which meant a 14900K\'s 32 logical cores produced jagged rows that didn\'t align with the actual P/E topology. New `CoreGrid` component renders P-cores and E-cores as **separate sections** with their own headers + 8-column grids, plus a row of quick-select chips above (**All P** / **All E** / **All** / **None**). On a 14900K: row 1-2 = the 16 P-core logical IDs, row 3-4 = the 16 E-cores, the boundary is obvious. Uniform CPUs (AMD desktop / pre-12th Intel) get a single section.',
+      'IMPROVE **/diff drifted rows auto-expand** — when a tweak shows `✗ got reverted externally`, the per-action breakdown (`Currently 0, target 1` etc.) was hidden until you clicked the row. Now drifted + partial rows expand by default so the actionable detail — what value the live system has vs what we wrote — is visible immediately. Matches + trust-only rows still collapsed.',
+      'IMPROVE **/tweaks "Verify all" — discoverability pass** — the scan-rig-state button now reads **Verify all** (accent-color CTA, no longer a plain border) when no scan has run. Post-scan it dims back to a regular border button reading **Re-verify all**. Sub-header gets a one-liner pointing at the button when audit state is empty. Tooltip rewritten in plain English: "tags rows with ✓ already-on / ✗ not-on / ◇ script-only so you skip what\'s already applied." Same audit infrastructure as before — just findable now.',
+    ],
+  },
+  {
     version: '0.1.93',
     date: '2026-05-14',
     highlights: [

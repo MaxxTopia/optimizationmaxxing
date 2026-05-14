@@ -262,21 +262,30 @@ export function Tweaks() {
           <p className="text-text-subtle text-[11px] mt-1 max-w-xl leading-snug">
             Some tweaks need admin — Windows will pop a single UAC dialog when you click Apply.
             Click <strong className="text-text">Yes</strong> and the whole batch runs in one shot.
-            Every tweak is reversible from <code className="text-accent">/diff</code>.
+            Every tweak is reversible from <code className="text-accent">/diff</code>.{' '}
+            {Object.keys(auditByTweakId).length === 0 && (
+              <span className="text-accent">
+                Hit <strong>Verify all</strong> first to see which tweaks are already on your rig.
+              </span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleScan}
             disabled={scanning}
-            title="Compare every catalog tweak against your current rig — surfaces which ones are already at target and which would change something."
-            className="px-3 py-1.5 rounded-md border border-border text-sm hover:border-border-glow disabled:opacity-50"
+            title="Read every catalog tweak's target value from the live registry / BCD / files. Tags rows with ✓ already-on / ✗ not-on / ◇ script-only so you skip what's already applied."
+            className={`px-3 py-1.5 rounded-md text-sm font-semibold disabled:opacity-50 ${
+              Object.keys(auditByTweakId).length > 0
+                ? 'border border-border hover:border-border-glow'
+                : 'btn-chrome bg-accent text-bg-base'
+            }`}
           >
             {scanning && scanProgress
-              ? `Scanning ${scanProgress.done}/${scanProgress.total}…`
+              ? `Verifying ${scanProgress.done}/${scanProgress.total}…`
               : Object.keys(auditByTweakId).length > 0
-              ? 'Re-scan rig'
-              : 'Scan rig state'}
+              ? 'Re-verify all'
+              : 'Verify all'}
           </button>
           <button
             onClick={() => setSuggestOpen(true)}

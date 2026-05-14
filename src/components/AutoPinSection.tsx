@@ -360,47 +360,147 @@ function RuleRow({
         </div>
       </div>
       {isEditing && info && (
-        <div className="space-y-1">
-          <div className="flex items-baseline justify-between flex-wrap gap-2">
-            <p className="text-[10px] uppercase tracking-widest text-text-subtle">cores</p>
-            {info.isHybrid && (
-              <p className="text-[10px] text-text-subtle">
-                <span className="text-emerald-300">P</span> = performance · <span className="text-amber-300">E</span> = efficient
-              </p>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {Array.from({ length: info.logicalProcessorCount }, (_, i) => {
+        <CoreGrid info={info} rule={rule} busy={busy} onChange={onChange} />
+      )}
+    </div>
+  )
+}
+
+/**
+ * Per-core selector grid. Renders one button per logical processor in
+ * 8-wide rows. Hybrid Intel rigs get a visual P-block / E-block split
+ * with class-color borders and a quick-select chip row below for the
+ * common picks (All P, All E, All cores).
+ */
+function CoreGrid({
+  info,
+  rule,
+  busy,
+  onChange,
+}: {
+  info: CpuSetInfo
+  rule: AutoPinRule
+  busy: boolean
+  onChange: (patch: Partial<AutoPinRule>) => void
+}) {
+  function setCores(next: number[]) {
+    onChange({ cores: next.slice().sort((a, b) => a - b) })
+  }
+
+  function toggle(i: number) {
+    setCores(rule.cores.includes(i) ? rule.cores.filter((x) => x !== i) : [...rule.cores, i])
+  }
+
+  // Hybrid: render P block + E block separately so the boundary is obvious.
+  // Uniform: one continuous grid sized to the logical count.
+  const sections: Array<{ label: string; ids: number[]; tag: 'P' | 'E' | '' }> = info.isHybrid
+    ? [
+        { label: `Performance cores (${info.pCoreIds.length})`, ids: info.pCoreIds, tag: 'P' },
+        { label: `Efficient cores (${info.eCoreIds.length})`, ids: info.eCoreIds, tag: 'E' },
+      ]
+    : [
+        {
+          label: `Cores (${info.logicalProcessorCount})`,
+          ids: Array.from({ length: info.logicalProcessorCount }, (_, i) => i),
+          tag: '',
+        },
+      ]
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-baseline justify-between flex-wrap gap-2">
+        <p className="text-[10px] uppercase tracking-widest text-text-subtle">cores</p>
+        <div className="flex items-center gap-2 text-[10px]">
+          {info.isHybrid && info.pCoreIds.length > 0 && (
+            <button
+              onClick={() => setCores(info.pCoreIds)}
+              disabled={busy}
+              className="px-2 py-0.5 rounded border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
+            >
+              All P
+            </button>
+          )}
+          {info.isHybrid && info.eCoreIds.length > 0 && (
+            <button
+              onClick={() => setCores(info.eCoreIds)}
+              disabled={busy}
+              className="px-2 py-0.5 rounded border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-50"
+            >
+              All E
+            </button>
+          )}
+          <button
+            onClick={() =>
+              setCores(Array.from({ length: info.logicalProcessorCount }, (_, i) => i))
+            }
+            disabled={busy}
+            className="px-2 py-0.5 rounded border border-border text-text-muted hover:text-text disabled:opacity-50"
+          >
+            All
+          </button>
+          <button
+            onClick={() => setCores([])}
+            disabled={busy}
+            className="px-2 py-0.5 rounded border border-border text-text-subtle hover:text-text disabled:opacity-50"
+          >
+            None
+          </button>
+        </div>
+      </div>
+
+      {sections.map((section) => (
+        <div key={section.label} className="space-y-1">
+          <p className="text-[10px] text-text-subtle">
+            {info.isHybrid ? (
+              <span
+                className={section.tag === 'P' ? 'text-emerald-300' : 'text-amber-300'}
+              >
+                ●
+              </span>
+            ) : (
+              ''
+            )}{' '}
+            {section.label}
+          </p>
+          <div className="grid grid-cols-8 gap-1">
+            {section.ids.map((i) => {
               const selected = rule.cores.includes(i)
-              const isP = info.pCoreIds.includes(i)
-              const isE = info.eCoreIds.includes(i)
-              const tag = isP ? 'P' : isE ? 'E' : ''
-              const accent = isP
-                ? 'border-emerald-500/40'
-                : isE
-                ? 'border-amber-500/40'
-                : 'border-border'
+              const accent =
+                section.tag === 'P'
+                  ? 'border-emerald-500/40'
+                  : section.tag === 'E'
+                  ? 'border-amber-500/40'
+                  : 'border-border'
               return (
                 <button
                   key={i}
-                  onClick={() => {
-                    const next = selected
-                      ? rule.cores.filter((x) => x !== i)
-                      : [...rule.cores, i].sort((a, b) => a - b)
-                    onChange({ cores: next })
-                  }}
+                  onClick={() => toggle(i)}
                   disabled={busy}
-                  title={isP ? 'Performance core (P)' : isE ? 'Efficient core (E)' : ''}
-                  className={`px-2 py-0.5 text-[11px] font-mono tabular-nums rounded border ${
+                  title={
+                    section.tag === 'P'
+                      ? `Logical CPU ${i} — Performance core`
+                      : section.tag === 'E'
+                      ? `Logical CPU ${i} — Efficient core`
+                      : `Logical CPU ${i}`
+                  }
+                  className={`px-2 py-0.5 text-[11px] font-mono tabular-nums rounded border text-center ${
                     selected
                       ? 'bg-accent text-bg-base border-accent'
                       : `bg-bg-card text-text-muted ${accent} hover:border-border-glow`
                   }`}
                 >
                   {i}
-                  {tag && (
-                    <span className={`ml-0.5 text-[9px] ${selected ? 'text-bg-base/80' : isP ? 'text-emerald-300' : 'text-amber-300'}`}>
-                      {tag}
+                  {section.tag && (
+                    <span
+                      className={`ml-0.5 text-[9px] ${
+                        selected
+                          ? 'text-bg-base/80'
+                          : section.tag === 'P'
+                          ? 'text-emerald-300'
+                          : 'text-amber-300'
+                      }`}
+                    >
+                      {section.tag}
                     </span>
                   )}
                 </button>
@@ -408,7 +508,7 @@ function RuleRow({
             })}
           </div>
         </div>
-      )}
+      ))}
     </div>
   )
 }
