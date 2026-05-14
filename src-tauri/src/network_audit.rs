@@ -184,21 +184,38 @@ $out = [ordered]@{
 }
 
 try {
+    # Filter out virtual/loopback default routes (Hyper-V, WSL, OpenVPN tap)
+    # whose NextHop is 0.0.0.0/:: — those interfaces have no IPv4 + no
+    # link speed, which is what caused "could not determine local subnet"
+    # in v0.1.97. Real WAN routes always have a concrete NextHop.
     $route = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction Stop |
+        Where-Object { $_.NextHop -and $_.NextHop -ne '0.0.0.0' -and $_.NextHop -ne '::' } |
         Sort-Object -Property RouteMetric |
         Select-Object -First 1
     if ($null -ne $route) {
         $out.gatewayIpv4 = [string]$route.NextHop
-        $idx = $route.InterfaceIndex
+        $idx = [int]$route.InterfaceIndex
         $adapter = Get-NetAdapter -InterfaceIndex $idx -ErrorAction Stop
         if ($null -ne $adapter) {
-            $out.adapterName   = [string]$adapter.InterfaceDescription
-            $out.mediaType     = [string]$adapter.MediaType
-            $out.linkSpeedMbps = [int64]($adapter.LinkSpeed / 1000000)
-            $out.localMac      = [string]$adapter.MacAddress
+            $out.adapterName = [string]$adapter.InterfaceDescription
+            $out.mediaType   = [string]$adapter.MediaType
+            $out.localMac    = [string]$adapter.MacAddress
         }
+        # CIM Win32_NetworkAdapter.Speed is always Uint64 bps. Get-NetAdapter's
+        # LinkSpeed is variably a string ("1 Gbps") or uint64 across PS 5.1/7
+        # — div-by-1000000 against the string version threw silently and
+        # killed the rest of the try block. CIM avoids that entirely.
+        try {
+            $cim = Get-CimInstance Win32_NetworkAdapter -Filter "InterfaceIndex=$idx" -ErrorAction Stop |
+                Select-Object -First 1
+            if ($null -ne $cim -and $null -ne $cim.Speed -and [uint64]$cim.Speed -gt 0) {
+                $out.linkSpeedMbps = [int64]([uint64]$cim.Speed / 1000000)
+            }
+        } catch { }
+        # APIPA (169.254/16) + loopback should never qualify as the local
+        # IP for the default-route adapter; reject explicitly.
         $ipcfg = Get-NetIPAddress -InterfaceIndex $idx -AddressFamily IPv4 -ErrorAction Stop |
-            Where-Object { $_.PrefixOrigin -ne 'WellKnown' } |
+            Where-Object { $_.IPAddress -and $_.IPAddress -notlike '169.254.*' -and $_.IPAddress -ne '127.0.0.1' } |
             Select-Object -First 1
         if ($null -ne $ipcfg) {
             $out.localIpv4 = "$($ipcfg.IPAddress)/$($ipcfg.PrefixLength)"
@@ -209,13 +226,29 @@ try {
         if ($null -ne $neigh) {
             $out.gatewayMac = [string]$neigh.LinkLayerAddress
         }
-        # First-hop ping. -Count 3 over 1 second is enough to estimate; we
-        # don't need stddev for the audit summary (the DPC card has fuller
-        # latency stats).
-        $ping = Test-Connection -ComputerName $out.gatewayIpv4 -Count 3 -ErrorAction Stop |
-            Measure-Object -Property ResponseTime -Average
-        if ($null -ne $ping -and $null -ne $ping.Average) {
-            $out.gatewayRttMs = [double]$ping.Average
+        # ICMP first; many home routers respond. If blocked we fall back to
+        # a TCP probe against port 53 (DNS) which residential gateways
+        # almost universally serve. Sub-millisecond LAN-RTT either way.
+        try {
+            $pingResults = Test-Connection -ComputerName $out.gatewayIpv4 -Count 3 -ErrorAction Stop
+            if ($null -ne $pingResults) {
+                $avg = ($pingResults | Measure-Object -Property ResponseTime -Average).Average
+                if ($null -ne $avg) { $out.gatewayRttMs = [double]$avg }
+            }
+        } catch { }
+        if ($null -eq $out.gatewayRttMs) {
+            try {
+                $tcp = Measure-Command {
+                    $client = New-Object System.Net.Sockets.TcpClient
+                    $iar = $client.BeginConnect($out.gatewayIpv4, 53, $null, $null)
+                    $ok = $iar.AsyncWaitHandle.WaitOne(800, $false)
+                    if ($ok) { $client.EndConnect($iar) }
+                    $client.Close()
+                }
+                if ($tcp.TotalMilliseconds -gt 0 -and $tcp.TotalMilliseconds -lt 800) {
+                    $out.gatewayRttMs = [double]$tcp.TotalMilliseconds
+                }
+            } catch { }
         }
     }
 } catch { }

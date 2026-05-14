@@ -12,6 +12,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.0',
+    date: '2026-05-14',
+    highlights: [
+      'FIX **Network Audit probe — link speed / first-hop RTT / subnet detection all working now**. The v0.1.97 bug: `Get-NetAdapter.LinkSpeed` is sometimes a string like "1 Gbps" and sometimes a uint64 bps depending on PS version, so the math `LinkSpeed / 1000000` threw silently and killed the rest of the try block — taking out the subnet + adapter info too. Switched to CIM `Win32_NetworkAdapter.Speed` (always uint64 bps). Also filtered out Hyper-V / WSL virtual default routes (NextHop = 0.0.0.0). First-hop RTT now has a TCP-port-53 fallback when ICMP is blocked. APIPA addresses excluded from the local-IP filter.',
+      'NEW **Router admin page link** on Network Audit. Card now surfaces `http://<your gateway IP>` as a clickable button + a "try https://" fallback. Default-creds nudge ("admin/admin or the sticker on the bottom").',
+      'NEW **Cited sources for every router vendor\'s tips** — 10 vendor tip-blocks now carry a "Cited sources" footer linking the official QoS docs + the canonical reddit / forum threads. UDM: Ubiquiti docs + r/Ubiquiti bufferbloat thread + pon.wiki. MikroTik: official Queues docs + DSCP-marking forum thread. AT&T BGW320: Mark\'s Page bypass guide + pon.wiki + r/ATTFiber. Every vendor we have tips for now backs them up with a real source the user can read deeper.',
+      'FIX **Monitor firmware card no longer surfaces capture cards** — AVerMedia AVT GC573 was showing up as "an 8-year-old monitor" because it advertises EDID even though it\'s a video sink, not a panel. Added `is_capture_card_edid()` filter matching AVerMedia / Elgato / Magewell / Blackmagic DeckLink vendor codes + model substrings. Same approach as the GPU-panel fix in v0.1.94.',
+      'FIX **Monitor age framing — no more "X years old, panic" warning** — manufacture year doesn\'t mean firmware is out of date. A 2019 monitor with current firmware is fine; a 2025 one without is not. Dropped the alarmist amber-bordered "ageYears ≥ 2 → stale" treatment. Manufacture year still shows but as a neutral fact, not a warning.',
+      'NEW **Per-monitor optimal competitive-gaming OSD settings** — when we detect a model in our curated table, the card now surfaces vendor-specific best settings (refresh / response time mode / dark stabilizer / preset / G-Sync / HDR / sharpness / brightness) with a "why" for each row + a cited source URL (RTINGS, TFTCentral, ProSettings). First entries: **Dell Alienware AW2523HF** (your monitor), **AW2521H** (Bugha\'s), **ZOWIE XL2566K** (Peterbot\'s) + **XL2546K**, **AW2518 family** (Reet\'s).',
+      'FIX **RAM Advisor flow clarity — "Hop, not a dead-end" replaced** — the old header was confusing nonsense. New unknown-IC block titled "We couldn\'t infer the IC die from the part number" with 2 ordered options (run Thaiphoon Burner, or paste the part number into Die Finder). Plus a **new "How the full flow works" card** under the modules list that walks all 5 steps: identify IC → look up timings in /guides → enter in BIOS → validate with TestMem5 → refresh this card to verify. No more "what do I do with this?" gap. Broken `benzhaomin/HynixModules` link replaced with the working Die Finder lookup.',
+      'IMPROVE **TipsToast theme fix — Gunther for Adventure Time, wand for Cosmo & Wanda** — the generic wand glyph was on Adventure Time, which had no character connection. Moved the wand (Wanda\'s wand) to the **Cosmo & Wanda** theme where it actually belongs, and gave Adventure Time a custom **Gunther** penguin SVG (black body / white belly / yellow beak + feet / two eyes, 2.6s gentle bob animation). Both glyphs share the same rotating tips pool. Built from SVG primitives — no asset, no IP angle.',
+    ],
+  },
+  {
     version: '0.1.99',
     date: '2026-05-14',
     highlights: [

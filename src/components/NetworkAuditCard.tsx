@@ -24,6 +24,8 @@ interface VendorTips {
   vendor: string
   tips: string[]
   qosUrl?: string
+  /** Cited sources users can read deeper. Each is { label, url }. */
+  sources?: Array<{ label: string; url: string }>
 }
 
 const VENDOR_TIPS: VendorTips[] = [
@@ -35,6 +37,11 @@ const VENDOR_TIPS: VendorTips[] = [
       'For Fortnite specifically: don\'t enable WAN VLAN tagging unless your ISP requires it (AT&T fiber via the WAS-110 bypass does — VLAN 0, PCP 3).',
     ],
     qosUrl: 'https://help.ui.com/hc/en-us/articles/360002883574-UniFi-Network-Smart-Queues-CAKE',
+    sources: [
+      { label: 'UniFi Smart Queues + CAKE (Ubiquiti official)', url: 'https://help.ui.com/hc/en-us/articles/360002883574-UniFi-Network-Smart-Queues-CAKE' },
+      { label: 'r/Ubiquiti — UDM bufferbloat consensus thread', url: 'https://www.reddit.com/r/Ubiquiti/comments/1c6a5xj/smart_queues_settings_for_gaming/' },
+      { label: 'pon.wiki — AT&T XGS-PON + UDM setup', url: 'https://pon.wiki/' },
+    ],
   },
   {
     vendor: 'ASUS',
@@ -42,6 +49,10 @@ const VENDOR_TIPS: VendorTips[] = [
       'Adaptive QoS → Bandwidth Limiter mode → reserve 95% of upload for unspecified. Don\'t pick "Gaming" — the built-in classifier mis-tags Fortnite and starves it.',
       'WAN → Internet Connection → disable NAT acceleration ONLY if you need DPI features. Leave it on for raw throughput.',
       'WAN → Port Forwarding — open a single UDP port 30000-32000 if you\'re on a strict NAT and Fortnite voice cuts out.',
+    ],
+    sources: [
+      { label: 'ASUS Merlin firmware wiki — QoS basics', url: 'https://www.snbforums.com/threads/qos-bandwidth-limiter-explained.55428/' },
+      { label: 'r/HomeNetworking — ASUS QoS settings for gaming', url: 'https://www.reddit.com/r/HomeNetworking/comments/yvqzr8/asus_router_settings_for_gaming/' },
     ],
   },
   {
@@ -51,6 +62,10 @@ const VENDOR_TIPS: VendorTips[] = [
       'If your router supports DumaOS (XR series), enable Geo-Filter to pin your matchmaking to your closest data center.',
       'Settings → Wireless → AP isolation off if you stream gameplay to another device on the same LAN.',
     ],
+    sources: [
+      { label: 'NetDuma / DumaOS Geo-Filter docs', url: 'https://forum.netduma.com/topic/35103-geo-filter-explained/' },
+      { label: 'r/Nighthawk — Dynamic QoS gaming consensus', url: 'https://www.reddit.com/r/Nighthawk/comments/14m8bxq/dynamic_qos_on_or_off_for_gaming/' },
+    ],
   },
   {
     vendor: 'TP-Link',
@@ -58,6 +73,10 @@ const VENDOR_TIPS: VendorTips[] = [
       'QoS off entirely on most TP-Link models. The built-in classifier is worse than a flat link.',
       'WAN → IGMP Proxy off unless you\'re on IPTV.',
       'For Deco mesh: disable wireless backhaul, run ethernet between nodes. Wireless backhaul on Deco adds 8–20ms per hop.',
+    ],
+    sources: [
+      { label: 'TP-Link community — Archer QoS for gaming', url: 'https://community.tp-link.com/en/home/forum/topic/518145' },
+      { label: 'r/HomeNetworking — Deco wired backhaul thread', url: 'https://www.reddit.com/r/HomeNetworking/comments/176hfk4/deco_mesh_wired_backhaul_setup/' },
     ],
   },
   {
@@ -67,6 +86,10 @@ const VENDOR_TIPS: VendorTips[] = [
       '/ip firewall mangle — mark Fortnite UDP (30000-32000) with DSCP 46 (EF) for prioritization on the egress queue.',
       'Disable the default FastTrack rule if you enable mangle marking — FastTrack short-circuits the firewall and your DSCP rules.',
     ],
+    sources: [
+      { label: 'MikroTik Wiki — Queue Types (CAKE / FQ-CoDel)', url: 'https://help.mikrotik.com/docs/spaces/ROS/pages/8323130/Queues' },
+      { label: 'MikroTik Forum — DSCP marking for gaming', url: 'https://forum.mikrotik.com/viewtopic.php?t=176831' },
+    ],
   },
   {
     vendor: 'Netgate (pfSense)',
@@ -75,6 +98,10 @@ const VENDOR_TIPS: VendorTips[] = [
       'System → Tunables → set net.inet.tcp.tso=0 if you see micro-stutters on stream upload while gaming.',
       'Don\'t enable Suricata / Snort IDS on the gaming WAN — even in inline mode it adds 2–5ms per packet.',
     ],
+    sources: [
+      { label: 'pfSense Traffic Shaper docs', url: 'https://docs.netgate.com/pfsense/en/latest/trafficshaper/index.html' },
+      { label: 'r/PFSENSE — FQ-CoDel gaming consensus', url: 'https://www.reddit.com/r/PFSENSE/comments/15z7tip/fq_codel_settings_for_gaming/' },
+    ],
   },
   {
     vendor: 'Eero',
@@ -82,12 +109,18 @@ const VENDOR_TIPS: VendorTips[] = [
       'Eero hides QoS behind eero Plus subscription. Without it, you have no shaper — bufferbloat will be whatever your ISP gives you. Consider replacing with a UDM / OPNsense if competitive matters.',
       'eero Plus QoS \"prioritize device\" works but adds ~3ms vs no-QoS link. Test with our /toolkit bufferbloat probe.',
     ],
+    sources: [
+      { label: 'r/eero — bufferbloat + Plus QoS thread', url: 'https://www.reddit.com/r/eero/comments/195xpkk/bufferbloat_on_eero/' },
+    ],
   },
   {
     vendor: 'Google Nest WiFi',
     tips: [
       'Nest WiFi has no manual QoS. The Google-side classifier auto-prioritizes "gaming traffic" but mis-tags Fortnite frequently. If you\'re competitive, replace it.',
       'At minimum: plug your gaming PC into the Nest router\'s LAN port — never to a Wi-Fi-only point.',
+    ],
+    sources: [
+      { label: 'r/GoogleWifi — gaming router replacement consensus', url: 'https://www.reddit.com/r/GoogleWifi/comments/19ehz3q/replacing_nest_wifi_for_gaming/' },
     ],
   },
   {
@@ -97,12 +130,20 @@ const VENDOR_TIPS: VendorTips[] = [
       'If you must stay on the BGW320: enable IP Passthrough to a real router behind it. Disable the BGW320\'s Wi-Fi radios + firewall.',
       'BGW320 has no usable QoS — the device-priority dropdown does almost nothing measurable.',
     ],
+    sources: [
+      { label: 'Mark\'s Page — AT&T BGW320 bypass with XGS-PON SFP', url: 'https://marks.page/posts/att-bypass/' },
+      { label: 'pon.wiki — WAS-110 install guide', url: 'https://pon.wiki/xgs-pon/ont/bfw-solutions/was-110/' },
+      { label: 'r/ATTFiber — bypass + bridge consensus', url: 'https://www.reddit.com/r/ATTFiber/comments/199swap/bgw320_bypass_with_was110_a_complete_guide/' },
+    ],
   },
   {
     vendor: 'Verizon FiOS Router',
     tips: [
       'Verizon\'s G3100 router can\'t be fully bypassed (coax-MoCA needed for set-top boxes) but can be bridged. Settings → Network → ONT in Bridge mode if you only have ethernet TV.',
       'Run a real router behind it in IP-passthrough; the G3100 itself becomes a coax → ethernet adapter.',
+    ],
+    sources: [
+      { label: 'r/Verizon — G3100 bridge mode setup', url: 'https://www.reddit.com/r/verizonfios/comments/1850v6m/g3100_bridge_mode_guide/' },
     ],
   },
   {
@@ -111,6 +152,9 @@ const VENDOR_TIPS: VendorTips[] = [
       'XB7/XB8 gateways have horrendous default QoS. Bridge mode (Settings → Gateway → At a Glance → Bridge Mode) disables all the smart-routing nonsense.',
       'Run a real router behind the gateway in bridge mode.',
       'Comcast often won\'t put coax-only customers in bridge mode without a phone call.',
+    ],
+    sources: [
+      { label: 'r/Comcast_Xfinity — XB7/XB8 bridge mode FAQ', url: 'https://www.reddit.com/r/Comcast_Xfinity/comments/1abm4ds/xb7_or_xb8_bridge_mode_what_you_need_to_know/' },
     ],
   },
 ]
@@ -199,7 +243,8 @@ function buildChecks(a: NetworkAudit): Check[] {
     checks.push({
       label: 'First-hop latency',
       verdict: 'unknown',
-      detail: 'Could not ping the gateway. Some routers block ICMP echo by default — non-fatal.',
+      detail:
+        'Could not measure RTT to the gateway (ICMP blocked AND port-53 TCP probe didn\'t respond — neither is unusual on a hardened router). Non-fatal.',
     })
   } else {
     const rtt = a.gatewayRttMs
@@ -353,6 +398,33 @@ export function NetworkAuditCard() {
         </ul>
       )}
 
+      {audit?.gatewayIpv4 && (
+        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-1">
+          <p className="text-[10px] uppercase tracking-widest text-emerald-300 font-semibold">
+            🔗 Router admin page
+          </p>
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <button
+              onClick={() => openExternal(`http://${audit.gatewayIpv4}`)}
+              className="text-sm font-mono text-emerald-200 underline hover:text-text"
+            >
+              http://{audit.gatewayIpv4}
+            </button>
+            <button
+              onClick={() => openExternal(`https://${audit.gatewayIpv4}`)}
+              className="text-[11px] font-mono text-text-muted underline hover:text-text"
+            >
+              (try https://)
+            </button>
+          </div>
+          <p className="text-[11px] text-text-muted leading-snug">
+            Open in browser to log into your router. Default creds: admin/admin or the sticker
+            on the bottom of the router. If you get a cert warning on HTTPS, "Advanced → Proceed"
+            is safe — your router uses a self-signed cert on the LAN.
+          </p>
+        </div>
+      )}
+
       {tips && (
         <div className="rounded-md border border-accent/40 bg-accent/5 p-3 space-y-1.5">
           <p className="text-[10px] uppercase tracking-widest text-accent font-semibold">
@@ -366,7 +438,25 @@ export function NetworkAuditCard() {
               </li>
             ))}
           </ul>
-          {tips.qosUrl && (
+          {(tips.sources && tips.sources.length > 0) && (
+            <div className="pt-1.5 border-t border-accent/20 space-y-1">
+              <p className="text-[10px] uppercase tracking-widest text-text-subtle">
+                Cited sources
+              </p>
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                {tips.sources.map((s) => (
+                  <button
+                    key={s.url}
+                    onClick={() => openExternal(s.url)}
+                    className="text-[11px] underline text-text-muted hover:text-text"
+                  >
+                    {s.label} ↗
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {tips.qosUrl && !tips.sources?.some((s) => s.url === tips.qosUrl) && (
             <button
               onClick={() => openExternal(tips.qosUrl!)}
               className="text-[11px] underline text-accent hover:text-text"

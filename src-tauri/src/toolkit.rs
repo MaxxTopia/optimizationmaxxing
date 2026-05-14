@@ -2483,6 +2483,12 @@ Write-Output $json
     let now_year: u32 = chrono::Utc::now().format("%Y").to_string().parse().unwrap_or(2026);
     let monitors: Vec<MonitorInfo> = raws
         .into_iter()
+        // Capture cards (AVerMedia GC-series, Elgato, Magewell, Blackmagic
+        // DeckLink) advertise EDID to the source even though they're not
+        // displays. Filter them out so the firmware card doesn't surface a
+        // capture card with a 2017 "manufacture year" that's actually just
+        // when the silicon was fabbed.
+        .filter(|r| !is_capture_card_edid(&r.vendor_code, &r.model))
         .map(|r| {
             let (vendor_name, firmware_url, firmware_tool) = vendor_lookup(&r.vendor_code);
             let age_years = r.year_of_manufacture.map(|y| now_year.saturating_sub(y));
@@ -2503,6 +2509,34 @@ Write-Output $json
 
     let note = format!("{} monitor(s) detected via EDID", monitors.len());
     Ok(MonitorReport { monitors, note })
+}
+
+/// EDID-side capture-card filter. Mirrors the GPU-panel filter in
+/// `specs/gpu.rs` but matches on the 3-letter PNP code + model string the
+/// WAS-110 ONU... wait, capture-card EDID strings exposed via WmiMonitorID.
+/// Vendor codes seen in the wild: AVX (AVerMedia), ELG (Elgato), MGW
+/// (Magewell), BMD (Blackmagic). The model name also commonly contains
+/// "GC" (AVerMedia Game Capture) / "HD60" / "Cam Link" / "DeckLink".
+fn is_capture_card_edid(vendor_code: &str, model: &str) -> bool {
+    let vc = vendor_code.trim().to_ascii_uppercase();
+    if matches!(vc.as_str(), "AVX" | "ELG" | "MGW" | "BMD" | "EPI" | "DAT") {
+        return true;
+    }
+    let m = model.to_ascii_lowercase();
+    const CAPTURE_NEEDLES: &[&str] = &[
+        "avermedia",
+        "avt gc",
+        "live gamer",
+        "elgato",
+        "game capture",
+        "cam link",
+        "magewell",
+        "blackmagic",
+        "decklink",
+        "datapath",
+        "epiphan",
+    ];
+    CAPTURE_NEEDLES.iter().any(|n| m.contains(n))
 }
 
 /// Map 3-letter EDID PNP vendor codes to vendor name + firmware update path.

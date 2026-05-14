@@ -68,6 +68,49 @@ export function RamAdvisorCard() {
         </div>
       )}
 
+      {modules && modules.length > 0 && (
+        <div className="rounded-md border border-accent/40 bg-accent/5 p-3 space-y-2">
+          <p className="text-[10px] uppercase tracking-widest text-accent font-semibold">
+            How the full flow works (left → right)
+          </p>
+          <ol className="ml-4 list-decimal text-[11px] text-text-muted leading-snug space-y-1.5">
+            <li>
+              <strong className="text-text">Identify your IC</strong> — we did this above from your
+              part number. If a stick shows "unknown," run{' '}
+              <a className="underline text-accent hover:text-text" href="https://www.softnology.biz/files.html" target="_blank" rel="noreferrer">Thaiphoon Burner</a>{' '}
+              → Read → it dumps the SPD with the real IC name (~30 seconds).
+            </li>
+            <li>
+              <strong className="text-text">Look up the BIOS-ready timings for that IC</strong> at our{' '}
+              <a className="underline text-accent hover:text-text" href="#/guides?game=any#ram-bios-recipes">/guides → RAM tightening recipes</a>.
+              Per-IC SAFE recipe with exact values for primary timings (tCL / tRCD / tRP / tRAS)
+              + secondaries. For AM4 you can also use{' '}
+              <a className="underline text-accent hover:text-text" href="https://www.techpowerup.com/download/ryzen-dram-calculator/" target="_blank" rel="noreferrer">DRAM Calculator for Ryzen</a>{' '}
+              to generate timings; for AM5 the manual recipe is more current.
+            </li>
+            <li>
+              <strong className="text-text">Enter the values in BIOS</strong> — boot to BIOS,
+              Advanced / Tweaker / Ai Tweaker → DRAM Timing Control. Type each timing in by hand
+              (don't paste a profile blob; the BIOS won't accept it). Set EXPO/XMP first, then
+              override the timings on top.
+            </li>
+            <li>
+              <strong className="text-text">Validate with TestMem5</strong> — download{' '}
+              <a className="underline text-accent hover:text-text" href="https://github.com/CoolCmd/TestMem5" target="_blank" rel="noreferrer">TestMem5</a>{' '}
+              (free, no install), load anta777's "Extreme1" config, run for 1-2 hours minimum.
+              ZERO errors = stable. If you see 1+ errors, raise tCL by 1 step in BIOS and re-test.
+              Don't ship to scrim until two clean back-to-back hours.
+            </li>
+            <li>
+              <strong className="text-text">Verify in Windows</strong> — come back to this card and{' '}
+              <button onClick={() => window.location.reload()} className="underline text-accent hover:text-text">refresh</button>;
+              the "Speed" value should now match what you set. If it still shows old, the BIOS
+              didn't commit — re-enter, confirm Save & Exit (not Discard).
+            </li>
+          </ol>
+        </div>
+      )}
+
       <div className="pt-3 border-t border-border space-y-1.5 text-[11px] text-text-subtle leading-snug">
         <p className="uppercase tracking-widest text-text-subtle text-[10px]">tools tuners actually use</p>
         <p>
@@ -147,33 +190,36 @@ function ModuleCard({ module: m }: { module: RamModule }) {
       {isUnknown && (
         <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2.5 mt-1 space-y-1">
           <p className="text-[11px] text-amber-200/90 font-semibold uppercase tracking-widest">
-            Hop, not a dead-end
+            We couldn't infer the IC die from the part number
           </p>
           <p className="text-[11px] text-text-muted leading-snug">
-            We couldn't infer the IC die from the part number — boutique kits, custom binning,
-            and certain Crucial / Patriot SKUs publish part numbers our heuristic doesn't
-            recognize. Two reliable next moves:
+            Boutique kits, custom binning, and certain Crucial / Patriot / Klevv SKUs publish
+            part numbers our heuristic doesn't recognize. Two ways to find out which IC you have
+            so the BIOS recipe lookup works:
           </p>
-          <ul className="text-[11px] text-text-muted space-y-0.5 pl-3">
+          <ol className="ml-4 list-decimal text-[11px] text-text-muted leading-snug space-y-0.5">
             <li>
-              · Run{' '}
-              <a className="underline hover:text-text" href="https://www.softnology.biz/files.html" target="_blank" rel="noreferrer">
+              Run{' '}
+              <a className="underline text-accent hover:text-text" href="https://www.softnology.biz/files.html" target="_blank" rel="noreferrer">
                 Thaiphoon Burner
               </a>{' '}
-              → Read → it dumps the SPD directly with the actual IC name. 30-second job.
+              → Read → it dumps the SPD directly with the actual IC name. ~30 seconds. No install.
             </li>
             <li>
-              · Cross-reference your part number on{' '}
-              <a className="underline hover:text-text" href="https://benzhaomin.github.io/HynixModules/" target="_blank" rel="noreferrer">
-                Hynix Modules DB
-              </a>{' '}
-              or{' '}
-              <a className="underline hover:text-text" href="https://www.reddit.com/r/overclocking/wiki/index/ramoc/" target="_blank" rel="noreferrer">
-                r/overclocking RAM wiki
-              </a>{' '}
-              — community-maintained part-to-IC tables.
+              Or paste your part number into{' '}
+              <a className="underline text-accent hover:text-text" href="https://fpsheaven.com/die-finder/" target="_blank" rel="noreferrer">
+                Die Finder
+              </a>
+              {' '}— community-maintained part-to-IC lookup (DDR4 + DDR5).
             </li>
-          </ul>
+          </ol>
+          <p className="text-[11px] text-text-muted leading-snug pt-1">
+            Once you have the IC name, go to{' '}
+            <a className="underline text-accent hover:text-text" href="#/guides?game=any#ram-bios-recipes">
+              /guides → RAM tightening recipes
+            </a>{' '}
+            and look up the per-IC BIOS values to enter.
+          </p>
         </div>
       )}
     </div>
