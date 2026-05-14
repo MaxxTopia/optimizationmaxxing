@@ -1,29 +1,23 @@
-//! Driver health probe — surface stale + known-bad drivers across the
-//! GPU / chipset / audio / NIC classes via WMI Win32_PnPSignedDriver.
+//! Driver health probe — surface known-bad drivers (bundled blocklist) and
+//! report each signed driver's installed version + install date.
 //!
 //! WMI's DriverVersion string is Microsoft's internal version (e.g. NVIDIA
 //! exposes `32.0.15.7270` where the user-facing version is `572.70`,
 //! derived from the last 5 digits split XXX.XX). We surface BOTH the raw
 //! string and the extracted user-facing version when we can derive it.
 //!
-//! What this is NOT: a driver-update notifier. We don't fetch the latest
-//! version from NVIDIA / AMD APIs. The honest read: if your driver is
-//! older than the date threshold OR matches a known-bad version we ship
-//! with the build, you get warned. Anything else is a "looks fine" pass.
+//! The "is this driver out of date?" decision belongs to the
+//! `optmaxxing-driver-oracle` worker which scrapes vendor sites daily. The
+//! frontend fetches that oracle separately and does the version compare
+//! against `friendly_version`. We don't ship age-based stale heuristics in
+//! Rust — a Realtek HD audio driver from 2 years ago might genuinely be
+//! the latest one ever released.
 
 use anyhow::{Context, Result};
 use chrono::NaiveDate;
 use serde::Serialize;
 use std::collections::HashMap;
 use wmi::{Variant, WMIConnection};
-
-/// Drivers older than this many days get a `stale` flag. Chipset / audio /
-/// NIC vendors typically ship one or two updates per year — if the in-box
-/// driver hasn't been refreshed in 18+ months you're almost certainly on a
-/// motherboard-bundled driver from the board's ship date.
-const STALE_AGE_DAYS_DEFAULT: i64 = 540;
-/// GPU drivers move faster; warn after 90 days.
-const STALE_AGE_DAYS_GPU: i64 = 90;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -41,27 +35,22 @@ pub struct DriverEntry {
     /// Driver date as ISO yyyy-mm-dd, or None if WMI returned an unparseable
     /// CIM_DATETIME.
     pub driver_date: Option<String>,
-    /// Days since driver_date, or None if date unknown.
+    /// Days since driver_date, or None if date unknown. Purely informational —
+    /// we don't warn based on age. The frontend does a real version compare
+    /// against the driver-oracle worker for the actual "outdated?" signal.
     pub age_days: Option<i64>,
-    /// True if `age_days` exceeds the class-specific staleness threshold.
-    pub stale: bool,
     /// Set when the driver matches a bundled known-bad version. The string
     /// is a short reason ("Raptor Lake stutter regression", etc).
     pub known_bad: Option<String>,
-    /// Set when the driver is on a known-good baseline list for its class.
-    /// Lets us show a positive ✓ instead of just "no warnings."
-    pub known_good: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverHealthReport {
     pub drivers: Vec<DriverEntry>,
-    /// Quick top-line: count of stale + known-bad entries the UI can show
-    /// without iterating the list.
-    pub stale_count: usize,
+    /// Count of known-bad entries the UI can show without iterating the list.
     pub known_bad_count: usize,
-    /// Top-line copy for the UI: "X stale, Y on known-bad list" / "All looks current."
+    /// Top-line copy for the UI.
     pub note: String,
 }
 
@@ -93,20 +82,10 @@ pub fn read_driver_health(wmi: &WMIConnection) -> Result<DriverHealthReport> {
         let driver_date_raw = string_or_default(&row, "DriverDate");
         let driver_date = parse_cim_date(&driver_date_raw);
         let age_days = driver_date.map(|d| (today - d).num_days());
-        let stale_threshold = if class_label == "GPU" {
-            STALE_AGE_DAYS_GPU
-        } else {
-            STALE_AGE_DAYS_DEFAULT
-        };
-        let stale = age_days.map(|d| d > stale_threshold).unwrap_or(false);
 
         let friendly_version =
             extract_friendly_version(&vendor, &device_name, &raw_version);
         let known_bad = known_bad_match(&vendor, &device_name, friendly_version.as_deref());
-        let known_good = !stale
-            && known_bad.is_none()
-            && age_days.map(|d| d < 365).unwrap_or(false)
-            && class_label != "Other";
 
         drivers.push(DriverEntry {
             class_label: class_label.to_string(),
@@ -116,9 +95,7 @@ pub fn read_driver_health(wmi: &WMIConnection) -> Result<DriverHealthReport> {
             friendly_version,
             driver_date: driver_date.map(|d| d.format("%Y-%m-%d").to_string()),
             age_days,
-            stale,
             known_bad,
-            known_good,
         });
     }
 
@@ -139,40 +116,30 @@ pub fn read_driver_health(wmi: &WMIConnection) -> Result<DriverHealthReport> {
         _ => 5,
     });
 
-    let stale_count = drivers.iter().filter(|d| d.stale).count();
     let known_bad_count = drivers.iter().filter(|d| d.known_bad.is_some()).count();
-    let note = compose_note(stale_count, known_bad_count, drivers.len());
+    let note = compose_note(known_bad_count, drivers.len());
 
     Ok(DriverHealthReport {
         drivers,
-        stale_count,
         known_bad_count,
         note,
     })
 }
 
-fn compose_note(stale: usize, bad: usize, total: usize) -> String {
+fn compose_note(bad: usize, total: usize) -> String {
     if total == 0 {
         return "No signed PnP drivers reported by WMI.".to_string();
     }
-    if stale == 0 && bad == 0 {
-        return format!("{} drivers — all stable, nothing to update.", total);
+    if bad == 0 {
+        return format!(
+            "{} drivers scanned. The check on the right will compare each against the latest known version from our daily vendor scrape.",
+            total
+        );
     }
-    let mut parts: Vec<String> = Vec::new();
-    if bad > 0 {
-        parts.push(format!(
-            "{} need{} an update now (known-bad)",
-            bad,
-            if bad == 1 { "s" } else { "" }
-        ));
-    }
-    if stale > 0 {
-        parts.push(format!(
-            "{} worth checking for a newer version",
-            stale
-        ));
-    }
-    parts.join(" · ")
+    format!(
+        "{} on the known-bad blocklist — update now. The check on the right compares the rest against vendor-latest.",
+        bad
+    )
 }
 
 /// Map raw Win32 DeviceClass strings to short user-facing labels. Anything
@@ -373,14 +340,13 @@ mod tests {
 
     #[test]
     fn compose_note_clean_case() {
-        let n = compose_note(0, 0, 8);
-        assert!(n.contains("all stable"));
+        let n = compose_note(0, 8);
+        assert!(n.contains("8 drivers scanned"));
     }
 
     #[test]
-    fn compose_note_warns_on_stale_and_bad() {
-        let n = compose_note(2, 1, 8);
-        assert!(n.contains("need") && n.contains("known-bad"));
-        assert!(n.contains("worth checking"));
+    fn compose_note_warns_on_known_bad() {
+        let n = compose_note(1, 8);
+        assert!(n.contains("1 on the known-bad blocklist"));
     }
 }

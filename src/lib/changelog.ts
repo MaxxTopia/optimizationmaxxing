@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.95',
+    date: '2026-05-14',
+    highlights: [
+      'NEW **Driver check now does real version compare against vendor-latest** — the age-based "Check for newer" heuristic was a lie: a 2-year-old Realtek HD audio driver might genuinely be the latest one ever released, and we were warning about something we didn\'t actually know. Replaced with a Cloudflare worker (`optmaxxing-driver-oracle`) that scrapes NVIDIA\'s public AjaxDriverService daily, caches the latest GeForce Game Ready Driver version in KV, and exposes it via `GET /latest`. The driver-health card now fetches that in parallel with the WMI scan and does an actual version diff. Badges become honest: **Update now** (red — known-bad blocklist match), **Update available — v596.49** (amber — vendor has a newer version; click for download / release notes), **Stable · up to date** (green check — verified equal to vendor-latest), or plain **Stable** (gray — no known-bad match AND no oracle for this vendor, so we don\'t pretend to know).',
+      'IMPROVE **Driver-health card — honest copy** — "Drivers — stale + known-bad scan" → "Drivers — known-bad + vendor-version check". Top-line note: "8 driver(s) confirmed up-to-date against vendor-latest. Others have no public version oracle — installed version + date shown for reference." Tooltip on every badge explains exactly what we did (and didn\'t) check. Each driver row shows installed version, WMI internal version, install date, age — but age is now purely informational, no warning attached.',
+      'INFRA **NEW Cloudflare worker `optmaxxing-driver-oracle`** at `optmaxxing-driver-oracle.maxxtopia.workers.dev`. Cron-triggered daily at 06:00 UTC. Hits NVIDIA AjaxDriverService with psid=125 / pfid=1004 (RTX 50 Series consumer anchor) to retrieve the Game Ready Driver version. Caches in KV `driver-oracle` (id `cc624c94...`) with 36h TTL — stale-while-error semantics so a failed scrape never clears the cache. Currently NVIDIA-only; AMD + Intel Arc stub null until those vendors expose a usable API.',
+    ],
+  },
+  {
     version: '0.1.94',
     date: '2026-05-14',
     highlights: [

@@ -613,25 +613,60 @@ export interface DriverEntry {
   friendlyVersion: string | null
   /** ISO yyyy-mm-dd, null when WMI returned an unparseable date. */
   driverDate: string | null
+  /** Days since the driver date. Purely informational — we do NOT warn based
+   *  on age. "Outdated?" is decided by version-compare against the oracle. */
   ageDays: number | null
-  stale: boolean
   /** Short reason if this driver is on the bundled known-bad list. */
   knownBad: string | null
-  knownGood: boolean
 }
 
 export interface DriverHealthReport {
   drivers: DriverEntry[]
-  staleCount: number
   knownBadCount: number
   note: string
 }
 
-/** Walks Win32_PnPSignedDriver and flags stale / known-bad drivers per
- *  class (GPU / chipset / audio / network / storage). NVIDIA gets its
- *  user-facing version extracted from the WMI Microsoft-internal version. */
+/** Walks Win32_PnPSignedDriver and reports each signed driver's version +
+ *  install date, plus a known-bad flag matched against a bundled blocklist.
+ *  The "is this outdated?" decision is made client-side by comparing
+ *  `friendlyVersion` against `driverOracle()` below — Rust does NOT use
+ *  age-based heuristics. */
 export async function driverHealth(): Promise<DriverHealthReport> {
   return invoke<DriverHealthReport>('driver_health')
+}
+
+export interface DriverOracleSource {
+  channel: string
+  version: string
+  released: string | null
+  detailsUrl: string | null
+  downloadUrl: string | null
+  sizeMb: string | null
+  name: string
+}
+
+export interface DriverOracleResponse {
+  fetchedAt: string
+  sources: {
+    nvidia: DriverOracleSource | { error: string } | null
+    amd: DriverOracleSource | { error: string } | null
+    intel_arc: DriverOracleSource | { error: string } | null
+  }
+}
+
+const DRIVER_ORACLE_URL = 'https://optmaxxing-driver-oracle.maxxtopia.workers.dev/latest'
+
+/** Fetches the latest known driver versions from our daily-scrape Cloudflare
+ *  worker. Network call out of the app — fails gracefully (returns null) if
+ *  the user is offline or the worker is sick. See `driver-oracle-worker/`. */
+export async function driverOracle(): Promise<DriverOracleResponse | null> {
+  try {
+    const res = await fetch(DRIVER_ORACLE_URL, { cache: 'no-store' })
+    if (!res.ok) return null
+    return (await res.json()) as DriverOracleResponse
+  } catch {
+    return null
+  }
 }
 
 export interface VbsReport {

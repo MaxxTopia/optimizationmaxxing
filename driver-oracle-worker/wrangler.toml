@@ -1,0 +1,12 @@
+name = "optmaxxing-driver-oracle"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# Daily cron — 06:00 UTC. Refresh latest-driver versions in KV. Stale on
+# failure (we never clear, only overwrite).
+[triggers]
+crons = ["0 6 * * *"]
+
+[[kv_namespaces]]
+binding = "DRIVER_ORACLE"
+id = "cc624c94223446eebd8256eec138aabe"
