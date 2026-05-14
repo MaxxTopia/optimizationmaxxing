@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.88',
+    date: '2026-05-14',
+    highlights: [
+      'BUG-FIX **NVPI .nip imports were failing with "Error in XML document"** — Microsoft\'s XmlSerializer (which NVPI uses) bails when the declared encoding doesn\'t match the actual file bytes. My .nip files had `<?xml version="1.0" encoding="utf-8"?>` but NVPI canonically exports UTF-16 with BOM, so the encoding mismatch crashed the import. Fix: dropped the explicit `encoding` attribute on all 4 .nip files — XML parser now auto-detects from the byte stream. Re-download from `/guides → NVIDIA Profile Inspector → one-click downloads` to get the fixed files.',
+      'NEW **Element-115 vial — proper lab-flask rebuild** — moved from body pseudo-elements (rect with gradient) to a real React component `<Element115Vial>` with full DOM control. Test-tube silhouette (narrow neck, rounded bottom), cork stopper at top with stopper-indent line, glass highlight on the left, embossed "115" label below. **Three independent bubbles** rise inside the liquid on staggered 2.6s / 3.2s / 3.6s loops. **Three vapor wisps** drift up off the cork on 4.2s / 4.8s / 5.1s loops. Liquid fill cycle kept (cyan→violet, 10s fill/drain). Taller (150px vs 90px) for more visual presence. Generic glassware aesthetic — evokes a lab-flask without copying any specific game asset.',
+      'UX **Adventure Time TipsToast — removed character impersonation** — the previous "Jake the Dog" SVG didn\'t look like the show character (stylized abstraction obviously didn\'t land). Replaced with a generic magic-wand-and-star glyph (no character likeness). Label changed from "Jake · tip" to "pro tip". Tip copy neutralized to drop the "bro/dude" voice. Component renamed `JakeTipsToast → TipsToast`.',
+    ],
+  },
+  {
     version: '0.1.87',
     date: '2026-05-14',
     highlights: [

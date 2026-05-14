@@ -2,7 +2,8 @@ import { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { CrashBoundary } from './components/CrashBoundary'
 import { Layout } from './components/Layout'
-import { JakeTipsToast } from './components/JakeTipsToast'
+import { Element115Vial } from './components/Element115Vial'
+import { TipsToast } from './components/TipsToast'
 import { UpdateBanner } from './components/UpdateBanner'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { Dashboard } from './pages/Dashboard'
@@ -102,7 +103,8 @@ export default function App() {
           <Route path="/session" element={<Session />} />
         </Routes>
         <WhatsNewModal />
-        <JakeTipsToast />
+        <TipsToast />
+        <Element115Vial />
       </Layout>
     </CrashBoundary>
   )
