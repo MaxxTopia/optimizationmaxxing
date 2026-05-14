@@ -99,7 +99,7 @@ export const HARDWARE: HardwareSection[] = [
         tier: 'goat',
         why:
           "Most-recommended default pick across r/MouseReview + Boardzy tierlists. Controlled glide, durable, won't peel at corners on aggressive flicks. The safe answer for any mouse you'd put them on.",
-        link: 'https://www.tigergamingofficial.com/',
+        link: 'https://esptiger.com/collections/tiger-arc-2-mouse-skates',
       },
       {
         name: 'Corepad Skatez Air',
@@ -233,7 +233,7 @@ export const HARDWARE: HardwareSection[] = [
         why:
           '**What Peterbot runs.** Mid-speed cloth, dense weave, large size. Designed by/for Benjyfishy and other top FNCS competitors. The pro-pad-of-record across the current FNCS field.',
         citedPro: 'Peterbot',
-        link: 'https://gamesense.gg/products/radar',
+        link: 'https://gamesense.gg/products/benjyfishy-radar',
       },
       {
         name: 'Artisan Hien (Mid)',
@@ -241,8 +241,8 @@ export const HARDWARE: HardwareSection[] = [
         tier: 'goat',
         why:
           "**What Diggy runs for Fortnite.** Japanese boutique. Mid-speed, balanced control + glide. Pick Hien Mid for Fortnite's flick-then-track motion; Soft is too slow, Xsoft is too floaty. Cult-favorite for low-sens players for a decade running.",
-        caveat: 'Real Artisan ships from Japan (Amazon listings are mostly counterfeit). Order from artisan-jp.com or a verified reseller.',
-        link: 'https://artisan-jp.com/eng_hien.html',
+        caveat: 'Real Artisan ships from Japan (Amazon listings are mostly counterfeit). Order from artisan-jp.com/global or a verified reseller (e.g. JP Gaming in the US).',
+        link: 'https://artisan-jp.com/global/fx-hien',
       },
       {
         name: 'Wallhack Cloth',

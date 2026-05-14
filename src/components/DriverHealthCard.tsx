@@ -108,8 +108,8 @@ export function DriverHealthCard() {
 
       {flagged.length === 0 && allDrivers.length > 0 && !showAll && (
         <p className="text-xs text-emerald-300">
-          ✓ Nothing flagged. {allDrivers.length} drivers in the fresh-window with no known-bad
-          matches.
+          ✓ All {allDrivers.length} drivers stable. No known-bad versions detected and nothing
+          older than the class threshold.
         </p>
       )}
 
@@ -152,10 +152,24 @@ function DriverRow({ d }: { d: DriverEntry }) {
       : `${(d.ageDays / 365).toFixed(1)}y old`
 
   const badge = d.knownBad
-    ? { color: 'text-red-300 border-red-500/40 bg-red-500/10', label: 'known-bad' }
+    ? {
+        color: 'text-red-300 border-red-500/40 bg-red-500/10',
+        label: 'Update now',
+        tooltip: 'This driver version is on a bundled list of known-bad releases — update to the vendor\'s latest as soon as you can.',
+      }
     : d.stale
-    ? { color: 'text-amber-300 border-amber-500/40 bg-amber-500/10', label: 'stale' }
-    : { color: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10', label: 'ok' }
+    ? {
+        color: 'text-amber-300 border-amber-500/40 bg-amber-500/10',
+        label: 'Check for newer',
+        tooltip: d.classLabel === 'GPU'
+          ? 'GPU driver is older than 90 days. A newer version probably exists — verify on the vendor download page.'
+          : 'Driver is older than 18 months. Most chipset / audio / NIC vendors ship one or two updates per year, so a newer version probably exists.',
+      }
+    : {
+        color: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10',
+        label: 'Stable',
+        tooltip: 'Driver is within the fresh-window for its class and doesn\'t match any bundled known-bad version. We don\'t actively check vendor APIs, so a newer release may still exist — but you\'re unlikely to be missing critical fixes.',
+      }
 
   return (
     <div className="rounded-md border border-border p-3 space-y-1.5">
@@ -167,7 +181,8 @@ function DriverRow({ d }: { d: DriverEntry }) {
           <p className="text-sm text-text font-mono truncate">{d.deviceName}</p>
         </div>
         <span
-          className={`text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${badge.color}`}
+          title={badge.tooltip}
+          className={`text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border ${badge.color} whitespace-nowrap`}
         >
           {badge.label}
         </span>

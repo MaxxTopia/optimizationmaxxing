@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.93',
+    date: '2026-05-14',
+    highlights: [
+      'NEW **Re-apply drifted tweaks on /diff** — when something outside the app (Windows Update / vendor tool / Settings toggle) reverts a registry value we wrote, the row goes from `✓ verified in place` to `✗ got reverted externally`. Now each drifted row gets a per-tweak **Re-apply** button, and the summary strip gets a **Re-apply N** button that batches all drifted tweaks behind a single UAC. Re-apply only re-writes the value(s) we originally wrote — doesn\'t touch anything else on your rig. Page-header copy + tooltip on the "got reverted externally" badge now spell out that the app didn\'t undo anything, an external actor did.',
+      'IMPROVE **Driver-health badge labels — action-oriented** — `known-bad` → **Update now** (red), `stale` → **Check for newer** (amber, with class-specific tooltip explaining 90-day GPU vs 18-month chipset thresholds), `ok` → **Stable** (green). Each badge has a hover tooltip with the full reasoning. Card top-line note rewritten: "N drivers — all stable, nothing to update" or "N need an update now (known-bad) · M worth checking for a newer version."',
+      'FIX **Broken external links** — 7 product / spec URLs that had rotted: **GameSense Radar** now points at the benjyfishy edition (`/products/benjyfishy-radar`, not `/products/radar`); **Artisan Hien** mousepad updated to the new `/global/fx-hien` path (Artisan reorganized their site); **Tiger Arc 2 skates** moved from the dead `tigergamingofficial.com` to `esptiger.com`; **Drunkdeer G75**, **Endgame Gear KB65HE 8K**, **Pulsar X2 V3**, **Wooting 60HE+** all updated to current product-page slugs. Plus citation-link fixes: **Hynix Modules DB** (benzhaomin\'s GitHub Page was retired) → Die Finder at fpsheaven.com; **NVIDIA Reflex whitepaper** PDF (404\'d) → official Reflex platform + Reflex 2 articles; **Microsoft kernel priorities** doc URL renamed by MS → new path; **Russinovich standby-list explainer** (Sysinternals Learn URL deprecated) → Sysinternals blog reference. All 12 fixes HTTP-checked to confirm 200 OK.',
+    ],
+  },
+  {
     version: '0.1.92',
     date: '2026-05-14',
     highlights: [

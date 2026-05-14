@@ -47,5 +47,5 @@ RAMMap doesn't auto-trigger like ISLC, but if you'd rather use a Microsoft-publi
 
 - [Wagnard's ISLC tool](https://www.wagnardsoft.com/forums/viewtopic.php?f=15&t=1256) — the de-facto pro standby cleaner
 - [Microsoft Sysinternals RAMMap](https://learn.microsoft.com/en-us/sysinternals/downloads/rammap) — same API, manual trigger
-- [Mark Russinovich's standby list explainer](https://learn.microsoft.com/en-us/sysinternals/learn/the-standby-list-and-modified-page-list) — Microsoft documentation of why this matters
+- [Mark Russinovich on the standby list](https://techcommunity.microsoft.com/blog/sysinternalsblog/pushing-the-limits-of-windows-physical-memory/3651168) — Microsoft technical reference for why this matters (Sysinternals blog)
 - r/Windows10 long-running threads on standby clearing for gaming

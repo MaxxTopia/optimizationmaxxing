@@ -156,20 +156,21 @@ fn compose_note(stale: usize, bad: usize, total: usize) -> String {
         return "No signed PnP drivers reported by WMI.".to_string();
     }
     if stale == 0 && bad == 0 {
-        return format!(
-            "All {} drivers within fresh-window + no known-bad matches.",
-            total
-        );
+        return format!("{} drivers — all stable, nothing to update.", total);
     }
     let mut parts: Vec<String> = Vec::new();
     if bad > 0 {
         parts.push(format!(
-            "{} on the known-bad list — update ASAP",
-            bad
+            "{} need{} an update now (known-bad)",
+            bad,
+            if bad == 1 { "s" } else { "" }
         ));
     }
     if stale > 0 {
-        parts.push(format!("{} stale (older than the class threshold)", stale));
+        parts.push(format!(
+            "{} worth checking for a newer version",
+            stale
+        ));
     }
     parts.join(" · ")
 }
@@ -373,13 +374,13 @@ mod tests {
     #[test]
     fn compose_note_clean_case() {
         let n = compose_note(0, 0, 8);
-        assert!(n.contains("All 8 drivers within fresh-window"));
+        assert!(n.contains("all stable"));
     }
 
     #[test]
     fn compose_note_warns_on_stale_and_bad() {
         let n = compose_note(2, 1, 8);
-        assert!(n.contains("1 on the known-bad list"));
-        assert!(n.contains("2 stale"));
+        assert!(n.contains("need") && n.contains("known-bad"));
+        assert!(n.contains("worth checking"));
     }
 }

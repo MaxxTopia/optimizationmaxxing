@@ -102,6 +102,6 @@ The RAM Advisor card on `/diagnostics` will keep us honest: it tells you the IC,
 - [DRAM Calculator for Ryzen (techpowerup)](https://www.techpowerup.com/download/ryzen-dram-calculator/) — SAFE/FAST/EXTREME recipes per IC. AM4 still excellent; AM5 use Buildzoid's manual approach.
 - [Buildzoid — Hynix DDR5 M-die tuning guide](https://www.youtube.com/@ActuallyHardcoreOverclocking)
 - [r/overclocking RAM wiki](https://www.reddit.com/r/overclocking/wiki/index/ramoc/) — community per-IC tables, regularly updated
-- [Hynix Modules DB (benzhaomin)](https://benzhaomin.github.io/HynixModules/) — part-number to IC lookup
+- [Die Finder — DDR4/DDR5 part-number to IC lookup](https://fpsheaven.com/die-finder/) — paste your kit's part number, it returns the IC (B-die / A-die / M-die / etc.)
 - [TestMem5 (CoolCmd)](https://github.com/CoolCmd/TestMem5) — validation tool of record for tightened timings
 - [Thaiphoon Burner (Softnology)](https://www.softnology.biz/files.html) — SPD read tool when our heuristic can't ID your kit

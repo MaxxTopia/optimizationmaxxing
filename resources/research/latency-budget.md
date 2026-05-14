@@ -48,7 +48,7 @@ $130 better.
 - **HID priority + queue size.** Windows' kernel HID class threads run at
   default priority and process events in batches. Pinning them to realtime
   + capping the event queue at 20 cuts median latency by ~1–3 ms under
-  load. ([Microsoft Learn — kernel priorities](https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/scheduling-priorities))
+  load. ([Microsoft — Real-Time Priority docs](https://learn.microsoft.com/en-us/windows/win32/procthread/scheduling-priorities))
   We ship `hid.mouse.priority-realtime` + `hid.keyboard.priority-realtime`
   + queue size tweaks for both.
 - **DPC %.** Driver work that can't yield. Healthy idle = < 2%. Above 5%
@@ -72,7 +72,7 @@ reputation.
 - **Reflex Low Latency (NVIDIA).** Caps the driver's pre-render queue +
   syncs the game thread's frame-start to the GPU's actual readiness, not
   the V-sync clock. Real measured impact: **5–30 ms** depending on rig +
-  game. Use ON+BOOST. ([NVIDIA Reflex whitepaper](https://images.nvidia.com/aem-dam/Solutions/geforce/news/reflex-low-latency-platform/nvidia-reflex-2-low-latency-platform-whitepaper.pdf))
+  game. Use ON+BOOST. ([NVIDIA Reflex platform overview](https://www.nvidia.com/en-us/geforce/news/reflex-low-latency-platform/) · [Reflex 2 + Frame Warp announcement](https://www.nvidia.com/en-us/geforce/news/reflex-2-even-lower-latency-gameplay-with-frame-warp/))
 - **Cap your FPS at refresh − 3.** On a 240 Hz monitor, cap at 237. The
   -3 prevents the driver queue from building up at 100% V-sync, which
   introduces 3–8 ms of queueing delay. ([Battle(non)sense FPS cap research](https://www.youtube.com/watch?v=tEa78ZmxmI8))
