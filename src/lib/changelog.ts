@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.1',
+    date: '2026-05-14',
+    highlights: [
+      'FIX **Fortnite-pro context: G-Sync OFF, not ON** — v0.2.0\'s monitor optimal-settings table recommended G-Sync ON for Fortnite. Pros don\'t use it at 240+ Hz with stable FPS above refresh. Per Blur Busters\' G-Sync 101 research, G-Sync adds ~1ms versus raw V-Sync-off rendering, and tearing is essentially invisible at 240/360 Hz — pros take the marginal latency win. **Dell AW2523HF** (your monitor), **AW2521H** (Bugha\'s), **AW2518 family** (Reet\'s) all flipped to G-Sync OFF + V-Sync OFF + Reflex On+BOOST + uncapped-or-refresh-3 cap for the Fortnite-pro profile. Default fallback message + NVPI guide + recommended-gear monitor section + latency-budget guide + TipsToast pro-tip text all carry the Fortnite-specific caveat. **For other games (Valorant / CS2 / Apex) the standard G-Sync stack still wins** — this is a Fortnite-pro-specific exception, not a blanket rule.',
+      'FIX **Adventure Time TipsToast glyph — switched from a "Gunther" penguin to Finn\'s Grass Sword** — the penguin attempt didn\'t nail the canonical look (Gunther is white-bodied with simple accents, my SVG had a black body). The Grass Sword is more recognizable from primitives: curved green leaf-shape blade with serrated edges + lighter inner core + spine highlight, brown wooden grip with wrap detail + crossguard + round pommel, small magical-green sparkles + a 3.4s subtle glow shimmer. Zero IP risk — built entirely from SVG primitives, not traced from any frame.',
+    ],
+  },
+  {
     version: '0.2.0',
     date: '2026-05-14',
     highlights: [

@@ -139,7 +139,8 @@ Try `26` first. If you have a 12+ core CPU with HT and the FPS feels great but i
 | **RTX 40-series / 50-series** | Enable **DLSS Frame Generation off** in competitive games — adds 8-15ms. Reflex still works. |
 | **RTX 20/30-series** | NIS (NVIDIA Image Scaling) sharpens 1080p→1440p at 0 latency cost. Set in NVCP, not NVPI. |
 | **GTX 16-series / 900-1000** | No Reflex hardware support on 700-series and older. Use NVPI **Low Latency Mode = Ultra** instead. |
-| **G-Sync monitor** | NVCP → G-Sync **On + V-Sync On in NVCP** + V-Sync **Off in-game** + cap FPS at refresh-3. This is the lowest-latency G-Sync stack (confirmed BlurBusters + NVIDIA). |
+| **G-Sync monitor + most games** | NVCP → G-Sync **On + V-Sync On in NVCP** + V-Sync **Off in-game** + cap FPS at refresh-3. Lowest-latency G-Sync stack (confirmed BlurBusters + NVIDIA). |
+| **G-Sync monitor + competitive Fortnite at 240+ Hz** | **G-Sync OFF + V-Sync OFF everywhere + Reflex On+BOOST + uncapped or refresh-3 cap.** At stable FPS above refresh, pros prefer the marginal latency win over tear elimination — tearing is essentially invisible at 240/360 Hz. ([Blur Busters G-Sync 101](https://blurbusters.com/gsync/gsync101-input-lag-tests-and-settings/)) |
 | **No G-Sync (regular 144/240Hz)** | V-Sync everywhere off. Cap FPS in-game to refresh-3 or use NVPI Frame Rate Limiter V3. |
 | **1080p competitive** | Drop **Texture filtering quality** to High Performance for +2-4% on mid-tier GPUs. Imperceptible at 1080p. |
 | **HDR monitor** | NVPI **Display - Color Settings** — leave on **Use the 3D application setting**. Forcing HDR via NVPI breaks calibration on some VA panels. |

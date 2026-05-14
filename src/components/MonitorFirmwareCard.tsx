@@ -22,14 +22,16 @@ interface MonitorSettings {
 const MONITOR_SETTINGS: MonitorSettings[] = [
   {
     modelMatch: 'aw2523hf',
-    displayName: 'Dell Alienware AW2523HF — competitive gaming OSD',
+    displayName: 'Dell Alienware AW2523HF — competitive Fortnite OSD',
     settings: [
       { label: 'Refresh rate', value: '360 Hz', why: 'Cap reaching its native max — use this in Windows + game' },
       { label: 'Response time', value: 'Super Fast', why: 'Lowest pixel-response without visible overshoot — "Extreme" introduces inverse ghosting on the IPS panel' },
       { label: 'AlienVision Dark Stabilizer', value: '2', why: 'Lifts dark scenes a touch without crushing contrast — pro Fortnite consensus' },
       { label: 'Game / Preset Mode', value: 'FPS', why: 'Locks gamma + saturation to a competitive-friendly profile' },
       { label: 'Smart HDR', value: 'OFF', why: 'HDR adds 5-15ms input lag on this panel' },
-      { label: 'AMD FreeSync / NVIDIA G-Sync Compatible', value: 'ON', why: 'VRR locked → frame pacing tight; cap FPS 3 below refresh in-game' },
+      { label: 'AMD FreeSync / NVIDIA G-Sync Compatible', value: 'OFF', why: 'Fortnite pros run VRR off at 360 Hz — when your FPS is stable above refresh, the marginal G-Sync latency cost (per Blur Busters G-Sync 101) loses to raw V-Sync-off + uncapped rendering. Pair with V-Sync OFF in-game + NVIDIA Reflex Low Latency + BOOST instead.' },
+      { label: 'V-Sync (in-game + NVCP)', value: 'OFF everywhere', why: 'Eliminates the V-Sync queue. Tearing at 360+ Hz is effectively invisible on this panel' },
+      { label: 'NVIDIA Reflex', value: 'On + BOOST', why: 'Caps the driver\'s pre-render queue + raises GPU clocks during the queue-empty window. Replaces what G-Sync was doing for frame pacing, with less latency' },
       { label: 'Sharpness', value: '50 (default)', why: 'Avoid over-sharpening — adds halos to outlines pros use for aim cues' },
       { label: 'Gamma', value: '2.2', why: 'Web/sRGB standard; matches what content creators target' },
       { label: 'Brightness', value: '60-75', why: 'Native panel target. >85 reduces lifespan' },
@@ -39,12 +41,12 @@ const MONITOR_SETTINGS: MonitorSettings[] = [
   },
   {
     modelMatch: 'aw2521h',
-    displayName: 'Dell Alienware AW2521H (Bugha\'s monitor) — competitive OSD',
+    displayName: 'Dell Alienware AW2521H (Bugha\'s monitor) — competitive Fortnite OSD',
     settings: [
       { label: 'Refresh rate', value: '360 Hz', why: 'Native max — set in Windows display + game' },
       { label: 'Response time', value: 'Super Fast', why: 'Lowest perceptible overshoot on this panel' },
       { label: 'Dark Stabilizer', value: '2-3', why: 'Lifts shadow detail without losing contrast — Bugha runs 2' },
-      { label: 'NVIDIA G-Sync', value: 'ON (native G-Sync module)', why: 'This is a real G-Sync chip monitor, not "G-Sync Compatible" — leave on' },
+      { label: 'NVIDIA G-Sync', value: 'OFF for Fortnite', why: 'Even with the native G-Sync module, Fortnite pros at 360 Hz disable it. Stable FPS above refresh + no visible tearing at this rate beats the ~1ms G-Sync overhead. V-Sync OFF + NVIDIA Reflex + cap nowhere or refresh-3 in-game' },
       { label: 'Preset Mode', value: 'FPS', why: 'Locks color + gamma for competitive contrast' },
       { label: 'Smart HDR', value: 'OFF', why: '~7ms extra input lag with HDR on this panel' },
       { label: 'Sharpness', value: '50', why: 'Default — over-sharpening adds outline halos' },
@@ -87,7 +89,7 @@ const MONITOR_SETTINGS: MonitorSettings[] = [
       { label: 'Response time', value: 'Super Fast', why: 'Cleanest pixel response without visible inverse ghosting' },
       { label: 'Dark Stabilizer', value: '2', why: 'Conservative shadow lift; Reet runs ~2' },
       { label: 'Preset Mode', value: 'FPS', why: 'Locks color + gamma to competitive' },
-      { label: 'G-Sync / FreeSync', value: 'ON', why: 'VRR locked — cap FPS 3 below refresh' },
+      { label: 'G-Sync / FreeSync', value: 'OFF for competitive Fortnite', why: 'At 240+ Hz with stable FPS above refresh, pros run VRR off for the marginal latency win (Blur Busters G-Sync 101). V-Sync off + NVIDIA Reflex + uncapped or refresh-3 cap instead' },
     ],
     sourceUrl: 'https://prosettings.net/players/reet/',
     sourceLabel: 'ProSettings — Reet config',
@@ -224,10 +226,13 @@ export function MonitorFirmwareCard() {
 
             {!optimal && (
               <p className="pt-2 border-t border-border text-[11px] text-text-subtle leading-snug">
-                No curated competitive-OSD entry for this model yet. Defaults that always work:
-                refresh = native max, response time = "Fast" (NOT Extreme — overshoot), Game/FPS
-                preset, VRR ON, HDR OFF, brightness 60-75. DM the model name to get a dedicated
-                entry added.
+                No curated competitive-OSD entry for this model yet. Defaults that work: refresh =
+                native max, response time = "Fast" (NOT Extreme — overshoot), Game/FPS preset,
+                HDR OFF, brightness 60-75. For competitive Fortnite at 240+ Hz with stable FPS
+                above refresh, run <strong className="text-text">G-Sync OFF + V-Sync OFF +
+                NVIDIA Reflex On+BOOST</strong> (pros prioritize the marginal latency over
+                tear elimination). For lower-refresh monitors / unstable FPS, leave G-Sync ON
+                and cap FPS 3 below refresh. DM the model to get a dedicated entry added.
               </p>
             )}
 

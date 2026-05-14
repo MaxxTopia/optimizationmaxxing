@@ -125,6 +125,12 @@ on its scanout pattern.
   monitor stops waiting for V-sync between frames. Saves the difference
   between worst-case and best-case scanout — a real 1–3 ms.
   ([NVIDIA G-Sync research](https://blurbusters.com/gsync/gsync101-input-lag-tests-and-settings/) — Blur Busters)
+  - **Fortnite-pro caveat:** at 240+ Hz with stable FPS above refresh, pros
+    run VRR **OFF** + V-Sync off + NVIDIA Reflex On+BOOST + uncapped (or
+    refresh-3 cap). G-Sync adds ~1 ms versus raw V-Sync-off rendering, and
+    tearing is essentially invisible at that frame rate — pros prefer the
+    marginal latency win. For lower-refresh monitors or unstable FPS the
+    standard G-Sync stack still wins.
 - **Monitor input lag mode.** Vendor menu setting. Almost always called
   something different per vendor (ASUS = "Display Boost Off", LG =
   "Low Latency", Dell = "Low Input Lag"). 1–4 ms savings, free.

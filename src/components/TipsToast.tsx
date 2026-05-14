@@ -6,7 +6,8 @@ import { useProfileStore } from '../store/useProfileStore'
  * glyph swaps to match the show:
  *
  *   * cosmo-wanda    → magic wand + sparkles (Wanda's wand)
- *   * adventure-time → Gunther the penguin
+ *   * adventure-time → Finn's Grass Sword (instantly recognizable; less
+ *                      risk than trying to nail a penguin character likeness)
  *
  * Both themes share the same rotating tip pool + dismiss behavior.
  * Renders nothing on every other theme (no DOM cost).
@@ -16,7 +17,7 @@ const DISMISS_KEY = 'optmaxxing-tips-dismissed'
 
 const TIPS = [
   'Pre-warm the snapshot store by applying 5+ tweaks before scrim — rollback feels cleaner.',
-  'Cap your FPS at refresh-minus-3. G-Sync stays locked, frame pacing tightens.',
+  'Cap FPS refresh-minus-3 if you run G-Sync. Competitive Fortnite at 240+ Hz? Run G-Sync OFF + uncapped + Reflex On+BOOST — pros prioritize the marginal latency over tear elimination.',
   'iCUE and Synapse are eating your input. Run the RGB-shutoff tweak in /tweaks for ~5% DPC headroom.',
   'Watch the divinium vial in the corner if you switch to Element-115 — it cycles like a charging meter.',
   'On a 13900K and getting crashes? Check the WHEA card on /diagnostics — microcode 0x12B or RMA.',
@@ -73,7 +74,7 @@ export function TipsToast() {
           animation: 'tips-toast-in 420ms cubic-bezier(0.22, 1.4, 0.36, 1)',
         }}
       >
-        {activeProfile === 'cosmo-wanda' ? <WandGlyph /> : <GuntherGlyph />}
+        {activeProfile === 'cosmo-wanda' ? <WandGlyph /> : <GrassSwordGlyph />}
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <p
@@ -119,13 +120,13 @@ export function TipsToast() {
           60%  { transform: translateY(-3px) scale(1.05); opacity: 1; }
           100% { transform: translateY(0) scale(1); opacity: 1; }
         }
-        @keyframes gunther-bob {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-2px); }
+        @keyframes grass-sword-shimmer {
+          0%, 100% { filter: drop-shadow(0 0 1px rgba(120, 220, 80, 0.4)); }
+          50%      { filter: drop-shadow(0 0 4px rgba(120, 220, 80, 0.75)); }
         }
         @media (prefers-reduced-motion: reduce) {
           div[role="status"] > div { animation: none !important; }
-          svg[data-glyph="gunther"] { animation: none !important; }
+          svg[data-glyph="grass-sword"] { animation: none !important; }
         }
       `}</style>
     </div>
@@ -174,58 +175,119 @@ function WandGlyph() {
   )
 }
 
-/** Gunther penguin — the BMO-roommate-tier sidekick from Adventure Time.
- *  Stylized from primitives: black body, white belly, yellow beak, two
- *  little feet, simple eyes. Doesn't copy any specific frame from the show. */
-function GuntherGlyph() {
+/** Finn's Grass Sword — distinctive curved green blade from the grass-arm
+ *  arc in Adventure Time. Built from SVG primitives: curved leaf-shape
+ *  blade with serrated edges, brown wooden grip, simple crossguard, faint
+ *  magical green glow. Recognizable without copying a specific frame. */
+function GrassSwordGlyph() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 60 60"
-      data-glyph="gunther"
+      data-glyph="grass-sword"
       style={{
         width: 48,
         height: 48,
         flexShrink: 0,
-        animation: 'gunther-bob 2.6s ease-in-out infinite',
+        animation: 'grass-sword-shimmer 3.4s ease-in-out infinite',
       }}
     >
-      {/* Body (black, rounded teardrop) */}
-      <ellipse cx="30" cy="34" rx="16" ry="20" fill="#1a1f3a" />
-      {/* White belly */}
-      <ellipse cx="30" cy="38" rx="10" ry="14" fill="#f8f4e0" />
-      {/* Head highlight (slight oval inset on the top of the body) */}
-      <ellipse cx="30" cy="20" rx="11" ry="9" fill="#1a1f3a" />
-      {/* Left eye (white sclera + black pupil) */}
-      <circle cx="25" cy="20" r="3" fill="#f8f4e0" />
-      <circle cx="25" cy="20.5" r="1.4" fill="#1a1f3a" />
-      {/* Right eye */}
-      <circle cx="35" cy="20" r="3" fill="#f8f4e0" />
-      <circle cx="35" cy="20.5" r="1.4" fill="#1a1f3a" />
-      {/* Beak — yellow triangle */}
+      {/* Blade — curved leaf-shape sweeping from lower-left grip to upper-right point */}
       <path
-        d="M 27 25 L 33 25 L 30 30 Z"
-        fill="#ffc52e"
+        d="M 18 42 Q 14 28 22 16 Q 30 6 44 8 Q 38 16 34 22 Q 30 28 26 34 Q 22 40 18 42 Z"
+        fill="#5db94a"
         stroke="#1a1f3a"
-        strokeWidth="0.8"
+        strokeWidth="2"
         strokeLinejoin="round"
       />
-      {/* Left foot */}
-      <ellipse cx="23" cy="54" rx="3.5" ry="1.6" fill="#ffc52e" stroke="#1a1f3a" strokeWidth="0.6" />
-      {/* Right foot */}
-      <ellipse cx="37" cy="54" rx="3.5" ry="1.6" fill="#ffc52e" stroke="#1a1f3a" strokeWidth="0.6" />
-      {/* Tiny wing on the body (left side) */}
+      {/* Blade inner gradient highlight (lighter green core) */}
       <path
-        d="M 16 32 Q 12 36 16 42 L 20 40 Z"
-        fill="#1a1f3a"
-        stroke="#0a0d1f"
-        strokeWidth="0.5"
+        d="M 20 38 Q 18 28 24 18 Q 30 10 40 10 Q 32 18 28 26 Q 24 32 20 38 Z"
+        fill="#86d36c"
+        opacity="0.7"
       />
-      {/* Tiny sparkles around him for the tips-vibe */}
-      <g fill="#ffd700">
-        <circle cx="50" cy="14" r="1.2" />
-        <circle cx="8" cy="22" r="1" />
-        <circle cx="52" cy="46" r="1" />
+      {/* Spine highlight along the curved back of the blade */}
+      <path
+        d="M 22 40 Q 18 30 24 18 Q 30 10 42 9"
+        fill="none"
+        stroke="#c4f0a8"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+      {/* Serrated grass-blade nicks along the cutting edge */}
+      <path
+        d="M 34 22 L 36 21 L 35 24 Z M 30 28 L 32 27 L 31 30 Z M 26 34 L 28 33 L 27 36 Z"
+        fill="#3d8a30"
+        stroke="#1a1f3a"
+        strokeWidth="0.6"
+        strokeLinejoin="round"
+      />
+      {/* Tiny leaf sprouting off the back of the blade — grass-magic detail */}
+      <path
+        d="M 36 14 Q 40 12 42 16 Q 38 16 36 14 Z"
+        fill="#3d8a30"
+        stroke="#1a1f3a"
+        strokeWidth="0.6"
+        strokeLinejoin="round"
+      />
+      {/* Crossguard — small brown horizontal bar */}
+      <rect
+        x="14"
+        y="40"
+        width="12"
+        height="3.5"
+        rx="0.8"
+        fill="#8b5a2b"
+        stroke="#1a1f3a"
+        strokeWidth="1.2"
+        transform="rotate(-30 20 41.75)"
+      />
+      {/* Grip — wooden handle below the crossguard */}
+      <rect
+        x="12"
+        y="44"
+        width="4"
+        height="10"
+        rx="1.4"
+        fill="#a47233"
+        stroke="#1a1f3a"
+        strokeWidth="1.4"
+        transform="rotate(-30 14 49)"
+      />
+      {/* Grip wrap detail */}
+      <line
+        x1="12"
+        y1="48"
+        x2="16"
+        y2="48"
+        stroke="#1a1f3a"
+        strokeWidth="0.8"
+        transform="rotate(-30 14 49)"
+      />
+      <line
+        x1="12"
+        y1="51"
+        x2="16"
+        y2="51"
+        stroke="#1a1f3a"
+        strokeWidth="0.8"
+        transform="rotate(-30 14 49)"
+      />
+      {/* Pommel — small round end-cap */}
+      <circle
+        cx="9"
+        cy="54"
+        r="2"
+        fill="#a47233"
+        stroke="#1a1f3a"
+        strokeWidth="1.2"
+      />
+      {/* Magical green sparkles around the blade */}
+      <g fill="#c4f0a8">
+        <circle cx="50" cy="10" r="1.2" />
+        <circle cx="48" cy="20" r="0.9" opacity="0.85" />
+        <circle cx="40" cy="6" r="0.9" opacity="0.85" />
       </g>
     </svg>
   )

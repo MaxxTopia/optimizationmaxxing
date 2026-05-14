@@ -37,7 +37,8 @@ Hardware tier lists rot fast (a "best mouse 2026" article is wrong by Q3). What 
 
 - **Refresh rate:** 240 Hz is the new floor for competitive. 360 Hz / 480 Hz OLEDs are the real flex.
 - **Panel type:** OLED for color + response time, IPS for sustained brightness, TN is dying.
-- **Adaptive sync:** G-Sync compatible (over DisplayPort) ON in driver, FPS capped 3 below max refresh in-game (per the NVIDIA Reflex research article). VRR + capped FPS = lowest input lag at high FPS.
+- **Adaptive sync:** G-Sync compatible (over DisplayPort) ON in driver, FPS capped 3 below max refresh in-game (per the NVIDIA Reflex research article). VRR + capped FPS = lowest input lag at high FPS **for most games**.
+  - **Fortnite caveat:** at 240+ Hz with stable FPS above refresh, pros run **G-Sync OFF + V-Sync OFF + Reflex On+BOOST + uncapped or refresh-3 cap**. At that frame rate the marginal G-Sync overhead (per [Blur Busters G-Sync 101](https://blurbusters.com/gsync/gsync101-input-lag-tests-and-settings/)) loses to raw V-Sync-off rendering, and tearing is essentially invisible. For lower-refresh / unstable-FPS rigs the standard G-Sync stack still wins.
 - **Connection:** DisplayPort 1.4 or 2.0. HDMI 2.1 is fine but DP is the desktop-PC native.
 - **Cable quality:** matters more than people admit on 4K@240+ — buy a **DP 1.4-rated certified cable**, not the cheapest one.
 - **Firmware update:** check the vendor's support page yearly. ASUS / LG / Samsung have shipped meaningful frame-pacing fixes in firmware updates.
