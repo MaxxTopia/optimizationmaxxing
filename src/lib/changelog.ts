@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.96',
+    date: '2026-05-14',
+    highlights: [
+      'NEW **/hardware "Build like Peterbot" hero stack** — the canonical pro-tier Fortnite PC build in one card at the top of the page. Walks 9 new PC-build categories (CPU / GPU / RAM / motherboard / storage / cooling / PSU / case / networking), lifts the GOAT pick from each, renders as a single shoppable list with vendor links. Current revision: **9800X3D · RTX 5080 · 32GB DDR5-6000 CL30 · X870E Strix · 990 Pro 2TB · Arctic LF III 360 · Corsair RM1000x · Lancool 216 · WAS-110 + UDM Pro Max**. Last-verified date stamp surfaces freshness. Bumps per release when a new flagship lands.',
+      'NEW **PC-build category ladders** — every new category gets the same tier ladder treatment as the existing peripheral pages: **CPU** (9800X3D GOAT / 7800X3D pro / 14900K pro / 7600X budget), **GPU** (5090 / 5080 / 5070 Ti / 5060 Ti 16GB), **RAM** (Trident Z5 Royal Neo CL28 / Corsair Vengeance CL30 / Fury Beast CL36), **Motherboard** (ROG Strix X870E-E / B650 Tomahawk / B650M PG Lightning), **Storage**, **Cooling**, **PSU**, **Case**, **Networking** (including the **AT&T XGS-PON bypass via WAS-110 SFP+** at GOAT tier — same setup competitive streamers run for sub-10ms latency).',
+      'NEW **Networking section explicit on the WAS-110 + UDM/OPNsense path** — first time the app endorses the AT&T BGW320 bypass as canonical. Caveat that stock Azores firmware works but the **8311 community firmware** is what our `/toolkit → ONU stick` card reads for temps + optical bias. Links pon.wiki\'s install guide for the firmware flash.',
+    ],
+  },
+  {
     version: '0.1.95',
     date: '2026-05-14',
     highlights: [
