@@ -255,7 +255,7 @@ export function OnuStickCard() {
             <strong>Couldn't reach the stick:</strong> {report.error}
           </p>
           {/192\.168\.11\./.test(url) && /timeout|timed out|unreachable|host/i.test(report.error) && (
-            <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-2 space-y-1.5">
+            <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-2 space-y-2">
               <p className="text-amber-100">
                 <strong>This is almost certainly a routing problem, not a dead stick.</strong> The
                 WAS-110's management IP <code>192.168.11.1</code> is on its own /24 subnet. If your
@@ -263,30 +263,88 @@ export function OnuStickCard() {
                 route to <code>192.168.11.0/24</code> and the connection times out — same as if you
                 tried to reach <code>10.99.99.1</code>.
               </p>
-              <p className="text-amber-100">
-                <strong>Three fixes, easiest first:</strong>
-              </p>
+
+              <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2.5 py-2 space-y-1.5">
+                <p className="text-emerald-200 font-semibold">
+                  Easiest fix: add a secondary IP to your PC's network adapter
+                </p>
+                <p className="text-[11px] text-amber-100">
+                  This adds <code>192.168.11.42</code> as a <em>second</em> IP on your existing
+                  Ethernet adapter <strong>without touching your main IP, your router config, or
+                  your default gateway</strong>. Works if your PC is plugged into the same switch
+                  / router that the WAS-110 is plugged into.
+                </p>
+
+                <p className="text-[11px] text-text-muted font-semibold mt-1">
+                  1. Open <strong>PowerShell as Administrator</strong> (right-click Start → Terminal (Admin))
+                </p>
+
+                <p className="text-[11px] text-text-muted font-semibold">
+                  2. Find your adapter name:
+                </p>
+                <pre className="text-[11px] font-mono bg-bg-base/70 border border-border rounded px-2 py-1.5 overflow-x-auto">
+                  <code>Get-NetAdapter | Where-Object Status -eq 'Up' | Select-Object Name, InterfaceDescription, LinkSpeed</code>
+                </pre>
+                <p className="text-[11px] text-text-subtle">
+                  Note the <code>Name</code> column — usually <code>Ethernet</code> or <code>Ethernet 2</code>.
+                </p>
+
+                <p className="text-[11px] text-text-muted font-semibold">
+                  3. Add the secondary IP (replace <code>Ethernet</code> with your adapter name from step 2):
+                </p>
+                <pre className="text-[11px] font-mono bg-bg-base/70 border border-border rounded px-2 py-1.5 overflow-x-auto">
+                  <code>New-NetIPAddress -InterfaceAlias 'Ethernet' -IPAddress 192.168.11.42 -PrefixLength 24</code>
+                </pre>
+                <p className="text-[11px] text-text-subtle">
+                  Note: no <code>-DefaultGateway</code> argument. Leaving it off keeps all your normal
+                  internet traffic on its existing route — only <code>192.168.11.x</code> destinations
+                  go through this new IP.
+                </p>
+
+                <p className="text-[11px] text-text-muted font-semibold">
+                  4. Test it:
+                </p>
+                <pre className="text-[11px] font-mono bg-bg-base/70 border border-border rounded px-2 py-1.5 overflow-x-auto">
+                  <code>ping 192.168.11.1</code>
+                </pre>
+                <p className="text-[11px] text-text-subtle">
+                  Replies = success. Browse to <code>https://192.168.11.1</code> (accept the
+                  self-signed cert) or hit <strong>Re-poll</strong> on this card.
+                </p>
+
+                <p className="text-[11px] text-amber-200 font-semibold mt-2 pt-1.5 border-t border-amber-500/20">
+                  Revert (when you're done — restores your network to exactly what it was):
+                </p>
+                <pre className="text-[11px] font-mono bg-bg-base/70 border border-border rounded px-2 py-1.5 overflow-x-auto">
+                  <code>Remove-NetIPAddress -IPAddress 192.168.11.42 -Confirm:$false</code>
+                </pre>
+                <p className="text-[11px] text-text-subtle">
+                  This drops only the secondary <code>192.168.11.42</code> entry. Your main DHCP /
+                  static IP, default gateway, and DNS are untouched the entire time. A reboot also
+                  clears the secondary IP because <code>New-NetIPAddress</code> defaults to{' '}
+                  <code>-PolicyStore ActiveStore</code> (volatile) — add <code>-PolicyStore PersistentStore</code>{' '}
+                  in step 3 only if you want it to survive reboots.
+                </p>
+              </div>
+
+              <p className="text-amber-100 font-semibold pt-1">Other paths if the secondary-IP route doesn't work:</p>
               <ol className="ml-4 list-decimal text-[11px] space-y-1">
                 <li>
-                  <strong>Add a static route on your router</strong> — destination{' '}
-                  <code>192.168.11.0/24</code>, gateway = the router's SFP+ LAN IP (the IP your
-                  router has on the link the WAS-110 plugs into). On UDM: Settings → Routing →
-                  Static Routes. On pfSense / OPNsense: System → Routing → Static Routes.
-                  Mikrotik:{' '}
-                  <code>/ip route add dst-address=192.168.11.0/24 gateway=&lt;sfp-iface&gt;</code>.
-                </li>
-                <li>
-                  <strong>Use your router's CLI</strong> to read DDMI directly — every halfway
-                  modern router with an SFP+ cage exposes the optical metrics there (UDM:{' '}
-                  <code>show sfp X</code>; Mikrotik:{' '}
-                  <code>/interface ethernet print stats</code> on the SFP iface; OPNsense:{' '}
-                  <code>ifconfig &lt;iface&gt;</code> + the SFP+ driver verbose output).
-                </li>
-                <li>
-                  <strong>Direct-plug a laptop</strong> into the host port of the WAS-110 (with
+                  <strong>Direct-plug a laptop into the host port</strong> of the WAS-110 (with
                   the stick OUT of the router temporarily). The stick's mgmt interface is in DHCP
                   mode by default, your laptop pulls a <code>192.168.11.x</code> address, web UI
                   loads at <code>https://192.168.11.1</code>. Slot it back into the router after.
+                </li>
+                <li>
+                  <strong>Read DDMI via your router's CLI</strong> — every modern router with an
+                  SFP+ cage exposes the optical metrics there (UDM: <code>show sfp X</code>;
+                  MikroTik: <code>/interface ethernet print stats</code>; OPNsense:{' '}
+                  <code>ifconfig &lt;iface&gt;</code>).
+                </li>
+                <li>
+                  <strong>Add a router-side static route</strong> — destination{' '}
+                  <code>192.168.11.0/24</code>, gateway = the router's SFP+ LAN IP. Permanent fix
+                  for the whole LAN. UDM: Settings → Routing → Static Routes.
                 </li>
               </ol>
               <p className="text-[11px] text-amber-200/80">

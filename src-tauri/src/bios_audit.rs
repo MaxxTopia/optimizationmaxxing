@@ -60,6 +60,17 @@ pub struct BiosAudit {
     /// Friendly name of the power plan ("High performance" / "Ultimate
     /// Performance" / "Balanced" / "Power saver" / custom).
     pub power_plan_name: Option<String>,
+    /// Motherboard manufacturer from Win32_BaseBoard ("ASUSTeK COMPUTER INC.").
+    pub mobo_manufacturer: Option<String>,
+    /// Motherboard product / model ("ROG STRIX X870E-E GAMING WIFI").
+    pub mobo_product: Option<String>,
+    /// BIOS firmware vendor (often "American Megatrends Inc." regardless of
+    /// board vendor — AMI is the OEM most boards use).
+    pub bios_vendor: Option<String>,
+    /// BIOS firmware version string ("1843" on ASUS, "7E18v2C" on MSI, etc.).
+    pub bios_version: Option<String>,
+    /// BIOS release date (raw WMI string — yyyymmdd format).
+    pub bios_release_date: Option<String>,
 }
 
 const JEDEC_DDR4_MHZ: u32 = 2666;
@@ -81,11 +92,37 @@ $out = [ordered]@{
     ramType              = $null
     powerPlanGuid        = $null
     powerPlanName        = $null
+    moboManufacturer     = $null
+    moboProduct          = $null
+    biosVendor           = $null
+    biosVersion          = $null
+    biosReleaseDate      = $null
 }
 
 try {
     $cs = Get-ComputerInfo -Property BiosFirmwareType -ErrorAction Stop
     if ($cs.BiosFirmwareType) { $out.biosMode = [string]$cs.BiosFirmwareType }
+} catch {}
+
+try {
+    $board = Get-CimInstance Win32_BaseBoard -ErrorAction Stop | Select-Object -First 1
+    if ($null -ne $board) {
+        if ($board.Manufacturer) { $out.moboManufacturer = [string]$board.Manufacturer }
+        if ($board.Product)      { $out.moboProduct      = [string]$board.Product }
+    }
+} catch {}
+
+try {
+    $bios = Get-CimInstance Win32_BIOS -ErrorAction Stop | Select-Object -First 1
+    if ($null -ne $bios) {
+        if ($bios.Manufacturer)      { $out.biosVendor      = [string]$bios.Manufacturer }
+        if ($bios.SMBIOSBIOSVersion)  { $out.biosVersion     = [string]$bios.SMBIOSBIOSVersion }
+        if ($bios.ReleaseDate) {
+            # ReleaseDate is yyyymmdd000000.000000+000 (CIM_DATETIME). Take the date prefix.
+            $rd = [string]$bios.ReleaseDate
+            if ($rd.Length -ge 8) { $out.biosReleaseDate = $rd.Substring(0, 8) }
+        }
+    }
 } catch {}
 
 try {
@@ -163,6 +200,11 @@ $out | ConvertTo-Json -Compress
             expo_xmp_active: None,
             power_plan_guid: None,
             power_plan_name: None,
+            mobo_manufacturer: None,
+            mobo_product: None,
+            bios_vendor: None,
+            bios_version: None,
+            bios_release_date: None,
         });
     }
 
@@ -188,6 +230,16 @@ $out | ConvertTo-Json -Compress
         power_plan_guid: Option<String>,
         #[serde(rename = "powerPlanName")]
         power_plan_name: Option<String>,
+        #[serde(rename = "moboManufacturer")]
+        mobo_manufacturer: Option<String>,
+        #[serde(rename = "moboProduct")]
+        mobo_product: Option<String>,
+        #[serde(rename = "biosVendor")]
+        bios_vendor: Option<String>,
+        #[serde(rename = "biosVersion")]
+        bios_version: Option<String>,
+        #[serde(rename = "biosReleaseDate")]
+        bios_release_date: Option<String>,
     }
 
     let raw: Raw = serde_json::from_str(&stdout)
@@ -207,6 +259,11 @@ $out | ConvertTo-Json -Compress
         expo_xmp_active,
         power_plan_guid: raw.power_plan_guid.filter(|s| !s.is_empty()),
         power_plan_name: raw.power_plan_name.filter(|s| !s.is_empty()),
+        mobo_manufacturer: raw.mobo_manufacturer.filter(|s| !s.is_empty()),
+        mobo_product: raw.mobo_product.filter(|s| !s.is_empty()),
+        bios_vendor: raw.bios_vendor.filter(|s| !s.is_empty()),
+        bios_version: raw.bios_version.filter(|s| !s.is_empty()),
+        bios_release_date: raw.bios_release_date.filter(|s| !s.is_empty()),
     })
 }
 

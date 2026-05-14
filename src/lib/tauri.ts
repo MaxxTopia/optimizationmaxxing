@@ -641,6 +641,14 @@ export interface BiosAudit {
   expoXmpActive: boolean | null
   powerPlanGuid: string | null
   powerPlanName: string | null
+  /** Board manufacturer from Win32_BaseBoard. */
+  moboManufacturer: string | null
+  /** Board product/model. */
+  moboProduct: string | null
+  biosVendor: string | null
+  biosVersion: string | null
+  /** yyyymmdd. */
+  biosReleaseDate: string | null
 }
 
 /** Reads BIOS-adjacent settings Windows can see indirectly: BIOS mode,

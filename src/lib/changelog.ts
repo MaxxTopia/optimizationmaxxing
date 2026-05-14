@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.99',
+    date: '2026-05-14',
+    highlights: [
+      'IMPROVE **BIOS Audit now detects your motherboard + vendor + BIOS firmware version** and loads a per-vendor BIOS UI menu map. ASUS / MSI / Gigabyte / ASRock each get their own curated map covering the Advanced Mode hotkey + exact menu paths for Secure Boot, TPM, CSM, EXPO/XMP, SMT, PBO/Curve Optimizer, and Resizable BAR. Every fix line on the audit checks now appends "**On your ASUS board: Ai Tweaker → Ai Overclock Tuner → D.O.C.P. Standard**" instead of generic guidance.',
+      'NEW **"What your BIOS UI exposes vs what needs SCEWIN" split panel** — green column lists what your specific board\'s BIOS UI lets you tune (e.g. ASUS X670E+: PBO + per-core Curve Optimizer, EXPO/DOCP, CPU/SOC voltage, Q-Fan curves). Amber column lists what your board hides + needs SCEWIN to read (e.g. ASUS: per-DRAM-channel secondary timings on some boards, hidden CBS leaves, OEM-locked microcode hashes). No more guessing whether your board exposes a setting.',
+      'FIX **Static-IP guidance for the WAS-110 timeout — exact commands + revert** — replaced the generic "add a static route" text with a step-by-step PowerShell flow that\'s safer than touching the router config: open admin PowerShell → `Get-NetAdapter` to find your adapter → `New-NetIPAddress -InterfaceAlias \'Ethernet\' -IPAddress 192.168.11.42 -PrefixLength 24` to add a SECONDARY IP (your main IP/gateway/DNS stay untouched) → ping the stick → revert with `Remove-NetIPAddress -IPAddress 192.168.11.42 -Confirm:$false`. Notes that the secondary IP is volatile by default — clears on reboot unless you add `-PolicyStore PersistentStore`. Zero risk of breaking your existing network state.',
+      'INFRA **`bios_audit_probe` now reads Win32_BaseBoard + Win32_BIOS** — `moboManufacturer`, `moboProduct`, `biosVendor`, `biosVersion`, `biosReleaseDate` (yyyy-mm-dd) returned in the same JSON blob. Cargo tests still at 71/71.',
+    ],
+  },
+  {
     version: '0.1.98',
     date: '2026-05-14',
     highlights: [
