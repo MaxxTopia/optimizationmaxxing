@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.89',
+    date: '2026-05-14',
+    highlights: [
+      'BUG-FIX **NVPI .nip imports — root cause found** — the v0.1.88 encoding fix was a red herring. The real error was on line 13 col 10 of the import: `System.FormatException: Input string was not in a correct format` from `Number.ParseUInt32`. NVPI\'s XmlSerializer reads `<SettingID>` as a UInt32 in **decimal** form, but I shipped them as hex strings (`1057EB71`). `uint.Parse("1057EB71")` fails because that\'s not a valid base-10 number. **Fixed**: converted all SettingIDs in all 4 .nip files to decimal (e.g. `0x1057EB71 → 274197361`). Re-download from `/guides → NVIDIA Profile Inspector → one-click downloads`. Import should now succeed.',
+    ],
+  },
+  {
     version: '0.1.88',
     date: '2026-05-14',
     highlights: [

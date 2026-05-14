@@ -9,37 +9,37 @@
     <Settings>
       <ProfileSetting>
         <SettingNameInfo>Power management mode</SettingNameInfo>
-        <SettingID>1057EB71</SettingID>
+        <SettingID>274197361</SettingID>
         <SettingValue>1</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>
         <SettingNameInfo>Vertical Sync</SettingNameInfo>
-        <SettingID>A879CF</SettingID>
+        <SettingID>11041231</SettingID>
         <SettingValue>138504007</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>
         <SettingNameInfo>Texture filtering - Quality</SettingNameInfo>
-        <SettingID>CE2691</SettingID>
+        <SettingID>13510289</SettingID>
         <SettingValue>20</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>
         <SettingNameInfo>Texture filtering - Negative LOD bias</SettingNameInfo>
-        <SettingID>19BB68</SettingID>
+        <SettingID>1686376</SettingID>
         <SettingValue>1</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>
         <SettingNameInfo>Enable FXAA</SettingNameInfo>
-        <SettingID>1074C972</SettingID>
+        <SettingID>276089202</SettingID>
         <SettingValue>0</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>
         <SettingNameInfo>Maximum pre-rendered frames</SettingNameInfo>
-        <SettingID>7BA09E</SettingID>
+        <SettingID>8102046</SettingID>
         <SettingValue>1</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
