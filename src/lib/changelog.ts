@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.98',
+    date: '2026-05-14',
+    highlights: [
+      'NEW **BIOS Audit card on /diagnostics** — reads every BIOS-adjacent setting Windows can see indirectly and compares it against the per-game ideal config. Checks: **UEFI vs Legacy (CSM)**, **Secure Boot**, **TPM 2.0**, **SMT / Hyper-Threading**, **EXPO/XMP active** (derived from DDR speed vs JEDEC default — DDR5 > 4800 MHz or DDR4 > 2666 MHz = profile trained), **active power plan** (warns on Balanced / Power Saver). Per-check verdict: ✓ pass / ◐ warn / ✗ fail / ◇ unknown with one-line "flip this in BIOS" guidance.',
+      'NEW **Per-game profile selector** — Fortnite / Valorant / CS2 chips at the top of the BIOS Audit card change the verdict math. Fortnite + Valorant flag missing Secure Boot/TPM as **fail** (FNCS + Vanguard require them); CS2 flags them as **warn** (VAC doesn\'t care but FACEIT does). Each game profile also has a one-line blurb explaining its anti-cheat reality.',
+      'IMPROVE **Honest "what we can\'t read" panel** — clearly lists the BIOS values Windows can\'t expose (PBO + Curve Optimizer per-core, EXPO timing values, SVID behavior, LLC, voltage curves, Resizable BAR + PCIe Gen running) with a direct link to `/guides → SCEWIN` for the full-audit dump-and-diff workflow. No more guessing on age — if we can\'t read it, we say so.',
+      'NEW **`bios_audit_probe` Tauri command** — single PowerShell roundtrip via `Get-ComputerInfo` + `Confirm-SecureBootUEFI` + `Get-Tpm` + `Win32_PhysicalMemory` + `powercfg /getactivescheme`. 6 unit tests cover the EXPO/XMP derivation (DDR4 vs DDR5 JEDEC thresholds). 71/71 cargo tests passing.',
+    ],
+  },
+  {
     version: '0.1.97',
     date: '2026-05-14',
     highlights: [

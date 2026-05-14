@@ -2,6 +2,7 @@ use serde::Serialize;
 use tauri::Manager;
 
 mod auto_pin;
+mod bios_audit;
 mod cpusets;
 mod crash;
 mod drivers;
@@ -590,6 +591,15 @@ async fn monitor_inventory() -> Result<toolkit::MonitorReport, String> {
 }
 
 #[tauri::command]
+async fn bios_audit_probe() -> Result<bios_audit::BiosAudit, String> {
+    tokio::task::spawn_blocking(|| {
+        bios_audit::read_bios_audit().map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("bios_audit task failed: {e}"))?
+}
+
+#[tauri::command]
 async fn network_audit_probe() -> Result<network_audit::NetworkAudit, String> {
     tokio::task::spawn_blocking(|| {
         network_audit::read_network_audit().map_err(|e| format!("{:#}", e))
@@ -807,6 +817,7 @@ pub fn run() {
             monitor_inventory,
             driver_health,
             network_audit_probe,
+            bios_audit_probe,
             list_session_candidates,
             session_suspend,
             session_resume,

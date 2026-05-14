@@ -626,6 +626,31 @@ export interface DriverHealthReport {
   note: string
 }
 
+export interface BiosAudit {
+  /** "UEFI" | "Legacy" | "Unknown" */
+  biosMode: string | null
+  secureBoot: boolean | null
+  tpmEnabled: boolean | null
+  cpuBrand: string | null
+  smtEnabled: boolean | null
+  ramSpeedMhz: number | null
+  ramConfiguredMhz: number | null
+  /** "DDR4" | "DDR5" | "Unknown" */
+  ramType: string | null
+  /** Derived: true iff ramSpeedMhz > JEDEC default for its type. */
+  expoXmpActive: boolean | null
+  powerPlanGuid: string | null
+  powerPlanName: string | null
+}
+
+/** Reads BIOS-adjacent settings Windows can see indirectly: BIOS mode,
+ *  Secure Boot, TPM, RAM speed + EXPO/XMP status, CPU SMT, active power
+ *  plan. For settings Windows can't see (PBO offsets, voltage curves) the
+ *  BiosAuditCard surfaces a SCEWIN-dump pointer. */
+export async function biosAuditProbe(): Promise<BiosAudit> {
+  return invoke<BiosAudit>('bios_audit_probe')
+}
+
 export interface NetworkAudit {
   adapterName: string | null
   /** "Ethernet" | "Wifi" | "Other" — bucketed from the WMI media type. */
