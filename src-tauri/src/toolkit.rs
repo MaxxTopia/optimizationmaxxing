@@ -2388,26 +2388,60 @@ pub struct MonitorReport {
 }
 
 pub fn read_monitor_inventory() -> anyhow::Result<MonitorReport> {
+    // EDID decoder: byte arrays come back as UInt16[] from WmiMonitorID.
+    // Filter zeros, cast each to char, join into a single string. Wrap in
+    // [string] so PowerShell can't emit a Char[] or other collection that
+    // ConvertTo-Json would serialize as a nested object/array.
+    //
+    // NOTE: avoid `$pid` — it's a read-only automatic variable (process id).
+    // Assigning to it silently fails under SilentlyContinue, leaving the
+    // pscustomobject's productCode field holding the PID integer.
     let ps_script = r#"
 $ErrorActionPreference = 'SilentlyContinue'
-$mons = Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorID
+function Convert-EdidBytes($bytes) {
+    if ($null -eq $bytes) { return '' }
+    $sb = New-Object System.Text.StringBuilder
+    foreach ($b in $bytes) {
+        if ($b -eq $null) { continue }
+        $n = 0
+        if (-not [int]::TryParse([string]$b, [ref]$n)) { continue }
+        if ($n -le 0 -or $n -gt 126) { continue }
+        [void]$sb.Append([char]$n)
+    }
+    return $sb.ToString()
+}
+try {
+    $mons = Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorID -ErrorAction Stop
+} catch {
+    Write-Output '[]'
+    exit 0
+}
 if ($null -eq $mons) { Write-Output '[]'; exit 0 }
 $out = New-Object System.Collections.ArrayList
 foreach ($m in @($mons)) {
-    $man = if ($m.ManufacturerName) { -join (($m.ManufacturerName | Where-Object { $_ -ne 0 }) | ForEach-Object { [char]$_ }) } else { '' }
-    $ufn = if ($m.UserFriendlyName) { -join (($m.UserFriendlyName | Where-Object { $_ -ne 0 }) | ForEach-Object { [char]$_ }) } else { '' }
-    $pid = if ($m.ProductCodeID)    { -join (($m.ProductCodeID    | Where-Object { $_ -ne 0 }) | ForEach-Object { [char]$_ }) } else { '' }
-    $sn  = if ($m.SerialNumberID)   { -join (($m.SerialNumberID   | Where-Object { $_ -ne 0 }) | ForEach-Object { [char]$_ }) } else { '' }
+    $man  = [string](Convert-EdidBytes $m.ManufacturerName)
+    $ufn  = [string](Convert-EdidBytes $m.UserFriendlyName)
+    $prod = [string](Convert-EdidBytes $m.ProductCodeID)
+    $sn   = [string](Convert-EdidBytes $m.SerialNumberID)
+    $wk = 0; if ($m.WeekOfManufacture)  { [void][int]::TryParse([string]$m.WeekOfManufacture, [ref]$wk) }
+    $yr = 0; if ($m.YearOfManufacture)  { [void][int]::TryParse([string]$m.YearOfManufacture, [ref]$yr) }
     [void]$out.Add([pscustomobject]@{
-        vendorCode = $man
-        model      = $ufn
-        productCode = $pid
-        serial     = $sn
-        weekOfManufacture = [int]$m.WeekOfManufacture
-        yearOfManufacture = [int]$m.YearOfManufacture
+        vendorCode        = $man
+        model             = $ufn
+        productCode       = $prod
+        serial            = $sn
+        weekOfManufacture = $wk
+        yearOfManufacture = $yr
     })
 }
-ConvertTo-Json -InputObject @($out.ToArray()) -Compress -Depth 4
+# Force JSON array output even for 0 / 1 elements. PS 5.1's ConvertTo-Json
+# with -InputObject on certain collection shapes can emit a single object
+# or an envelope `{Value, Count}` wrapper otherwise.
+$json = ConvertTo-Json -InputObject @($out.ToArray()) -Compress -Depth 4
+if ([string]::IsNullOrWhiteSpace($json)) { Write-Output '[]'; exit 0 }
+$trim = $json.Trim()
+if (-not $trim.StartsWith('[')) { $json = "[$trim]" }
+Write-Output $json
 "#;
     let output = crate::process_helpers::hidden_powershell()
         .args([

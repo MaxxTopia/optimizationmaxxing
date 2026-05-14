@@ -21,6 +21,10 @@ use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
 use windows::Win32::Foundation::{CloseHandle, HANDLE, HWND};
 use windows::Win32::System::ProcessStatus::GetModuleBaseNameW;
+use windows::Win32::System::SystemInformation::{
+    GetLogicalProcessorInformationEx, RelationProcessorCore,
+    SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX,
+};
 use windows::Win32::System::Threading::{
     GetActiveProcessorCount, OpenProcess, SetProcessDefaultCpuSets,
     PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SET_INFORMATION, PROCESS_VM_READ,
@@ -36,6 +40,16 @@ pub struct CpuSetInfo {
     /// scheduler enumerates. We surface these so the UI can render the
     /// "pick which cores to reserve" picker.
     pub cpu_set_ids: Vec<u32>,
+    /// Logical-processor IDs flagged as performance cores (EfficiencyClass > 0
+    /// in Windows' processor info). Empty on uniform CPUs. Intel hybrid:
+    /// P-cores. AMD non-hybrid: empty.
+    pub p_core_ids: Vec<u32>,
+    /// Efficient cores (EfficiencyClass == 0 on hybrid). Empty on uniform CPUs.
+    pub e_core_ids: Vec<u32>,
+    /// True if Windows reports more than one EfficiencyClass — i.e. Intel
+    /// hybrid (12th+) or Snapdragon-X-style heterogeneous parts. False on
+    /// classic AMD desktop + Intel pre-12th.
+    pub is_hybrid: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,10 +79,97 @@ pub fn cpu_set_info() -> Result<CpuSetInfo> {
     if count == 0 {
         return Err(anyhow!("GetActiveProcessorCount returned 0"));
     }
+    let (p_core_ids, e_core_ids, is_hybrid) = detect_hybrid_topology(count).unwrap_or_default();
     Ok(CpuSetInfo {
         logical_processor_count: count,
         cpu_set_ids: (0..count).collect(),
+        p_core_ids,
+        e_core_ids,
+        is_hybrid,
     })
+}
+
+/// Walk GetLogicalProcessorInformationEx(RelationProcessorCore, ...) and
+/// classify each logical processor by EfficiencyClass.
+///
+/// On hybrid Intel (12th+), EfficiencyClass is 1 for P-cores and 0 for
+/// E-cores. On uniform parts every core has EfficiencyClass=0 — we report
+/// `is_hybrid=false` and leave both lists empty (the UI falls back to
+/// "all cores" recommendations).
+fn detect_hybrid_topology(logical_count: u32) -> Result<(Vec<u32>, Vec<u32>, bool)> {
+    let mut buf_len: u32 = 0;
+    // First call: probe required buffer size. Expected to return FALSE with
+    // ERROR_INSUFFICIENT_BUFFER and write the byte count to buf_len.
+    unsafe {
+        let _ = GetLogicalProcessorInformationEx(RelationProcessorCore, None, &mut buf_len);
+    }
+    if buf_len == 0 {
+        return Err(anyhow!("GetLogicalProcessorInformationEx returned 0 buffer size"));
+    }
+    let mut buf = vec![0u8; buf_len as usize];
+    unsafe {
+        GetLogicalProcessorInformationEx(
+            RelationProcessorCore,
+            Some(buf.as_mut_ptr() as *mut SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX),
+            &mut buf_len,
+        )
+        .map_err(|e| anyhow!("GetLogicalProcessorInformationEx failed: {e}"))?;
+    }
+
+    let mut p_cores: Vec<u32> = Vec::new();
+    let mut e_cores: Vec<u32> = Vec::new();
+    let mut efficiency_classes_seen: std::collections::HashSet<u8> =
+        std::collections::HashSet::new();
+
+    let mut offset: usize = 0;
+    while offset + std::mem::size_of::<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>() <= buf.len() {
+        // SAFETY: buf is laid out as a stream of SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX
+        // records of varying Size per the Win32 contract.
+        let info_ptr = unsafe {
+            buf.as_ptr().add(offset) as *const SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX
+        };
+        let info = unsafe { &*info_ptr };
+        let size = info.Size as usize;
+        if size == 0 || offset + size > buf.len() {
+            break;
+        }
+        // info.Relationship == RelationProcessorCore for every record in this
+        // request, so go straight to the Processor union variant.
+        // SAFETY: same — the union access is valid because Relationship is set.
+        let proc_info = unsafe { &info.Anonymous.Processor };
+        let efficiency = proc_info.EfficiencyClass;
+        efficiency_classes_seen.insert(efficiency);
+        for i in 0..proc_info.GroupCount as usize {
+            let group_affinity = proc_info.GroupMask[i];
+            let mut mask = group_affinity.Mask;
+            let mut bit_index: u32 = 0;
+            while mask != 0 {
+                if (mask & 1) != 0 {
+                    let logical_id = bit_index + (group_affinity.Group as u32) * 64;
+                    if logical_id < logical_count {
+                        if efficiency > 0 {
+                            p_cores.push(logical_id);
+                        } else {
+                            e_cores.push(logical_id);
+                        }
+                    }
+                }
+                mask >>= 1;
+                bit_index += 1;
+            }
+        }
+        offset += size;
+    }
+
+    let is_hybrid = efficiency_classes_seen.len() > 1;
+    if !is_hybrid {
+        // Uniform CPU — clear the buckets so the frontend can fall back to
+        // "all cores" recommendations cleanly.
+        return Ok((Vec::new(), Vec::new(), false));
+    }
+    p_cores.sort_unstable();
+    e_cores.sort_unstable();
+    Ok((p_cores, e_cores, true))
 }
 
 /// Pin the foreground window's owning process to the given CPU Set IDs.

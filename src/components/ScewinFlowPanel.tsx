@@ -25,34 +25,34 @@ interface Step {
 const STEPS: Step[] = [
   {
     num: '1',
-    title: 'Back up your BIOS variables',
+    title: 'Dump BIOS to a file',
     blurb:
-      'Read-only dump. Run from an admin Command Prompt. Saves every UEFI variable to a text file you keep off the rig (USB / cloud).',
+      'Read-only — every UEFI variable into one text file. Run in admin Command Prompt (not PowerShell). Save the file off the rig (USB / cloud) so it survives a non-POST recovery.',
     cmd: 'SCEWIN_64.exe /o /s pre-tune.txt',
-    cmdNote: 'Run in the SCEWIN folder, admin shell',
+    cmdNote: 'Admin cmd.exe, run in the SCEWIN folder',
   },
   {
     num: '2',
-    title: 'Diff against a known-good rig',
+    title: 'Diff against a reference',
     blurb:
-      'Get the same dump from a teammate with a similar board running clean. Open both in any text-diff tool (VS Code, Beyond Compare, Notepad++ Compare plugin). Settings that differ are the ones to investigate.',
+      'Compare against a teammate dump on the same chipset, or your own previous snapshot. Open both in any text-diff tool (VS Code, Beyond Compare, WinMerge, Notepad++ Compare). Variables that differ = your investigate-list for step 3.',
     cmd: 'code --diff pre-tune.txt teammate.txt',
-    cmdNote: 'VS Code diff — or use any diff tool you trust',
+    cmdNote: 'Or use any diff tool you trust',
   },
   {
     num: '3',
-    title: 'Apply changes in BIOS UI — never via SCEWIN',
+    title: 'Change settings in BIOS UI — never via SCEWIN',
     blurb:
-      'A bad SCEWIN write can leave the board unable to POST (recovery = SPI flasher + half a day). Take the diff findings into BIOS itself. Change one setting at a time, reboot, validate.',
+      'SCEWIN can write back, but a malformed write can leave the board unable to POST (recovery = SPI flasher + BIOS chip reflash). Take your diff list into the BIOS itself. Change ONE setting at a time, reboot, validate (TestMem5 / OCCT). Hit Save & Exit, not Discard.',
     warning: true,
   },
   {
     num: '4',
-    title: 'Verify the change applied',
+    title: 'Verify it actually committed',
     blurb:
-      'Reboot, run SCEWIN again with a new dump name, diff against your pre-tune backup. The diff should show only your intended changes — anything else means BIOS reset something or your change didn\'t commit.',
+      'Reboot, re-dump with a new filename, diff vs your pre-tune file. Exactly your intended changes should differ — nothing else. Extra diffs = BIOS reset something (post-flash, CMOS event). Missing diffs = your change didn\'t save.',
     cmd: 'SCEWIN_64.exe /o /s post-tune.txt',
-    cmdNote: 'Compare post-tune.txt against pre-tune.txt',
+    cmdNote: 'Then diff post-tune.txt vs pre-tune.txt',
   },
 ]
 
@@ -78,13 +78,13 @@ export function ScewinFlowPanel() {
       }}
     >
       <div>
-        <p className="text-[10px] uppercase tracking-widest text-accent">read-only workflow</p>
-        <h3 className="text-base font-semibold">SCEWIN — 4-step safe flow</h3>
+        <p className="text-[10px] uppercase tracking-widest text-accent">advanced — read-only workflow</p>
+        <h3 className="text-base font-semibold">SCEWIN — full BIOS audit, in 4 steps</h3>
         <p className="text-xs text-text-muted leading-snug mt-1 max-w-2xl">
-          <strong className="text-text">SCEWIN is read-only in our recommended workflow.</strong>{' '}
-          The same tool can WRITE the variable store back — never do that. A malformed write can
-          brick the board (recovery = SPI flasher + BIOS chip reflash). Use SCEWIN to{' '}
-          <em>read</em>, then apply changes in BIOS UI yourself, then read again to verify.
+          Dump → diff → change in BIOS → verify. SCEWIN gives you a plain-text snapshot of every
+          UEFI variable on your board — the audit tool nothing else gives you. <strong className="text-text">Use it to
+          read only.</strong> Writes via SCEWIN can brick the board (no recovery without an SPI flasher).
+          All changes happen in the BIOS UI itself.
         </p>
       </div>
 

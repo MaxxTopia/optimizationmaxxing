@@ -17,8 +17,9 @@ export type GameId =
   | 'warzone'
   | 'osu'
   | 'overwatch'
+  | 'marvel-rivals'
 
-export type Anticheat = 'eac' | 'vanguard' | 'battleye' | 'vac' | 'none'
+export type Anticheat = 'eac' | 'vanguard' | 'battleye' | 'vac' | 'nexus' | 'none'
 
 export interface Game {
   id: GameId
@@ -105,6 +106,14 @@ export const GAMES: Game[] = [
     glyph: '🛡',
     anticheat: 'battleye',
     keepNames: ['battle.net.exe', 'agent.exe', 'overwatch.exe'],
+    defaultSuspend: { launcher: true, voice: false, music: false, overlay: false },
+  },
+  {
+    id: 'marvel-rivals',
+    label: 'Marvel Rivals',
+    glyph: '🦸',
+    anticheat: 'nexus',
+    keepNames: ['marvel-win64-shipping.exe', 'marvelrivals_launcher.exe'],
     defaultSuspend: { launcher: true, voice: false, music: false, overlay: false },
   },
 ]

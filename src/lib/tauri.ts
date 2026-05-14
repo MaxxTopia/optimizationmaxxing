@@ -758,6 +758,12 @@ export async function standbyCheckMigration(): Promise<StandbyMigrationInfo | nu
 export interface CpuSetInfo {
   logicalProcessorCount: number
   cpuSetIds: number[]
+  /** Hybrid Intel P-core logical IDs (12th+ gen). Empty on uniform CPUs. */
+  pCoreIds: number[]
+  /** Hybrid Intel E-core logical IDs. Empty on uniform CPUs. */
+  eCoreIds: number[]
+  /** True iff Windows reports >1 EfficiencyClass (Intel hybrid / SQ-X). */
+  isHybrid: boolean
 }
 
 export interface PinReport {

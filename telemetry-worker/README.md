@@ -53,12 +53,45 @@ Per event, in KV `telemetry-events` keyed by `<iso-ts>-<rand>`, value:
 
 `ip2` is the first two octets of the client IP — rough region bucket, not a fingerprint vector. Per-event TTL is 90 days.
 
-## Inspect
+## Inspect (raw KV)
 
 ```powershell
 wrangler kv key list --binding TELEMETRY --remote
 wrangler kv key get --binding TELEMETRY --remote "<key>"
 ```
+
+## Inspect (aggregated /summary endpoint)
+
+`GET /summary?days=7` is operator-only — aggregates KV events server-side and returns counts + distributions + top tweaks/presets + recent activity. Token-gated.
+
+**Bootstrap once:**
+
+```powershell
+cd projects/optimizationmaxxing/telemetry-worker
+# Generate a strong random token, paste it when prompted
+wrangler secret put TELEMETRY_ADMIN_TOKEN
+wrangler deploy
+```
+
+**Then query from any machine:**
+
+```powershell
+$env:OPTMAXXING_TELEMETRY_TOKEN = "<the same token>"
+python ../scripts/telemetry-report.py            # last 7 days, human report
+python ../scripts/telemetry-report.py --days 30  # last 30 days
+python ../scripts/telemetry-report.py --json     # raw JSON dump
+```
+
+`days` is clamped to `[1, 90]`. Events older than 90 days are KV-TTL'd anyway, so the upper bound matches reality.
+
+**What the report shows:**
+- Total events + unique rigs in window
+- Events by kind / version / day / region (first 2 IP octets)
+- Top-15 tweak IDs (from `tweak.applied` payloads)
+- Top-15 preset IDs (from `preset.applied` payloads)
+- Last 25 events (newest first)
+
+No deviceId hashes are echoed back — they're aggregated server-side into the unique-rigs count only.
 
 ## Privacy contract surfaced to users
 

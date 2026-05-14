@@ -50,6 +50,14 @@ const PROFILES: NipProfile[] = [
     settingsCount: 6,
     blurb: 'Same baseline. Source engine integrates Reflex on its own — driver-side overrides stay minimal.',
   },
+  {
+    filename: 'marvel-rivals.nip',
+    label: 'Marvel Rivals',
+    exes: 'Marvel-Win64-Shipping.exe',
+    settingsCount: 12,
+    blurb:
+      'UE5 (same engine family as Fortnite) — Threaded Optimization OFF for the main-thread stutter fix, Power Mgmt Prefer Max, VSync force-off, Texture filtering High Performance, FXAA + MFAA off, Pre-rendered frames 1, Ansel disabled.',
+  },
 ]
 
 export function NvpiDownloadsPanel() {

@@ -25,6 +25,7 @@ import standbyListCleaner from '../../resources/research/standby-list-cleaner.md
 import dscpRouterCompanion from '../../resources/research/dscp-router-companion.md?raw'
 import rgbShutoff from '../../resources/research/rgb-shutoff.md?raw'
 import ramBiosRecipes from '../../resources/research/ram-bios-recipes.md?raw'
+import pickupMacros from '../../resources/research/pickup-macros.md?raw'
 
 import type { GameId } from './games'
 
@@ -181,6 +182,18 @@ export const RESEARCH: ResearchArticle[] = [
     badge: 'VALORANT',
     body: valorantProSettings,
     applicableGames: ['valorant'],
+  },
+  {
+    id: 'pickup-macros',
+    title: 'Pickup macros — the "suction cup" loot grab (Wooting DKS / SteelSeries GG)',
+    blurb:
+      'The single-key spam-pickup pros run for Offspawn fights. Step-by-step setup on Wooting (DKS / Advanced Keys) + SteelSeries Apex Pro (GG Macro Editor). Anticheat reality check on what\'s OK vs ranked-only vs tournament-banned.',
+    badge: 'PERIPHERAL',
+    body: pickupMacros,
+    perGameCallouts: {
+      fortnite: 'E spam = empty Offspawn floors in <0.5 s. Wooting DKS or Apex Pro GG both work — keyboard firmware does the spam, no host-side macro driver runs.',
+      apex: 'Tap-strafe + lurch macros are a separate (banned) category. Pickup-spam on E / interact is in the same lighter family as Fortnite.',
+    },
   },
   {
     id: 'hall-effect-keyboards',

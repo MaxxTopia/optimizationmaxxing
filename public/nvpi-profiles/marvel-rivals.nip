@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<ArrayOfProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Profile>
+    <ProfileName>Marvel Rivals</ProfileName>
+    <Executeables>
+      <string>Marvel-Win64-Shipping.exe</string>
+    </Executeables>
+    <Settings>
+      <ProfileSetting>
+        <SettingNameInfo>Power management mode</SettingNameInfo>
+        <SettingID>274197361</SettingID>
+        <SettingValue>1</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Threaded optimization</SettingNameInfo>
+        <SettingID>549528094</SettingID>
+        <SettingValue>2</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Vertical Sync</SettingNameInfo>
+        <SettingID>11041231</SettingID>
+        <SettingValue>138504007</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Texture filtering - Quality</SettingNameInfo>
+        <SettingID>13510289</SettingID>
+        <SettingValue>20</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Texture filtering - Negative LOD bias</SettingNameInfo>
+        <SettingID>1686376</SettingID>
+        <SettingValue>1</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Texture filtering - Anisotropic sample optimization</SettingNameInfo>
+        <SettingID>15151633</SettingID>
+        <SettingValue>1</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Texture filtering - Trilinear optimization</SettingNameInfo>
+        <SettingID>3066610</SettingID>
+        <SettingValue>1</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Enable FXAA</SettingNameInfo>
+        <SettingID>276089202</SettingID>
+        <SettingValue>0</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Enable sample interleaving (MFAA)</SettingNameInfo>
+        <SettingID>10011052</SettingID>
+        <SettingValue>0</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Maximum pre-rendered frames</SettingNameInfo>
+        <SettingID>8102046</SettingID>
+        <SettingValue>1</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>NVIDIA Predefined Ansel Usage</SettingNameInfo>
+        <SettingID>271965065</SettingID>
+        <SettingValue>0</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Enable Ansel</SettingNameInfo>
+        <SettingID>276158834</SettingID>
+        <SettingValue>0</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+    </Settings>
+  </Profile>
+</ArrayOfProfile>

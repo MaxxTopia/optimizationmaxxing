@@ -58,13 +58,16 @@ export interface GrindEntry {
   voice: string
   /** 3–6 cited insights. Build out over time. */
   insights: GrindInsight[]
-  /** Optional rig snapshot — DPI / sens / monitor / kit. Just the numbers. */
+  /** Optional rig snapshot — DPI / sens / monitor / kit. Just the numbers.
+   * `controller` is for controller-input pros (Reet) — when set, the card
+   * shows it instead of the Mouse row. */
   rig?: {
     dpi?: string
     sensitivity?: string
     pollingHz?: number
     monitor?: string
     mouse?: string
+    controller?: string
     keyboard?: string
   }
   /** Optional published / inferred daily routine. Operationalizes the
@@ -92,7 +95,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
       pollingHz: 1000,
       monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz, DyAC+)',
       mouse: 'Logitech G PRO X Superlight 2 (White)',
-      keyboard: 'SteelSeries Apex Pro TKL 2023',
+      keyboard: 'SteelSeries Apex Pro TKL',
     },
     insights: [
       {
@@ -133,9 +136,12 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     voice: "British, won't filter language for sponsors, banned from Epic's own Discord for being too toxic toward them. The pro who tells you the road is doable because he just walked it from no-name grinder to multi-region FNCS champion — and won't soften how brutal the middle of it is.",
     tier: 'top',
     rig: {
-      dpi: 'see ProSettings',
-      mouse: 'Logitech G PRO X Superlight 2 White',
-      keyboard: 'Wooting 60HE+ (Hall-Effect)',
+      dpi: '800',
+      sensitivity: '6.0% / 6.0%',
+      pollingHz: 1000,
+      monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz)',
+      mouse: 'Razer Viper V3 Pro Black',
+      keyboard: 'SteelSeries Apex Pro TKL Gen 3 Black',
     },
     insights: [
       {
@@ -235,6 +241,14 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     credential: '2019 Fortnite World Cup — 3rd place Solo Finals · $1.2M won · NA West\'s original LAN proof case · FNCS Global Championship 2025 qualifier (w/ Paper + VicterV) · still competing 2026',
     voice: "Shane 'EpikWhale' Cotton from NA West — the player who proved a West kid could go to a LAN in front of 19,000 fans and place top 3 against the best NA East + EU competition the scene had to offer. Six years later still grinding, still qualifying for Globals, still in the conversation.",
     tier: 'top',
+    rig: {
+      dpi: '800',
+      sensitivity: '7.0% / 7.0%',
+      pollingHz: 1000,
+      monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz)',
+      mouse: 'Endgame Gear XM2we',
+      keyboard: 'SteelSeries Apex Pro Mini Black',
+    },
     insights: [
       {
         text: '**3rd place at the 2019 Fortnite World Cup Solo Finals** at Arthur Ashe Stadium — 32 points, **$1,200,000 prize**, July 28, 2019. Critically, did it as an **NA West** player when nobody believed a West player could perform on LAN against East + EU. Killed that narrative single-handedly.',
@@ -266,11 +280,12 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     voice: "**Kyle Jackson** from Kent, England. Started at 13, signed by Team Secret in 2018 (which got him on BBC News as a child-prodigy headline), still relevant at 21. Currently in the comeback arc — Red Bull pickup April 2025, MrSavage reunion Jan 2026 (split Feb 2026), 8th-place opening Major. Living proof that the grind works if you actually grind through the seasons most pros retire in.",
     tier: 'top',
     rig: {
-      dpi: '800 (was 400 for years — the public pivot)',
-      sensitivity: '6.7% / 6.7%',
+      dpi: '1600',
+      sensitivity: '3.2% / 3.2%',
       pollingHz: 1000,
-      monitor: '1920×1080 @ 540 Hz',
-      mouse: 'Logitech G PRO X Superlight 2',
+      monitor: 'ASUS PG248QP (1920×1080 @ 540 Hz)',
+      mouse: 'Razer Viper V3 Pro Black',
+      keyboard: 'Wooting 60HE v2 Silver (split layout)',
     },
     insights: [
       {
@@ -278,15 +293,15 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Wikipedia — Mongraal', url: 'https://en.wikipedia.org/wiki/Mongraal' },
       },
       {
-        text: 'The DPI pivot. He ran 400 DPI for years, then publicly moved to 800 — same eDPI, different feel. Lesson: muscle memory rebuilds in ~2 weeks of full-time play. If your sens is wrong, it stays wrong forever unless you pay the rebuild cost.',
-        citation: { label: 'ProSettings.net + history', url: 'https://prosettings.net/players/mongraal/' },
+        text: '**Two big sens pivots over his career** — ran 400 DPI for years, then 800, now sitting at 1600 DPI / 3.2% X+Y as of March 2026. Same edpi neighborhood, but every public pivot costs ~2 weeks of muscle-memory rebuild. Lesson: pros pay the rebuild cost when feel goes stale, hobbyists die on the hill of their first config.',
+        citation: { label: 'ProSettings.net — Mongraal (Mar 2026)', url: 'https://prosettings.net/players/mongraal/' },
       },
       {
-        text: '**The current comeback arc** — joined **Red Bull as a player in April 2025**, finished 8th in the opening Major of 2025 FNCS. Reunited with **MrSavage** in January 2026 for FNCS 2026 (the original Mongraal-MrSavage duo that dominated EU 2019-2020) — partnership ended February 12, 2026. Multiple roster shuffles in a year. The era of "Mongraal at 21 is washed" is the conventional take; the more honest one is "still picking up org slots, still placing finals — actively rebuilding".',
+        text: '**The current comeback arc** — joined **Red Bull as a player in April 2025**, finished 8th in the opening Major of 2025 FNCS. Reunited with **MrSavage** in January 2026 for FNCS 2026 (the original Mongraal-MrSavage duo that dominated EU 2019-2020) — partnership ended February 12, 2026. ProSettings now lists him as a "former pro" / content creator, but the receipts on roster slots + finals placements within the last 12 months keep him in the conversation.',
         citation: { label: 'Esports Insider — Mongraal joins Red Bull (April 2025)', url: 'https://esportsinsider.com/2025/04/mongraal-fortnite-red-bull-player' },
       },
       {
-        text: '540 Hz monitor — not 240, not 360. Diminishing returns after ~360 Hz are real but Mongraal pays it. At the top, every cumulative ms matters even when individual upgrades are <2 ms.',
+        text: '**ASUS PG248QP @ 540 Hz** — not 240, not 360. Past ~360 Hz the per-frame delta drops below 1 ms but Mongraal pays it anyway. At the very top of the bracket every cumulative ms compounds; below tournament level the spend is mostly for feel.',
       },
       {
         text: 'Wall on M5, Stairs on M4 — the original "everything reachable from WASD" school. Variant of the keybind philosophy Pete + Clix run. Pre-edits-fast hand.',
@@ -303,10 +318,12 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     voice: 'NRG NA pro since 2019 (started on Misfits at 14). Sits at a rare intersection — top-bracket competitive FNCS regular + a streamer + a business operator (apparel, UEFN studio, XSET co-ownership). The Forbes 30 Under 30 nod at 19 is the receipt.',
     tier: 'top',
     rig: {
-      dpi: 'see ProSettings',
-      monitor: '240 Hz',
-      mouse: 'Razer Viper Ultimate',
-      keyboard: 'Logitech G PRO',
+      dpi: '800',
+      sensitivity: '8.7% / 6.3% (X / Y)',
+      pollingHz: 1000,
+      monitor: 'Alienware AW2523HF (1920×1080 @ 360 Hz)',
+      mouse: 'Finalmouse Ultralight X Sakura',
+      keyboard: 'SteelSeries Apex Pro Mini Gen 3',
     },
     insights: [
       {
@@ -349,14 +366,14 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Reet',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Nathan "Reet" Amundson · ~$400K career FNCS earnings · multi-FNCS-region winner · 5x S-Tier Grand Final podium',
-    voice: 'High-volume FNCS finals presence — 1st-place finishes in NA West (C2S8 + 2021 Grand Royale with Arkhram + EpikWhale) plus 2nd at FNCS Major 2 2024 NA Grand Finals with Ritual ($45K). Currently a free agent. Settings published at ProSettings.',
+    credential: 'Nathan "Reet" Amundson · controller pro · ~$400K career FNCS earnings · multi-FNCS-region winner · 5x S-Tier Grand Final podium',
+    voice: 'Controller pro in a scene where the loudest names are KBM. 1st-place finishes in NA West (C2S8 + 2021 Grand Royale with Arkhram + EpikWhale) plus 2nd at FNCS Major 2 2024 NA Grand Finals with Ritual ($45K). Proof that controller-on-PC is still a podium-tier input at the top of FNCS when the build-edit binds and deadzones are dialed.',
     tier: 'top',
     rig: {
-      dpi: '800',
-      monitor: 'high refresh',
-      mouse: 'Logitech G Pro X Superlight 2 (per ProSettings)',
-      keyboard: 'SteelSeries Apex Pro Mini',
+      sensitivity: 'Look 50 / 60 · ADS 16 / 16 · Build & Edit ×1.7 · Deadzone 6 / 6',
+      monitor: 'Alienware AW2518HF (1920×1080 @ 240 Hz)',
+      controller: 'SCUF Reflex / SCUF PS5 — Builder Pro w/ custom binds',
+      keyboard: 'SteelSeries Apex Pro Mini (chat + menus)',
     },
     insights: [
       {
@@ -364,8 +381,8 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Esports Earnings — Reet', url: 'https://www.esportsearnings.com/players/80705-reet-nathan-amundson' },
       },
       {
-        text: 'Mouse + sens documented: Logitech G Pro X Superlight 2 @ 800 DPI / 1000 Hz, X+Y sens 6.4%, Targeting/Scope 58.9%. Pad: SteelSeries Apex Pro Mini. Crouch=C / Jump=Space / Sprint=L-Shift.',
-        citation: { label: 'ProSettings.net — Reet', url: 'https://prosettings.net/players/reet/' },
+        text: '**Controller config documented**: SCUF (Reflex / PS5), Builder Pro preset with custom build binds — LT = stairs, LB = roof, RT = wall, RB = floor. Look-axis 50 / 60, ADS 16 / 16, Build + Edit sensitivity ×1.7, both stick deadzones 6%. The bind layout is the actually-copyable part — most controller players bottleneck on bind reach, not sens.',
+        citation: { label: 'specs.gg — Reet (May 2026)', url: 'https://specs.gg/Reet' },
       },
       {
         text: 'Region-shopped to NA Central in 2025 — placed 3rd at FNCS Major 2 2025 NA Central Grand Finals with Cooper + Curly ($17K). Also took 5th at Games of the Future 2025 with Cyrzr ($20K). Adapting across regions + format changes (duo → trio → duo) is the harder credential than peak skill in any one meta.',
@@ -382,6 +399,14 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     credential: 'Solo Fortnite World Cup champion 2019 · $3M prize · still competing professionally',
     voice: 'Won Solo World Cup at 16. Career has spanned every major Chapter since — one of the few from the 2019 era still on the FNCS circuit.',
     tier: 'top',
+    rig: {
+      dpi: '800',
+      sensitivity: '6.4% / 6.4%',
+      pollingHz: 1000,
+      monitor: 'Alienware AW2521H (1920×1080 @ 360 Hz, IPS, G-Sync)',
+      mouse: 'Razer Viper V3 Pro Black',
+      keyboard: 'SteelSeries Apex Pro Mini Black',
+    },
     insights: [
       {
         text: '**Solo World Cup champion 2019** — beat 100 of the world\'s top qualifiers in NYC at age 16, took home $3M (largest prize ever for a single esports tournament at the time). The credential the rest of the scene is still measured against.',
@@ -404,7 +429,12 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     voice: 'Came back to NA West and took the FNCS 2026 Major 1 Grand Finals with VicterV — 160 points clear of 2nd place ($30,000), two Victory Royales en route. Long-career US pro on Dignitas; staying competitive across multiple chapter resets is the rarer credential.',
     tier: 'top',
     rig: {
-      monitor: '240 Hz',
+      dpi: '800',
+      sensitivity: '7.0% / 7.0%',
+      pollingHz: 1000,
+      monitor: 'Alienware AW2523HF (1920×1080 @ 360 Hz)',
+      mouse: 'Razer Viper V3 Pro Black',
+      keyboard: 'SteelSeries Apex Pro TKL (OmniPoint)',
     },
     insights: [
       {
@@ -426,6 +456,14 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     credential: 'Virtus.pro · Danish (b. 2002) · long-tenured EU pro with documented competitive history',
     voice: "Thomas Høxbro Davidsen — Danish EU pro on Virtus.pro. Career history + tournament placements are documented on Liquipedia rather than reverse-engineered from highlight clips.",
     tier: 'top',
+    rig: {
+      dpi: '1600',
+      sensitivity: '5.0% / 3.0% (X / Y — asymmetric)',
+      pollingHz: 1000,
+      monitor: 'ZOWIE XL2411T (1920×1080 @ 144 Hz)',
+      mouse: 'Logitech G PRO X Superlight White',
+      keyboard: 'SteelSeries Apex Pro TKL (2023)',
+    },
     insights: [
       {
         text: 'On Virtus.pro for multi-year tenure — unusually long single-org stint in the Fortnite scene. Continuity of practice partners + coaching + scrim slot allocation tends to matter more than people give credit for; Liquipedia\'s tournament timeline shows the consistency.',
@@ -434,6 +472,10 @@ export const GRIND_ENTRIES: GrindEntry[] = [
       {
         text: 'EU pro with consistent FNCS placements across multiple chapters — a track record that\'s harder to put together than a single peak season because each chapter resets meta + mechanics. Full event history at the cited link.',
         citation: { label: 'Liquipedia Fortnite — Th0masHD', url: 'https://liquipedia.net/fortnite/Th0masHD' },
+      },
+      {
+        text: '**Asymmetric X/Y sens — 5.0% X / 3.0% Y on 1600 DPI**, and a **144 Hz monitor** in a top-tier FNCS field where almost everyone else is 360 Hz+. The lesson isn\'t "144 Hz is enough" (it isn\'t for peak click-to-pixel) — it\'s that mechanical consistency over years on the same config beats chasing every refresh-rate upgrade. Counter-example to the spend-more-to-win narrative.',
+        citation: { label: 'ProSettings.net — Th0masHD (Feb 2026)', url: 'https://prosettings.net/players/th0mashd/' },
       },
     ],
     link: 'https://www.youtube.com/@Th0masHD',

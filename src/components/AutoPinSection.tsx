@@ -27,6 +27,7 @@ const COMMON_GAMES: Array<{ label: string; exe: string }> = [
   { label: 'Valorant', exe: 'VALORANT-Win64-Shipping.exe' },
   { label: 'CS2', exe: 'cs2.exe' },
   { label: 'Apex Legends', exe: 'r5apex.exe' },
+  { label: 'Marvel Rivals', exe: 'Marvel-Win64-Shipping.exe' },
   { label: 'Overwatch 2', exe: 'Overwatch.exe' },
   { label: 'Warzone', exe: 'cod.exe' },
 ]
@@ -85,13 +86,21 @@ export function AutoPinSection() {
 
   function handleAddRule(exe: string) {
     if (!config || !info) return
-    const cores = defaultCores(info.logicalProcessorCount)
+    const cores = recommendCoresForRig(info, exe)
     const next: AutoPinConfig = {
       ...config,
       rules: [...config.rules, { processName: exe, cores }],
     }
     persist(next)
     setEditingIdx(next.rules.length - 1)
+  }
+
+  function handleAutoPickForRule(idx: number) {
+    if (!config || !info) return
+    const rule = config.rules[idx]
+    if (!rule) return
+    const cores = recommendCoresForRig(info, rule.processName)
+    handleUpdateRule(idx, { cores })
   }
 
   function handleRemoveRule(idx: number) {
@@ -247,6 +256,7 @@ export function AutoPinSection() {
               onEditToggle={() => setEditingIdx(editingIdx === idx ? null : idx)}
               onChange={(patch) => handleUpdateRule(idx, patch)}
               onRemove={() => handleRemoveRule(idx)}
+              onAutoPick={() => handleAutoPickForRule(idx)}
             />
           ))}
         </div>
@@ -309,6 +319,7 @@ function RuleRow({
   onEditToggle,
   onChange,
   onRemove,
+  onAutoPick,
 }: {
   rule: AutoPinRule
   info: CpuSetInfo | null
@@ -318,7 +329,11 @@ function RuleRow({
   onEditToggle: () => void
   onChange: (patch: Partial<AutoPinRule>) => void
   onRemove: () => void
+  onAutoPick: () => void
 }) {
+  const autoPickLabel = info?.isHybrid && info.pCoreIds.length > 0
+    ? `Auto-pick (${info.pCoreIds.length} P-cores)`
+    : 'Auto-pick for this rig'
   return (
     <div className="border border-border rounded-md p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-3">
@@ -333,6 +348,9 @@ function RuleRow({
           </p>
         </div>
         <div className="flex gap-2 text-[11px]">
+          <button onClick={onAutoPick} disabled={busy || !info} className="text-accent hover:text-text underline">
+            {autoPickLabel}
+          </button>
           <button onClick={onEditToggle} disabled={busy} className="text-text-muted hover:text-text underline">
             {isEditing ? 'done' : 'edit'}
           </button>
@@ -343,27 +361,51 @@ function RuleRow({
       </div>
       {isEditing && info && (
         <div className="space-y-1">
-          <p className="text-[10px] uppercase tracking-widest text-text-subtle">cores</p>
+          <div className="flex items-baseline justify-between flex-wrap gap-2">
+            <p className="text-[10px] uppercase tracking-widest text-text-subtle">cores</p>
+            {info.isHybrid && (
+              <p className="text-[10px] text-text-subtle">
+                <span className="text-emerald-300">P</span> = performance · <span className="text-amber-300">E</span> = efficient
+              </p>
+            )}
+          </div>
           <div className="flex flex-wrap gap-1">
-            {Array.from({ length: info.logicalProcessorCount }, (_, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  const next = rule.cores.includes(i)
-                    ? rule.cores.filter((x) => x !== i)
-                    : [...rule.cores, i].sort((a, b) => a - b)
-                  onChange({ cores: next })
-                }}
-                disabled={busy}
-                className={`px-2 py-0.5 text-[11px] font-mono tabular-nums rounded border ${
-                  rule.cores.includes(i)
-                    ? 'bg-accent text-bg-base border-accent'
-                    : 'bg-bg-card text-text-muted border-border hover:border-border-glow'
-                }`}
-              >
-                {i}
-              </button>
-            ))}
+            {Array.from({ length: info.logicalProcessorCount }, (_, i) => {
+              const selected = rule.cores.includes(i)
+              const isP = info.pCoreIds.includes(i)
+              const isE = info.eCoreIds.includes(i)
+              const tag = isP ? 'P' : isE ? 'E' : ''
+              const accent = isP
+                ? 'border-emerald-500/40'
+                : isE
+                ? 'border-amber-500/40'
+                : 'border-border'
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    const next = selected
+                      ? rule.cores.filter((x) => x !== i)
+                      : [...rule.cores, i].sort((a, b) => a - b)
+                    onChange({ cores: next })
+                  }}
+                  disabled={busy}
+                  title={isP ? 'Performance core (P)' : isE ? 'Efficient core (E)' : ''}
+                  className={`px-2 py-0.5 text-[11px] font-mono tabular-nums rounded border ${
+                    selected
+                      ? 'bg-accent text-bg-base border-accent'
+                      : `bg-bg-card text-text-muted ${accent} hover:border-border-glow`
+                  }`}
+                >
+                  {i}
+                  {tag && (
+                    <span className={`ml-0.5 text-[9px] ${selected ? 'text-bg-base/80' : isP ? 'text-emerald-300' : 'text-amber-300'}`}>
+                      {tag}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
@@ -374,6 +416,24 @@ function RuleRow({
 function defaultCores(n: number): number[] {
   if (n <= 4) return Array.from({ length: n }, (_, i) => i)
   return Array.from({ length: Math.ceil(n / 2) }, (_, i) => i)
+}
+
+/**
+ * Recommend a core list for the given .exe on this rig.
+ *
+ * - **Intel hybrid (12th+):** P-core IDs only. UE5 games (Fortnite, Marvel
+ *   Rivals) hate the render thread bouncing between P/E cache topologies,
+ *   so the strongest setup is pinning to just the P-cores.
+ * - **AMD dual-CCD heuristic:** if logical_count > 16 AND not hybrid, the
+ *   first 16 logical IDs are CCD0 (Windows numbers CCDs in order). On 7950X3D
+ *   / 9950X3D the X3D cache CCD is CCD0 — we recommend cores 0-15. For
+ *   single-CCD parts (7800X3D, 9800X3D, 7700X, etc.) we pick all cores.
+ * - **Everything else:** all cores; manual edit if the user wants finer control.
+ */
+function recommendCoresForRig(info: CpuSetInfo, _exe: string): number[] {
+  if (info.isHybrid && info.pCoreIds.length > 0) return [...info.pCoreIds]
+  if (info.logicalProcessorCount > 16) return Array.from({ length: 16 }, (_, i) => i)
+  return defaultCores(info.logicalProcessorCount)
 }
 
 function fmtTs(iso: string): string {

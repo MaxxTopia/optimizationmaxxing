@@ -190,6 +190,7 @@ function RigSnapshot({ entry }: { entry: GrindEntry }) {
     entry.rig.sensitivity && { label: 'Sens', value: entry.rig.sensitivity },
     entry.rig.pollingHz && { label: 'Poll', value: `${entry.rig.pollingHz} Hz` },
     entry.rig.monitor && { label: 'Monitor', value: entry.rig.monitor },
+    entry.rig.controller && { label: 'Controller', value: entry.rig.controller },
     entry.rig.mouse && { label: 'Mouse', value: entry.rig.mouse },
     entry.rig.keyboard && { label: 'Keyboard', value: entry.rig.keyboard },
   ].filter(Boolean) as Array<{ label: string; value: string }>
