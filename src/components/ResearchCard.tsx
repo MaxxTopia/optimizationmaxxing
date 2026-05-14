@@ -3,6 +3,7 @@ import { renderMarkdown } from '../lib/md'
 import type { ResearchArticle } from '../lib/research'
 import { GAMES, type GameId } from '../lib/games'
 import { NvpiDownloadsPanel } from './NvpiDownloadsPanel'
+import { ScewinFlowPanel } from './ScewinFlowPanel'
 
 /**
  * Collapsible research-article card. Renders the .md body via our
@@ -113,6 +114,11 @@ export function ResearchCard({
           {article.id === 'nvidia-profile-inspector' && (
             <div className="mb-4">
               <NvpiDownloadsPanel />
+            </div>
+          )}
+          {article.id === 'scewin-advanced' && (
+            <div className="mb-4">
+              <ScewinFlowPanel />
             </div>
           )}
           <div

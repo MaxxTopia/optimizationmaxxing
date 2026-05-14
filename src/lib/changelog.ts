@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.90',
+    date: '2026-05-14',
+    highlights: [
+      'NEW **NVPI guide — "How to verify the .nip actually changed your settings"** — the import-success / Apply-clicked feedback doesn\'t tell you whether the values actually committed to the driver profile DB. Added a 5-step verification flow: (1) immediately after Apply, scroll the same game profile in NVPI and confirm each setting reads the imported value; (2) close + reopen NVPI, values must persist; (3) reboot + reopen NVPI, values must still persist (strongest "did it save" test); (4) in-game test for Fortnite — Threaded Optimization OFF should reduce render-thread stutters in dense build-fights; (5) re-verify after any GeForce driver update (setting IDs can re-map).',
+      'NEW **SCEWIN guide — flow panel above the article** — same UX pattern as the NVPI downloads panel. 4 numbered step cards: (1) Backup dump `SCEWIN_64.exe /o /s pre-tune.txt`, (2) Diff against a known-good rig, (3) Apply settings in BIOS UI (amber-warning card — never write via SCEWIN, brick risk), (4) Verify post-reboot by re-dumping + diffing against the pre-tune backup. Each step has a one-click copy-command button. Plus a "How to verify the BIOS change actually applied" section added to the markdown body matching the NVPI pattern.',
+    ],
+  },
+  {
     version: '0.1.89',
     date: '2026-05-14',
     highlights: [

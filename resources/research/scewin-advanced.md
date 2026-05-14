@@ -56,6 +56,20 @@ docs.
 3. **Don't paste the file publicly.** It contains your motherboard serial
    number + board UUID. Strip those before sharing for help.
 
+## How to verify your BIOS change actually applied
+
+After you change a setting in BIOS UI and reboot, you have no way to *see* the variable value from inside the BIOS menu beyond what's on-screen. SCEWIN gives you the receipt:
+
+1. **Re-dump after reboot.** Same admin Command Prompt:
+   ```
+   SCEWIN_64.exe /o /s post-tune.txt
+   ```
+2. **Diff `post-tune.txt` against your `pre-tune.txt` backup.** Any text-diff tool (VS Code's built-in diff, Beyond Compare, Notepad++ Compare plugin).
+3. **The diff should show *only* the variables you intended to change.** If you flipped ReBAR ON, you expect to see `PciExpResizableBARSupport` or similar flip from `0` to `1` (exact variable name is vendor-specific). Anything else moving means BIOS reset something on you — common after a clear-CMOS event or a BIOS update.
+4. **If nothing changed in the diff** — the BIOS UI accepted your change but didn't commit it. Re-enter BIOS, find the setting, verify it's set, hit "Save & Exit" (NOT "Discard"). Some boards require Save-on-Exit dialog confirmation.
+
+This is the same verification pattern as the NVPI guide — change → re-read → diff against the pre-change snapshot. The dump file becomes your audit trail.
+
 ## What you can actually change (in BIOS, not via SCEWIN)
 
 The BIOS-per-chipset article covers the common knobs:

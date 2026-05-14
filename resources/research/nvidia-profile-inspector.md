@@ -27,6 +27,16 @@ The Fortnite pinnacle is the only profile that flips **Threaded Optimization = O
 
 **To import:** NVPI → File → Import Profile(s) → select the `.nip` → Apply changes. Verify by opening the game's profile in NVPI again — the values should reflect what's in the table.
 
+### How to verify the .nip actually changed your driver settings
+
+NVPI's "import successful" message only confirms the XML parsed. The green Apply button is what writes to the driver profile DB. To confirm the changes stuck:
+
+1. **In NVPI, immediately after Apply** — keep the same game profile selected in the top dropdown. Scroll the settings list. Each setting from the import should now show its new value (e.g. **Power management mode** should read `Prefer maximum performance`, **Threaded optimization** = `Off` on Fortnite, **Vertical Sync** = `Force off`, etc).
+2. **Close NVPI, re-open it, switch back to the game profile.** Values should still be there. If they revert, the Apply step didn't commit — try again as admin.
+3. **Reboot, re-open NVPI** — values must persist. The driver profile DB is on disk, so a reboot is the strongest "did it actually save" test.
+4. **In-game test (Fortnite specifically):** launch a Lobby Bot match or Creative practice map → enter a 4v4 build-fight → if **Threaded Optimization = Off** took effect, the render-thread stutters during the build-spam moments should noticeably reduce. CPU-bound 1% lows tighten 2-5 FPS.
+5. **Driver version sanity** — if you update GeForce drivers after this, re-verify in NVPI. Some setting IDs get re-mapped across driver versions and the imported value may not survive.
+
 ## Global lowest-latency baseline (set on every game profile)
 
 | NVPI section | Setting | Set to | Why |
