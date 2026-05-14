@@ -34,7 +34,7 @@ export function QuickStart() {
   if (dismissed) return null
 
   return (
-    <section className="surface-card p-6 md:p-7 relative overflow-hidden">
+    <section className="theme-stage-bmo surface-card p-6 md:p-7 relative overflow-hidden">
       <div className="hero-gradient pointer-events-none opacity-50" />
       <div className="relative">
         <div className="flex items-start justify-between gap-4 mb-5">

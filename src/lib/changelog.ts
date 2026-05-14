@@ -12,6 +12,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.85',
+    date: '2026-05-13',
+    highlights: [
+      'NEW **Adventure Time — BMO card chrome on QuickStart** — the first-run onboarding card on the Dashboard now *becomes* BMO when the Adventure Time theme is active. Mint-green body (#5db4a3), full-width pixel-eyes + mouth header strip, full-width D-pad + 2 color buttons + speaker-grille footer. Step cards inside go cream-colored to read as "BMO\'s screen content". **Jake the dog\'s yellow stretchy paw** reaches in from the upper-right corner to grip the card (Jake hangs with BMO constantly — canonical).',
+      'NEW **Adventure Time — NEPTR tips toast** — the Never-Ending Pie Throwing Robot now lives in the bottom-right of the viewport when the AT theme is active. Microwave-bot SVG avatar (full anatomy: door, glass reflection, eyes, speaker grille, power button, pie-launch nozzle) + a rotating pool of 7 in-app tips on a 14s interval. Pie-toss spring animation on mount. Dismissible per-session. Renders nowhere on other themes.',
+      'FIX **Adventure Time — Finn hat resized + proportions** — the previous hat used `preserveAspectRatio=none` and stretched the ears horizontally into ovals. Hat is now composed of three layered backgrounds (left ear / right ear / dome+brim) so ears stay round at fixed 80×72px while the dome still spans the card width. Hat is also bigger overall (120px tall vs 84px). Bob loop kept.',
+      'NEW **Akatsuki — accurate 3-tomoe Sharingan watermark** — the bottom-right watermark wheel was simplified and didn\'t read as canonical Sharingan. Redrawn from scratch: thin black outer ring, red iris with subtle inner highlight, central black pupil, three proper teardrop-shaped tomoe at 120° intervals (the bulged-curl shape from the show, not just "comma marks"). 56×56px, drop-shadow glow, 22s rotation.',
+      'NEW **Akatsuki — Itachi\'s crow Genjutsu burst on primary CTAs** — every `.btn-chrome.bg-accent` button (Apply, Tune, Open Discord, etc) now scatters 6 crow silhouettes outward when clicked, mimicking the Tsukuyomi crow scatter from the show. CSS-only via two pseudo-elements with 850ms keyframe animations on `:active`. Reduced-motion safe.',
+      'FIX **Element-115 — removed redundant Mc tile from Pricing $115 card** — the PriceCard component already has an inline Mc·115 atomic-symbol decoration in its top-right corner; the theme-overlay tile was duplicating it. The inline one is the source of truth; the overlay is gone.',
+      'NEW **Element-115 — Pack-a-Punch chamber swirl on primary CTAs** — every `.btn-chrome.bg-accent` now reveals a rotating conic gradient (cyan→violet→cyan→violet, the actual PaP chamber color cycle) on hover + active. Spins faster on active (0.7s vs 1.4s). Reads as "the button is being pack-a-punched".',
+    ],
+  },
+  {
     version: '0.1.84',
     date: '2026-05-13',
     highlights: [

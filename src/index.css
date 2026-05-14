@@ -405,28 +405,75 @@ body.profile-akatsuki::before {
   100% { transform: translateX(48vw); opacity: 0.0; }
 }
 
-/* Sharingan tomoe wheel watermark in the bottom-right viewport corner —
- * three commas around a center pupil, spinning slowly. Replaces the
- * plain katakana with something more on-brand. SVG-rendered, rotates
- * every 22s. */
+/* 3-tomoe Sharingan watermark — bottom-right viewport corner. Anatomy
+ * matches show canon: red iris, thin black outer ring, three
+ * teardrop-shaped tomoe (commas) at 120° intervals around a small
+ * black pupil. Spins continuously (22s loop). On hover near it,
+ * spin-up speeds up. */
 body.profile-akatsuki::after {
   content: '';
   position: fixed;
-  bottom: 18px;
+  bottom: 20px;
   right: 22px;
-  width: 44px;
-  height: 44px;
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='27' fill='%23b71c1c' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='30' cy='30' r='6' fill='%23000'/%3E%3Cpath d='M 30 14 q 6 4 5 12 q -3 -3 -8 -2 z' fill='%23000'/%3E%3Cpath d='M 44 36 q -1 7 -8 9 q 1 -4 -3 -8 z' fill='%23000'/%3E%3Cpath d='M 19 41 q -5 -5 -3 -12 q 3 3 8 1 z' fill='%23000'/%3E%3C/svg%3E");
+  width: 56px;
+  height: 56px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3C!-- Outer black ring --%3E%3Ccircle cx='50' cy='50' r='46' fill='%23000'/%3E%3C!-- Red iris --%3E%3Ccircle cx='50' cy='50' r='42' fill='%23c8102e'/%3E%3C!-- Inner iris highlight --%3E%3Ccircle cx='50' cy='50' r='42' fill='none' stroke='%237a0a12' stroke-width='1.5' opacity='0.5'/%3E%3C!-- Black pupil --%3E%3Ccircle cx='50' cy='50' r='9' fill='%23000'/%3E%3C!-- Three tomoe at 120° — teardrop shape with rounded bulge --%3E%3Cg fill='%23000'%3E%3C!-- Top tomoe --%3E%3Cpath d='M 50 16 Q 64 22 60 36 Q 55 28 50 27 Q 50 21 50 16 Z'/%3E%3C!-- Bottom-right tomoe (120°) --%3E%3Cg transform='rotate(120 50 50)'%3E%3Cpath d='M 50 16 Q 64 22 60 36 Q 55 28 50 27 Q 50 21 50 16 Z'/%3E%3C/g%3E%3C!-- Bottom-left tomoe (240°) --%3E%3Cg transform='rotate(240 50 50)'%3E%3Cpath d='M 50 16 Q 64 22 60 36 Q 55 28 50 27 Q 50 21 50 16 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-size: contain;
-  opacity: 0.35;
-  filter: drop-shadow(0 0 6px rgba(183, 28, 28, 0.5));
+  opacity: 0.55;
+  filter: drop-shadow(0 0 10px rgba(200, 16, 46, 0.65));
   pointer-events: none;
   z-index: 1;
   animation: akatsuki-sharingan-spin 22s linear infinite;
 }
 @keyframes akatsuki-sharingan-spin {
   to { transform: rotate(360deg); }
+}
+
+/* Itachi's crow Genjutsu burst — on focus of any primary CTA button,
+ * 6 crows materialize around the button and burst outward (mimics
+ * Tsukuyomi crow scatter). Two-iteration animation: first frame
+ * compresses crows around the button center, then explodes them
+ * outward + fades. */
+body.profile-akatsuki .btn-chrome.bg-accent {
+  position: relative;
+  z-index: 0;
+}
+body.profile-akatsuki .btn-chrome.bg-accent::before,
+body.profile-akatsuki .btn-chrome.bg-accent::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 80px;
+  background-image:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 24'%3E%3Cpath d='M 4 18 Q 10 6 16 16 L 22 13 Q 27 4 32 13 L 38 13 Q 43 4 48 13 Q 54 6 56 18' stroke='%230a0a0a' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 24'%3E%3Cpath d='M 4 18 Q 10 6 16 16 L 22 13 Q 27 4 32 13 L 38 13 Q 43 4 48 13 Q 54 6 56 18' stroke='%230a0a0a' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 24'%3E%3Cpath d='M 4 18 Q 10 6 16 16 L 22 13 Q 27 4 32 13 L 38 13 Q 43 4 48 13 Q 54 6 56 18' stroke='%230a0a0a' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 28px 11px, 22px 9px, 24px 10px;
+  background-position: 50% 50%, 50% 50%, 50% 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.4);
+  z-index: -1;
+}
+body.profile-akatsuki .btn-chrome.bg-accent:active::before {
+  animation: akatsuki-crow-burst 850ms ease-out 1 forwards;
+}
+body.profile-akatsuki .btn-chrome.bg-accent:active::after {
+  animation: akatsuki-crow-burst-alt 850ms ease-out 1 forwards;
+}
+@keyframes akatsuki-crow-burst {
+  0%   { opacity: 0; background-position: 50% 50%, 50% 50%, 50% 50%; transform: translate(-50%, -50%) scale(0.4); }
+  20%  { opacity: 0.9; }
+  100% { opacity: 0; background-position: 0% 0%, 100% 10%, 20% 100%; transform: translate(-50%, -50%) scale(1.4); }
+}
+@keyframes akatsuki-crow-burst-alt {
+  0%   { opacity: 0; background-position: 50% 50%, 50% 50%, 50% 50%; transform: translate(-50%, -50%) scale(0.4); }
+  20%  { opacity: 0.85; }
+  100% { opacity: 0; background-position: 100% 0%, 0% 80%, 80% 30%; transform: translate(-50%, -50%) scale(1.3); }
 }
 
 /* Sharingan flicker on focus — kept */
@@ -1127,50 +1174,155 @@ body.profile-adventure-time .surface-card:hover {
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* THE FINN HAT — only on the Dashboard hero (theme-stage-hero). Card
- * "wears" the hat: brim band sits flush across the card's top edge,
- * dome covers full card width, bear ears poke up. The card gets extra
- * top padding so headline copy clears the brim. SVG uses
- * preserveAspectRatio='none' to stretch to whatever card width is —
- * narrow mobile or wide desktop, the hat always fits exactly. Slow
- * bob loop for "alive" feel. */
+/* THE FINN HAT — Dashboard hero "wears" the hat. Composed of THREE
+ * stacked background layers so each part stays proportional regardless
+ * of card width:
+ *   1. Left bear ear — fixed 80×72px, positioned 27% from left.
+ *   2. Right bear ear — fixed 80×72px, positioned 27% from right.
+ *   3. Hat dome + brim band — stretches across the full card width.
+ *
+ * Pseudo-element is taller (130px) so the hat reads as substantial,
+ * not as a thin banner. Card padding-top makes room for the brim. */
 body.profile-adventure-time .theme-stage-hero {
   position: relative;
   overflow: visible;
-  margin-top: 4rem; /* leave room above for the hat */
+  margin-top: 5.5rem;
 }
 body.profile-adventure-time .theme-stage-hero::before {
   content: '';
   position: absolute;
-  top: -64px;
+  top: -90px;
   left: 0;
   right: 0;
-  height: 84px;
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 100' preserveAspectRatio='none'%3E%3Cellipse cx='200' cy='30' rx='42' ry='32' fill='%23ffffff' stroke='%231b1f2a' stroke-width='4'/%3E%3Cellipse cx='600' cy='30' rx='42' ry='32' fill='%23ffffff' stroke='%231b1f2a' stroke-width='4'/%3E%3Cpath d='M 0 95 L 0 70 Q 0 40 60 34 Q 160 24 400 24 Q 640 24 740 34 Q 800 40 800 70 L 800 95 Z' fill='%23ffffff' stroke='%231b1f2a' stroke-width='4' stroke-linejoin='round'/%3E%3Crect x='0' y='86' width='800' height='9' fill='%231b1f2a'/%3E%3C/svg%3E");
+  height: 120px;
+  background-image:
+    /* Left ear */
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 72'%3E%3Cellipse cx='40' cy='34' rx='34' ry='30' fill='%23ffffff' stroke='%231b1f2a' stroke-width='5'/%3E%3Cellipse cx='40' cy='40' rx='18' ry='14' fill='%23f5e6c8' opacity='0.7'/%3E%3C/svg%3E"),
+    /* Right ear */
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 72'%3E%3Cellipse cx='40' cy='34' rx='34' ry='30' fill='%23ffffff' stroke='%231b1f2a' stroke-width='5'/%3E%3Cellipse cx='40' cy='40' rx='18' ry='14' fill='%23f5e6c8' opacity='0.7'/%3E%3C/svg%3E"),
+    /* Hat dome + brim (stretches) */
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 130' preserveAspectRatio='none'%3E%3Cpath d='M 0 130 L 0 88 Q 0 50 80 42 Q 220 26 400 26 Q 580 26 720 42 Q 800 50 800 88 L 800 130 Z' fill='%23ffffff' stroke='%231b1f2a' stroke-width='5' stroke-linejoin='round'/%3E%3Crect x='0' y='112' width='800' height='12' fill='%231b1f2a'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-size: 100% 100%;
-  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.18));
+  background-position:
+    calc(27% - 40px) 0,
+    calc(73% - 40px) 0,
+    0 10px;
+  background-size:
+    80px 72px,
+    80px 72px,
+    100% 120px;
+  filter: drop-shadow(0 5px 0 rgba(0, 0, 0, 0.18));
   pointer-events: none;
   z-index: 2;
   animation: adv-time-hat-bob 7s ease-in-out infinite;
+  transform-origin: center bottom;
 }
 @keyframes adv-time-hat-bob {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  50%      { transform: translateY(-3px) rotate(0.4deg); }
+  50%      { transform: translateY(-4px) rotate(0.6deg); }
 }
-/* Subtle inner shadow on the card top to sell "the hat is sitting ON
- * me" — soft gradient just inside the upper edge. */
+/* Inner shadow on the card top — sells "the hat is sitting ON me". */
 body.profile-adventure-time .theme-stage-hero::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 14px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.20) 0%, transparent 100%);
+  height: 18px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, transparent 100%);
   pointer-events: none;
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
+}
+
+/* ── BMO chrome on QuickStart card ──────────────────────────────────
+ * BMO is the mint-green AT robot. Card becomes BMO:
+ *   - Body color: BMO mint #5db4a3 (real show shade)
+ *   - Top: face area — two pixel-eyes + a mouth, SVG-rendered as a
+ *     full-width header strip via ::before
+ *   - Bottom: 4-button D-pad (left) + two round buttons (right),
+ *     SVG-rendered as a full-width footer strip via ::after
+ *   - Jake the dog peeks out from the right side as a yellow
+ *     stretchy paw (Jake's signature mechanic), positioned absolute */
+body.profile-adventure-time .theme-stage-bmo {
+  background: linear-gradient(180deg, #5db4a3 0%, #4ea08f 100%) !important;
+  color: #1a3a32 !important;
+  border: 2px solid #1a3a32 !important;
+  border-radius: 18px;
+  padding-top: 4.5rem !important;
+  padding-bottom: 3.5rem !important;
+  position: relative;
+  overflow: visible;
+}
+/* BMO face — full-width header strip with two pixel-eyes + a mouth */
+body.profile-adventure-time .theme-stage-bmo::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 18px;
+  right: 18px;
+  height: 40px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40' preserveAspectRatio='xMidYMid meet'%3E%3C!-- Left eye --%3E%3Crect x='130' y='8' width='28' height='24' rx='4' fill='%231a3a32'/%3E%3Crect x='136' y='14' width='6' height='6' fill='%23ffffff'/%3E%3C!-- Right eye --%3E%3Crect x='242' y='8' width='28' height='24' rx='4' fill='%231a3a32'/%3E%3Crect x='248' y='14' width='6' height='6' fill='%23ffffff'/%3E%3C!-- Mouth --%3E%3Crect x='180' y='28' width='40' height='6' rx='3' fill='%231a3a32'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 2;
+}
+/* BMO button panel — D-pad on the left, 2 colored buttons on the right */
+body.profile-adventure-time .theme-stage-bmo::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: 18px;
+  right: 18px;
+  height: 38px;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40' preserveAspectRatio='xMidYMid meet'%3E%3C!-- D-pad (left) --%3E%3Cg transform='translate(40 20)'%3E%3Crect x='-5' y='-18' width='10' height='14' fill='%231a3a32'/%3E%3Crect x='-5' y='4' width='10' height='14' fill='%231a3a32'/%3E%3Crect x='-18' y='-5' width='14' height='10' fill='%231a3a32'/%3E%3Crect x='4' y='-5' width='14' height='10' fill='%231a3a32'/%3E%3Crect x='-5' y='-5' width='10' height='10' fill='%231a3a32'/%3E%3C/g%3E%3C!-- 2 buttons (right) --%3E%3Ccircle cx='340' cy='20' r='10' fill='%23e74c3c' stroke='%231a3a32' stroke-width='2'/%3E%3Ccircle cx='370' cy='20' r='10' fill='%231a4d8c' stroke='%231a3a32' stroke-width='2'/%3E%3C!-- Speaker grille (center) --%3E%3Cg fill='%231a3a32' opacity='0.5'%3E%3Ccircle cx='180' cy='12' r='1.5'/%3E%3Ccircle cx='190' cy='12' r='1.5'/%3E%3Ccircle cx='200' cy='12' r='1.5'/%3E%3Ccircle cx='210' cy='12' r='1.5'/%3E%3Ccircle cx='220' cy='12' r='1.5'/%3E%3Ccircle cx='180' cy='22' r='1.5'/%3E%3Ccircle cx='190' cy='22' r='1.5'/%3E%3Ccircle cx='200' cy='22' r='1.5'/%3E%3Ccircle cx='210' cy='22' r='1.5'/%3E%3Ccircle cx='220' cy='22' r='1.5'/%3E%3Ccircle cx='180' cy='32' r='1.5'/%3E%3Ccircle cx='190' cy='32' r='1.5'/%3E%3Ccircle cx='200' cy='32' r='1.5'/%3E%3Ccircle cx='210' cy='32' r='1.5'/%3E%3Ccircle cx='220' cy='32' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 2;
+}
+/* Step cards inside BMO go transparent so the screen shows through */
+body.profile-adventure-time .theme-stage-bmo .surface-card {
+  background: rgba(255, 248, 231, 0.92) !important;
+  border-color: #1a3a32 !important;
+  color: #1a3a32 !important;
+}
+body.profile-adventure-time .theme-stage-bmo h2,
+body.profile-adventure-time .theme-stage-bmo h3 {
+  color: #1a3a32 !important;
+}
+body.profile-adventure-time .theme-stage-bmo p,
+body.profile-adventure-time .theme-stage-bmo .text-text-muted,
+body.profile-adventure-time .theme-stage-bmo .text-text-subtle {
+  color: #1a3a32 !important;
+}
+
+/* JAKE THE DOG peeks out from the right edge of the BMO card. Yellow
+ * stretchy "paw arm" extends from outside the card, gripping the
+ * upper-right corner — pure Jake mechanic (he's stretchy, he hangs out
+ * with BMO constantly). Wags / stretches on hover. */
+body.profile-adventure-time .theme-stage-bmo {
+  --jake-stretch: 0px;
+}
+body.profile-adventure-time .theme-stage-bmo:hover {
+  --jake-stretch: 12px;
+}
+body.profile-adventure-time .theme-stage-bmo > .jake-paw,
+body.profile-adventure-time .theme-stage-bmo {
+  /* Use an inline pseudo via background instead — add Jake to the
+   * top-right corner of the BMO card via an absolute-positioned
+   * background image. */
+}
+body.profile-adventure-time .theme-stage-bmo {
+  background-image:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 80'%3E%3C!-- Jake yellow paw + arm reaching in from outside --%3E%3Cpath d='M 140 40 Q 100 30 70 38 Q 50 44 38 38' stroke='%23f7b94a' stroke-width='18' fill='none' stroke-linecap='round'/%3E%3C!-- Hand/paw --%3E%3Ccircle cx='34' cy='38' r='14' fill='%23f7b94a' stroke='%23c48b22' stroke-width='2'/%3E%3C!-- Fingers --%3E%3Ccircle cx='25' cy='30' r='4' fill='%23f7b94a' stroke='%23c48b22' stroke-width='1.5'/%3E%3Ccircle cx='22' cy='38' r='4' fill='%23f7b94a' stroke='%23c48b22' stroke-width='1.5'/%3E%3Ccircle cx='25' cy='46' r='4' fill='%23f7b94a' stroke='%23c48b22' stroke-width='1.5'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #5db4a3 0%, #4ea08f 100%) !important;
+  background-repeat: no-repeat, no-repeat;
+  background-position: top -8px right -20px, 0 0;
+  background-size: 140px 80px, 100% 100%;
 }
 
 /* BMO-teal input focus — distinct from the Finn-blue body accent so forms
@@ -1408,37 +1560,53 @@ body.profile-element-115::after {
   z-index: 2;
 }
 
-/* Mc · 115 periodic-table tile — REPLACED. Was on every-first-card
- * (overuse). Now anchored only to the Pricing $115 VIP card via
- * .theme-stage-pricing. The lore-tie is literal: Element 115 (Moscovium)
- * = the substance + the price. The card already has its own subtle
- * Mc decoration (legacy inline element); this CSS adds a larger,
- * animated periodic-table tile in the top-left as the brand mark. */
-body.profile-element-115 .theme-stage-pricing {
+/* Mc·Moscovium tile on Pricing card — REMOVED (the inline element-115
+ * legacy decoration on the PriceCard component already serves the Mc
+ * brand mark; an extra CSS-overlay tile was redundant). */
+
+/* Pack-a-Punch chamber swirl on primary CTAs (Apply / Tune buttons).
+ * Conic gradient cycles cyan→violet→cyan→violet around the button,
+ * rotating like the actual PaP chamber from Origins / Der Eisendrache.
+ * Only the rotating gradient is visible on hover/active. Triggered on
+ * :active so the swirl reads as "the button is being pack-a-punched". */
+body.profile-element-115 .btn-chrome.bg-accent {
   position: relative;
-  overflow: visible;
+  z-index: 0;
+  overflow: hidden;
 }
-body.profile-element-115 .theme-stage-pricing::after {
+body.profile-element-115 .btn-chrome.bg-accent::before {
   content: '';
   position: absolute;
-  top: -18px;
-  left: -18px;
-  width: 84px;
-  height: 84px;
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cdefs%3E%3CradialGradient id='mctile' cx='30%25' cy='25%25' r='80%25'%3E%3Cstop offset='0%25' stop-color='%231C1530'/%3E%3Cstop offset='100%25' stop-color='%230F0A1A'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect x='3' y='3' width='74' height='74' rx='6' fill='url(%23mctile)' stroke='%233DDFE8' stroke-width='2.5'/%3E%3Ctext x='8' y='18' font-family='Inter, sans-serif' font-size='10' fill='%23D9C9A3' font-weight='600'%3E115%3C/text%3E%3Ctext x='72' y='18' text-anchor='end' font-family='Inter, sans-serif' font-size='7' fill='%239D4DFF' font-weight='500'%3E[288]%3C/text%3E%3Ctext x='40' y='52' text-anchor='middle' font-family='Inter, sans-serif' font-size='32' fill='%233DDFE8' font-weight='700'%3EMc%3C/text%3E%3Ctext x='40' y='65' text-anchor='middle' font-family='Inter, sans-serif' font-size='7' fill='%239D4DFF' font-weight='500'%3EMoscovium%3C/text%3E%3Ctext x='40' y='74' text-anchor='middle' font-family='Inter, sans-serif' font-size='5' fill='%23D9C9A3' opacity='0.6'%3EHIGHLY RADIOACTIVE%3C/text%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: contain;
-  filter: drop-shadow(0 0 14px rgba(61, 223, 232, 0.55)) drop-shadow(0 0 28px rgba(157, 77, 255, 0.3));
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(61, 223, 232, 0.0) 0deg,
+    rgba(61, 223, 232, 0.85) 60deg,
+    rgba(157, 77, 255, 0.75) 120deg,
+    rgba(61, 223, 232, 0.0) 180deg,
+    rgba(61, 223, 232, 0.85) 240deg,
+    rgba(157, 77, 255, 0.75) 300deg,
+    rgba(61, 223, 232, 0.0) 360deg
+  );
+  opacity: 0;
+  transition: opacity 200ms ease-out;
   pointer-events: none;
-  z-index: 2;
-  animation: e115-mc-tile-charge 4.5s ease-in-out infinite;
+  z-index: -1;
 }
-@keyframes e115-mc-tile-charge {
-  0%, 100% { filter: drop-shadow(0 0 14px rgba(61, 223, 232, 0.55)) drop-shadow(0 0 28px rgba(157, 77, 255, 0.30)); transform: scale(1); }
-  50%      { filter: drop-shadow(0 0 22px rgba(61, 223, 232, 0.80)) drop-shadow(0 0 42px rgba(157, 77, 255, 0.50)); transform: scale(1.03); }
+body.profile-element-115 .btn-chrome.bg-accent:hover::before,
+body.profile-element-115 .btn-chrome.bg-accent:active::before {
+  opacity: 0.55;
+  animation: e115-pap-swirl 1.4s linear infinite;
+}
+body.profile-element-115 .btn-chrome.bg-accent:active::before {
+  opacity: 0.85;
+  animation-duration: 0.7s;
+}
+@keyframes e115-pap-swirl {
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   body.profile-element-115::before { animation: none; }
-  body.profile-element-115 .theme-stage-pricing::after { animation: none; transform: none; }
+  body.profile-element-115 .btn-chrome.bg-accent::before { animation: none; opacity: 0 !important; }
 }

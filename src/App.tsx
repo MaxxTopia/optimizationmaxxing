@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { CrashBoundary } from './components/CrashBoundary'
 import { Layout } from './components/Layout'
+import { NeptrTipsToast } from './components/NeptrTipsToast'
 import { UpdateBanner } from './components/UpdateBanner'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { Dashboard } from './pages/Dashboard'
@@ -101,6 +102,7 @@ export default function App() {
           <Route path="/session" element={<Session />} />
         </Routes>
         <WhatsNewModal />
+        <NeptrTipsToast />
       </Layout>
     </CrashBoundary>
   )
