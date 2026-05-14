@@ -157,6 +157,11 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
     // cracked-open PaP chamber. Signature flourishes (runic etch on
     // hover, electric arc on focus, candle-flicker on CTAs) live in
     // index.css under .profile-element-115.
+    //
+    // Body text colors lifted v0.1.87 — was reading dim against the
+    // violet-tinted card bg (rgba(43, 27, 92, 0.45)) for non-title
+    // copy. Bumped --text from #D9C9A3 → #EFE4C2, --text-muted from
+    // #B0A085 → #cebe9c, --text-subtle from #7A6E5A → #9c8e72.
     blurb: 'Element 115 cyan + Pack-a-Punch violet + Buried candle-gold.',
     bodyClass: 'profile-element-115',
     swatch: { primary: '#3DDFE8', secondary: '#9D4DFF', bg: '#0F0A1A' },
@@ -170,9 +175,9 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
       '--accent-eldritch': '#9D4DFF',
       '--secondary': '#9D4DFF',
       '--secondary-dark': '#5C2A99',
-      '--text': '#D9C9A3',
-      '--text-muted': '#B0A085',
-      '--text-subtle': '#7A6E5A',
+      '--text': '#EFE4C2',
+      '--text-muted': '#cebe9c',
+      '--text-subtle': '#9c8e72',
       '--border': 'rgba(61, 223, 232, 0.25)',
       '--border-glow': 'rgba(61, 223, 232, 0.6)',
       '--font-body': FONT_INTER,

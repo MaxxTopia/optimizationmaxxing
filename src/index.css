@@ -1781,5 +1781,19 @@ body.profile-dmc .theme-stage-asta::before {
  * ===================================================================== */
 body.profile-akatsuki   { --text-muted: #b8a896; }   /* was #9F8E7E */
 body.profile-dmc        { --text-muted: #d4c8a4; }   /* was #c4b89a */
-body.profile-element-115 { --text-muted: #c4b598; }  /* was #B0A085 */
 body.profile-bumblebee  { --text-muted: #cdbb8a; }   /* was #bda87a */
+
+/* Element-115 body text — boost weight + brighten to fight the violet
+ * card tint that made body copy dim against the cyan-Buried gold mix.
+ * Headings keep Zombies serif; body Inter gets weight 500 + a slight
+ * letter-spacing for legibility. */
+body.profile-element-115 {
+  font-weight: 500;
+}
+body.profile-element-115 p,
+body.profile-element-115 li,
+body.profile-element-115 span,
+body.profile-element-115 button,
+body.profile-element-115 a {
+  letter-spacing: 0.005em;
+}

@@ -12,6 +12,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.1.87',
+    date: '2026-05-14',
+    highlights: [
+      'FIX **Clix card factual error** — "cheated-by-teammate / cheated-by-Epic narrative" insight was wrong (Clix was cheated on IRL, not by teammates) AND unsourced. Removed entirely. "Big shitter / WonKeeland uncon / Globals Supernova POI" scene-take insight also removed (no URL citation). Voice line rewritten to drop the unsourced "worst pro / 4th-place memes" framing.',
+      'FIX **Clix "Famous 4th places" claim now matches its data** — previous insight grouped 4th + 2nd + 3rd placements under a "famous 4th places" heading. Now split into two cited insights: (1) the two actual NA 2024 4th-place finishes (FNCS Major 1 + Major 3 NA Grand Finals, $30K each), and (2) the separate 2nd/3rd-place 2025 NA Central podiums. World Cup 18th-place $112.5K payout split into its own cited line.',
+      'FIX **Bugha card — uncited narrative removed** — three unsourced insights deleted: "lucky-snipe World Cup moment" (speculation), "studies VODs rotates around teams" (no source), "Dallas 0-ping lease / missed Summit / 2nd in div cup" (no source). Kept: Solo World Cup 2019 win (Wikipedia cite) + FNCS Major 1 DQ + Epic reversal (Game Rant cite). Voice line restored to verifiable form.',
+      'FIX **Khanada card — uncited narrative removed** — "confidence-as-delusion-as-weapon" + "DreamHack Sweden conning Janniz / SHIT ON" + "near-perfect FNCS qualification record" insights deleted (no URL source). Kept: FNCS 2026 Major 1 NA West win (Sportskeeda) + career longevity insight (Liquipedia). Credential line trimmed of the unverified qual-rate claim.',
+      'UX **Element-115 readability v2** — non-title body copy was reading dim against the violet-tinted card bg. `--text` lifted #D9C9A3 → #EFE4C2, `--text-muted` to #cebe9c, `--text-subtle` to #9c8e72. Body font-weight bumped 400→500 + 0.005em letter-spacing for legibility on the warm-bone-on-purple combo. Zombies serif headings unchanged.',
+      'POLICY **No more scene-take content on grind cards without a URL citation.** Diggy verbal narrative is great for voice/tone but every factual claim on a grind card now requires either a documented URL source (Esports Earnings / ProSettings / Liquipedia / news article) OR universally-known scene fact (championship results, etc). Anything uncertain gets cut — credibility over color.',
+    ],
+  },
+  {
     version: '0.1.86',
     date: '2026-05-14',
     highlights: [
