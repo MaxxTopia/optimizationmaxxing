@@ -11,14 +11,7 @@ id = "5ed2079ad74b458fadb5a2b9c60d10c9"
 
 # Per-IP rate-limit ledger (1 /event per 60s). Without this, anyone
 # can DoS our 1K-writes-per-day KV free-tier budget. Worker degrades
-# to no-rate-limit if the binding is missing — so the deploy below
-# stays valid until you wire the namespace in.
-#
-# To enable:
-#   wrangler kv namespace create telemetry-ratelimit
-# Paste the returned id into <id> below, uncomment the block, then
-# `wrangler deploy`.
-#
-# [[kv_namespaces]]
-# binding = "TELEMETRY_RATELIMIT"
-# id = "<paste-id-here>"
+# to no-rate-limit if the binding is missing.
+[[kv_namespaces]]
+binding = "TELEMETRY_RATELIMIT"
+id = "8019f4c25394446c85fd3286a97bcd07"
