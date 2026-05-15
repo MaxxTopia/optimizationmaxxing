@@ -39,6 +39,14 @@ const SUMMARY_DEFAULT_DAYS = 7
 const SUMMARY_KV_BATCH = 1000
 const TOP_N = 15
 
+// Per-IP rate limit (1 event per 60s). Without this, anyone hitting
+// /event in a loop can blow our 1K-writes-per-day KV free-tier budget
+// in seconds. Pattern mirrors maxxtopia-tickets-worker. Bound via
+// the TELEMETRY_RATELIMIT KV namespace in wrangler.toml. If the
+// namespace isn't bound, the worker degrades to no-rate-limit instead
+// of erroring (matches tickets-worker behavior).
+const RATE_LIMIT_SECONDS = 60
+
 export default {
   async fetch(request, env) {
     const cors = {
@@ -57,6 +65,23 @@ export default {
 
     if (url.pathname !== '/event' || request.method !== 'POST') {
       return new Response('not found', { status: 404, headers: cors })
+    }
+
+    // Per-IP rate limit — applied BEFORE JSON parse / validation /
+    // KV write. Spammers eat one KV read per attempt instead of one
+    // KV write per attempt (writes are the constrained resource on
+    // the free plan: 1K/day vs 100K reads/day).
+    const clientIp = request.headers.get('cf-connecting-ip') || ''
+    if (env.TELEMETRY_RATELIMIT && clientIp) {
+      const rateKey = `rl:${clientIp}`
+      const recent = await env.TELEMETRY_RATELIMIT.get(rateKey)
+      if (recent) {
+        return new Response('rate limited', {
+          status: 429,
+          headers: { ...cors, 'retry-after': String(RATE_LIMIT_SECONDS) },
+        })
+      }
+      await env.TELEMETRY_RATELIMIT.put(rateKey, '1', { expirationTtl: RATE_LIMIT_SECONDS })
     }
 
     let body
