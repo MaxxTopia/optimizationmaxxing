@@ -6,8 +6,8 @@ import { useProfileStore } from '../store/useProfileStore'
  * glyph swaps to match the show:
  *
  *   * cosmo-wanda    → magic wand + sparkles (Wanda's wand)
- *   * adventure-time → Gunther the penguin (Adventure Time assets cleared
- *                      by Diggy — usage rights confirmed 2026-05-18)
+ *   * adventure-time → 🐧 system penguin emoji (placeholder until a
+ *                      licensed Gunther image is dropped into public/)
  *
  * Both themes share the same rotating tip pool + dismiss behavior.
  * Renders nothing on every other theme (no DOM cost).
@@ -126,7 +126,7 @@ export function TipsToast() {
         }
         @media (prefers-reduced-motion: reduce) {
           div[role="status"] > div { animation: none !important; }
-          svg[data-glyph="gunther"] { animation: none !important; }
+          [data-glyph="gunther"] { animation: none !important; }
         }
       `}</style>
     </div>
@@ -175,133 +175,34 @@ function WandGlyph() {
   )
 }
 
-/** Gunther — Ice King's penguin sidekick from Adventure Time. White rounded
- *  body, black "hood" wrapping the head + back, orange diamond beak, two
- *  black dot eyes, two black flipper-wings, two orange waddle-feet. Adventure
- *  Time house style: solid fills, thick black outlines, no shading. Asset
- *  usage cleared by Diggy 2026-05-18. */
+/** Penguin glyph — uses the system penguin emoji (🐧) so we get a
+ *  professionally-drawn, instantly-recognizable penguin rendered by the
+ *  user's OS emoji font (Segoe UI Emoji on Windows, Apple Color Emoji on
+ *  Mac, Noto Color Emoji on Linux). No hand-drawn SVG, no IP question.
+ *  When Diggy drops a licensed Gunther image into public/, swap this span
+ *  for an <img src="/gunther.png" />. */
 function GuntherGlyph() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 60 60"
+    <span
+      role="img"
+      aria-label="penguin"
       data-glyph="gunther"
       style={{
         width: 48,
         height: 48,
         flexShrink: 0,
+        fontSize: 38,
+        lineHeight: 1,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily:
+          "'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', emoji",
         animation: 'gunther-wenk 2.4s ease-in-out infinite',
         transformOrigin: '50% 90%',
       }}
     >
-      {/* Two orange waddle-feet under the body (drawn first so body overlaps) */}
-      <ellipse
-        cx="22"
-        cy="55"
-        rx="5"
-        ry="2.4"
-        fill="#ffa724"
-        stroke="#1a1a1a"
-        strokeWidth="1.6"
-      />
-      <ellipse
-        cx="38"
-        cy="55"
-        rx="5"
-        ry="2.4"
-        fill="#ffa724"
-        stroke="#1a1a1a"
-        strokeWidth="1.6"
-      />
-
-      {/* Body — egg-shape, white/cream */}
-      <ellipse
-        cx="30"
-        cy="32"
-        rx="17"
-        ry="21"
-        fill="#fff8e7"
-        stroke="#1a1a1a"
-        strokeWidth="2.2"
-      />
-
-      {/* Black "hood" — covers top of head + wraps down the back/sides like a
-          cape. Drawn as a path that hugs the body's upper arc and dips lower
-          on each side, leaving the white face/belly visible in the center. */}
-      <path
-        d="
-          M 13 30
-          Q 12 14 22 11
-          Q 30 8 38 11
-          Q 48 14 47 30
-          Q 46 24 42 22
-          Q 38 21 36 25
-          Q 30 28 24 25
-          Q 22 21 18 22
-          Q 14 24 13 30
-          Z
-        "
-        fill="#1a1a1a"
-        stroke="#1a1a1a"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-
-      {/* Two flipper-wings — black ellipses jutting from each side */}
-      <ellipse
-        cx="11.5"
-        cy="34"
-        rx="3"
-        ry="8"
-        fill="#1a1a1a"
-        stroke="#1a1a1a"
-        strokeWidth="1.4"
-        transform="rotate(-12 11.5 34)"
-      />
-      <ellipse
-        cx="48.5"
-        cy="34"
-        rx="3"
-        ry="8"
-        fill="#1a1a1a"
-        stroke="#1a1a1a"
-        strokeWidth="1.4"
-        transform="rotate(12 48.5 34)"
-      />
-
-      {/* Two black dot eyes — high on the face, characteristic Gunther stare */}
-      <circle cx="24.5" cy="22" r="1.9" fill="#1a1a1a" />
-      <circle cx="35.5" cy="22" r="1.9" fill="#1a1a1a" />
-      {/* Tiny eye highlights */}
-      <circle cx="25.1" cy="21.4" r="0.55" fill="#fff8e7" />
-      <circle cx="36.1" cy="21.4" r="0.55" fill="#fff8e7" />
-
-      {/* Orange diamond beak — short, central, with horizontal mouth line */}
-      <path
-        d="M 30 25 L 36 29 L 30 33 L 24 29 Z"
-        fill="#ffa724"
-        stroke="#1a1a1a"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <line
-        x1="24"
-        y1="29"
-        x2="36"
-        y2="29"
-        stroke="#1a1a1a"
-        strokeWidth="1"
-      />
-
-      {/* Faint cheek/belly cleft — subtle vertical line down belly */}
-      <path
-        d="M 30 35 Q 31 42 30 50"
-        fill="none"
-        stroke="#e8ddc2"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.7"
-      />
-    </svg>
+      {'🐧'}
+    </span>
   )
 }

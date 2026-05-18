@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.3',
+    date: '2026-05-18',
+    highlights: [
+      'FIX **Adventure Time TipsToast — hand-drawn penguin SVG looked nothing like Gunther; replaced with the system penguin emoji 🐧** rendered by the OS emoji font (Segoe UI Emoji on Windows, Apple Color Emoji on Mac, Noto Color Emoji on Linux). Professionally-drawn, instantly recognizable as a penguin, no IP question. Placeholder until a licensed Gunther image is dropped into `public/` — when that happens the span swaps to an `<img>` tag. Wenk animation kept (2.4s ±1.5° waddle bob).',
+    ],
+  },
+  {
     version: '0.2.2',
     date: '2026-05-18',
     highlights: [
