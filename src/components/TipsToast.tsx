@@ -6,8 +6,8 @@ import { useProfileStore } from '../store/useProfileStore'
  * glyph swaps to match the show:
  *
  *   * cosmo-wanda    → magic wand + sparkles (Wanda's wand)
- *   * adventure-time → Finn's Grass Sword (instantly recognizable; less
- *                      risk than trying to nail a penguin character likeness)
+ *   * adventure-time → Gunther the penguin (Adventure Time assets cleared
+ *                      by Diggy — usage rights confirmed 2026-05-18)
  *
  * Both themes share the same rotating tip pool + dismiss behavior.
  * Renders nothing on every other theme (no DOM cost).
@@ -74,7 +74,7 @@ export function TipsToast() {
           animation: 'tips-toast-in 420ms cubic-bezier(0.22, 1.4, 0.36, 1)',
         }}
       >
-        {activeProfile === 'cosmo-wanda' ? <WandGlyph /> : <GrassSwordGlyph />}
+        {activeProfile === 'cosmo-wanda' ? <WandGlyph /> : <GuntherGlyph />}
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <p
@@ -120,13 +120,13 @@ export function TipsToast() {
           60%  { transform: translateY(-3px) scale(1.05); opacity: 1; }
           100% { transform: translateY(0) scale(1); opacity: 1; }
         }
-        @keyframes grass-sword-shimmer {
-          0%, 100% { filter: drop-shadow(0 0 1px rgba(120, 220, 80, 0.4)); }
-          50%      { filter: drop-shadow(0 0 4px rgba(120, 220, 80, 0.75)); }
+        @keyframes gunther-wenk {
+          0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+          50%      { transform: translateY(-1.5px) rotate(1.5deg); }
         }
         @media (prefers-reduced-motion: reduce) {
           div[role="status"] > div { animation: none !important; }
-          svg[data-glyph="grass-sword"] { animation: none !important; }
+          svg[data-glyph="gunther"] { animation: none !important; }
         }
       `}</style>
     </div>
@@ -175,120 +175,133 @@ function WandGlyph() {
   )
 }
 
-/** Finn's Grass Sword — distinctive curved green blade from the grass-arm
- *  arc in Adventure Time. Built from SVG primitives: curved leaf-shape
- *  blade with serrated edges, brown wooden grip, simple crossguard, faint
- *  magical green glow. Recognizable without copying a specific frame. */
-function GrassSwordGlyph() {
+/** Gunther — Ice King's penguin sidekick from Adventure Time. White rounded
+ *  body, black "hood" wrapping the head + back, orange diamond beak, two
+ *  black dot eyes, two black flipper-wings, two orange waddle-feet. Adventure
+ *  Time house style: solid fills, thick black outlines, no shading. Asset
+ *  usage cleared by Diggy 2026-05-18. */
+function GuntherGlyph() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 60 60"
-      data-glyph="grass-sword"
+      data-glyph="gunther"
       style={{
         width: 48,
         height: 48,
         flexShrink: 0,
-        animation: 'grass-sword-shimmer 3.4s ease-in-out infinite',
+        animation: 'gunther-wenk 2.4s ease-in-out infinite',
+        transformOrigin: '50% 90%',
       }}
     >
-      {/* Blade — curved leaf-shape sweeping from lower-left grip to upper-right point */}
+      {/* Two orange waddle-feet under the body (drawn first so body overlaps) */}
+      <ellipse
+        cx="22"
+        cy="55"
+        rx="5"
+        ry="2.4"
+        fill="#ffa724"
+        stroke="#1a1a1a"
+        strokeWidth="1.6"
+      />
+      <ellipse
+        cx="38"
+        cy="55"
+        rx="5"
+        ry="2.4"
+        fill="#ffa724"
+        stroke="#1a1a1a"
+        strokeWidth="1.6"
+      />
+
+      {/* Body — egg-shape, white/cream */}
+      <ellipse
+        cx="30"
+        cy="32"
+        rx="17"
+        ry="21"
+        fill="#fff8e7"
+        stroke="#1a1a1a"
+        strokeWidth="2.2"
+      />
+
+      {/* Black "hood" — covers top of head + wraps down the back/sides like a
+          cape. Drawn as a path that hugs the body's upper arc and dips lower
+          on each side, leaving the white face/belly visible in the center. */}
       <path
-        d="M 18 42 Q 14 28 22 16 Q 30 6 44 8 Q 38 16 34 22 Q 30 28 26 34 Q 22 40 18 42 Z"
-        fill="#5db94a"
-        stroke="#1a1f3a"
-        strokeWidth="2"
+        d="
+          M 13 30
+          Q 12 14 22 11
+          Q 30 8 38 11
+          Q 48 14 47 30
+          Q 46 24 42 22
+          Q 38 21 36 25
+          Q 30 28 24 25
+          Q 22 21 18 22
+          Q 14 24 13 30
+          Z
+        "
+        fill="#1a1a1a"
+        stroke="#1a1a1a"
+        strokeWidth="1.6"
         strokeLinejoin="round"
       />
-      {/* Blade inner gradient highlight (lighter green core) */}
+
+      {/* Two flipper-wings — black ellipses jutting from each side */}
+      <ellipse
+        cx="11.5"
+        cy="34"
+        rx="3"
+        ry="8"
+        fill="#1a1a1a"
+        stroke="#1a1a1a"
+        strokeWidth="1.4"
+        transform="rotate(-12 11.5 34)"
+      />
+      <ellipse
+        cx="48.5"
+        cy="34"
+        rx="3"
+        ry="8"
+        fill="#1a1a1a"
+        stroke="#1a1a1a"
+        strokeWidth="1.4"
+        transform="rotate(12 48.5 34)"
+      />
+
+      {/* Two black dot eyes — high on the face, characteristic Gunther stare */}
+      <circle cx="24.5" cy="22" r="1.9" fill="#1a1a1a" />
+      <circle cx="35.5" cy="22" r="1.9" fill="#1a1a1a" />
+      {/* Tiny eye highlights */}
+      <circle cx="25.1" cy="21.4" r="0.55" fill="#fff8e7" />
+      <circle cx="36.1" cy="21.4" r="0.55" fill="#fff8e7" />
+
+      {/* Orange diamond beak — short, central, with horizontal mouth line */}
       <path
-        d="M 20 38 Q 18 28 24 18 Q 30 10 40 10 Q 32 18 28 26 Q 24 32 20 38 Z"
-        fill="#86d36c"
+        d="M 30 25 L 36 29 L 30 33 L 24 29 Z"
+        fill="#ffa724"
+        stroke="#1a1a1a"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <line
+        x1="24"
+        y1="29"
+        x2="36"
+        y2="29"
+        stroke="#1a1a1a"
+        strokeWidth="1"
+      />
+
+      {/* Faint cheek/belly cleft — subtle vertical line down belly */}
+      <path
+        d="M 30 35 Q 31 42 30 50"
+        fill="none"
+        stroke="#e8ddc2"
+        strokeWidth="1"
+        strokeLinecap="round"
         opacity="0.7"
       />
-      {/* Spine highlight along the curved back of the blade */}
-      <path
-        d="M 22 40 Q 18 30 24 18 Q 30 10 42 9"
-        fill="none"
-        stroke="#c4f0a8"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-        opacity="0.85"
-      />
-      {/* Serrated grass-blade nicks along the cutting edge */}
-      <path
-        d="M 34 22 L 36 21 L 35 24 Z M 30 28 L 32 27 L 31 30 Z M 26 34 L 28 33 L 27 36 Z"
-        fill="#3d8a30"
-        stroke="#1a1f3a"
-        strokeWidth="0.6"
-        strokeLinejoin="round"
-      />
-      {/* Tiny leaf sprouting off the back of the blade — grass-magic detail */}
-      <path
-        d="M 36 14 Q 40 12 42 16 Q 38 16 36 14 Z"
-        fill="#3d8a30"
-        stroke="#1a1f3a"
-        strokeWidth="0.6"
-        strokeLinejoin="round"
-      />
-      {/* Crossguard — small brown horizontal bar */}
-      <rect
-        x="14"
-        y="40"
-        width="12"
-        height="3.5"
-        rx="0.8"
-        fill="#8b5a2b"
-        stroke="#1a1f3a"
-        strokeWidth="1.2"
-        transform="rotate(-30 20 41.75)"
-      />
-      {/* Grip — wooden handle below the crossguard */}
-      <rect
-        x="12"
-        y="44"
-        width="4"
-        height="10"
-        rx="1.4"
-        fill="#a47233"
-        stroke="#1a1f3a"
-        strokeWidth="1.4"
-        transform="rotate(-30 14 49)"
-      />
-      {/* Grip wrap detail */}
-      <line
-        x1="12"
-        y1="48"
-        x2="16"
-        y2="48"
-        stroke="#1a1f3a"
-        strokeWidth="0.8"
-        transform="rotate(-30 14 49)"
-      />
-      <line
-        x1="12"
-        y1="51"
-        x2="16"
-        y2="51"
-        stroke="#1a1f3a"
-        strokeWidth="0.8"
-        transform="rotate(-30 14 49)"
-      />
-      {/* Pommel — small round end-cap */}
-      <circle
-        cx="9"
-        cy="54"
-        r="2"
-        fill="#a47233"
-        stroke="#1a1f3a"
-        strokeWidth="1.2"
-      />
-      {/* Magical green sparkles around the blade */}
-      <g fill="#c4f0a8">
-        <circle cx="50" cy="10" r="1.2" />
-        <circle cx="48" cy="20" r="0.9" opacity="0.85" />
-        <circle cx="40" cy="6" r="0.9" opacity="0.85" />
-      </g>
     </svg>
   )
 }

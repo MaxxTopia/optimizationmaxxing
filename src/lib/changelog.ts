@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.2',
+    date: '2026-05-18',
+    highlights: [
+      'NEW **Adventure Time TipsToast glyph — switched back to Gunther the penguin** (asset usage permission cleared by Diggy 2026-05-18). Redrawn from scratch in canonical Adventure Time house style: white/cream rounded egg body with thick black outline, black "hood" wrapping the top of the head and dipping down the back/sides like a cape, orange diamond beak with a horizontal mouth line, two black dot eyes with tiny white catchlights, two black flipper-wings angled outward, two orange waddle-feet under the body, faint vertical belly cleft. Replaces the v0.2.1 Grass Sword fallback. Animation swapped from `grass-sword-shimmer` (green drop-shadow pulse) to `gunther-wenk` — a 2.4s gentle ±1.5° waddle bob with a 1.5px hop, transform-origin pinned at the feet so he rocks like he\'s wenking in place.',
+    ],
+  },
+  {
     version: '0.2.1',
     date: '2026-05-14',
     highlights: [
