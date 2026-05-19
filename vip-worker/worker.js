@@ -168,7 +168,7 @@ async function handleClaim(body, env, ctx, corsHeaders) {
   if (userId && !ALLOWED_USER_ID_RE.test(userId)) {
     return json({ ok: false, error: 'malformed userId' }, 400, corsHeaders);
   }
-  if (product && !['om', 'dm'].includes(product)) {
+  if (product && !['om', 'dm', 'aim'].includes(product)) {
     return json({ ok: false, error: 'malformed product' }, 400, corsHeaders);
   }
 
@@ -185,8 +185,13 @@ async function handleClaim(body, env, ctx, corsHeaders) {
   // Product-scope enforcement. Skipped when client didn't send `product`
   // (legacy compatibility) OR when the code's scope is "both".
   if (product && scope !== 'both' && scope !== product) {
+    const productName = {
+      om: 'Optimizationmaxxing',
+      dm: 'Discordmaxxer',
+      aim: 'Aimmaxxer',
+    };
     return json(
-      { ok: false, error: `code scope mismatch: this code is for ${scope === 'om' ? 'Optimizationmaxxing' : 'Discordmaxxer'}, you're claiming from ${product === 'om' ? 'Optimizationmaxxing' : 'Discordmaxxer'}` },
+      { ok: false, error: `code scope mismatch: this code is for ${productName[scope] || scope}, you're claiming from ${productName[product] || product}` },
       403,
       corsHeaders,
     );
