@@ -133,6 +133,19 @@ export default {
       return handleProfileUpdate(body, env, corsHeaders);
     }
 
+    // ---- Admin dashboard: one bookmarkable page to mint/list/revoke codes
+    // across all products. The HTML page is public (useless without the
+    // token); every /admin/* API call requires Bearer ADMIN_TOKEN. ----
+    if (url.pathname === '/admin' && request.method === 'GET') {
+      return new Response(ADMIN_HTML, {
+        status: 200,
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      });
+    }
+    if (url.pathname.startsWith('/admin/')) {
+      return handleAdmin(url, request, env, corsHeaders);
+    }
+
     if (url.pathname !== '/claim' || request.method !== 'POST') {
       return json({ ok: false, error: 'not found' }, 404, corsHeaders);
     }
@@ -178,6 +191,10 @@ async function handleClaim(body, env, ctx, corsHeaders) {
   // minted before the schema upgrade have no meta entry — defaults
   // below preserve their behavior (MAXXER++, lifetime, scope=both).
   const meta = await readCodeMeta(env, norm);
+  // Admin-revoked codes can't be claimed (the dashboard sets meta.revoked).
+  if (meta && meta.revoked) {
+    return json({ ok: false, error: 'this code has been revoked' }, 403, corsHeaders);
+  }
   const tier = tierFromMetaOrCode(meta, norm);
   const scope = meta?.scope ?? 'both';
   const durationMs = meta?.durationMs ?? null;   // null = lifetime
@@ -870,3 +887,266 @@ ${bodyHtml}`;
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+
+// =====================================================================
+// ADMIN DASHBOARD — mint / list / revoke / label codes across all
+// products from one bookmarkable page (/admin). Added 2026-06-11.
+// API endpoints under /admin/* require `Authorization: Bearer <ADMIN_TOKEN>`
+// (set via `wrangler secret put ADMIN_TOKEN`). The /admin HTML page is
+// public but inert without the token.
+// =====================================================================
+
+const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'; // excludes I L O U
+const DURATIONS = {
+  '3hr': 10800000,
+  'day': 86400000,
+  'week': 604800000,
+  'month': 2592000000,
+  'lifetime': null,
+};
+
+function genCode() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let out = '';
+  for (let i = 0; i < 16; i++) out += CROCKFORD[bytes[i] & 31];
+  return out;
+}
+
+// Cosmetic display form (the worker normalizes it back). aim -> aimr-, all
+// others -> MAXX-. Grouped in 4s like the mint scripts.
+function displayCode(code, scope) {
+  const pre = scope === 'aim' ? 'aimr-' : 'MAXX-';
+  return pre + (code.match(/.{1,4}/g) || [code]).join('-');
+}
+
+function adminAuthed(request, env) {
+  const tok = (env.ADMIN_TOKEN || '').trim();
+  if (!tok) return false;
+  const hdr = request.headers.get('authorization') || '';
+  const m = hdr.match(/^Bearer\s+(.+)$/i);
+  return !!m && m[1].trim() === tok;
+}
+
+async function handleAdmin(url, request, env, corsHeaders) {
+  if (!adminAuthed(request, env)) {
+    return json({ ok: false, error: 'unauthorized' }, 401, corsHeaders);
+  }
+  const path = url.pathname;
+
+  // POST /admin/mint {count, scope, tier, duration, label?}
+  if (path === '/admin/mint' && request.method === 'POST') {
+    let b;
+    try { b = await request.json(); } catch (e) {
+      return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+    }
+    const count = Math.max(1, Math.min(100, parseInt(b.count, 10) || 1));
+    const scope = ['aim', 'om', 'dm', 'both'].includes(b.scope) ? b.scope : 'both';
+    const tier = [1, 2, 3].includes(parseInt(b.tier, 10)) ? parseInt(b.tier, 10) : 3;
+    const durKey = Object.prototype.hasOwnProperty.call(DURATIONS, b.duration) ? b.duration : 'lifetime';
+    const durationMs = DURATIONS[durKey];
+    const label = typeof b.label === 'string' ? b.label.slice(0, 80) : '';
+    const mintedAt = Date.now();
+    const minted = [];
+    for (let i = 0; i < count; i++) {
+      const code = genCode();
+      const meta = { tier, scope, durationMs, mintedAt, durationKey: durKey };
+      if (label) meta.label = label;
+      await env.VIP_CLAIMS.put('meta:' + code, JSON.stringify(meta));
+      minted.push({ code, display: displayCode(code, scope) });
+    }
+    return json({ ok: true, minted, scope, tier, duration: durKey, label }, 200, corsHeaders);
+  }
+
+  // GET /admin/list  -> every minted code + its claim state
+  if (path === '/admin/list' && request.method === 'GET') {
+    const rows = [];
+    let cursor;
+    do {
+      const res = await env.VIP_CLAIMS.list({ prefix: 'meta:', cursor });
+      for (const k of res.keys) {
+        const code = k.name.slice(5);
+        let meta = {};
+        try { meta = JSON.parse(await env.VIP_CLAIMS.get(k.name)) || {}; } catch (e) {}
+        let claim = null;
+        const raw = await env.VIP_CLAIMS.get('claim:' + code);
+        if (raw) {
+          try { claim = JSON.parse(raw); } catch (e) { claim = { hwid: raw }; }
+        }
+        rows.push({
+          code,
+          display: displayCode(code, meta.scope || 'both'),
+          scope: meta.scope || 'both',
+          tier: meta.tier ?? null,
+          duration: meta.durationKey || (meta.durationMs ? '?' : 'lifetime'),
+          mintedAt: meta.mintedAt || null,
+          label: meta.label || '',
+          revoked: !!meta.revoked,
+          claimed: claim ? {
+            claimedAt: claim.claimedAt || null,
+            hwid: claim.hwid || null,
+            userId: claim.userId || null,
+            expiresAt: claim.expiresAt || null,
+            founderNumber: claim.founderNumber || null,
+          } : null,
+        });
+      }
+      cursor = res.list_complete ? null : res.cursor;
+    } while (cursor);
+    rows.sort((a, b) => (b.mintedAt || 0) - (a.mintedAt || 0));
+    return json({ ok: true, rows, count: rows.length }, 200, corsHeaders);
+  }
+
+  // POST /admin/revoke {code, revoked?}  -> toggle meta.revoked
+  if (path === '/admin/revoke' && request.method === 'POST') {
+    let b;
+    try { b = await request.json(); } catch (e) {
+      return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+    }
+    const code = normalizeCode(typeof b.code === 'string' ? b.code : '');
+    const key = 'meta:' + code;
+    const raw = await env.VIP_CLAIMS.get(key);
+    if (!raw) return json({ ok: false, error: 'no such code' }, 404, corsHeaders);
+    let meta = {};
+    try { meta = JSON.parse(raw) || {}; } catch (e) {}
+    meta.revoked = b.revoked === false ? false : true;
+    await env.VIP_CLAIMS.put(key, JSON.stringify(meta));
+    return json({ ok: true, code, revoked: meta.revoked }, 200, corsHeaders);
+  }
+
+  // POST /admin/label {code, label}
+  if (path === '/admin/label' && request.method === 'POST') {
+    let b;
+    try { b = await request.json(); } catch (e) {
+      return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+    }
+    const code = normalizeCode(typeof b.code === 'string' ? b.code : '');
+    const key = 'meta:' + code;
+    const raw = await env.VIP_CLAIMS.get(key);
+    if (!raw) return json({ ok: false, error: 'no such code' }, 404, corsHeaders);
+    let meta = {};
+    try { meta = JSON.parse(raw) || {}; } catch (e) {}
+    meta.label = (typeof b.label === 'string' ? b.label : '').slice(0, 80);
+    await env.VIP_CLAIMS.put(key, JSON.stringify(meta));
+    return json({ ok: true, code, label: meta.label }, 200, corsHeaders);
+  }
+
+  return json({ ok: false, error: 'not found' }, 404, corsHeaders);
+}
+
+const ADMIN_HTML = `<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maxxtopia — VIP codes</title>
+<style>
+ :root{--bg:#0a0a0a;--panel:#141414;--line:#262626;--accent:#a855f7;--txt:#eaeaea;--mut:#8a8a8a;--good:#3ad17a;--bad:#ff5a5a;--warn:#ffb84d}
+ *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 Segoe UI,system-ui,sans-serif}
+ header{padding:16px 22px;border-bottom:2px solid var(--accent);display:flex;align-items:center;gap:12px}
+ header h1{font-size:18px;margin:0;letter-spacing:.5px}header .sub{color:var(--mut);font-size:12px}
+ .wrap{max-width:1100px;margin:0 auto;padding:22px}
+ .card{background:var(--panel);border:1px solid var(--line);padding:16px;margin-bottom:18px}
+ label{display:block;color:var(--mut);font-size:12px;margin:0 0 4px}
+ select,input{background:#0e0e0e;border:1px solid var(--line);color:var(--txt);padding:7px 9px;font:13px Segoe UI,sans-serif}
+ .rowf{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+ button{background:var(--accent);color:#0a0a0a;border:0;padding:8px 16px;font:600 13px Segoe UI;cursor:pointer}
+ button.ghost{background:#1d1d1d;color:var(--txt);border:1px solid var(--line)}
+ button.bad{background:#3a1414;color:var(--bad);border:1px solid #5a2020}
+ table{width:100%;border-collapse:collapse;font-size:12.5px}
+ th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+ th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+ .mono{font-family:Consolas,monospace}
+ .pill{padding:2px 7px;border-radius:2px;font-size:11px;font-weight:600}
+ .pill.un{background:#102a1a;color:var(--good)}.pill.cl{background:#2a2410;color:var(--warn)}.pill.rv{background:#2a1010;color:var(--bad)}
+ .scopep{padding:1px 6px;border:1px solid var(--line);border-radius:2px;font-size:11px}
+ #mintOut{margin-top:12px}.code{font-family:Consolas,monospace;background:#0e0e0e;border:1px solid var(--line);padding:4px 8px;display:inline-block;margin:3px 4px 0 0;cursor:pointer}
+ .muted{color:var(--mut)}.gate{max-width:420px;margin:60px auto;text-align:center}
+ a{color:var(--accent)}
+</style></head><body>
+<header><h1>MAXXTOPIA · VIP CODES</h1><span class="sub">mint · track · revoke — all products</span></header>
+<div class="wrap">
+ <div id="gate" class="gate card" style="display:none">
+   <label>Admin token</label>
+   <input id="tokIn" type="password" style="width:100%" placeholder="paste ADMIN_TOKEN">
+   <div style="margin-top:10px"><button onclick="saveTok()">Unlock</button></div>
+   <p class="muted" style="margin-top:10px;font-size:12px">Stored in this browser only.</p>
+ </div>
+ <div id="app" style="display:none">
+   <div class="card">
+     <div class="rowf">
+       <div><label>Product</label><select id="scope"><option value="aim">aimmaxxer</option><option value="om">optimizationmaxxing</option><option value="dm">discordmaxxer</option><option value="both">any (both)</option></select></div>
+       <div><label>Tier</label><select id="tier"><option value="3">MAXXER++ (3)</option><option value="2">MAXXER+ (2)</option><option value="1">MAXXER (1)</option></select></div>
+       <div><label>Duration</label><select id="dur"><option value="lifetime">lifetime</option><option value="month">month</option><option value="week">week</option><option value="day">day</option><option value="3hr">3 hours</option></select></div>
+       <div><label>Count</label><input id="count" type="number" value="1" min="1" max="100" style="width:70px"></div>
+       <div style="flex:1;min-width:160px"><label>Label (who/why — optional)</label><input id="label" style="width:100%" placeholder="e.g. friend - twitch giveaway"></div>
+       <div><button onclick="mint()">Mint</button></div>
+     </div>
+     <div id="mintOut"></div>
+   </div>
+   <div class="card">
+     <div class="rowf" style="justify-content:space-between">
+       <div style="flex:1;min-width:200px"><input id="filter" oninput="render()" placeholder="filter by code / label / hwid / product" style="width:100%"></div>
+       <div><button class="ghost" onclick="load()">Refresh</button> <span id="stat" class="muted"></span> <button class="ghost" onclick="logout()">Lock</button></div>
+     </div>
+     <div style="overflow:auto;margin-top:12px"><table><thead><tr>
+       <th>Code</th><th>Product</th><th>Tier</th><th>Duration</th><th>Status</th><th>Claimed by</th><th>Label</th><th>Minted</th><th></th>
+     </tr></thead><tbody id="rows"></tbody></table></div>
+   </div>
+ </div>
+</div>
+<script>
+var DATA=[];
+function tok(){return localStorage.getItem('vipAdminToken')||'';}
+function saveTok(){var v=document.getElementById('tokIn').value.trim();if(v){localStorage.setItem('vipAdminToken',v);boot();}}
+function logout(){localStorage.removeItem('vipAdminToken');location.reload();}
+function api(path,method,body){return fetch(path,{method:method||'GET',headers:{'authorization':'Bearer '+tok(),'content-type':'application/json'},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json().then(function(j){j._status=r.status;return j;});});}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function fmtDate(ms){if(!ms)return '';var d=new Date(ms);return d.toLocaleDateString()+' '+d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}
+function copyTxt(t){navigator.clipboard.writeText(t);}
+function mint(){
+  var body={count:+document.getElementById('count').value,scope:document.getElementById('scope').value,tier:+document.getElementById('tier').value,duration:document.getElementById('dur').value,label:document.getElementById('label').value};
+  document.getElementById('mintOut').innerHTML='<span class="muted">minting...</span>';
+  api('/admin/mint','POST',body).then(function(j){
+    if(!j.ok){document.getElementById('mintOut').innerHTML='<span style="color:var(--bad)">'+esc(j.error||'failed')+'</span>';if(j._status===401)logout();return;}
+    var all=j.minted.map(function(m){return m.display;}).join('\\n');
+    window._mintAll=all;
+    var h='<div class="muted" style="margin-bottom:4px">Minted '+j.minted.length+' · <a href="#" onclick="copyTxt(window._mintAll);return false">copy all</a></div>';
+    h+=j.minted.map(function(m){return '<span class="code" onclick="copyTxt(this.textContent)" title="click to copy">'+esc(m.display)+'</span>';}).join('');
+    document.getElementById('mintOut').innerHTML=h;load();
+  });
+}
+function revoke(code,val){api('/admin/revoke','POST',{code:code,revoked:val}).then(function(j){if(j.ok)load();else alert(j.error||'failed');});}
+function relabel(code){var cur='';for(var i=0;i<DATA.length;i++)if(DATA[i].code===code)cur=DATA[i].label;var v=prompt('Label for this code:',cur);if(v!==null)api('/admin/label','POST',{code:code,label:v}).then(function(j){if(j.ok)load();else alert(j.error||'failed');});}
+function load(){
+  document.getElementById('stat').textContent='loading...';
+  api('/admin/list').then(function(j){
+    if(!j.ok){document.getElementById('stat').textContent=j.error||'error';if(j._status===401)logout();return;}
+    DATA=j.rows;document.getElementById('stat').textContent=j.count+' codes';render();
+  });
+}
+function render(){
+  var f=(document.getElementById('filter').value||'').toLowerCase();
+  var body='';
+  DATA.forEach(function(r){
+    var hay=(r.code+' '+r.label+' '+r.scope+' '+(r.claimed&&r.claimed.hwid||'')+' '+(r.claimed&&r.claimed.userId||'')).toLowerCase();
+    if(f&&hay.indexOf(f)<0)return;
+    var status=r.revoked?'<span class="pill rv">revoked</span>':(r.claimed?'<span class="pill cl">claimed</span>':'<span class="pill un">unclaimed</span>');
+    var by='';
+    if(r.claimed){var who=r.claimed.userId?('user '+r.claimed.userId):(r.claimed.hwid?(r.claimed.hwid.slice(0,10)+'…'):'?');var exp=r.claimed.expiresAt?(' · exp '+fmtDate(r.claimed.expiresAt)):'';by='<span title="'+esc((r.claimed.hwid||'')+' '+(r.claimed.userId||''))+'">'+esc(who)+'</span><span class="muted">'+esc(exp)+'</span>';}
+    var act=r.revoked?('<button class="ghost" onclick="revoke(\\''+r.code+'\\',false)">unrevoke</button>'):('<button class="bad" onclick="revoke(\\''+r.code+'\\',true)">revoke</button>');
+    body+='<tr>'
+      +'<td class="mono" onclick="copyTxt(this.textContent)" title="click to copy" style="cursor:pointer">'+esc(r.display)+'</td>'
+      +'<td><span class="scopep">'+esc(r.scope)+'</span></td>'
+      +'<td>'+esc(r.tier==null?'':r.tier)+'</td>'
+      +'<td>'+esc(r.duration)+'</td>'
+      +'<td>'+status+'</td>'
+      +'<td>'+by+'</td>'
+      +'<td onclick="relabel(\\''+r.code+'\\')" title="click to edit" style="cursor:pointer">'+(r.label?esc(r.label):'<span class="muted">+ label</span>')+'</td>'
+      +'<td class="muted">'+esc(fmtDate(r.mintedAt))+'</td>'
+      +'<td>'+act+'</td>'
+      +'</tr>';
+  });
+  document.getElementById('rows').innerHTML=body||'<tr><td colspan="9" class="muted" style="padding:18px">no codes match</td></tr>';
+}
+function boot(){document.getElementById('gate').style.display='none';document.getElementById('app').style.display='block';load();}
+if(tok())boot();else document.getElementById('gate').style.display='block';
+</script>
+</body></html>`;
