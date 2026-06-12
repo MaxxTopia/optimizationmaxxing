@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.4',
+    date: '2026-06-11',
+    highlights: [
+      'FIX **Removed a duplicate tweak** — "Disable Multi-Plane Overlay (MPO)" was listed twice (`display.mpo.disable` + `monitor.mpo.disable`), both writing the identical `HKLM\\…\\Dwm\\OverlayTestMode = 5`. Consolidated to one entry (kept the correctly-categorized `monitor` one, merged the anti-cheat "safe" tags onto it so the green AC pills stay). Catalog 100 → 99 tweaks, v1.8.5.',
+      'INFO **Honest scope on the TCP ACK/Nagle tweak** — rewrote the copy to be straight with you: this only touches TCP, and Fortnite / Valorant / CS2 / Apex all run gameplay over UDP, so it will NOT change your in-match ping. Where it actually helps is TCP traffic — game launchers, login/matchmaking channels, downloads, voice, browser. The effect is real but narrow, not a universal "ping fix." We compete on not being snake-oil, so the description now says so.',
+    ],
+  },
+  {
     version: '0.2.3',
     date: '2026-05-18',
     highlights: [

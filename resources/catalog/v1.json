@@ -1,7 +1,7 @@
 {
-  "version": "v1.8.4",
-  "generated_at": "2026-05-12",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash.",
+  "version": "v1.8.5",
+  "generated_at": "2026-06-11",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash. v1.8.5 (2026-06-11 audit): removed duplicate MPO tweak display.mpo.disable (identical OverlayTestMode=5 write to monitor.mpo.disable; AC tags merged onto the survivor) and rewrote network.tcp.ack-nodelay copy with an honest UDP caveat (the big shooters run gameplay over UDP, so this only helps TCP launcher/login/download/voice traffic, not in-match ping). Catalog now 99 tweaks.",
   "tweaks": [
     {
       "id": "display.refresh.maximize",
@@ -24,33 +24,11 @@
       ]
     },
     {
-      "id": "display.mpo.disable",
-      "title": "Disable Multi-Plane Overlay (MPO)",
-      "category": "registry",
-      "description": "Disables the DWM Multi-Plane Overlay path on dual-monitor + multi-display rigs. MPO routes overlay surfaces through an extra composition layer that frequently stutters when one monitor changes refresh, when HDR toggles, or when capture software hooks the desktop. Most pros run dual-monitor (game + Discord/OBS) — disabling MPO eliminates a stutter source most users never trace.",
-      "rationale": "Microsoft + NVIDIA both acknowledge MPO + multi-monitor causes stutters. The fix has been documented across r/nvidia + Hardware Unboxed since 2022 but is gatekept inside the dual-monitor competitive scene. Single registry value, instantly reversible. Source: NVIDIA driver-team forum responses + Hardware Unboxed multi-monitor stutter coverage.",
-      "riskLevel": 1,
-      "vipGate": "free",
-      "anticheatRisk": "none",
-      "rebootRequired": "logout",
-      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
-      "actions": [
-        {
-          "kind": "registry_set",
-          "hive": "hklm",
-          "path": "SOFTWARE\\Microsoft\\Windows\\Dwm",
-          "name": "OverlayTestMode",
-          "value_type": "dword",
-          "value": 5
-        }
-      ]
-    },
-    {
       "id": "network.tcp.ack-nodelay",
       "title": "TCP: immediate ACK + Nagle off (per-NIC)",
       "category": "network",
-      "description": "Per-NIC: forces TcpAckFrequency=1 (ACK every packet instead of every 2nd / delayed-ACK) and TCPNoDelay=1 (disables Nagle's algorithm so small packets don't buffer). The two pair — Nagle off without ACK frequency tuning is half the fix. Real win for low-jitter game traffic; controversial only because pre-2010 Windows defaults differed.",
-      "rationale": "Pro-circulated network tweak documented on r/Windows10 + r/CompetitiveApex for years but absent from every mainstream optimizer. Iterates HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\<NIC GUID> and applies both keys to every interface that has an IP address bound (skips loopback / VPN tunnel adapters). Fully reversible — script accepts -Revert switch.",
+      "description": "Per-NIC: forces TcpAckFrequency=1 (ACK every packet instead of every 2nd / delayed-ACK) and TCPNoDelay=1 (disables Nagle's algorithm so small packets don't buffer). The two pair — Nagle off without ACK frequency tuning is half the fix. Honest scope: this only touches TCP, and the big competitive shooters (Fortnite / Valorant / CS2 / Apex) run their gameplay over UDP, so it won't move your in-match ping. Where it helps is TCP traffic — game launchers / login + matchmaking channels, downloads, voice, browser — making those feel instant instead of stuttery.",
+      "rationale": "Pro-circulated network tweak documented on r/Windows10 + r/CompetitiveApex for years but absent from every mainstream optimizer. The effect is real but narrow: it's a per-adapter TCP change, not a universal 'ping fix', and UDP game traffic is unaffected. Iterates HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces\\<NIC GUID> and applies both keys to every interface that has an IP address bound (skips loopback / VPN tunnel adapters). Fully reversible — script accepts -Revert switch.",
       "riskLevel": 2,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -1438,6 +1416,7 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
+      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
       "targets": { "osMinBuild": 19041 },
       "actions": [
         {
