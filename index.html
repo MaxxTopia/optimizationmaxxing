@@ -17,6 +17,10 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Frontend watchdog: catches uncaught errors / failed invoke() and shows a
+         Reload+Report banner. Loaded before the app so it installs handlers early.
+         Complements App.tsx's CrashBoundary (React render errors) + crash.rs (Rust panics). -->
+    <script type="module" src="/src/watchdog.ts"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
