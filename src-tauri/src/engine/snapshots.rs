@@ -7,7 +7,7 @@
 
 use anyhow::Context;
 use parking_lot::Mutex;
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use std::path::Path;
 use std::sync::Arc;
 
@@ -61,6 +61,31 @@ impl SnapshotStore {
         Ok(SnapshotStore {
             conn: Arc::new(Mutex::new(conn)),
         })
+    }
+
+    /// Read a value from the kv table. Returns None if the key is absent.
+    /// Used for small persisted settings (restore-point toggle, last-applied
+    /// OS build for update-drift detection).
+    pub fn kv_get(&self, key: &str) -> anyhow::Result<Option<String>> {
+        let conn = self.conn.lock();
+        let v = conn
+            .query_row("SELECT value FROM kv WHERE key = ?1", params![key], |r| {
+                r.get::<_, String>(0)
+            })
+            .optional()?;
+        Ok(v)
+    }
+
+    /// Upsert a value into the kv table.
+    pub fn kv_set(&self, key: &str, value: &str) -> anyhow::Result<()> {
+        let updated_at = chrono::Utc::now().to_rfc3339();
+        let conn = self.conn.lock();
+        conn.execute(
+            "INSERT INTO kv (key, value, updated_at) VALUES (?1, ?2, ?3)
+             ON CONFLICT(key) DO UPDATE SET value = ?2, updated_at = ?3",
+            params![key, value, updated_at],
+        )?;
+        Ok(())
     }
 
     pub fn record_apply(

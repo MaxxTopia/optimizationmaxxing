@@ -191,12 +191,34 @@ fn build_registry_revert_line(
 /// prompt regardless of action kind.
 pub fn run_elevated_action(action: &TweakAction) -> anyhow::Result<()> {
     let line = build_apply_line(action).context("building apply line")?;
-    run_elevated_lines(&[line])
+    run_elevated_lines(&[], &[line])
 }
 
 /// Apply many actions under a single UAC prompt. HKCU items should be
 /// filtered out by the caller and applied unelevated.
 pub fn run_elevated_batch(actions: &[&TweakAction]) -> anyhow::Result<()> {
+    run_elevated_batch_with_restore_point(actions, false)
+}
+
+/// Best-effort preamble that creates a Windows System Restore point inside
+/// the SAME elevated shell as the tweak batch (so it costs no extra UAC
+/// prompt). The frequency-limit override ensures a point is actually created
+/// even if Windows made one in the last 24h. Failures here (e.g. System
+/// Protection disabled) are swallowed by the runner and never count as tweak
+/// failures.
+fn restore_point_preamble() -> Vec<String> {
+    vec![
+        r#"reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 0 /f"#.to_string(),
+        r#"powershell -NoProfile -ExecutionPolicy Bypass -Command "Checkpoint-Computer -Description 'optimizationmaxxing apply' -RestorePointType 'MODIFY_SETTINGS'""#.to_string(),
+    ]
+}
+
+/// Apply many actions under a single UAC prompt, optionally creating a System
+/// Restore point first (best-effort). This is the main apply chokepoint.
+pub fn run_elevated_batch_with_restore_point(
+    actions: &[&TweakAction],
+    create_restore_point: bool,
+) -> anyhow::Result<()> {
     if actions.is_empty() {
         return Ok(());
     }
@@ -204,7 +226,19 @@ pub fn run_elevated_batch(actions: &[&TweakAction]) -> anyhow::Result<()> {
     for a in actions {
         lines.push(build_apply_line(a).context("building batched apply line")?);
     }
-    run_elevated_lines(&lines)
+    let preamble = if create_restore_point {
+        restore_point_preamble()
+    } else {
+        Vec::new()
+    };
+    run_elevated_lines(&preamble, &lines)
+}
+
+/// Run arbitrary elevated command lines under one UAC prompt (best-effort
+/// per-line failure logging, like the tweak batch). Used for one-off system
+/// actions such as enabling System Protection.
+pub fn run_elevated_raw_lines(lines: &[String]) -> anyhow::Result<()> {
+    run_elevated_lines(&[], lines)
 }
 
 /// Revert one elevated action.
@@ -213,7 +247,7 @@ pub fn run_elevated_revert_action(
     pre_state: &serde_json::Value,
 ) -> anyhow::Result<()> {
     let line = build_revert_line(action, pre_state).context("building revert line")?;
-    run_elevated_lines(&[line])
+    run_elevated_lines(&[], &[line])
 }
 
 /// Revert MANY elevated actions under a single UAC prompt. Pairs with
@@ -228,7 +262,7 @@ pub fn run_elevated_revert_batch(
     for (action, pre) in items {
         lines.push(build_revert_line(action, pre).context("building batched revert line")?);
     }
-    run_elevated_lines(&lines)
+    run_elevated_lines(&[], &lines)
 }
 
 /// Common runner: spawn ONE elevated cmd.exe that runs each line
@@ -251,8 +285,8 @@ pub fn run_elevated_revert_batch(
 ///
 /// Side benefit: eliminates cmd.exe's 8191-char arg limit, which was
 /// being approached on the "Apply All" path.
-fn run_elevated_lines(lines: &[String]) -> anyhow::Result<()> {
-    if lines.is_empty() {
+fn run_elevated_lines(preamble: &[String], lines: &[String]) -> anyhow::Result<()> {
+    if lines.is_empty() && preamble.is_empty() {
         return Ok(());
     }
     let temp_dir = std::env::temp_dir();
@@ -266,6 +300,12 @@ fn run_elevated_lines(lines: &[String]) -> anyhow::Result<()> {
     script.push_str("@echo off\r\n");
     script.push_str("setlocal enabledelayedexpansion\r\n");
     script.push_str("set FAILED=0\r\n");
+    // Best-effort preamble (e.g. System Restore point). Errors here must NOT
+    // count as tweak failures, so swallow any non-zero exit with `ver >nul`,
+    // which resets errorlevel to 0.
+    for p in preamble {
+        script.push_str(&format!("({p}) || ver >nul\r\n"));
+    }
     for line in lines {
         // Each line runs; on non-zero exit, log + bump counter. The
         // outer parens prevent a `(reg add ...) || ...` line from being

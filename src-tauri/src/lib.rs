@@ -123,7 +123,17 @@ async fn apply_batch(
             }
         }
         if !elevated_actions.is_empty() {
-            engine::elevation::run_elevated_batch(&elevated_actions)
+            // Best-effort Windows System Restore point before touching HKLM/BCD,
+            // folded into the same elevated shell (no extra UAC). Controlled by
+            // a setting (default ON). Non-fatal: a failed restore point never
+            // blocks the apply.
+            let create_rp = store
+                .kv_get("restore_point_before_apply")
+                .ok()
+                .flatten()
+                .map(|v| v != "false")
+                .unwrap_or(true);
+            engine::elevation::run_elevated_batch_with_restore_point(&elevated_actions, create_rp)
                 .map_err(|e| format!("{:#}", e))?;
         }
 
@@ -135,10 +145,62 @@ async fn apply_batch(
                 .map_err(|e| format!("{:#}", e))?;
             receipts.push(r);
         }
+
+        // Record the OS build we applied on, so the UI can warn when a later
+        // Windows update may have reverted tweaks (post-update drift).
+        if let Some(b) = current_os_build() {
+            let _ = store.kv_set("last_applied_build", &b.to_string());
+        }
         Ok(receipts)
     })
     .await
     .map_err(|e| format!("apply_batch task failed: {e}"))?
+}
+
+/// Best-effort read of the current Windows build number for update-drift
+/// detection. Returns None if the registry read fails.
+fn current_os_build() -> Option<u32> {
+    use winreg::enums::HKEY_LOCAL_MACHINE;
+    use winreg::RegKey;
+    let key = RegKey::predef(HKEY_LOCAL_MACHINE)
+        .open_subkey(r"SOFTWARE\Microsoft\Windows NT\CurrentVersion")
+        .ok()?;
+    let s: String = key.get_value("CurrentBuildNumber").ok()?;
+    s.trim().parse::<u32>().ok()
+}
+
+/// Generic persisted setting read (SQLite kv table). Used by the frontend for
+/// small toggles (restore-point) and drift detection (last-applied build).
+#[tauri::command]
+fn kv_get(state: tauri::State<'_, SnapshotStore>, key: String) -> Result<Option<String>, String> {
+    state.kv_get(&key).map_err(|e| format!("{:#}", e))
+}
+
+/// Generic persisted setting write (SQLite kv table).
+#[tauri::command]
+fn kv_set(state: tauri::State<'_, SnapshotStore>, key: String, value: String) -> Result<(), String> {
+    state.kv_set(&key, &value).map_err(|e| format!("{:#}", e))
+}
+
+/// Enable Windows System Protection on the system drive (so restore points
+/// can actually be created), clear the 24h creation-frequency limit, and make
+/// one restore point immediately. One UAC prompt. Best-effort per line.
+#[tauri::command]
+async fn enable_system_protection() -> Result<(), String> {
+    tokio::task::spawn_blocking(|| -> Result<(), String> {
+        let sys = std::env::var("SystemDrive").unwrap_or_else(|_| "C:".into());
+        let lines = vec![
+            format!(
+                "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Enable-ComputerRestore -Drive '{}\\'\"",
+                sys
+            ),
+            r#"reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 0 /f"#.to_string(),
+            r#"powershell -NoProfile -ExecutionPolicy Bypass -Command "Checkpoint-Computer -Description 'optimizationmaxxing - protection enabled' -RestorePointType 'MODIFY_SETTINGS'""#.to_string(),
+        ];
+        engine::elevation::run_elevated_raw_lines(&lines).map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("enable_system_protection task failed: {e}"))?
 }
 
 #[tauri::command]
@@ -792,6 +854,9 @@ pub fn run() {
             preview_tweak,
             apply_tweak,
             apply_batch,
+            kv_get,
+            kv_set,
+            enable_system_protection,
             revert_tweak,
             revert_all_applied,
             list_applied,

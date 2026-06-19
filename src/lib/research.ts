@@ -27,6 +27,8 @@ import rgbShutoff from '../../resources/research/rgb-shutoff.md?raw'
 import ramBiosRecipes from '../../resources/research/ram-bios-recipes.md?raw'
 import pickupMacros from '../../resources/research/pickup-macros.md?raw'
 import snakeOilTweaks from '../../resources/research/snake-oil-tweaks.md?raw'
+import amdRadeonAdrenalin from '../../resources/research/amd-radeon-adrenalin.md?raw'
+import intelArcSetup from '../../resources/research/intel-arc-setup.md?raw'
 
 import type { GameId } from './games'
 
@@ -145,6 +147,27 @@ export const RESEARCH: ResearchArticle[] = [
   },
 
   // ── Tier 2: high-impact basics ───────────────────────────────────────
+  {
+    id: 'amd-radeon-adrenalin',
+    title: 'AMD Radeon — competitive setup (Anti-Lag 2, not Anti-Lag+)',
+    blurb:
+      "Radeon-specific low-latency stack: use the anti-cheat-safe Anti-Lag 2 (CS2), NEVER the old Anti-Lag+ that VAC-banned people. Skip HYPR-RX/Chill/Boost for competitive; native res over RSR. The Radeon answer to our NVIDIA Profile Inspector guide.",
+    badge: 'RADEON',
+    body: amdRadeonAdrenalin,
+    perGameCallouts: {
+      cs2: 'CS2 has native Anti-Lag 2 (built with Valve) — turn it on. It is the safe replacement for the banned Anti-Lag+.',
+      valorant: 'No native Anti-Lag 2 yet — use in-game frame-rate cap + native res; leave driver Anti-Lag+ OFF.',
+      fortnite: 'No native Anti-Lag 2 — cap FPS below refresh, native res, Chill/Boost OFF.',
+    },
+  },
+  {
+    id: 'intel-arc-setup',
+    title: 'Intel Arc — competitive setup (ReBAR + drivers + XeLL)',
+    blurb:
+      'Arc is driver-bound and ReBAR-dependent: enabling Resizable BAR is worth ~20-40%, staying on current drivers matters more than on any other GPU, and XeLL is the low-latency piece to use (skip frame-gen for competitive).',
+    badge: 'ARC',
+    body: intelArcSetup,
+  },
   {
     id: 'nvidia-reflex',
     title: 'NVIDIA Reflex — does it add input delay?',

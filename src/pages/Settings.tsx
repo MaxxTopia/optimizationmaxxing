@@ -4,7 +4,10 @@ import { CpuPinningSection } from '../components/CpuPinningSection'
 import { PROFILE_ORDER, profiles } from '../theme/profiles'
 import { useProfileStore } from '../store/useProfileStore'
 import {
+  enableSystemProtection,
   inTauri,
+  kvGet,
+  kvSet,
   listApplied,
   openExternal,
   revertAllApplied,
@@ -143,6 +146,8 @@ export function Settings() {
         </div>
       </section>
 
+      <SafetyNetSection />
+
       <StandbyCleanerSection />
 
       <CpuPinningSection />
@@ -182,6 +187,89 @@ export function Settings() {
         </div>
       )}
     </div>
+  )
+}
+
+function SafetyNetSection() {
+  const native = inTauri()
+  const [rpEnabled, setRpEnabled] = useState(true)
+  const [protBusy, setProtBusy] = useState(false)
+  const [protMsg, setProtMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!native) return
+    kvGet('restore_point_before_apply')
+      .then((v) => setRpEnabled(v !== 'false'))
+      .catch(() => {})
+  }, [native])
+
+  async function toggle() {
+    const next = !rpEnabled
+    setRpEnabled(next)
+    try {
+      await kvSet('restore_point_before_apply', next ? 'true' : 'false')
+    } catch {
+      setRpEnabled(!next) // revert optimistic update on failure
+    }
+  }
+
+  async function handleEnableProtection() {
+    setProtBusy(true)
+    setProtMsg(null)
+    try {
+      await enableSystemProtection()
+      setProtMsg('System Protection enabled and a restore point was created.')
+    } catch (e: unknown) {
+      setProtMsg(e instanceof Error ? e.message : String(e))
+    } finally {
+      setProtBusy(false)
+    }
+  }
+
+  return (
+    <section className="space-y-3">
+      <div>
+        <h2 className="text-lg font-semibold">Safety net</h2>
+        <p className="text-sm text-text-muted">
+          A Windows System Restore point is a full-OS rollback — broader than our per-tweak revert.
+          We create one automatically before applying any tweak that needs admin, folded into the
+          same UAC prompt so it costs no extra click.
+        </p>
+      </div>
+      <div className="surface-card p-6 space-y-4">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={rpEnabled}
+            onChange={toggle}
+            disabled={!native}
+            className="mt-1"
+          />
+          <span>
+            <span className="text-sm font-semibold text-text">
+              Create a restore point before applying (recommended)
+            </span>
+            <span className="block text-xs text-text-subtle mt-0.5">
+              Best-effort — if it fails it never blocks the apply. Requires System Protection to be on.
+            </span>
+          </span>
+        </label>
+        <div className="border-t border-border pt-4">
+          <p className="text-sm text-text-muted">
+            System Protection is off by default on many PCs. If restore points aren't being created,
+            enable it once here (one UAC prompt; uses a little disk for snapshots).
+          </p>
+          <button
+            onClick={handleEnableProtection}
+            disabled={!native || protBusy}
+            className="mt-3 btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold disabled:opacity-50"
+          >
+            {protBusy ? 'Enabling…' : 'Enable System Protection + make a restore point'}
+          </button>
+          {protMsg && <div className="mt-3 text-xs text-text-subtle">{protMsg}</div>}
+        </div>
+      </div>
+    </section>
   )
 }
 

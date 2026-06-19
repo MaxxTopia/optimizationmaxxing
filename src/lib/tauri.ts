@@ -239,6 +239,24 @@ export async function revertTweak(receiptId: string): Promise<void> {
   return invoke('revert_tweak', { receiptId })
 }
 
+/** Read a small persisted setting from the SQLite kv store. */
+export async function kvGet(key: string): Promise<string | null> {
+  return invoke<string | null>('kv_get', { key })
+}
+
+/** Write a small persisted setting to the SQLite kv store. */
+export async function kvSet(key: string, value: string): Promise<void> {
+  return invoke('kv_set', { key, value })
+}
+
+/** Enable Windows System Protection on the system drive, clear the 24h
+ *  restore-point frequency limit, and create one restore point now (one UAC).
+ *  Required for the auto restore-point-before-apply to actually fire on
+ *  machines where System Protection is disabled by default. */
+export async function enableSystemProtection(): Promise<void> {
+  return invoke('enable_system_protection')
+}
+
 export interface RevertAllReport {
   reverted: number
   failedReceiptIds: string[]

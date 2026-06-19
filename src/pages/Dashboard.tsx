@@ -8,6 +8,7 @@ import { QuickStart } from '../components/QuickStart'
 import { RecentlyApplied } from '../components/RecentlyApplied'
 import { RecommendedForRig } from '../components/RecommendedForRig'
 import { RecommendedTweaks } from '../components/RecommendedTweaks'
+import { RigAdvisories } from '../components/RigAdvisories'
 import { RingGauge } from '../components/RingGauge'
 import { SystemHealth } from '../components/SystemHealth'
 import { WhyUs } from '../components/WhyUs'
@@ -101,6 +102,8 @@ export function Dashboard() {
           hint={appliedCount === 0 ? 'Browse the catalog →' : 'Reverts available in /tweaks'}
         />
       </section>
+
+      <RigAdvisories spec={spec} />
 
       <HowItWorks />
 

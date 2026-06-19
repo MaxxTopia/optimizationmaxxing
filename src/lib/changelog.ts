@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.7',
+    date: '2026-06-18',
+    highlights: [
+      'NEW **Windows restore point before applying** — we now create a real System Restore point automatically before any tweak that needs admin, folded into the *same* UAC prompt (no extra click). Best-effort and non-blocking. New toggle in Settings → Safety net (on by default), plus a one-click "Enable System Protection" button for PCs where it\'s switched off.',
+      'NEW **Rig-specific advisories on the dashboard** — the app now reads your GPU and CPU and points you at the right guidance: a **Radeon** card (Anti-Lag 2, and a warning to never use the VAC-banned Anti-Lag+), an **Intel Arc** card (ReBAR is worth ~20-40%, stay current on drivers), an **Intel APO** nudge (14th-gen K / Core Ultra — up to ~14% FPS most people never enable), and an **AMD X3D** check (make sure games land on the V-Cache cores). No more NVIDIA-only blind spot.',
+      'NEW **Windows-update drift warning** — if a Windows update lands after you\'ve tuned, the dashboard now flags that some tweaks may have been silently reverted and links you straight to a re-check.',
+      'NEW **AMD Radeon + Intel Arc guides** in the Guides library, mirroring the depth of our NVIDIA guidance, plus a Windows 10 end-of-support advisory (support ended Oct 14, 2025).',
+    ],
+  },
+  {
     version: '0.2.6',
     date: '2026-06-18',
     highlights: [
