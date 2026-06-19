@@ -650,6 +650,10 @@ async fn close_splashscreen(app: tauri::AppHandle) -> Result<(), String> {
         let _ = splash.close();
     }
     if let Some(main) = app.get_webview_window("main") {
+        // Open maximized (fills the screen, keeps window controls). The window
+        // is created hidden then shown here, so the config's `maximized` flag
+        // isn't always honored on deferred show — maximize explicitly.
+        let _ = main.maximize();
         let _ = main.show();
         let _ = main.set_focus();
     }

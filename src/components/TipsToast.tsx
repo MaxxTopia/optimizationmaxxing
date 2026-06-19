@@ -6,8 +6,8 @@ import { useProfileStore } from '../store/useProfileStore'
  * glyph swaps to match the show:
  *
  *   * cosmo-wanda    → magic wand + sparkles (Wanda's wand)
- *   * adventure-time → 🐧 system penguin emoji (placeholder until a
- *                      licensed Gunther image is dropped into public/)
+ *   * adventure-time → Gunther images, alternating every 4s
+ *                      (public/gunther.jpg + public/gunther.webp)
  *
  * Both themes share the same rotating tip pool + dismiss behavior.
  * Renders nothing on every other theme (no DOM cost).
@@ -175,34 +175,36 @@ function WandGlyph() {
   )
 }
 
-/** Penguin glyph — uses the system penguin emoji (🐧) so we get a
- *  professionally-drawn, instantly-recognizable penguin rendered by the
- *  user's OS emoji font (Segoe UI Emoji on Windows, Apple Color Emoji on
- *  Mac, Noto Color Emoji on Linux). No hand-drawn SVG, no IP question.
- *  When Diggy drops a licensed Gunther image into public/, swap this span
- *  for an <img src="/gunther.png" />. */
+/** Gunther glyph — alternates between the two real Gunther images dropped
+ *  into public/ (Batman-cowl + Christmas-sweater), swapping every few
+ *  seconds. Keeps the same rounded thumbnail + gentle wenk animation. */
+const GUNTHERS = ['/gunther.jpg', '/gunther.webp'] as const
+
 function GuntherGlyph() {
+  const [idx, setIdx] = useState(0)
+
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      setIdx((i) => (i + 1) % GUNTHERS.length)
+    }, 4000)
+    return () => window.clearInterval(t)
+  }, [])
+
   return (
-    <span
-      role="img"
-      aria-label="penguin"
+    <img
+      src={GUNTHERS[idx]}
+      alt="Gunther"
       data-glyph="gunther"
       style={{
         width: 48,
         height: 48,
         flexShrink: 0,
-        fontSize: 38,
-        lineHeight: 1,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily:
-          "'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', emoji",
+        objectFit: 'cover',
+        borderRadius: 10,
+        border: '2px solid #1a1f3a',
         animation: 'gunther-wenk 2.4s ease-in-out infinite',
         transformOrigin: '50% 90%',
       }}
-    >
-      {'🐧'}
-    </span>
+    />
   )
 }

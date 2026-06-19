@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.5',
+    date: '2026-06-18',
+    highlights: [
+      'NEW **Opens maximized** — the app now launches filling your screen instead of a 1280×800 window. Window controls stay (it\'s maximized, not borderless fullscreen), so you can still un-maximize or move it whenever.',
+      'NEW **Gunther is here (Adventure Time theme)** — the pro-tip toast now shows the real Gunther, alternating every few seconds between cowl-Gunther and his cozy holiday-sweater look. The placeholder penguin emoji is retired.',
+    ],
+  },
+  {
     version: '0.2.4',
     date: '2026-06-11',
     highlights: [
