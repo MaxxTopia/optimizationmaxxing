@@ -26,6 +26,7 @@ import dscpRouterCompanion from '../../resources/research/dscp-router-companion.
 import rgbShutoff from '../../resources/research/rgb-shutoff.md?raw'
 import ramBiosRecipes from '../../resources/research/ram-bios-recipes.md?raw'
 import pickupMacros from '../../resources/research/pickup-macros.md?raw'
+import snakeOilTweaks from '../../resources/research/snake-oil-tweaks.md?raw'
 
 import type { GameId } from './games'
 
@@ -53,6 +54,14 @@ export interface ResearchArticle {
 // last (WinRing0 AV / Discord low-FPS / browsers / lightweight distros).
 export const RESEARCH: ResearchArticle[] = [
   // ── Tier 1: advanced + highest-leverage ──────────────────────────────
+  {
+    id: 'snake-oil-tweaks',
+    title: "Tweaks we deliberately DON'T do (and why)",
+    blurb:
+      "The honest list: popular 'FPS boost' tweaks that 2026 evidence shows are placebo or harmful (page file off, Realtime priority, 8000 Hz polling, debloat scripts, disabling Defender/mitigations) plus the ones whose advice reversed (HAGS/Game Mode stay ON, bcdedit clock flags revert, MPO is conditional). Why we left them out.",
+    badge: 'NO SNAKE-OIL',
+    body: snakeOilTweaks,
+  },
   {
     id: 'nvidia-profile-inspector',
     title: 'NVIDIA Profile Inspector — gatekept .nip files (10-50ms)',

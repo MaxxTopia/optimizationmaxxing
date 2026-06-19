@@ -1,7 +1,7 @@
 {
-  "version": "v1.8.5",
+  "version": "v1.8.6",
   "generated_at": "2026-06-11",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash. v1.8.5 (2026-06-11 audit): removed duplicate MPO tweak display.mpo.disable (identical OverlayTestMode=5 write to monitor.mpo.disable; AC tags merged onto the survivor) and rewrote network.tcp.ack-nodelay copy with an honest UDP caveat (the big shooters run gameplay over UDP, so this only helps TCP launcher/login/download/voice traffic, not in-match ping). Catalog now 99 tweaks.",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash. v1.8.5 (2026-06-11 audit): removed duplicate MPO tweak display.mpo.disable (identical OverlayTestMode=5 write to monitor.mpo.disable; AC tags merged onto the survivor) and rewrote network.tcp.ack-nodelay copy with an honest UDP caveat (the big shooters run gameplay over UDP, so this only helps TCP launcher/login/download/voice traffic, not in-match ping). Catalog now 99 tweaks. v1.8.6 (2026-06-18 SOTA audit): added power.fast-startup.disable (HiberbootEnabled=0 - disables Fast Startup while keeping hibernation, unlike powercfg /hibernate off); de-recommended net.throttling.disable (2026 instrumented testing shows no FPS/latency gain vs default) and bcd.disabledynamictick.yes (Microsoft debug-only flag tied to Win11 mouse-input desync) by rewriting their copy and removing both from all default presets; gated disabledynamictick to Win10 via osMaxBuild; reframed monitor.mpo.disable as a conditional flicker fix (not an FPS lever) and added OverlayMinFPS=0 for 24H2 reliability. Catalog now 100 tweaks.",
   "tweaks": [
     {
       "id": "display.refresh.maximize",
@@ -190,8 +190,8 @@
       "id": "net.throttling.disable",
       "title": "Disable Network Throttling Index",
       "category": "network",
-      "description": "Removes Windows' multimedia network rate limit. Frees full pipe to game traffic during gameplay.",
-      "rationale": "From diggy-tweaks/reg-edits: 'completely disables the throttle'. Default value caps multimedia network throughput; gaming benefits from removal.",
+      "description": "Raises Windows' multimedia network rate limit (NetworkThrottlingIndex) from the default 10 to off. Optional/contested: current instrumented testing shows no measured FPS or latency gain on modern Win10/11, and competitive shooters run gameplay over UDP which this does not touch. Kept available and reversible, but no longer in any default preset.",
+      "rationale": "Widely repeated as an FPS fix, but the throttle only paces multimedia/MMCSS traffic. The best-instrumented community testing (djdallmann GamingPCSetup) found no DPC or latency benefit versus the default of 10, and occasionally slightly worse. De-recommended in v0.2.6 - we don't ship unproven FPS claims; left in the catalog for tuners who want to test it on their own rig.",
       "riskLevel": 2,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -589,13 +589,13 @@
       "id": "bcd.disabledynamictick.yes",
       "title": "BCD: Disable Dynamic Tick",
       "category": "timer",
-      "description": "Locks the kernel timer to a constant rate. Removes the dynamic ticking that lets the CPU sleep between interrupts; gains stability at the cost of idle power.",
-      "rationale": "From diggy-tweaks/cpu: disables tickless idle. Smoother frame pacing on desktops where wake-from-idle latency matters more than wattage.",
+      "description": "Forces the kernel off tickless idle onto a constant tick. Microsoft documents this as a debugging flag, and 2026 testing finds it can cause mouse-input desync/stutter and add input lag on Windows 11 - the opposite of the intended effect. De-recommended; gated to Win10 desktops and kept reversible for tuners who want to test it.",
+      "rationale": "Older guides forced the constant tick for frame pacing, but Microsoft lists disabledynamictick as debugging-only and current testing (Blur Busters forums) ties it to mouse desync and added latency on Win11. Removed from the Frame Pacing and Asta presets in v0.2.6 and gated to Win10 (osMaxBuild 19045) so it is no longer recommended on Win11. Fully reversible to default.",
       "riskLevel": 3,
       "vipGate": "vip",
       "anticheatRisk": "low",
       "rebootRequired": "reboot",
-      "targets": { "formFactor": ["desktop"] },
+      "targets": { "formFactor": ["desktop"], "osMaxBuild": 19045 },
       "anticheatCompatibility": { "battleye": "risk" },
       "actions": [
         {
@@ -1410,8 +1410,8 @@
       "id": "monitor.mpo.disable",
       "title": "Disable Multi-Plane Overlay (MPO)",
       "category": "monitor",
-      "description": "Forces DWM to composite normally instead of using GPU plane overlays. Fixes the well-known multi-monitor stuttering / black-screen flicker that hit a wave of Win10 21H2 + Win11 21H2 users.",
-      "rationale": "MPO is a power optimization that backfires on dual-monitor + variable-refresh setups. The GPU's plane scheduler conflicts with G-Sync/FreeSync. Disabling forces classic compositor path — costs ~1% GPU, restores frame stability.",
+      "description": "Conditional fix, not an FPS lever. Forces DWM to composite normally instead of using GPU plane overlays. Apply ONLY if you see multi-monitor stuttering or black-screen/flicker (a known MPO bug on some VRR setups). On a healthy single-monitor rig, disabling MPO can cost the low-latency Independent Flip path, so leave it on unless you have the problem.",
+      "rationale": "MPO is a presentation optimization; on most rigs it is harmless or helpful (it enables Independent Flip). It only backfires on certain dual-monitor + variable-refresh configs where the plane scheduler conflicts with G-Sync/FreeSync, producing flicker/stutter. This tweak is the fix for that specific bug, not a general performance gain. On Windows 11 24H2 the OverlayTestMode=5 write alone is unreliable, so we also set OverlayMinFPS=0. Reversible.",
       "riskLevel": 2,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -1426,6 +1426,14 @@
           "name": "OverlayTestMode",
           "value_type": "dword",
           "value": 5
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Microsoft\\Windows\\Dwm",
+          "name": "OverlayMinFPS",
+          "value_type": "dword",
+          "value": 0
         }
       ]
     },
@@ -2260,6 +2268,27 @@
           "name": "IRQPriority",
           "value_type": "dword",
           "value": 1
+        }
+      ]
+    },
+    {
+      "id": "power.fast-startup.disable",
+      "title": "Disable Fast Startup (keep hibernation)",
+      "category": "powerplan",
+      "description": "Turns off Windows Fast Startup (hybrid boot) so every shutdown is a true cold boot that reloads a clean kernel + drivers. Sleep and hibernation stay available - this is the lighter-touch alternative to disabling hibernation entirely.",
+      "rationale": "Fast Startup restores a hibernated kernel image on 'shutdown', carrying stale driver/network state between sessions - a known source of intermittent stutter, post-update glitches, and dual-boot clock drift. Disabling via HiberbootEnabled=0 leaves hibernation intact (unlike powercfg /hibernate off) and costs only a couple seconds of boot on an SSD. Reversible: default is 1.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "reboot",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power",
+          "name": "HiberbootEnabled",
+          "value_type": "dword",
+          "value": 0
         }
       ]
     }

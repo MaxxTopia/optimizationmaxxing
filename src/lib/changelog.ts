@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.6',
+    date: '2026-06-18',
+    highlights: [
+      'NEW **Disable Fast Startup (keeps hibernation)** — a clean, reversible tweak that makes every shutdown a true cold boot (clears stale driver/network state, fixes intermittent stutter, post-update glitches, and dual-boot clock drift). Unlike fully disabling hibernation, sleep/hibernate still work. Catalog now 100 tweaks.',
+      'FIX **Honesty pass on three aging tweaks (2026 audit).** *Disable Dynamic Tick* is a Microsoft debug-only flag now tied to mouse-input desync on Windows 11 — it\'s been de-recommended, gated to Windows 10, and pulled from the Frame Pacing + Asta presets. *Network Throttling Index* shows no measured FPS/latency gain in current instrumented testing — the inflated claim is gone and it\'s out of the default presets (still available if you want to test it). *Disable MPO* is now correctly framed as a fix for a specific multi-monitor flicker bug, not an FPS boost, and got a 24H2 reliability fix (OverlayMinFPS=0).',
+      'NEW **"Tweaks we deliberately DON\'T do" guide** — an honest rundown of popular "FPS boost" tweaks that are placebo or harmful (page file off, Realtime priority, 8000 Hz polling, debloat scripts, disabling Defender/mitigations) and the ones whose advice reversed (HAGS and Game Mode stay ON). Find it in Guides. Not being snake-oil is the whole point.',
+    ],
+  },
+  {
     version: '0.2.5',
     date: '2026-06-18',
     highlights: [

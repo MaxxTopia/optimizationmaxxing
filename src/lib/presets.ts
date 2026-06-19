@@ -46,11 +46,10 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🎯',
     tagline: 'Max FPS · stable 1% lows · endgame stability',
     description:
-      'Network throttle off, MMCSS GPU priority maxed, visual effects stripped. Tuned for Fortnite endgame storms and Warzone final circles.',
+      'MMCSS GPU priority maxed, visual effects stripped, Game DVR off. Tuned for Fortnite endgame storms and Warzone final circles.',
     tweakIds: [
       'ui.gamedvr.disable',
       'ui.visualfx.best-performance',
-      'net.throttling.disable',
       'process.mmcss.games-gpu-priority',
       'process.system.responsiveness',
     ],
@@ -79,11 +78,10 @@ export const PRESETS: PresetBundle[] = [
     glyph: '⏱',
     tagline: 'TSC-only · zero hypervisor · stable kernel timer',
     description:
-      'Boot-store overhaul that forces Windows onto the TSC, disables Hyper-V at boot, and locks the kernel timer to a constant rate. Audited 2026-05-07: dropped useplatformtick + clockres (folklore — not documented BCD elements; kernel ignores).',
+      'Boot-store overhaul that forces Windows onto the TSC and disables Hyper-V at boot. Audited 2026-05-07: dropped useplatformtick + clockres (folklore — not documented BCD elements; kernel ignores). v0.2.6: dropped disabledynamictick — Microsoft debug-only flag tied to Win11 mouse-input desync.',
     tweakIds: [
       'process.hpet.disable',
       'bcd.useplatformclock.disable',
-      'bcd.disabledynamictick.yes',
       'bcd.tscsyncpolicy.enhanced',
       'bcd.hypervisorlaunchtype.off',
       'process.global-timer-resolution.allow',
@@ -97,9 +95,8 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🌐',
     tagline: 'NIC-level interrupt + RSS · throttle + telemetry off',
     description:
-      'Rebuilt 2026-05-07 around tweaks that actually move the needle on Win10/11 (Microsoft autotuning made the old TCP-stack tweaks no-ops). NIC interrupt-moderation off, flow control off, RSS enabled, NetworkThrottlingIndex max, MS telemetry + Windows ad endpoints blocked at hosts.',
+      'Rebuilt 2026-05-07 around tweaks that actually move the needle on Win10/11 (Microsoft autotuning made the old TCP-stack tweaks no-ops). NIC interrupt-moderation off, flow control off, RSS enabled, MS telemetry + Windows ad endpoints blocked at hosts. (v0.2.6: dropped NetworkThrottlingIndex — 2026 testing shows no measured latency gain vs default.)',
     tweakIds: [
-      'net.throttling.disable',
       'net.nic.interrupt-moderation.disable',
       'net.nic.flow-control.disable',
       'net.nic.rss.enable',
@@ -152,7 +149,6 @@ export const PRESETS: PresetBundle[] = [
       'process.usb-power-mgmt.disable',
       'process.hid-power-mgmt.disable',
       // Network
-      'net.throttling.disable',
       'net.nic.interrupt-moderation.disable',
       'net.nic.flow-control.disable',
       'net.nic.rss.enable',
@@ -165,7 +161,6 @@ export const PRESETS: PresetBundle[] = [
       'monitor.windowed-game-opt.disable',
       'process.msi-mode.gpu-nic-audio',
       // Boot + kernel
-      'bcd.disabledynamictick.yes',
       'bcd.tscsyncpolicy.enhanced',
       // Memory
       'ps.mmagent.disable-mc',
