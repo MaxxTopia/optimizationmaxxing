@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.10',
+    date: '2026-06-21',
+    highlights: [
+      'POLISH **Sidebar orb sounds are now clearly distinct** — opening (Unleash) plays the full, bright DMC menu tone; closing (Banish) plays it pitched down and low-passed so it sounds like the menu powering down, not just a quieter copy. Same DMC identity as maxxtopia.com, now routed through Web Audio so the two are unmistakable.',
+    ],
+  },
+  {
     version: '0.2.9',
     date: '2026-06-21',
     highlights: [

@@ -21,29 +21,58 @@ import { MAXXER_PRODUCTS, monogram, type MaxxerProduct } from '../lib/maxxerProd
 const STORAGE_KEY = 'optmaxxing_sidebar_open'
 const ACTIVE_SLUG = 'optimizationmaxxing'
 
-// ── Orb sounds — real Devil May Cry menu SFX (shared with dropmaxxer +
-//    maxxtopia.com). Unleash (open) = full pitch; Banish (close) = pitched
-//    down a touch + slightly quieter so the two are distinguishable but read
-//    as one identity. Audio at public/audio/dmc-menu.mp3.
-let _menuBase: HTMLAudioElement | null = null
-function _playMenu(vol: number, rate: number) {
+// ── Orb sounds — real Devil May Cry menu SFX (shared with maxxtopia.com).
+//    Two clearly-distinct treatments of the SAME sample so they read as one
+//    identity but you can tell open from close blind:
+//      Unleash (open)  = full pitch, bright, unfiltered.
+//      Banish (close)  = pitched down + low-passed ("muffled") so it sounds
+//                        like the menu powering down.
+//    Routed through Web Audio because a plain <audio> can only change volume +
+//    rate, not filter. Sample at public/audio/dmc-menu.mp3.
+let _actx: AudioContext | null = null
+let _buf: AudioBuffer | null = null
+function _ensureAudio(): AudioContext | null {
+  if (typeof window === 'undefined') return null
+  if (!_actx) {
+    const AC =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+    if (!AC) return null
+    try { _actx = new AC() } catch { return null }
+  }
+  if (_actx.state === 'suspended') void _actx.resume()
+  if (!_buf) {
+    fetch('/audio/dmc-menu.mp3')
+      .then((r) => r.arrayBuffer())
+      .then((ab) => _actx!.decodeAudioData(ab))
+      .then((b) => { _buf = b })
+      .catch(() => { /* ignore */ })
+  }
+  return _actx
+}
+function _playMenu(vol: number, rate: number, lowpassHz: number | null) {
+  const c = _ensureAudio()
+  if (!c || !_buf) return // first click may race the decode; preloaded on mount below
   try {
-    if (!_menuBase) {
-      _menuBase = new Audio('/audio/dmc-menu.mp3')
-      _menuBase.preload = 'auto'
+    const src = c.createBufferSource()
+    src.buffer = _buf
+    src.playbackRate.value = rate
+    const g = c.createGain()
+    g.gain.value = Math.max(0, Math.min(1, vol))
+    if (lowpassHz) {
+      const lp = c.createBiquadFilter()
+      lp.type = 'lowpass'
+      lp.frequency.value = lowpassHz
+      src.connect(lp); lp.connect(g)
+    } else {
+      src.connect(g)
     }
-    const a = _menuBase.cloneNode(true) as HTMLAudioElement
-    a.volume = Math.max(0, Math.min(1, vol))
-    a.playbackRate = rate
-    a.currentTime = 0
-    const p = a.play()
-    if (p && p.catch) p.catch(() => { /* autoplay gate — ignore until gesture */ })
+    g.connect(c.destination)
+    src.start()
   } catch { /* no-op */ }
 }
-// Levels matched exactly to dropmaxxer's default output:
-// SAMPLE_BASE_VOL(0.16) * masterVol(0.5) * trim(3.0 | 3.5) = 0.24 | 0.28.
-function playSidebarMinimize() { _playMenu(0.24, 0.85) } // Banish (close)
-function playSidebarExpand() { _playMenu(0.28, 1.0) }    // Unleash (open)
+function playSidebarMinimize() { _playMenu(0.42, 0.74, 820) } // Banish (close) — down + muffled
+function playSidebarExpand() { _playMenu(0.32, 1.0, null) }   // Unleash (open) — bright, full
 // The Maxxtopia community Discord. Click on the suite-M logo opens it.
 // Update if the canonical invite ever changes (also lives in
 // optimizationmaxxing's Pricing.tsx + SuggestTweakModal).
@@ -59,6 +88,9 @@ export function MaxxerSidebar() {
     localStorage.setItem(STORAGE_KEY, open ? '1' : '0')
     document.body.classList.toggle('sidebar-collapsed', !open)
   }, [open])
+
+  // Preload + decode the menu sample once so the first click isn't silent.
+  useEffect(() => { _ensureAudio() }, [])
 
   return (
     <>
