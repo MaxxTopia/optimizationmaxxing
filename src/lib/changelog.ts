@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.9',
+    date: '2026-06-21',
+    highlights: [
+      'NEW tweak **Fortnite: generate NVIDIA Profile Inspector profile (.nip)** (NVIDIA-only) — writes a verified per-game driver profile (Prefer Maximum Performance, Texture Filtering High Performance, V-Sync Force Off, Max Pre-Rendered Frames defer-to-app) and opens the folder for a one-click import in NVPI. We generate the profile but **never write to the driver database ourselves** — so nothing here can break your driver. SettingIDs verified against the NVPI source + a real export. Catalog now 102 tweaks.',
+      'FIX **Honesty pass on AMD X3D + auto-pin advice.** The old guidance told single-CCD X3D owners (5800X3D / 7800X3D / 9800X3D) to "pin to CCD0" — that\'s **placebo**: there\'s only one CCD and it already holds the V-Cache, so the game always runs on the cache cores. Corrected in both the CPU-features guide and the in-app auto-pin panel. Dual-CCD (7950X3D / 9950X3D) now points at the correct native stack (CPPC=Driver + 3D V-Cache Optimizer driver + Game Bar). Added an honest anti-cheat note: prefer pinning the launcher over the game process, and treat auto-pin as a power-user fallback.',
+      'UPDATED **Intel APO guide** — Fortnite is now on Intel\'s official APO-supported list (14th-gen K / Core Ultra 200S). Free native FPS most people never enable; added the EAC/24H2 "stay fully updated" caveat.',
+    ],
+  },
+  {
     version: '0.2.8',
     date: '2026-06-21',
     highlights: [

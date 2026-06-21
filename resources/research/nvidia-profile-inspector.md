@@ -167,9 +167,17 @@ Want to measure the actual win? Use **LatencyMon** (free, [resplendence.com/late
 
 NVPI writes to NVIDIA driver profile storage — **not** the game binary, **not** memory injection. Vanguard/EAC/BattlEye have never publicly flagged it. That said: absence of evidence isn't evidence of absence. Verify per patch on the game's pinned subreddit thread.
 
-## Why we don't auto-apply this for you
+## Shortcut: let the catalog generate the Fortnite profile for you
 
-Two reasons. One: NVPI's flags interact with driver versions — what works on 580 may regress on 600. We'd need to publish + test per-driver-version values. Two: bundling Orbmu2k's binary changes our license-compliance surface. Articleware is the honest path. When the v0.1.62+ updater pipeline matures we may bundle a curated per-driver settings JSON + an "Apply baseline" button. Until then, do it yourself — 10 minutes total.
+The Tweaks page now has **"Fortnite: generate NVIDIA Profile Inspector profile (.nip)"** (NVIDIA-only). Apply it and we write a verified, ready-to-import profile to `%LOCALAPPDATA%\optmaxxing\nvpi\Fortnite.nip` and pop the folder open. It sets exactly four things — Power Management = Prefer Maximum Performance, Texture Filtering Quality = High Performance, Vertical Sync = Force Off, Max Pre-Rendered Frames (Low Latency) = defer-to-app — with SettingIDs verified against the NVPI source and a real export. Then either double-click the `.nip` in NVPI → Import, or run it headless (elevated):
+
+```
+nvidiaProfileInspector.exe -silentImport "%LOCALAPPDATA%\optmaxxing\nvpi\Fortnite.nip"
+```
+
+## Why we still don't write to the driver database for you
+
+We generate the profile but we **never touch the NVIDIA driver profile DB ourselves** — NVPI does the import. Two reasons. One: NVPI's flags interact with driver versions — what works on 580 may regress on 600, and a bad driver-DB write is a rabbit hole we won't drag your rig into. Two: bundling Orbmu2k's binary changes our license-compliance surface. Generating the file + handing you the one-click import is the honest middle ground: nothing we do can break your driver, and you stay in control of the actual apply. Do the import yourself — 10 seconds.
 
 ## Citations
 

@@ -12,8 +12,10 @@
 - **Disable in BIOS only as last resort** for pre-Win11 23H2 machines that don't have Thread Director support.
 - 15th gen (Core Ultra 200): Thread Director v2 + APO (Application Optimization). Leave E-cores on, install APO.
 
-### Intel APO (Application Optimization)
-- **Install** on Core Ultra rigs. Free download from Intel. Game-specific scheduler hints, +5-15% on supported titles (CS2, Metro Exodus, R6 Siege at launch).
+### Intel APO (Application Optimization) — and yes, Fortnite is now supported
+- **Install it** on supported rigs: **14th-gen K-series (14900K / 14700K / 14600K)** and **Core Ultra 200S / Arrow Lake**. Free — install **Intel APO + the Intel Dynamic Tuning (DSA)** app from the Microsoft Store / intel.com. It feeds the scheduler game-specific thread hints; documented gains run 5-15%, and up to ~24-31% in a few titles.
+- **Fortnite is on Intel's official APO-supported game list** — it was added beyond the original CS2 / Metro / R6 set. This is a free, native, zero-anti-cheat-risk win that most people never enable. After installing, open the APO app and confirm it's toggled **ON for Fortnite**.
+- **EAC caveat (read this):** Arrow Lake + Windows 24H2 had an EAC freeze/crash with Fortnite on early builds. It's fixed — but only if you're **fully updated**: the Nov 2024 24H2 cumulative + the Jan 2025 Intel microcode. Update Windows + GPU drivers and let EAC self-update before leaning on APO.
 - Requires Win11 23H2+.
 
 ### Performance Cores Boost / Thermal Velocity Boost
@@ -23,7 +25,7 @@
 
 ### Simultaneous Multi-Threading (SMT)
 - **Keep ON** for most titles.
-- Edge case: 5800X3D / 7800X3D / 7950X3D — large L3 victim cache; some CS2 / R6 testing shows SMT-off + Process Lasso (or our `/auto-pin`) pin to CCD0 wins 5-8% in 1% lows. Test both.
+- Edge case: some CS2 / R6 testing shows SMT-off winning 5-8% in 1% lows on a few chips. Test both — but this is separate from CCD pinning (below), and on a single-CCD X3D it's the only lever worth touching, not affinity.
 
 ### Precision Boost Overdrive (PBO)
 - **Enable** in BIOS. Free perf scaling.
@@ -37,8 +39,17 @@
 - **Enable** if your kit has EXPO. Stop running JEDEC fallback.
 - See RAM Advisor for kit-specific manual targets.
 
-### 3D V-Cache CCD pinning
-- 7950X3D / 9950X3D: 16 cores split across 2 CCDs, only one has 3D V-Cache. Game Bar + Xbox Game Bar service handles routing on Win11 23H2+. **Don't disable Game Bar** if you have a dual-CCD X3D chip.
+### 3D V-Cache CCD handling — single-CCD vs dual-CCD (people get this backwards)
+
+**Single-CCD X3D (5800X3D / 7800X3D / 9800X3D): do NOTHING. There is only one CCD, and it has the V-Cache, so the game already runs on the cache cores 100% of the time. CCD "pinning" on these chips is placebo** — you can't pin to a CCD that doesn't exist. Anyone selling you an affinity tweak for a 7800X3D is selling you nothing. Just enable EXPO + Curve Optimizer and play. (This corrects older advice, including our own — there is no affinity win here.)
+
+**Dual-CCD X3D (7950X3D / 9950X3D):** 16 cores across 2 CCDs, only one has 3D V-Cache — here routing matters. The stack:
+- **CPPC Preferred Cores = Driver** (or Auto) in BIOS.
+- Install the **AMD 3D V-Cache Performance Optimizer** driver (ships with the chipset driver).
+- **Keep Xbox Game Bar ON** — on Win11 23H2+ it's what flags the foreground game so the scheduler parks the frequency CCD and routes the game to the V-Cache CCD. **Don't disable Game Bar on a dual-CCD X3D.**
+- Manual `/auto-pin` (or Process Lasso) to the V-Cache CCD is a **fallback only** if the driver/Game Bar routing misbehaves — not the default.
+
+> For Fortnite specifically: EAC is sensitive to runtime manipulation of the game process. Prefer the native AMD driver + Game Bar routing above; if you must pin, pin the **launcher** and let it inherit, never set a rule directly on `FortniteClient-Win64-Shipping.exe`. See the auto-pin notes in the app.
 
 ### Fixed-frequency under-volt for esports (Zen 4 / Zen 5)
 - Single-CCD chip: lock all cores to a single clock (e.g. 5.2 GHz on 7700X) + tight FCLK. 0% boost variance = consistent frame times. Costs 5-8% multi-core.
@@ -58,7 +69,9 @@
 - If you do, leave on. The tradeoff is real but specific.
 
 ## Citations
-- Intel APO documentation (intel.com)
-- AMD PBO whitepaper
+- Intel APO supported-games list + setup (intel.com support 000098266)
+- Tom's Hardware — Arrow Lake APO testing; EAC/24H2 Fortnite fix coverage
+- AMD PBO whitepaper; AMD 3D V-Cache Performance Optimizer driver notes
+- HWBusters + overclock.net — X3D single- vs dual-CCD core-parking / V-Cache routing
 - Hardware Unboxed multi-CCD scheduling deep-dives
 - Wendell @ Level1Techs Curve Optimizer guides

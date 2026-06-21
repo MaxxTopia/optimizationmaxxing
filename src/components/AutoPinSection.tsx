@@ -171,7 +171,8 @@ export function AutoPinSection() {
               <strong className="text-text">Pick the right cores</strong> based on your CPU:
               <ul className="mt-1 ml-2 list-disc pl-4 space-y-0.5">
                 <li><strong className="text-text">Intel hybrid (12th-15th gen / Core Ultra):</strong> pin to <strong>P-cores only</strong> (usually cores 0–N/2; check Task Manager → Performance → CPU graph to see which cores are P-cores). E-cores hurt UE5 by bouncing the render thread between heterogeneous cache topologies.</li>
-                <li><strong className="text-text">AMD X3D (7800X3D / 9800X3D / 7950X3D):</strong> pin to <strong>cores 0–7 (CCD0 only)</strong> — the cache die. Cross-CCD latency adds ~10ns per memory hop, fatal for Fortnite's main thread.</li>
+                <li><strong className="text-text">AMD single-CCD X3D (5800X3D / 7800X3D / 9800X3D):</strong> <strong>don't pin at all</strong> — there's only one CCD and it holds the V-Cache, so the game already runs on the cache cores 100% of the time. Pinning here is placebo. Just enable EXPO + Curve Optimizer and play.</li>
+                <li><strong className="text-text">AMD dual-CCD X3D (7950X3D / 9950X3D):</strong> routing matters here. Prefer the native path — <strong>CPPC Preferred Cores = Driver</strong> in BIOS + the <strong>AMD 3D V-Cache Optimizer</strong> driver + keep <strong>Xbox Game Bar ON</strong> (it flags the foreground game to the V-Cache CCD). Use pinning to <strong>cores 0–7 (the cache CCD)</strong> only as a fallback if that routing misbehaves.</li>
                 <li><strong className="text-text">AMD non-X3D (7700X / 9700X / etc.):</strong> just check all cores; single CCD = no penalty.</li>
                 <li><strong className="text-text">Intel non-hybrid (10th-11th gen):</strong> all cores; optionally exclude HT siblings (1, 3, 5, 7…) but minor.</li>
               </ul>
@@ -188,6 +189,28 @@ export function AutoPinSection() {
             <strong className="text-text">Verify it's working:</strong> Task Manager → Details
             tab → right-click <code>FortniteClient-Win64-Shipping.exe</code> → "Set affinity" —
             the cores you reserved should be the only ones checked.
+          </p>
+        </div>
+
+        <div
+          className="mt-3 rounded-md border p-3 text-xs leading-snug max-w-3xl"
+          style={{
+            borderColor: 'rgba(226, 91, 255, 0.4)',
+            background: 'rgba(226, 91, 255, 0.05)',
+          }}
+        >
+          <p className="font-semibold text-text mb-1.5">⚠️ Honest note on Fortnite + anti-cheat</p>
+          <p className="text-text-muted">
+            Easy Anti-Cheat watches for runtime manipulation of the <em>game</em> process. Pinning
+            is a normal OS scheduler operation and we've had no reports of issues — but the
+            community-safe convention is to pin the <strong className="text-text">launcher</strong>{' '}
+            (Epic Games Launcher / Steam) and let the game inherit, rather than targeting{' '}
+            <code>FortniteClient-Win64-Shipping.exe</code> directly. EAC can also occasionally
+            re-assert its own affinity at launch, fighting a pin. <strong className="text-text">Two
+            realities worth knowing:</strong> on a single-CCD X3D this whole feature is placebo
+            (see above), and on every CPU the native scheduler (Intel APO / AMD V-Cache driver +
+            Game Bar) is the lower-risk path. Treat auto-pin as a power-user fallback, not a
+            must-have — it's here if you want it, off by default.
           </p>
         </div>
       </div>
