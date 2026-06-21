@@ -717,6 +717,61 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   padding: 16px 0;
   background: rgba(10, 6, 18, 0.85);
   border-right: 1px solid var(--border);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Animated electric static + tactical-grid noise overlay — copied EXACT from
+ * dropmaxxer's `.app__map::before` (fortnite-dropmap/src/styles/global.css).
+ * Same noise grain (4px conic), same magenta/indigo grid, same ambient glow,
+ * same bgStatic (steps-3 flicker) + bgPulse animation — so the desktop app
+ * reads as the same product family as the dropmap. pointer-events:none + z-0
+ * keeps it purely decorative behind the rail content. */
+.maxxer-sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    /* Static noise texture via gradient noise */
+    repeating-conic-gradient(rgba(226, 91, 255, 0.02) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px,
+    /* Tactical grid */
+    linear-gradient(rgba(226, 91, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(226, 91, 255, 0.04) 1px, transparent 1px),
+    /* Larger grid */
+    linear-gradient(rgba(76, 81, 247, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(76, 81, 247, 0.05) 1px, transparent 1px),
+    /* Ambient glow */
+    radial-gradient(ellipse 600px 400px at 15% 25%, rgba(226, 91, 255, 0.08), transparent),
+    radial-gradient(ellipse 500px 500px at 85% 75%, rgba(76, 81, 247, 0.07), transparent);
+  background-size: 4px 4px, 40px 40px, 40px 40px, 200px 200px, 200px 200px, 100% 100%, 100% 100%;
+  animation: bgStatic 0.15s steps(3) infinite, bgPulse 6s ease-in-out infinite alternate;
+}
+
+/* dropmaxxer static-noise keyframes (copied exact) */
+@keyframes bgStatic {
+  0% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+  33% { background-position: 1px 1px, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+  66% { background-position: -1px 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+}
+@keyframes bgPulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Keep the rail content above the noise overlay */
+.maxxer-sidebar-root,
+.maxxer-sidebar-divider,
+.maxxer-sidebar-rail {
+  position: relative;
+  z-index: 1;
+}
+
+/* Respect reduced-motion — freeze the flicker/pulse but keep the texture */
+@media (prefers-reduced-motion: reduce) {
+  .maxxer-sidebar::before { animation: none; }
 }
 
 /* When the sidebar is open, push the app-shell content right so the rail

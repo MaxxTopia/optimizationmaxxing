@@ -23,7 +23,7 @@ The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag w
 | Setting | Pro consensus | Why |
 |---|---|---|
 | Quality Presets | **Custom** (then individual values below) | Auto-presets touch settings you don't want touched |
-| Rendering Mode | **Performance** (NOT Cinematic / Epic) | Performance mode bypasses the Cinematic renderer — major FPS gain on every rig, no visibility tradeoff |
+| Rendering Mode | **Performance (DirectX 12)** (NOT DX11 / DX12 / Cinematic) | As of patch 37.00 Epic rebuilt Performance Mode on **DirectX 12** — it bypasses Nanite + Lumen entirely. Epic's own 2026 competitive guide names this the **#1 setting**: highest and most *consistent* FPS in 50-player endgame, lowest input lag, low VRAM, and it sidesteps most DX12 shader-comp stutter. This is what every T1 pro runs. |
 | Anti-Aliasing | **Off** | Costs frames; sharper enemy outlines without it |
 | 3D Resolution | **100%** | Lowering it scales everything; doesn't help past 100 |
 | View Distance | **Far** (NOT Epic) | Epic adds detail beyond what matters at engagement range |
@@ -32,10 +32,36 @@ The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag w
 | Effects | **Low** | Reduces explosion / build-particle clutter — easier to track shots through chaos |
 | Post Processing | **Low** | Removes camera grain + bloom that hide enemy outlines |
 
+### 2026 stutter fix: kill cosmetic streaming
+
+There's a known micro-stutter when Fortnite streams in cosmetic textures mid-match (enemy skins loading on contact). Add this one line to your `GameUserSettings.ini` under `[/Script/FortniteGame.FortGameUserSettings]`:
+
+```
+CosmeticStreamingEnabled=CodeSet_Disabled
+```
+
+Then re-tick read-only (see the box at the top) so Fortnite doesn't overwrite it on next launch. It trades a tiny one-time load for no streaming hitches during fights. This is config-level — the catalog doesn't auto-write it yet because the exact accepted token has shifted across patches and a wrong value triggers a full settings reset; set it yourself and verify it sticks.
+
+### Polling rate: 1000 Hz, not 8000 Hz (yes, really)
+
+Run your mouse at **1000 Hz**. 8000 Hz is a *net negative* for competitive Fortnite on all but the very fastest CPUs: it raises mouse-driver CPU overhead from ~2.5% to ~7%, and in CPU-bound endgame that costs 3–5 avg FPS and degrades your 1% lows ~15% (the exact moment you need frames most). The rule: only run 8000 Hz if your average FPS stays above **2× your refresh** at all times — which never happens in a built-out endgame. **No top Fortnite pro competes at 8000 Hz; 1000 Hz is the standard.** Full mouse setup (LOD, rear USB port, sensor) is in the *Gaming mice* guide.
+
 ## Latency tab
 
-- **NVIDIA Reflex Low Latency: On + Boost** if you're on RTX 20-series or newer. Documented 5–30 ms reduction depending on CPU/GPU bottleneck. Game-side SDK feature — there is no Windows registry or driver flag we can flip for you, you have to enable it inside Fortnite.
-- **AMD Anti-Lag** if Radeon — same idea, different vendor.
+- **NVIDIA Reflex Low Latency: On + Boost** if you're on RTX 20-series or newer. Documented 5–30 ms reduction depending on CPU/GPU bottleneck. Game-side SDK feature — there is no Windows registry or driver flag we can flip for you, you have to enable it inside Fortnite. **When Reflex is on in-game, set NVIDIA Control Panel → Low Latency Mode to OFF** (not Ultra) — driver NULL is redundant with native Reflex and "Ultra" actively fights it.
+- **AMD Anti-Lag** if Radeon — use the in-game / Anti-Lag 2 path. **Avoid the legacy driver-forced Anti-Lag v1 in anti-cheat titles** (it injects into the game and has triggered VAC-style bans elsewhere).
+
+### The G-Sync / V-Sync / cap matrix (240 Hz+) — get this exactly right
+
+This is the single most-argued setting and most people set it wrong. The authority here is Blur Busters' latency testing:
+
+| Goal | Reflex | G-Sync | V-Sync | FPS cap | Notes |
+|---|---|---|---|---|---|
+| **Absolute lowest latency** (most T1 pros, incl. Diggy's setup) | On + Boost | **OFF** | **OFF** | Uncapped, or capped just above refresh | You accept screen tearing. Wins ~1–2 ms vs a tuned G-Sync stack. Correct when your FPS sits well above your refresh. |
+| **Tear-free, near-lowest** (canonical "safe") | On + Boost | ON | ON (in NVCP, not in-game) | ~3% below refresh (240 → ~233) | Reflex auto-caps below refresh to keep G-Sync in its window. The standard recommendation if tearing bothers you. |
+| **Never do this** | — | OFF | ON | — | V-Sync ON without VRR = a full frame of added lag. |
+
+At 240 Hz+ with FPS that stays above refresh in fights, **G-Sync OFF + V-Sync OFF + Reflex On+Boost** is the lowest-latency configuration — this is why so many pros run no-sync and just live with tearing.
 
 ## Game tab — quality-of-life
 
@@ -43,11 +69,19 @@ The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag w
 - **First Person Camera (Locker / Lobby): off** unless you specifically want it. Some Chapter 5+ menus default this on; the lobby render burns CPU you'd rather have for the match.
 - **Replay recording: off** during competitive sessions. Replay captures eat ~3-5% CPU. Turn back on if you're VOD-reviewing.
 
-## Audio tab
+## Audio tab — footsteps are information, treat them like it
 
-- **Music Volume: 0.** Always. The footstep + reload audio is information; music is decoration.
+In-game:
+- **Music Volume: 0.** Always. The footstep + reload audio is information; music is decoration. Sound Effects 100%, Dialogue + Cinematics 0.
 - **Voice Chat Notification Sounds: off.** They mask gunshot directionality.
 - **Visualize Sound Effects: ON.** Free directional indicators for footsteps + shots. Used by every cited pro.
+- **3D Headphones: ON** — but only ONE spatializer at a time. If you turn this on, turn **Windows Spatial Sound OFF** (and vice-versa). Stacking two spatializers smears directionality — the most common self-inflicted audio mistake.
+- **Sound Quality: High.**
+
+Windows side (the part most guides skip):
+- **Loudness Equalization: ON** (Sound → your output device → Enhancements). This is the deliberate comp trick: it compresses dynamic range so quiet footsteps get lifted closer to the volume of gunfire — you hear the rotate before they hear you.
+- Optional **Equalizer APO** boosts in the footstep bands (~150–450 Hz body, ~1–3.5 kHz detail, ~4–5 kHz presence) if you want to go further. Free, reversible.
+- **DPC latency from audio drivers is a real FPS/stutter killer.** Run **LatencyMon** for a few minutes during a match — if an audio driver is the top DPC offender, swap a third-party Realtek codec for Microsoft's inbox **High Definition Audio Device** driver and set the format to 24-bit / 48 kHz. Counter-intuitively, onboard audio is often *lower* DPC than a cheap USB DAC.
 
 ## Cosmetics — what actually costs FPS
 

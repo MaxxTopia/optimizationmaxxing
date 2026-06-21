@@ -23,12 +23,16 @@ export interface MaxxerProduct {
 }
 
 export const MAXXER_PRODUCTS: MaxxerProduct[] = [
+  // optimizationmaxxing + discordmaxxer keep their original OG app marks — do NOT
+  // swap these for the website's rail icons. The rest mirror maxxtopia.com's
+  // sidebar rail (its `icon ?? logo`) so the app and site read as one family.
   { slug: 'optimizationmaxxing', name: 'Optimizationmaxxing', status: 'live', accentHex: '#e25bff', logo: '/logos/optimizationmaxxing.svg' },
   { slug: 'discordmaxxer',       name: 'Discordmaxxer',       status: 'live', accentHex: '#5865F2', logo: '/logos/discordmaxxer-icon.png' },
-  { slug: 'clipmaxxer',          name: 'Clipmaxxer',          status: 'soon', accentHex: '#00d4ff' },
-  { slug: 'dropmaxxer',          name: 'Dropmaxxer',          status: 'beta', accentHex: '#4c51f7' },
-  { slug: 'aimmaxxer',           name: 'Aimmaxxer',           status: 'soon', accentHex: '#f3af19' },
-  { slug: 'viewmaxxing',         name: 'Viewmaxxing',         status: 'soon', accentHex: '#10b981' },
+  { slug: 'clipmaxxer',          name: 'Clipmaxxer',          status: 'soon', accentHex: '#00d4ff', logo: '/logos/clipmaxxer-icon.svg' },
+  { slug: 'dropmaxxer',          name: 'Dropmaxxer',          status: 'beta', accentHex: '#4c51f7', logo: '/logos/dropmaxxer-icon.svg' },
+  { slug: 'aimmaxxer',           name: 'Aimmaxxer',           status: 'soon', accentHex: '#f3af19', logo: '/logos/aimmaxxer-icon.png' },
+  { slug: 'viewmaxxing',         name: 'Viewmaxxing',         status: 'soon', accentHex: '#10b981', logo: '/logos/viewmaxxing-icon.png' },
+  // editmaxxing has no logo art on the website yet → keep the monogram fallback.
   { slug: 'editmaxxing',         name: 'Editmaxxing',         status: 'soon', accentHex: '#ff6b8b' },
 ]
 

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!--
+    Clipmaxxer rail icon — a highlight PLAY mark with a viral sparkle.
+    Reads as "video clip / short", cyan canon accent. Replaces the "CM" monogram.
+  -->
+  <defs>
+    <linearGradient id="cm-play" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#7fe9ff"/>
+      <stop offset="100%" stop-color="#00b8e6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Play triangle (rounded corners) -->
+  <path d="M8.5 5.6 L18.6 11.1 A1.05 1.05 0 0 1 18.6 12.9 L8.5 18.4 A1.05 1.05 0 0 1 7 17.5 L7 6.5 A1.05 1.05 0 0 1 8.5 5.6 Z"
+        fill="url(#cm-play)"/>
+
+  <!-- Viral sparkle, top-left -->
+  <path d="M4.6 3 L5.35 5.05 L7.4 5.8 L5.35 6.55 L4.6 8.6 L3.85 6.55 L1.8 5.8 L3.85 5.05 Z"
+        fill="#eaffff"/>
+</svg>

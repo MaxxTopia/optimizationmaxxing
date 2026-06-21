@@ -20,6 +20,30 @@ import { MAXXER_PRODUCTS, monogram, type MaxxerProduct } from '../lib/maxxerProd
 
 const STORAGE_KEY = 'optmaxxing_sidebar_open'
 const ACTIVE_SLUG = 'optimizationmaxxing'
+
+// ── Orb sounds — real Devil May Cry menu SFX (shared with dropmaxxer +
+//    maxxtopia.com). Unleash (open) = full pitch; Banish (close) = pitched
+//    down a touch + slightly quieter so the two are distinguishable but read
+//    as one identity. Audio at public/audio/dmc-menu.mp3.
+let _menuBase: HTMLAudioElement | null = null
+function _playMenu(vol: number, rate: number) {
+  try {
+    if (!_menuBase) {
+      _menuBase = new Audio('/audio/dmc-menu.mp3')
+      _menuBase.preload = 'auto'
+    }
+    const a = _menuBase.cloneNode(true) as HTMLAudioElement
+    a.volume = Math.max(0, Math.min(1, vol))
+    a.playbackRate = rate
+    a.currentTime = 0
+    const p = a.play()
+    if (p && p.catch) p.catch(() => { /* autoplay gate — ignore until gesture */ })
+  } catch { /* no-op */ }
+}
+// Levels matched exactly to dropmaxxer's default output:
+// SAMPLE_BASE_VOL(0.16) * masterVol(0.5) * trim(3.0 | 3.5) = 0.24 | 0.28.
+function playSidebarMinimize() { _playMenu(0.24, 0.85) } // Banish (close)
+function playSidebarExpand() { _playMenu(0.28, 1.0) }    // Unleash (open)
 // The Maxxtopia community Discord. Click on the suite-M logo opens it.
 // Update if the canonical invite ever changes (also lives in
 // optimizationmaxxing's Pricing.tsx + SuggestTweakModal).
@@ -44,7 +68,7 @@ export function MaxxerSidebar() {
             direction="minimize"
             ariaLabel="hide suite navigation"
             tooltipText="Banish the Menu"
-            onClick={() => setOpen(false)}
+            onClick={() => { playSidebarMinimize(); setOpen(false) }}
             className="maxxer-sidebar-close"
           />
 
@@ -90,7 +114,7 @@ export function MaxxerSidebar() {
           direction="expand"
           ariaLabel="open suite navigation"
           tooltipText="Unleash the Menu"
-          onClick={() => setOpen(true)}
+          onClick={() => { playSidebarExpand(); setOpen(true) }}
           className="maxxer-sidebar-opener"
         />
       )}

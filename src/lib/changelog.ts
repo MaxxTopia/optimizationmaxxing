@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.8',
+    date: '2026-06-21',
+    highlights: [
+      'NEW **suite-rail noise effect** — the left maxxer rail now carries the same animated electric-static + tactical-grid texture as the dropmaxxer map, so the app reads as one product family. Purely cosmetic, respects reduced-motion.',
+      'NEW tweak **Disable Energy Efficient Ethernet + NIC power-save** — turns off EEE / Green Ethernet and the "let Windows turn off this device" power setting on every active NIC. This is the *one* network change with a real, reproducible win for a competitive UDP game flow: it kills the PHY wake-up micro-stalls behind random "lag spikes on a perfect line." Catalog now 101 tweaks. (The rest of NIC registry tuning stays out — it\'s placebo when your ping is route-dominated.)',
+      'UPDATED **Fortnite pro-settings guide (T1 2026 pass)** — Performance Mode is now **DirectX 12** (patch 37.00, Epic\'s own #1 competitive setting); added the exact **G-Sync / V-Sync / FPS-cap matrix** for 240 Hz+ (lowest-latency = G-Sync OFF + V-Sync OFF + Reflex On+Boost), a **1000 Hz vs 8000 Hz polling** myth-buster (8K is a net negative in CPU-bound endgame), the **cosmetic-streaming stutter fix**, and a real **competitive-audio section** (one-spatializer rule, Loudness Equalization for footsteps, LatencyMon/DPC driver swap).',
+    ],
+  },
+  {
     version: '0.2.7',
     date: '2026-06-18',
     highlights: [
