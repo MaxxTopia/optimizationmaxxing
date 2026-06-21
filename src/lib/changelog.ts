@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.11',
+    date: '2026-06-21',
+    highlights: [
+      'FIX **Sidebar sounds now fire instantly on click.** The DMC menu sample had ~0.3s of silence baked into the front, so both open and close played a beat after you clicked (worse on close, whose slower pitch stretched it further). Trimmed the dead air — the sound now lands on the click.',
+    ],
+  },
+  {
     version: '0.2.10',
     date: '2026-06-21',
     highlights: [
