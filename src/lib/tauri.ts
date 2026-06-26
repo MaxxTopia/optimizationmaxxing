@@ -310,6 +310,62 @@ export async function diskFree(): Promise<DiskFreeRow[]> {
   return invoke<DiskFreeRow[]>('disk_free')
 }
 
+export interface MatchScanFinding {
+  id: string
+  /** 'critical' | 'warn' | 'info' | 'ok' */
+  severity: 'critical' | 'warn' | 'info' | 'ok'
+  title: string
+  cause: string
+  fix: string
+  evidence: string | null
+  tweakId: string | null
+}
+
+export interface MatchScanReport {
+  headline: string
+  findings: MatchScanFinding[]
+  checked: number
+  notes: string[]
+}
+
+/** Driver-free preflight scan: surfaces silent config killers (XMP off, mouse
+ * accel, power plan, Game DVR…) with a plain-English what's-wrong/cause/fix. */
+export async function matchScanPreflight(): Promise<MatchScanReport> {
+  return invoke<MatchScanReport>('match_scan_preflight')
+}
+
+/** Live contention spot-check: ~1s sample of background apps stealing CPU from
+ * the game right now (Defender scans, browser/Discord/RGB/OBS hogs). */
+export async function matchScanLive(): Promise<MatchScanReport> {
+  return invoke<MatchScanReport>('match_scan_live')
+}
+
+/** GPU deep scan: hotspot-vs-edge delta (paste pump-out) + VRAM-junction
+ * throttling via the bundled hardware monitor (no UAC). */
+export async function matchScanDeepGpu(): Promise<MatchScanReport> {
+  return invoke<MatchScanReport>('match_scan_deep_gpu')
+}
+
+export interface SessionStatus {
+  running: boolean
+  elapsedS: number
+  samples: number
+}
+
+/** Start recording a match. Samples throttle/DPC/memory ~every 2s. */
+export async function matchScanSessionStart(): Promise<void> {
+  return invoke('match_scan_session_start')
+}
+
+/** Stop recording and get the plain-English match verdict. */
+export async function matchScanSessionStop(): Promise<MatchScanReport> {
+  return invoke<MatchScanReport>('match_scan_session_stop')
+}
+
+export async function matchScanSessionStatus(): Promise<SessionStatus> {
+  return invoke<SessionStatus>('match_scan_session_status')
+}
+
 export async function launchDiskCleanup(): Promise<void> {
   return invoke('launch_disk_cleanup')
 }

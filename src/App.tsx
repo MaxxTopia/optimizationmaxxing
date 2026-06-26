@@ -23,6 +23,7 @@ import { Settings } from './pages/Settings'
 import { Changelog } from './pages/Changelog'
 import { Diagnostics } from './pages/Diagnostics'
 import { Session } from './pages/Session'
+import { MatchScan } from './pages/MatchScan'
 import { inTauri, openExternal, telemetrySendEvent } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 import { useProfileStore } from './store/useProfileStore'
@@ -100,6 +101,7 @@ export default function App() {
           {/* legacy route kept for any in-app deep-links from old modals */}
           <Route path="/changelog" element={<Changelog />} />
           <Route path="/diagnostics" element={<Diagnostics />} />
+          <Route path="/match-scan" element={<MatchScan />} />
           <Route path="/session" element={<Session />} />
         </Routes>
         <WhatsNewModal />

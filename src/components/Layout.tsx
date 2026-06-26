@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { to: '/asta', label: 'Asta' },
   { to: '/toolkit', label: 'Toolkit' },
   { to: '/diagnostics', label: 'Diagnostics' },
+  { to: '/match-scan', label: 'Match Scan' },
   { to: '/session', label: 'Session' },
   { to: '/profile', label: 'Profile' },
   { to: '/pricing', label: 'Pricing' },

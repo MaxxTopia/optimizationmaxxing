@@ -7,6 +7,7 @@ mod cpusets;
 mod crash;
 mod drivers;
 mod engine;
+mod match_scan;
 mod metrics;
 mod network_audit;
 mod process_helpers;
@@ -359,6 +360,55 @@ async fn dpc_snapshot() -> Result<toolkit::DpcSnapshot, String> {
     tokio::task::spawn_blocking(|| toolkit::read_dpc_snapshot().map_err(|e| format!("{:#}", e)))
         .await
         .map_err(|e| format!("dpc snapshot task failed: {e}"))?
+}
+
+#[tauri::command]
+async fn match_scan_preflight() -> Result<match_scan::MatchScanReport, String> {
+    tokio::task::spawn_blocking(match_scan::run_preflight)
+        .await
+        .map_err(|e| format!("match scan task failed: {e}"))
+}
+
+#[tauri::command]
+async fn match_scan_live() -> Result<match_scan::MatchScanReport, String> {
+    tokio::task::spawn_blocking(match_scan::run_live_spotcheck)
+        .await
+        .map_err(|e| format!("match scan live task failed: {e}"))
+}
+
+#[tauri::command]
+async fn match_scan_deep_gpu(app: tauri::AppHandle) -> Result<match_scan::MatchScanReport, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let script = resource_dir.join("resources/lhm/read_sensors.ps1");
+    let dll = resource_dir.join("resources/lhm/LibreHardwareMonitorLib.dll");
+    let script_str = strip_verbatim_prefix(&script.to_string_lossy());
+    let dll_str = strip_verbatim_prefix(&dll.to_string_lossy());
+    let report = tokio::task::spawn_blocking(move || {
+        toolkit::probe_lhm_sensors(&script_str, &dll_str)
+    })
+    .await
+    .map_err(|e| format!("lhm task failed: {e}"))?;
+    Ok(match_scan::interpret_lhm_gpu(&report))
+}
+
+#[tauri::command]
+async fn match_scan_session_start() -> Result<(), String> {
+    match_scan::session_start()
+}
+
+#[tauri::command]
+async fn match_scan_session_stop() -> Result<match_scan::MatchScanReport, String> {
+    tokio::task::spawn_blocking(match_scan::session_stop)
+        .await
+        .map_err(|e| format!("session stop task failed: {e}"))
+}
+
+#[tauri::command]
+async fn match_scan_session_status() -> Result<match_scan::SessionStatus, String> {
+    Ok(match_scan::session_status())
 }
 
 #[tauri::command]
@@ -866,6 +916,12 @@ pub fn run() {
             launch_disk_cleanup,
             launch_memtest,
             dpc_snapshot,
+            match_scan_preflight,
+            match_scan_live,
+            match_scan_deep_gpu,
+            match_scan_session_start,
+            match_scan_session_stop,
+            match_scan_session_status,
             ping_probe,
             bufferbloat_probe,
             onu_stick_metrics,
