@@ -79,10 +79,12 @@ scripts/
 3. `cargo test --manifest-path src-tauri/Cargo.toml` (must be 100%)
 4. `npx tsc --noEmit` (must be clean)
 5. `git commit + git tag vX.X.X + git push origin main + git push origin vX.X.X`
-6. CI (`release.yml`) builds + signs + creates **DRAFT** GH release + dispatches to maxxtopia
-7. **Manual:** `gh release edit vX.X.X --repo MaxxTopia/optimizationmaxxing --draft=false`
+6. CI (`release.yml`) builds + signs, then **auto-publishes** the release once it verifies all 3 updater artifacts (`.exe`, `.exe.sig`, `latest.json`) are attached — no manual draft-promote step. If an artifact is missing the release stays a draft and the CI step fails loudly. (Older notes about a "Claude background watcher" / manual `gh release edit --draft=false` are obsolete — the watcher is now redundant.)
+7. CI dispatches `optimizationmaxxing-released` to maxxtopia **after** publishing, so the Download CTA URL is live when the site updates.
 8. Maxxtopia sync workflow updates `src/data/optimizationmaxxing-release.json`, fires deploy.yml, Cloudflare Pages auto-deploys
 9. Existing v0.1.49+ installs see the in-app update banner on next launch
+
+> **Resilience note (works without Claude):** the whole ship loop above is hands-off from a `git push --tags`. Three other pieces run autonomously too — the weekly `_CONTINUITY\backup.ps1` Windows task (snapshots all docs + memory), the `driver-oracle-worker` Cloudflare cron (daily NVIDIA driver version), and the Tauri auto-updater. The one irreplaceable secret is the update-signing key — see `_CONTINUITY\SECRETS-ROTATION-MAP.txt` (it CANNOT be rotated; keep an off-machine copy).
 
 ## Local dev
 ```
@@ -114,3 +116,14 @@ Toggleable via header dropdown (`ThemePicker`) or `/settings` page. Persisted to
 - YouTube creators → `references/optimizationmaxxing-youtube-creators.md` (fr33thy, lecctron, xilly, lestripez, reknotic)
 - Competitors → `references/optimizationmaxxing-competitors-raw/{paragontweaks.md, hone-gg.md}` for parity sweep
 - Pro configs → ProSettings.net, specs.gg (cross-referenced in `src/lib/grind.ts` + `src/lib/hardware.ts`)
+
+## Verify (self-check before handing back)
+- Automated (already in Release flow): `cargo test --manifest-path src-tauri/Cargo.toml` (must be 100% — ~71 tests: VIP HMAC, telemetry hashing, engine actions, registry round-trips, spec probes) + `npx tsc --noEmit` clean.
+- **Human-only — don't claim it works without Diggy:** UAC elevation flows, real registry/BCD tweaks landing + reverting cleanly, the auto-update banner end-to-end, VIP gift redemption on a 2nd rig (first-claim-wins → 409 on the second), LHM thermals fallback on locked/BitLocker rigs, game-process affinity pinning. None are unit-testable — apply on a real machine.
+- Honest handback: separate "cargo test + tsc pass" (verified) from "the tweak actually does X on hardware" (only Diggy confirms).
+
+## A few more gotchas + safety
+- **Tauri ICO byte-9 trap:** a PowerShell-generated `.ico` has reserved field != 0 → tauri-build rejects it. Hand-write the ICO header (reserved=0) before adding PNG payloads ([[reference_tauri_build_gotchas.md]]).
+- **VIP tier-roles gap:** the worker's `MAXXER*_ROLE_ID` env vars aren't set → tier grants no-op to the universal @VIP. Awaiting Diggy's Discord role IDs.
+- **No LICENSE file = all-rights-reserved ON PURPOSE** ([[feedback_optmaxxing_no_license.md]]) — public repo, but do NOT add a license (a GPL would expose the gatekept tweaks via fork).
+- Anti-cheat: tweaks are risk-tagged (Vanguard/BattlEye/EAC/FACEIT) and Tournament Mode auto-reverts risky ones before match start — never apply a flagged tweak outside its per-game gate.

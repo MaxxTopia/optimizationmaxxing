@@ -73,6 +73,35 @@ jobs:
                   # config in tauri.conf.json points at this file.
                   updaterJsonPreferNsis: true
 
+            # Auto-publish the draft release once all three updater artifacts
+            # (.exe, .exe.sig, latest.json) are confirmed attached. This is the
+            # piece that lets the project ship updates with NO human in the loop:
+            # the Tauri updater + the maxxtopia Download CTA both read
+            # releases/latest/download/..., which only resolves to NON-draft
+            # releases. If any artifact is missing the release stays a draft and
+            # this step fails loudly rather than shipping a half-built update.
+            - name: Auto-publish release (verify updater artifacts first)
+              if: success() && startsWith(github.ref, 'refs/tags/v')
+              shell: bash
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  TAG="${GITHUB_REF_NAME}"
+                  VERSION="${TAG#v}"
+                  EXE="optimizationmaxxing_${VERSION}_x64-setup.exe"
+                  ASSETS=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+                  echo "Assets on $TAG:"; echo "$ASSETS"
+                  have_exe=$(echo "$ASSETS"  | grep -c "^${EXE}$"        || true)
+                  have_sig=$(echo "$ASSETS"  | grep -c "\.sig$"          || true)
+                  have_json=$(echo "$ASSETS" | grep -c "^latest\.json$"  || true)
+                  if [ "$have_exe" -ge 1 ] && [ "$have_sig" -ge 1 ] && [ "$have_json" -ge 1 ]; then
+                      echo "All updater artifacts present -> publishing release."
+                      gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+                  else
+                      echo "::error::Missing updater artifact(s): exe=$have_exe sig=$have_sig latest.json=$have_json. Release left as draft."
+                      exit 1
+                  fi
+
             # Cross-repo: notify maxxtopia.com so the Download CTA on
             # /optimizationmaxxing updates to the new installer. Listener
             # workflow on the other side rewrites

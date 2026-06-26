@@ -51,7 +51,7 @@ Outputs:
 
 ## Releases
 
-Every `v*` tag push triggers GitHub Actions to build the installer, attach it to a draft GitHub release, and ping [maxxtopia.com](https://maxxtopia.com/optimizationmaxxing) so the Download CTA auto-updates. See [`docs/MAXXTOPIA_AUTOSYNC.md`](docs/MAXXTOPIA_AUTOSYNC.md) for the cross-repo dispatch setup.
+Every `v*` tag push triggers GitHub Actions to build + sign the installer, auto-publish the GitHub release once the updater artifacts are verified present, and ping [maxxtopia.com](https://maxxtopia.com/optimizationmaxxing) so the Download CTA auto-updates. Fully hands-off from the tag push — no manual draft-promote. See [`docs/MAXXTOPIA_AUTOSYNC.md`](docs/MAXXTOPIA_AUTOSYNC.md) for the cross-repo dispatch setup.
 
 To cut a release:
 ```powershell
