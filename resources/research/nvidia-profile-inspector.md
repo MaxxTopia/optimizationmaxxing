@@ -4,6 +4,8 @@ NVIDIA Control Panel exposes maybe 15% of the actual driver knobs. The rest live
 
 Requires a GeForce 900-series or newer (Reflex hardware floor). 1000/2000/3000/4000/5000 all work.
 
+> **2026 orientation:** NVIDIA discontinued GeForce Experience in late 2024 — install the **NVIDIA App** (the only official driver software now), not GFE. The legacy **NVIDIA Control Panel still exists** in 2026 and is where the global 3D settings referenced below live; if you can't find it on a fresh install, right-click the desktop → "NVIDIA Control Panel", or open it from inside the NVIDIA App. NVPI itself is unaffected and is still the only way to reach the undocumented flags.
+
 ## TL;DR — 60-second setup
 
 1. Download NVPI: **[github.com/Orbmu2k/nvidiaProfileInspector/releases](https://github.com/Orbmu2k/nvidiaProfileInspector/releases)** — grab the latest `nvidiaProfileInspector.zip`, extract, run the `.exe`. No install. Verified working May 2026.

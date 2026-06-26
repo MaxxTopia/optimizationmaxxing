@@ -86,7 +86,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Peterbot',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Falcons · 2024 FNCS Global Championship winner (w/ Pollo) · 2025 FNCS Pro-Am winner · widely called the GOAT',
+    credential: 'Falcons · 2024 FNCS Global Championship winner (w/ Pollo) · 2026 Major 1 Summit 2nd ($150K, GC-qualified) · 2025 FNCS Pro-Am winner · widely called the GOAT',
     voice: "What's harder — scoring a basket on LeBron, or killing Pete in a Fortnite game? People actually have this debate. That's the level.",
     tier: 'goat',
     rig: {
@@ -137,11 +137,11 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     tier: 'top',
     rig: {
       dpi: '800',
-      sensitivity: '6.0% / 6.0%',
+      sensitivity: '5.8% / 5.8%',
       pollingHz: 1000,
       monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz)',
-      mouse: 'Razer Viper V3 Pro Black',
-      keyboard: 'SteelSeries Apex Pro TKL Gen 3 Black',
+      mouse: 'Finalmouse Starlight PRO',
+      keyboard: 'Wooting 60HE+',
     },
     insights: [
       {
@@ -238,7 +238,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'EpikWhale',
     kind: 'pro',
     games: ['fortnite'],
-    credential: '2019 Fortnite World Cup — 3rd place Solo Finals · $1.2M won · NA West\'s original LAN proof case · FNCS Global Championship 2025 qualifier (w/ Paper + VicterV) · still competing 2026',
+    credential: 'XP42 Esports · 2019 Fortnite World Cup — 3rd place Solo Finals · $1.2M won · NA West\'s original LAN proof case · FNCS Global Championship 2025 qualifier (w/ Paper + VicterV) · still competing 2026',
     voice: "Shane 'EpikWhale' Cotton from NA West — the player who proved a West kid could go to a LAN in front of 19,000 fans and place top 3 against the best NA East + EU competition the scene had to offer. Six years later still grinding, still qualifying for Globals, still in the conversation.",
     tier: 'top',
     rig: {
@@ -314,8 +314,8 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Clix',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Cody "Clix" Conrod · NRG Esports · 5× World Cup qualifier · 2024 Forbes 30 Under 30 (youngest member) · 8M+ Twitch followers',
-    voice: 'NRG NA pro since 2019 (started on Misfits at 14). Sits at a rare intersection — top-bracket competitive FNCS regular + a streamer + a business operator (apparel, UEFN studio, XSET co-ownership). The Forbes 30 Under 30 nod at 19 is the receipt.',
+    credential: 'Cody "Clix" Conrod · XSET (player + co-owner) · 5× World Cup qualifier · 2024 Forbes 30 Under 30 (youngest member) · 8M+ Twitch followers',
+    voice: 'NA pro since 2019 (started on Misfits at 14, NRG 2020–Jan 2023, joined XSET Oct 2023). Sits at a rare intersection — top-bracket competitive FNCS regular + a streamer + a business operator (apparel, UEFN studio, XSET co-ownership). The Forbes 30 Under 30 nod at 19 is the receipt.',
     tier: 'top',
     rig: {
       dpi: '800',
@@ -396,7 +396,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Bugha',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Solo Fortnite World Cup champion 2019 · $3M prize · still competing professionally',
+    credential: 'Dignitas · Solo Fortnite World Cup champion 2019 · $3M prize · still competing professionally (2026)',
     voice: 'Won Solo World Cup at 16. Career has spanned every major Chapter since — one of the few from the 2019 era still on the FNCS circuit.',
     tier: 'top',
     rig: {
@@ -453,8 +453,8 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     name: 'Th0masHD',
     kind: 'pro',
     games: ['fortnite'],
-    credential: 'Virtus.pro · Danish (b. 2002) · long-tenured EU pro with documented competitive history',
-    voice: "Thomas Høxbro Davidsen — Danish EU pro on Virtus.pro. Career history + tournament placements are documented on Liquipedia rather than reverse-engineered from highlight clips.",
+    credential: 'Virtus.pro (joined Jan 2026) · Danish (b. 2002) · 2024 FNCS Global Championship runner-up · 2024 Major 1 EU runner-up · DreamHack Dallas + Summer winner · ~$1.5M career earnings',
+    voice: "Thomas Høxbro Davidsen — Danish EU pro. One of EU's most decorated FNCS competitors; joined Virtus.pro (with FoCuS) in Jan 2026 when the org returned to Fortnite after ~5 years away. Placements are documented on Liquipedia rather than reverse-engineered from highlight clips.",
     tier: 'top',
     rig: {
       dpi: '1600',
@@ -466,8 +466,8 @@ export const GRIND_ENTRIES: GrindEntry[] = [
     },
     insights: [
       {
-        text: 'On Virtus.pro for multi-year tenure — unusually long single-org stint in the Fortnite scene. Continuity of practice partners + coaching + scrim slot allocation tends to matter more than people give credit for; Liquipedia\'s tournament timeline shows the consistency.',
-        citation: { label: 'Liquipedia Fortnite — Th0masHD', url: 'https://liquipedia.net/fortnite/Th0masHD' },
+        text: 'Signed by Virtus.pro in Jan 2026 — the org\'s return to Fortnite after ~5 years away picked a proven name, not a prospect. The credential that earned it: 2024 FNCS Global Championship runner-up and 2024 Major 1 EU runner-up. Lesson — orgs re-entering a scene buy track record, so the durable asset is a multi-chapter placement history, not one viral peak.',
+        citation: { label: 'Virtus.pro — return to Fortnite', url: 'https://virtus.pro/news/virtus-pro-return-to-fortnite' },
       },
       {
         text: 'EU pro with consistent FNCS placements across multiple chapters — a track record that\'s harder to put together than a single peak season because each chapter resets meta + mechanics. Full event history at the cited link.',

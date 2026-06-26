@@ -120,7 +120,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$999',
         tier: 'goat',
         why:
-          'The actual pro-tier pick. 16GB GDDR7, 360W. Maxes Fortnite + DLSS 4 + Reflex 2 with Frame Warp on titles that support it. Best balance of cost + ceiling. Peterbot-tier rig usually lands here unless the streamer wants the 5090 thumbnail.',
+          'The current-gen pro-tier pick. 16GB GDDR7, 360W. Maxes Fortnite + DLSS 4 + Reflex 2 with Frame Warp on titles that support it. Best balance of cost + ceiling. (Note: many established pros still run a 4090 — Peterbot does — since Fortnite at 1080p comp settings is CPU-bound long before a 4090 is the limiter; the 5080 is the upgrade pick, not a requirement.)',
         link: 'https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5080/',
       },
       {
@@ -399,18 +399,19 @@ export const HARDWARE: HardwareSection[] = [
         price: '$159',
         tier: 'goat',
         why:
-          '60g, HERO 2 sensor (32K DPI, 888 IPS). Industry-default — Peterbot, Mongraal, Veno, Reet, half the active FNCS field. Wireless dongle is sub-1ms latency.',
-        citedPro: 'Peterbot · Mongraal · Veno',
+          '60g, HERO 2 sensor (32K DPI, 888 IPS). Industry-default — Peterbot, Reet, and a large slice of the active FNCS field. Wireless dongle is sub-1ms latency.',
+        citedPro: 'Peterbot',
         link: 'https://www.logitechg.com/en-us/products/gaming-mice/pro-x-superlight-2.html',
         caveat: 'White colorway has a known coating wear after 6+ months of heavy use. Black holds up.',
       },
       {
-        name: 'Razer Viper V2 Pro',
-        price: '$149',
+        name: 'Razer Viper V3 Pro',
+        price: '$159',
         tier: 'pro',
         why:
-          '58g, Focus Pro 30K sensor. Lighter than the G PRO X S2 by 2g — meaningful at the top. Wireless. Razer ecosystem if you want the 4K Hz polling dongle add-on (extra $30).',
-        link: 'https://www.razer.com/gaming-mice/razer-viper-v2-pro',
+          '54g, Focus Pro 35K sensor, native 8K Hz polling with the HyperPolling dongle. The current Razer flagship and the one cited FNCS pros (e.g. Mongraal) actually run — replaced the older V2 Pro. Lighter than the G PRO X S2.',
+        citedPro: 'Mongraal',
+        link: 'https://www.razer.com/gaming-mice/razer-viper-v3-pro',
       },
       {
         name: 'Finalmouse UltralightX Prophecy',

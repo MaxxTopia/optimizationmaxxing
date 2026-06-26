@@ -78,10 +78,8 @@ export const PRESETS: PresetBundle[] = [
     glyph: '⏱',
     tagline: 'TSC-only · zero hypervisor · stable kernel timer',
     description:
-      'Boot-store overhaul that forces Windows onto the TSC and disables Hyper-V at boot. Audited 2026-05-07: dropped useplatformtick + clockres (folklore — not documented BCD elements; kernel ignores). v0.2.6: dropped disabledynamictick — Microsoft debug-only flag tied to Win11 mouse-input desync.',
+      'Boot-store overhaul that disables Hyper-V at boot and syncs the TSC across cores. Audited 2026-05-07: dropped useplatformtick + clockres (folklore — not documented BCD elements; kernel ignores). v0.2.6: dropped disabledynamictick — Microsoft debug-only flag tied to Win11 mouse-input desync. v0.2.12: dropped hpet.disable + useplatformclock.disable — modern Windows already runs invariant TSC by default; disabling HPET risks TSC drift (anti-cheat speedhack flag) for no measured gain.',
     tweakIds: [
-      'process.hpet.disable',
-      'bcd.useplatformclock.disable',
       'bcd.tscsyncpolicy.enhanced',
       'bcd.hypervisorlaunchtype.off',
       'process.global-timer-resolution.allow',

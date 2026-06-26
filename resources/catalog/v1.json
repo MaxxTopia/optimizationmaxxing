@@ -1,7 +1,7 @@
 {
-  "version": "v1.8.8",
+  "version": "v1.8.9",
   "generated_at": "2026-06-21",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash. v1.8.5 (2026-06-11 audit): removed duplicate MPO tweak display.mpo.disable (identical OverlayTestMode=5 write to monitor.mpo.disable; AC tags merged onto the survivor) and rewrote network.tcp.ack-nodelay copy with an honest UDP caveat (the big shooters run gameplay over UDP, so this only helps TCP launcher/login/download/voice traffic, not in-match ping). Catalog now 99 tweaks. v1.8.6 (2026-06-18 SOTA audit): added power.fast-startup.disable (HiberbootEnabled=0 - disables Fast Startup while keeping hibernation, unlike powercfg /hibernate off); de-recommended net.throttling.disable (2026 instrumented testing shows no FPS/latency gain vs default) and bcd.disabledynamictick.yes (Microsoft debug-only flag tied to Win11 mouse-input desync) by rewriting their copy and removing both from all default presets; gated disabledynamictick to Win10 via osMaxBuild; reframed monitor.mpo.disable as a conditional flicker fix (not an FPS lever) and added OverlayMinFPS=0 for 24H2 reliability. Catalog now 100 tweaks. v1.8.7 (2026-06-21 T1 Fortnite gap audit): added net.nic.eee-powersave.disable (Energy Efficient Ethernet / Green Ethernet + 'allow computer to turn off this device' off across all up-physical NICs) - the one network change with a real reproducible win for a single competitive UDP flow (kills PHY wake-up micro-stalls / random connection hitches); the rest of NIC registry tuning stays placebo since ping/jitter are ISP/route-dominated. Catalog now 101 tweaks. v1.8.8 (2026-06-21): added nvidia.nvpi.fortnite-profile - generates a verified per-game NVIDIA Profile Inspector .nip (Prefer Max Performance / Texture Filtering High Perf / VSync Force Off / Max Pre-Rendered Frames defer-to-app) for one-click import; we write the profile + open the folder but never touch the driver DB ourselves (NVPI does the import), so it cannot break drivers. SettingIDs/values verified against the Orbmu2k/nvidiaProfileInspector source + a real export. Catalog now 102 tweaks.",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash. v1.8.5 (2026-06-11 audit): removed duplicate MPO tweak display.mpo.disable (identical OverlayTestMode=5 write to monitor.mpo.disable; AC tags merged onto the survivor) and rewrote network.tcp.ack-nodelay copy with an honest UDP caveat (the big shooters run gameplay over UDP, so this only helps TCP launcher/login/download/voice traffic, not in-match ping). Catalog now 99 tweaks. v1.8.6 (2026-06-18 SOTA audit): added power.fast-startup.disable (HiberbootEnabled=0 - disables Fast Startup while keeping hibernation, unlike powercfg /hibernate off); de-recommended net.throttling.disable (2026 instrumented testing shows no FPS/latency gain vs default) and bcd.disabledynamictick.yes (Microsoft debug-only flag tied to Win11 mouse-input desync) by rewriting their copy and removing both from all default presets; gated disabledynamictick to Win10 via osMaxBuild; reframed monitor.mpo.disable as a conditional flicker fix (not an FPS lever) and added OverlayMinFPS=0 for 24H2 reliability. Catalog now 100 tweaks. v1.8.7 (2026-06-21 T1 Fortnite gap audit): added net.nic.eee-powersave.disable (Energy Efficient Ethernet / Green Ethernet + 'allow computer to turn off this device' off across all up-physical NICs) - the one network change with a real reproducible win for a single competitive UDP flow (kills PHY wake-up micro-stalls / random connection hitches); the rest of NIC registry tuning stays placebo since ping/jitter are ISP/route-dominated. Catalog now 101 tweaks. v1.8.8 (2026-06-21): added nvidia.nvpi.fortnite-profile - generates a verified per-game NVIDIA Profile Inspector .nip (Prefer Max Performance / Texture Filtering High Perf / VSync Force Off / Max Pre-Rendered Frames defer-to-app) for one-click import; we write the profile + open the folder but never touch the driver DB ourselves (NVPI does the import), so it cannot break drivers. SettingIDs/values verified against the Orbmu2k/nvidiaProfileInspector source + a real export. Catalog now 102 tweaks. v1.8.9 (2026-06-25 expert audit): fixed monitor.windowed-game-opt.disable (was writing the unrecognized token GlobalOptimizationsFlags=0 - inert; corrected to SwapEffectUpgradeEnable=0;VRROptimizeEnable=0; and reframed as a conditional 24H2 stutter-fix); removed the AllowAutoGameMode=0 action from ui.gamedvr.disable (it silently disabled Windows Game Mode, which snake-oil-tweaks.md says keep ON); de-recommended process.hpet.disable + bcd.useplatformclock.disable (modern Windows already runs invariant TSC so useplatformclock=no is a no-op, and disabling HPET risks TSC clock-skew that anti-cheats can read as a speedhack) and removed both from the Frame Pacing preset; added formFactor:[desktop] gate to process.connected-standby.disable; softened the overstated NIC interrupt-moderation claim; added audio.comms-ducking.disable (UserDuckingPreference=3 - stops Windows dropping game audio 80% on voice-chat activity). Catalog now 103 tweaks.",
   "tweaks": [
     {
       "id": "display.refresh.maximize",
@@ -77,14 +77,6 @@
           "hive": "hkcu",
           "path": "System\\GameConfigStore",
           "name": "GameDVR_Enabled",
-          "value_type": "dword",
-          "value": 0
-        },
-        {
-          "kind": "registry_set",
-          "hive": "hkcu",
-          "path": "Software\\Microsoft\\GameBar",
-          "name": "AllowAutoGameMode",
           "value_type": "dword",
           "value": 0
         }
@@ -443,11 +435,32 @@
       ]
     },
     {
+      "id": "audio.comms-ducking.disable",
+      "title": "Audio: Stop Ducking Game Sound on Voice Chat",
+      "category": "process",
+      "description": "Sets the Windows 'communications activity' audio policy to 'Do Nothing'. By default Windows drops every other sound by 80% whenever it detects voice/communication activity (Discord, in-game voice) - which buries footsteps and positional audio in the middle of a fight. This stops the auto-duck so game audio stays at full volume while you talk.",
+      "rationale": "HKCU Multimedia\\Audio UserDuckingPreference: default 0 = 'reduce the volume of other sounds by 80%', value 3 = 'do nothing'. Competitive FPS leans on positional/footstep cues that the duck silences exactly when you are voice-active in a fight. HKCU (no UAC), fully reversible (restores the prior value). Source: Microsoft audio-ducking documentation.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Multimedia\\Audio",
+          "name": "UserDuckingPreference",
+          "value_type": "dword",
+          "value": 3
+        }
+      ]
+    },
+    {
       "id": "process.hpet.disable",
       "title": "Disable HPET (High-Precision Event Timer)",
       "category": "timer",
-      "description": "Sets the hpet driver Start type to Disabled. Forces Windows to fall back to the TSC for timing.",
-      "rationale": "From diggy-tweaks: 'forces Windows to use the TSC instead of the slower HPET. Single most important tweak for 0.1% low stability.' Pairs with bcdedit useplatformclock=no when that lands in Phase 4d.",
+      "description": "Sets the hpet driver Start type to Disabled. De-recommended (2026): modern Windows already runs on the invariant TSC, but the TSC periodically resyncs against HPET - remove HPET and the TSC can drift over a long session (clock skew). Some anti-cheats can mistake that skew for a speedhack. Leave timers at default; kept reversible for tuners who want to A/B it.",
+      "rationale": "Older guides claimed this was the 'single most important tweak for 0.1% lows' - current in-niche testing (Melody's Tweaks 'Misconceptions about timers', Blur Busters) disproves it and warns that disabling HPET causes TSC drift that can read as a speedhack to anti-cheats. The catalog's own snake-oil-tweaks.md says revert clock flags to default. Removed from presets and no longer recommended; reversible to the hpet default Start value.",
       "riskLevel": 3,
       "vipGate": "vip",
       "anticheatRisk": "low",
@@ -570,8 +583,8 @@
       "id": "bcd.useplatformclock.disable",
       "title": "BCD: Disable useplatformclock (force TSC)",
       "category": "timer",
-      "description": "Tells the Windows boot loader to ignore HPET/PM-timer and use TSC for the platform clock. Pairs with the HPET-disable registry tweak for full TSC operation.",
-      "rationale": "From diggy-tweaks/cpu: forces Windows to use the TSC instead of the slower HPET. Single most important tweak for 0.1% low stability. Without this, Windows can fall back to HPET even with the driver disabled.",
+      "description": "Writes useplatformclock=no in the boot store. De-recommended (2026): on every modern CPU useplatformclock is UNSET by default and Windows already uses the invariant TSC - so setting it to 'no' changes nothing (it's a no-op, not a win). Leave timers at default; kept reversible.",
+      "rationale": "Older guides claimed forcing this was the 'single most important tweak for 0.1% lows.' It isn't - when the value is unset (the default) Windows never uses HPET as the platform clock, so the explicit 'no' is redundant. The catalog's own snake-oil-tweaks.md says revert clock flags to default. Removed from presets and no longer recommended; fully reversible (deletes the BCD value).",
       "riskLevel": 3,
       "vipGate": "vip",
       "anticheatRisk": "low",
@@ -1127,7 +1140,7 @@
           "value": 0
         }
       ],
-      "targets": { "osMinBuild": 16299 }
+      "targets": { "formFactor": ["desktop"], "osMinBuild": 16299 }
     },
     {
       "id": "privacy.win11.recall.disable",
@@ -1441,8 +1454,8 @@
       "id": "monitor.windowed-game-opt.disable",
       "title": "Disable Win11 Optimizations for Windowed Games",
       "category": "monitor",
-      "description": "Turns off Win11's per-game windowed-mode optimizations (the new Auto-HDR + Variable-Refresh hint layer). Some games stutter when this layer activates mid-frame.",
-      "rationale": "Win11 22H2 added a windowed-game optimization shim that intercepts present calls. Real benefit on some titles, real stutter source on others. Off = predictable presentation.",
+      "description": "Turns off Win11's per-game windowed-mode optimizations (the Auto-HDR + Variable-Refresh / DirectFlip hint layer) via the DirectX user settings. CONDITIONAL fix: only worth applying if a specific title stutters when this layer activates mid-frame. On a healthy single-monitor rig it can COST input latency on 24H2 (26100+), where this layer IS the low-latency DirectFlip path that replaced fullscreen-exclusive - leave it ON unless you have a measured stutter.",
+      "rationale": "Win11 22H2 added a windowed-game optimization shim that intercepts present calls. Audited 2026-06-25: prior catalog wrote the unrecognized token `GlobalOptimizationsFlags=0` which Windows ignores - the tweak was inert and the optimization stayed ON. Corrected to the real tokens `SwapEffectUpgradeEnable=0;VRROptimizeEnable=0;` (MS Support 'Optimizations for windowed games in Windows 11'; Winhance #363). Reframed as a conditional stutter-fix, not a blanket latency win - on 24H2 this layer is the DirectFlip low-latency path.",
       "riskLevel": 1,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -1455,7 +1468,7 @@
           "path": "Software\\Microsoft\\DirectX\\UserGpuPreferences",
           "name": "DirectXUserGlobalSettings",
           "value_type": "string",
-          "value": "GlobalOptimizationsFlags=0;"
+          "value": "SwapEffectUpgradeEnable=0;VRROptimizeEnable=0;"
         }
       ]
     },
@@ -1507,7 +1520,7 @@
       "title": "NIC: Interrupt Moderation = Disabled",
       "category": "network",
       "description": "Disables NIC-level interrupt coalescing on every physical adapter that exposes the property. Each packet generates an immediate interrupt instead of being batched — lowest possible network latency at the cost of CPU.",
-      "rationale": "Source: diggy-tweaks/network. The single highest-impact NIC latency win pros run. Default coalescing batches up to 256 µs of packets to reduce CPU load; disabled = sub-µs interrupt delivery. Tradeoff: more CPU spent in network DPC. Pair with core-parking-disable so a parked core doesn't have to wake first.",
+      "rationale": "Source: diggy-tweaks/network. Of the NIC offload knobs this is the one with a plausible mechanism: default coalescing batches up to ~256 µs of packets to reduce CPU load, disabled = immediate interrupt delivery. Honest caveat (2026): competitive netcode is small UDP and end-to-end ping/jitter is ISP/route-dominated, so the real-world win is marginal and CPU-spent-in-DPC rises - not the headline win older guides claim. Worth it on a CPU with headroom; skip if CPU-bound. Pair with core-parking-disable so a parked core doesn't have to wake first.",
       "riskLevel": 3,
       "vipGate": "vip",
       "anticheatRisk": "none",

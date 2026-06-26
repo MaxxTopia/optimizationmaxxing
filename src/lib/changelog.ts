@@ -12,6 +12,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.12',
+    date: '2026-06-25',
+    highlights: [
+      'FIX **A tweak that did nothing now works.** "Disable Win11 Optimizations for Windowed Games" was writing an unrecognized value, so it never actually applied. Fixed the value — and reframed it as a conditional stutter-fix (on Win11 24H2 this layer is the low-latency path, so only disable it if you see stutter).',
+      'FIX **Game Mode is no longer secretly disabled.** "Disable Game DVR & Game Bar" was also switching off Windows Game Mode, which our own research says to keep ON (it helps 1% lows). It now only kills the background recording, as the name says.',
+      'CHANGE **De-recommended two timer tweaks** (Disable HPET + BCD useplatformclock). Modern Windows already runs on the invariant TSC, so these gave no real gain — and disabling HPET can cause clock drift that some anti-cheats read as a speedhack. Removed from the Frame Pacing preset; still reversible if you want to test them.',
+      'NEW **Stop game audio ducking on voice chat.** Windows drops all other sound by 80% whenever it detects voice activity (Discord, in-game comms) — burying footsteps mid-fight. New free tweak sets it to "do nothing" so your game audio stays full while you talk.',
+      'CONTENT **Pro + hardware data refresh** — corrected Clix (XSET), Th0masHD (Virtus.pro Jan 2026 + real credentials), Veno\'s current rig, the GPX/Viper mouse attributions, and added Razer Viper V3 Pro to the ladder.',
+      'CONTENT **Guide currency** — honest NIC-tuning caveats, and a 2026 note that the NVIDIA App (not GeForce Experience) is now the official driver software.',
+    ],
+  },
+  {
     version: '0.2.11',
     date: '2026-06-21',
     highlights: [

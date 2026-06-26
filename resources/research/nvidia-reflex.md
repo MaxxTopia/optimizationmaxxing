@@ -2,6 +2,8 @@
 
 **No. Reflex *reduces* input delay.** Common myth driven by old Pre-Render Limit confusion. The real gotcha is that **NVCP and in-game settings can fight each other** — see "common confusion" at the bottom.
 
+> **2026 note:** the NVCP settings below live in the **legacy NVIDIA Control Panel**, which still ships in 2026. GeForce Experience was discontinued in late 2024 — install the **NVIDIA App** (not GFE); it can launch the Control Panel, or right-click the desktop → "NVIDIA Control Panel".
+
 ## What it actually does
 
 - **Reflex Low Latency mode** pulls the CPU's render-queue submission timing forward so the GPU is never idle waiting for the next frame *and* the render queue never balloons. Result: lower end-to-end input-to-photon latency.
