@@ -395,6 +395,24 @@ async fn match_scan_deep_gpu(app: tauri::AppHandle) -> Result<match_scan::MatchS
 }
 
 #[tauri::command]
+async fn match_scan_deep_cpu(app: tauri::AppHandle) -> Result<match_scan::MatchScanReport, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let script = resource_dir.join("resources/lhm/read_sensors.ps1");
+    let dll = resource_dir.join("resources/lhm/LibreHardwareMonitorLib.dll");
+    let script_str = strip_verbatim_prefix(&script.to_string_lossy());
+    let dll_str = strip_verbatim_prefix(&dll.to_string_lossy());
+    let report = tokio::task::spawn_blocking(move || {
+        toolkit::probe_lhm_sensors_elevated(&script_str, &dll_str)
+    })
+    .await
+    .map_err(|e| format!("lhm task failed: {e}"))?;
+    Ok(match_scan::interpret_lhm_cpu(&report))
+}
+
+#[tauri::command]
 async fn match_scan_session_start() -> Result<(), String> {
     match_scan::session_start()
 }
@@ -919,6 +937,7 @@ pub fn run() {
             match_scan_preflight,
             match_scan_live,
             match_scan_deep_gpu,
+            match_scan_deep_cpu,
             match_scan_session_start,
             match_scan_session_stop,
             match_scan_session_status,

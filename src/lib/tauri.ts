@@ -346,6 +346,12 @@ export async function matchScanDeepGpu(): Promise<MatchScanReport> {
   return invoke<MatchScanReport>('match_scan_deep_gpu')
 }
 
+/** CPU deep scan: hottest core temp + Vcore via the elevated hardware monitor.
+ * Triggers a UAC prompt (needs the WinRing0 driver for real CPU sensors). */
+export async function matchScanDeepCpu(): Promise<MatchScanReport> {
+  return invoke<MatchScanReport>('match_scan_deep_cpu')
+}
+
 export interface SessionStatus {
   running: boolean
   elapsedS: number

@@ -5,6 +5,7 @@ import {
   matchScanPreflight,
   matchScanLive,
   matchScanDeepGpu,
+  matchScanDeepCpu,
   matchScanSessionStart,
   matchScanSessionStop,
   matchScanSessionStatus,
@@ -68,7 +69,7 @@ export function MatchScan() {
     }
   }, [isVip])
 
-  async function run(kind: 'preflight' | 'live' | 'deep') {
+  async function run(kind: 'preflight' | 'live' | 'deep' | 'deepcpu') {
     if (!isVip) return
     setBusy(true)
     setError(null)
@@ -78,7 +79,9 @@ export function MatchScan() {
           ? matchScanLive
           : kind === 'deep'
             ? matchScanDeepGpu
-            : matchScanPreflight
+            : kind === 'deepcpu'
+              ? matchScanDeepCpu
+              : matchScanPreflight
       setReport(await fn())
     } catch (e) {
       setError(String(e))
@@ -183,6 +186,25 @@ export function MatchScan() {
             }`}
           >
             {busy ? 'Reading…' : 'GPU deep scan'}
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 flex-wrap border-t border-border pt-4">
+          <div>
+            <div className="font-semibold text-text">CPU deep scan</div>
+            <div className="text-sm text-text-muted">
+              Real core temperature + voltage (catches thermal throttling and
+              over-volting). Asks for admin — needs the hardware-monitor driver.
+            </div>
+          </div>
+          <button
+            onClick={() => run('deepcpu')}
+            disabled={busy || !isVip}
+            className={`btn-chrome px-5 py-2 font-semibold whitespace-nowrap ${
+              busy || !isVip ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
+          >
+            {busy ? 'Reading…' : 'CPU deep scan (admin)'}
           </button>
         </div>
 

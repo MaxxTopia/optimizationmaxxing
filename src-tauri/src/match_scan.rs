@@ -9,6 +9,7 @@
 //! hotspot/VRAM-junction temps) + PresentMon frametime are later increments.
 //! Full vetted signal catalog: references/match-scan-spec.md (section G).
 
+use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
 use std::thread::JoinHandle;
@@ -39,6 +40,30 @@ fn run_ps(script: &str) -> Option<String> {
         return None;
     }
     Some(String::from_utf8_lossy(&out.stdout).trim().to_string())
+}
+
+/// Per-PID GPU utilization (% on the 3D engine) via the Windows perf counters.
+/// Read-only, no admin. Instance names look like
+/// `pid_1234_luid_..._engtype_3D`; we sum across a PID's 3D engines.
+fn read_gpu_by_pid() -> HashMap<u32, f32> {
+    let mut map: HashMap<u32, f32> = HashMap::new();
+    let script = "(Get-Counter '\\GPU Engine(*engtype_3D)\\Utilization Percentage' -ErrorAction SilentlyContinue).CounterSamples | Where-Object { $_.CookedValue -gt 0.5 } | ForEach-Object { \"$($_.InstanceName)=$([math]::Round($_.CookedValue,1))\" }";
+    if let Some(out) = run_ps(script) {
+        for line in out.lines() {
+            if let Some((inst, val)) = line.rsplit_once('=') {
+                if let Some(rest) = inst.strip_prefix("pid_") {
+                    if let Some(pid_str) = rest.split('_').next() {
+                        if let (Ok(pid), Ok(v)) =
+                            (pid_str.parse::<u32>(), val.trim().parse::<f32>())
+                        {
+                            *map.entry(pid).or_insert(0.0) += v;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    map
 }
 
 struct RefreshInfo {
@@ -608,6 +633,117 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
     }
 }
 
+/// CPU deep scan: interpret an ELEVATED LibreHardwareMonitor report (WinRing0,
+/// needs admin/UAC) for the things `Win32_Processor` lies about — the hottest
+/// core temp (thermal-throttle headroom) and an unusually high Vcore. We only
+/// flag extremes to avoid false alarms on healthy tuning.
+pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
+    let mut findings: Vec<Finding> = Vec::new();
+    let mut notes: Vec<String> = Vec::new();
+    let mut found_cpu = false;
+
+    for comp in &lhm.components {
+        let kind = comp.kind.to_lowercase();
+        let name = comp.name.to_lowercase();
+        let is_cpu = kind.contains("cpu")
+            || name.contains("ryzen")
+            || name.contains("intel")
+            || name.contains("core i")
+            || name.contains("processor");
+        if !is_cpu {
+            continue;
+        }
+        found_cpu = true;
+
+        let max_temp = comp
+            .sensors
+            .iter()
+            .filter(|s| s.kind.to_lowercase().contains("temperature"))
+            .filter_map(|s| s.value)
+            .fold(f64::MIN, f64::max);
+        let vcore = comp
+            .sensors
+            .iter()
+            .find(|s| {
+                s.kind.to_lowercase().contains("voltage")
+                    && (s.name.to_lowercase().contains("core")
+                        || s.name.to_lowercase().contains("vcore")
+                        || s.name.to_lowercase().contains("vid"))
+            })
+            .and_then(|s| s.value);
+
+        if max_temp.is_finite() {
+            if max_temp >= 95.0 {
+                findings.push(Finding {
+                    id: "cpu.thermal".into(),
+                    severity: "critical".into(),
+                    title: format!("CPU is at {max_temp:.0}C — at or past its thermal limit"),
+                    cause: "At TjMax the CPU cuts its own clocks and voltage to protect itself — you lose 1% lows and consistency exactly when a fight loads it up. Usually a cooler that's undersized, badly mounted, or has dried paste.".into(),
+                    fix: "Improve cooling: reseat/repaste the cooler, raise the fan curve, or set a conservative undervolt / PBO offset (Curve Optimizer / PL adjustment) to drop temps without losing real performance.".into(),
+                    evidence: Some(format!("hottest core {max_temp:.0}C")),
+                    tweak_id: None,
+                });
+            } else if max_temp >= 85.0 {
+                findings.push(Finding {
+                    id: "cpu.warm".into(),
+                    severity: "warn".into(),
+                    title: format!("CPU is running warm ({max_temp:.0}C)"),
+                    cause: "You've got some headroom left, but a long session or a hot room would push this into throttling.".into(),
+                    fix: "Tidy cooling / airflow now (or a light undervolt) so a long ranked set doesn't tip into throttling.".into(),
+                    evidence: Some(format!("hottest core {max_temp:.0}C")),
+                    tweak_id: None,
+                });
+            }
+        }
+        if let Some(v) = vcore {
+            if v >= 1.45 {
+                findings.push(Finding {
+                    id: "cpu.vcore".into(),
+                    severity: "warn".into(),
+                    title: format!("CPU core voltage is high ({v:.3} V)"),
+                    cause: "Sustained high Vcore runs hotter and, over time, accelerates silicon degradation (the Intel 13/14th-gen issue). If you didn't set this, the board's 'auto' is over-volting.".into(),
+                    fix: "In BIOS, set a sensible Load-Line Calibration and a modest undervolt / Curve Optimizer negative offset — you keep the clocks at lower voltage and temps.".into(),
+                    evidence: Some(format!("Vcore {v:.3} V")),
+                    tweak_id: None,
+                });
+            }
+        }
+        if findings.is_empty() && max_temp.is_finite() {
+            findings.push(Finding {
+                id: "cpu.temps-ok".into(),
+                severity: "ok".into(),
+                title: format!("CPU thermals look healthy ({max_temp:.0}C under this load)"),
+                cause: String::new(),
+                fix: String::new(),
+                evidence: vcore.map(|v| format!("Vcore {v:.3} V")),
+                tweak_id: None,
+            });
+        }
+    }
+
+    if !found_cpu {
+        notes.push("No CPU sensors came back — the elevated probe needs admin (UAC) + the WinRing0 driver, which some antivirus blocks. Temps shown elsewhere from WMI are motherboard-only, not the cores.".into());
+    }
+    notes.push("CPU core temp / Vcore come from the elevated hardware monitor (WinRing0). Effective-clock-vs-rated and the exact throttle-reason bits are the next add.".into());
+
+    let crit = findings.iter().any(|f| f.severity == "critical");
+    let warn = findings.iter().any(|f| f.severity == "warn");
+    let headline = if crit {
+        "Your CPU is thermal-throttling — cooling is costing you frames.".into()
+    } else if warn {
+        "Your CPU has a thermal / voltage issue worth addressing.".into()
+    } else {
+        "CPU thermals and voltage look healthy.".into()
+    };
+
+    MatchScanReport {
+        headline,
+        findings,
+        checked: 1,
+        notes,
+    }
+}
+
 /// Live contention spot-check: a ~1-second sample of which background apps are
 /// stealing CPU from the game right now. Per-process CPU is divided by the
 /// logical core count (sysinfo reports it summed across cores), so the % is of
@@ -623,8 +759,11 @@ pub fn run_live_spotcheck() -> MatchScanReport {
     std::thread::sleep(std::time::Duration::from_millis(1000));
     sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
 
-    // (pct-of-total-machine, name_lowercase, display name)
-    let mut rows: Vec<(f32, String, String)> = Vec::new();
+    // Per-PID GPU% (3D engine) over the same window, read-only.
+    let gpu = read_gpu_by_pid();
+
+    // (pct-of-total-machine-CPU, name_lowercase, display name, pid)
+    let mut rows: Vec<(f32, String, String, u32)> = Vec::new();
     for (pid, proc_) in sys.processes() {
         if pid.as_u32() == self_pid {
             continue;
@@ -633,13 +772,14 @@ pub fn run_live_spotcheck() -> MatchScanReport {
         if pct >= 3.0 {
             let name = proc_.name().to_string_lossy().to_string();
             let lc = name.to_lowercase();
-            rows.push((pct, lc, name));
+            rows.push((pct, lc, name, pid.as_u32()));
         }
     }
     rows.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
 
     let sampled = rows.len() as u32;
     let mut findings: Vec<Finding> = Vec::new();
+    let mut emitted: HashSet<u32> = HashSet::new();
     let is_rgb = |lc: &str| {
         lc.contains("icue")
             || lc.contains("armoury")
@@ -652,7 +792,7 @@ pub fn run_live_spotcheck() -> MatchScanReport {
             || lc.contains("wallpaper")
     };
 
-    for (pct, lc, name) in &rows {
+    for (pct, lc, name, pid) in &rows {
         if findings.len() >= 6 {
             break;
         }
@@ -690,22 +830,75 @@ pub fn run_live_spotcheck() -> MatchScanReport {
             continue;
         };
 
+        let g = gpu.get(pid).copied().unwrap_or(0.0);
+        emitted.insert(*pid);
+        let gpu_suffix = if g >= 1.0 {
+            format!(" + {g:.0}% GPU")
+        } else {
+            String::new()
+        };
         findings.push(Finding {
             id: format!(
                 "live.hog.{}",
                 lc.chars().filter(|c| c.is_alphanumeric()).collect::<String>()
             ),
             severity: sev.into(),
-            title: format!("{name} is using {pct:.0}% CPU in the background"),
+            title: format!("{name} is using {pct:.0}% CPU{gpu_suffix} in the background"),
             cause,
             fix,
-            evidence: Some(format!("{pct:.0}% of total CPU")),
+            evidence: Some(format!("{pct:.0}% of total CPU{gpu_suffix}")),
             tweak_id: if is_rgb(lc) {
                 Some("peripherals.rgb-control-apps.autostart-disable".into())
             } else {
                 None
             },
         });
+    }
+
+    // GPU-only hogs: a background app burning GPU but little CPU (e.g. a
+    // browser playing video) that the CPU pass above missed.
+    if findings.len() < 6 {
+        let mut gpu_rows: Vec<(u32, f32)> = gpu.iter().map(|(p, v)| (*p, *v)).collect();
+        gpu_rows.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        for (pid, g) in gpu_rows {
+            if findings.len() >= 6 {
+                break;
+            }
+            if pid == self_pid || emitted.contains(&pid) || g < 8.0 {
+                continue;
+            }
+            let name = match sys
+                .process(sysinfo::Pid::from_u32(pid))
+                .map(|p| p.name().to_string_lossy().to_string())
+            {
+                Some(n) => n,
+                None => continue,
+            };
+            let lc = name.to_lowercase();
+            let known = lc.contains("chrome")
+                || lc.contains("msedge")
+                || lc.contains("firefox")
+                || lc.contains("brave")
+                || lc.contains("discord")
+                || lc.contains("obs")
+                || is_rgb(&lc);
+            if !known {
+                continue;
+            }
+            emitted.insert(pid);
+            findings.push(Finding {
+                id: format!(
+                    "live.gpuhog.{}",
+                    lc.chars().filter(|c| c.is_alphanumeric()).collect::<String>()
+                ),
+                severity: "warn".into(),
+                title: format!("{name} is using {g:.0}% of your GPU in the background"),
+                cause: "This app is doing real GPU work while you play — usually video playback, an overlay, or hardware acceleration. Those are frames the game could have had.".into(),
+                fix: "Close it, or turn off its hardware acceleration, before you queue.".into(),
+                evidence: Some(format!("{g:.0}% GPU")),
+                tweak_id: None,
+            });
+        }
     }
 
     if findings.is_empty() {
