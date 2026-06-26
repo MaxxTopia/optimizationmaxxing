@@ -93,6 +93,14 @@ export interface TweakRecord {
    * third-party AC client (FACEIT, ESEA). Powers the "Anti-cheat:" filter chip
    * on /tweaks. Absent = no documented AC interaction. */
   anticheatCompatibility?: AnticheatCompatibility
+  /** Honest grading of how much this tweak actually moves input latency /
+   * frametime for a competitive FPS (efficacy audit 2026-06-26):
+   *  - 'measured'    real win with a documented mechanism / measured delta
+   *  - 'mechanism'   real mechanism but unmeasured / marginal (don't oversell)
+   *  - 'situational' only helps on certain rigs/configs, or is a conditional fix
+   *  - 'cosmetic'    privacy/QoL/tidiness — ~0 in-match FPS or latency effect
+   * Absent = ungraded. Powers the evidence badge on /tweaks. */
+  evidenceTier?: 'measured' | 'mechanism' | 'situational' | 'cosmetic'
 }
 
 export interface Catalog {

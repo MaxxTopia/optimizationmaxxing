@@ -100,6 +100,7 @@ export function TweakRow({
             {tweak.anticheatRisk !== 'none' && (
               <Badge color="text-accent">AC: {tweak.anticheatRisk}</Badge>
             )}
+            {tweak.evidenceTier && <EvidenceBadge tier={tweak.evidenceTier} />}
             {adminNeeded && <Badge color="text-accent">admin</Badge>}
             {tweak.vipGate === 'vip' && <VipBadge />}
             <ComplianceBadges tweak={tweak} />
@@ -247,6 +248,45 @@ function VipBadge() {
     >
       <span aria-hidden="true">👑</span> VIP
     </span>
+  )
+}
+
+const EVIDENCE_META: Record<
+  NonNullable<TweakRecord['evidenceTier']>,
+  { label: string; color: string; title: string }
+> = {
+  measured: {
+    label: 'measured',
+    color: 'text-emerald-300 border-emerald-400/50',
+    title:
+      'Measured win — real, documented mechanism that reduces input latency or improves frametime. This is what the app is for.',
+  },
+  mechanism: {
+    label: 'mechanism',
+    color: 'text-sky-300 border-sky-400/50',
+    title:
+      'Real mechanism but unmeasured / marginal. Plausibly helps; we don’t oversell it as a big win.',
+  },
+  situational: {
+    label: 'situational',
+    color: 'text-amber-300 border-amber-400/50',
+    title:
+      'Only helps on certain rigs/configs, or is a conditional fix (can even cost latency on a healthy rig). Apply with intent.',
+  },
+  cosmetic: {
+    label: 'cosmetic',
+    color: 'text-text-subtle border-border',
+    title:
+      'Privacy / quality-of-life / tidiness. Has ~0 effect on in-match FPS or input latency — fine to apply, just not a performance lever.',
+  },
+}
+
+function EvidenceBadge({ tier }: { tier: NonNullable<TweakRecord['evidenceTier']> }) {
+  const m = EVIDENCE_META[tier]
+  return (
+    <Badge color={m.color} title={m.title}>
+      {m.label}
+    </Badge>
   )
 }
 

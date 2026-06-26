@@ -12,6 +12,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.2.13',
+    date: '2026-06-26',
+    highlights: [
+      'NEW **Evidence badges on every tweak.** Each tweak now shows how much it *actually* moves input latency — **measured** (real, documented win), **mechanism** (real but marginal), **situational** (only on certain rigs / conditional fix), or **cosmetic** (privacy/tidiness, ~0 FPS effect). The app shows its work, including which tweaks are honestly just cleanup.',
+      'REMOVED **3 placebo/harmful tweaks.** The HID "queue-size" tweaks were mildly *harmful* (a smaller input queue doesn\'t cut latency — it drops inputs under burst); exception-chain-validation and checksum-offload were security/CPU costs for zero measured gain. Gone.',
+      'FIX **CS2 autoexec shipped a dead CS:GO netcode block** (`cl_interp`/`cl_cmdrate`/`cl_updaterate`) — non-functional in sub-tick CS2. Removed; the real cvars (raw input, rate, mat_queue_mode, snd_mixahead) stay.',
+      'FIX **Fortnite** — corrected the "fullscreen-windowed" mislabel (FullscreenMode=0 is true Fullscreen) and added a note that in-game **Performance Mode** is the biggest FPS lever.',
+      'NEW **Audio: match output sample rate (48 kHz)** — stops Windows resampling game audio, tightening footstep/positional cue timing. Companion to the voice-chat ducking tweak.',
+      'CHANGE **Presets rebuilt around measured wins.** Esports/BR/Network/Asta dropped the folklore (MMCSS GPU-priority, SystemResponsiveness, PrioritySeparation, flow-control) and swapped in the tweaks that actually move latency/frametime.',
+    ],
+  },
+  {
     version: '0.2.12',
     date: '2026-06-25',
     highlights: [

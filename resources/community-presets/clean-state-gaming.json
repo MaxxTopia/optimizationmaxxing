@@ -17,9 +17,6 @@
     "process.windows-search.disable",
     "tasks.telemetry-batch.disable",
     "hid.mouse.priority-realtime",
-    "hid.mouse.queue-size.optimize",
-    "hid.keyboard.priority-realtime",
-    "hid.keyboard.queue-size.optimize",
     "process.fortnite.priority-high",
     "process.valorant.priority-high",
     "process.cs2.priority-high"

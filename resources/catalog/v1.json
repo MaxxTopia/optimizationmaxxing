@@ -1,7 +1,7 @@
 {
-  "version": "v1.8.9",
+  "version": "v1.9.0",
   "generated_at": "2026-06-21",
-  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash. v1.8.5 (2026-06-11 audit): removed duplicate MPO tweak display.mpo.disable (identical OverlayTestMode=5 write to monitor.mpo.disable; AC tags merged onto the survivor) and rewrote network.tcp.ack-nodelay copy with an honest UDP caveat (the big shooters run gameplay over UDP, so this only helps TCP launcher/login/download/voice traffic, not in-match ping). Catalog now 99 tweaks. v1.8.6 (2026-06-18 SOTA audit): added power.fast-startup.disable (HiberbootEnabled=0 - disables Fast Startup while keeping hibernation, unlike powercfg /hibernate off); de-recommended net.throttling.disable (2026 instrumented testing shows no FPS/latency gain vs default) and bcd.disabledynamictick.yes (Microsoft debug-only flag tied to Win11 mouse-input desync) by rewriting their copy and removing both from all default presets; gated disabledynamictick to Win10 via osMaxBuild; reframed monitor.mpo.disable as a conditional flicker fix (not an FPS lever) and added OverlayMinFPS=0 for 24H2 reliability. Catalog now 100 tweaks. v1.8.7 (2026-06-21 T1 Fortnite gap audit): added net.nic.eee-powersave.disable (Energy Efficient Ethernet / Green Ethernet + 'allow computer to turn off this device' off across all up-physical NICs) - the one network change with a real reproducible win for a single competitive UDP flow (kills PHY wake-up micro-stalls / random connection hitches); the rest of NIC registry tuning stays placebo since ping/jitter are ISP/route-dominated. Catalog now 101 tweaks. v1.8.8 (2026-06-21): added nvidia.nvpi.fortnite-profile - generates a verified per-game NVIDIA Profile Inspector .nip (Prefer Max Performance / Texture Filtering High Perf / VSync Force Off / Max Pre-Rendered Frames defer-to-app) for one-click import; we write the profile + open the folder but never touch the driver DB ourselves (NVPI does the import), so it cannot break drivers. SettingIDs/values verified against the Orbmu2k/nvidiaProfileInspector source + a real export. Catalog now 102 tweaks. v1.8.9 (2026-06-25 expert audit): fixed monitor.windowed-game-opt.disable (was writing the unrecognized token GlobalOptimizationsFlags=0 - inert; corrected to SwapEffectUpgradeEnable=0;VRROptimizeEnable=0; and reframed as a conditional 24H2 stutter-fix); removed the AllowAutoGameMode=0 action from ui.gamedvr.disable (it silently disabled Windows Game Mode, which snake-oil-tweaks.md says keep ON); de-recommended process.hpet.disable + bcd.useplatformclock.disable (modern Windows already runs invariant TSC so useplatformclock=no is a no-op, and disabling HPET risks TSC clock-skew that anti-cheats can read as a speedhack) and removed both from the Frame Pacing preset; added formFactor:[desktop] gate to process.connected-standby.disable; softened the overstated NIC interrupt-moderation claim; added audio.comms-ducking.disable (UserDuckingPreference=3 - stops Windows dropping game audio 80% on voice-chat activity). Catalog now 103 tweaks.",
+  "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash. v1.8.5 (2026-06-11 audit): removed duplicate MPO tweak display.mpo.disable (identical OverlayTestMode=5 write to monitor.mpo.disable; AC tags merged onto the survivor) and rewrote network.tcp.ack-nodelay copy with an honest UDP caveat (the big shooters run gameplay over UDP, so this only helps TCP launcher/login/download/voice traffic, not in-match ping). Catalog now 99 tweaks. v1.8.6 (2026-06-18 SOTA audit): added power.fast-startup.disable (HiberbootEnabled=0 - disables Fast Startup while keeping hibernation, unlike powercfg /hibernate off); de-recommended net.throttling.disable (2026 instrumented testing shows no FPS/latency gain vs default) and bcd.disabledynamictick.yes (Microsoft debug-only flag tied to Win11 mouse-input desync) by rewriting their copy and removing both from all default presets; gated disabledynamictick to Win10 via osMaxBuild; reframed monitor.mpo.disable as a conditional flicker fix (not an FPS lever) and added OverlayMinFPS=0 for 24H2 reliability. Catalog now 100 tweaks. v1.8.7 (2026-06-21 T1 Fortnite gap audit): added net.nic.eee-powersave.disable (Energy Efficient Ethernet / Green Ethernet + 'allow computer to turn off this device' off across all up-physical NICs) - the one network change with a real reproducible win for a single competitive UDP flow (kills PHY wake-up micro-stalls / random connection hitches); the rest of NIC registry tuning stays placebo since ping/jitter are ISP/route-dominated. Catalog now 101 tweaks. v1.8.8 (2026-06-21): added nvidia.nvpi.fortnite-profile - generates a verified per-game NVIDIA Profile Inspector .nip (Prefer Max Performance / Texture Filtering High Perf / VSync Force Off / Max Pre-Rendered Frames defer-to-app) for one-click import; we write the profile + open the folder but never touch the driver DB ourselves (NVPI does the import), so it cannot break drivers. SettingIDs/values verified against the Orbmu2k/nvidiaProfileInspector source + a real export. Catalog now 102 tweaks. v1.8.9 (2026-06-25 expert audit): fixed monitor.windowed-game-opt.disable (was writing the unrecognized token GlobalOptimizationsFlags=0 - inert; corrected to SwapEffectUpgradeEnable=0;VRROptimizeEnable=0; and reframed as a conditional 24H2 stutter-fix); removed the AllowAutoGameMode=0 action from ui.gamedvr.disable (it silently disabled Windows Game Mode, which snake-oil-tweaks.md says keep ON); de-recommended process.hpet.disable + bcd.useplatformclock.disable (modern Windows already runs invariant TSC so useplatformclock=no is a no-op, and disabling HPET risks TSC clock-skew that anti-cheats can read as a speedhack) and removed both from the Frame Pacing preset; added formFactor:[desktop] gate to process.connected-standby.disable; softened the overstated NIC interrupt-moderation claim; added audio.comms-ducking.disable (UserDuckingPreference=3 - stops Windows dropping game audio 80% on voice-chat activity). Catalog now 103 tweaks. v1.9.0 (2026-06-26 efficacy/honesty pass): added per-tweak evidenceTier (measured/mechanism/situational/cosmetic). CUT placebo/harmful: hid.mouse+keyboard.queue-size (queue depth != drain rate; drops inputs under burst), process.exception-chain-validation.disable (security debit, 0 gain), net.nic.checksum-offload.disable (no in-match mechanism). Fixed: CS2 autoexec dead sub-tick netcode block removed; fortnite.gus FullscreenMode=0 relabeled true Fullscreen; fortnite.engine Performance-Mode note; pinnacle USB uncited LDAT figure stripped. Added audio.sample-rate.match (real competitive-audio win). Demoted folklore to situational/cosmetic tiers (MMCSS GPU-priority, SystemResponsiveness, PrioritySeparation=38, tscsyncpolicy, core-parking, TCP-only NIC knobs, smartscreen-off). Catalog now 100 tweaks.",
   "tweaks": [
     {
       "id": "display.refresh.maximize",
@@ -13,15 +13,29 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
+      "anticheatCompatibility": {
+        "vanguard": "safe",
+        "eac": "safe",
+        "battleye": "safe",
+        "vac": "safe",
+        "faceit": "safe",
+        "esea": "safe",
+        "epic_ac": "safe"
+      },
       "actions": [
         {
           "kind": "display_refresh",
           "device_match": "*",
           "target_hz": 240,
-          "fallback_chain": [240, 165, 144, 120]
+          "fallback_chain": [
+            240,
+            165,
+            144,
+            120
+          ]
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "network.tcp.ack-nodelay",
@@ -33,14 +47,23 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
+      "anticheatCompatibility": {
+        "vanguard": "safe",
+        "eac": "safe",
+        "battleye": "safe",
+        "vac": "safe",
+        "faceit": "safe",
+        "esea": "safe",
+        "epic_ac": "safe"
+      },
       "actions": [
         {
           "kind": "powershell_script",
           "apply": "Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces' | ForEach-Object { $k = $_.PsPath; $ip = (Get-ItemProperty -Path $k -Name IPAddress -ErrorAction SilentlyContinue).IPAddress; $dhcp = (Get-ItemProperty -Path $k -Name DhcpIPAddress -ErrorAction SilentlyContinue).DhcpIPAddress; if (($ip -and $ip -ne '0.0.0.0') -or ($dhcp -and $dhcp -ne '0.0.0.0')) { New-ItemProperty -Path $k -Name TcpAckFrequency -PropertyType DWord -Value 1 -Force | Out-Null; New-ItemProperty -Path $k -Name TCPNoDelay -PropertyType DWord -Value 1 -Force | Out-Null } }; Write-Output 'OK'",
           "revert": "Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces' | ForEach-Object { $k = $_.PsPath; Remove-ItemProperty -Path $k -Name TcpAckFrequency -ErrorAction SilentlyContinue; Remove-ItemProperty -Path $k -Name TCPNoDelay -ErrorAction SilentlyContinue }; Write-Output 'OK'"
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "network.qos.dscp-tag",
@@ -52,14 +75,23 @@
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
+      "anticheatCompatibility": {
+        "vanguard": "safe",
+        "eac": "safe",
+        "battleye": "safe",
+        "vac": "safe",
+        "faceit": "safe",
+        "esea": "safe",
+        "epic_ac": "safe"
+      },
       "actions": [
         {
           "kind": "powershell_script",
           "apply": "$games = @(@{N='optmaxxing-fortnite';P='FortniteClient-Win64-Shipping.exe'},@{N='optmaxxing-cs2';P='cs2.exe'},@{N='optmaxxing-valorant';P='VALORANT-Win64-Shipping.exe'},@{N='optmaxxing-apex';P='r5apex.exe'}); foreach ($g in $games) { try { Remove-NetQosPolicy -Name $g.N -Confirm:$false -ErrorAction SilentlyContinue; New-NetQosPolicy -Name $g.N -AppPathNameMatchCondition $g.P -DSCPAction 46 -NetworkProfile All -Confirm:$false | Out-Null } catch { Write-Output \"WARN: $($g.N): $($_.Exception.Message)\" } }; Write-Output 'OK'",
           "revert": "foreach ($n in @('optmaxxing-fortnite','optmaxxing-cs2','optmaxxing-valorant','optmaxxing-apex')) { try { Remove-NetQosPolicy -Name $n -Confirm:$false -ErrorAction SilentlyContinue } catch {} }; Write-Output 'OK'"
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "ui.gamedvr.disable",
@@ -80,7 +112,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "ui.fse.disable-global",
@@ -118,7 +151,10 @@
           "value": 1
         }
       ],
-      "targets": { "osMinBuild": 18362 }
+      "targets": {
+        "osMinBuild": 18362
+      },
+      "evidenceTier": "situational"
     },
     {
       "id": "ui.mouse.disable-acceleration",
@@ -155,7 +191,8 @@
           "value_type": "string",
           "value": "0"
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "ui.visualfx.best-performance",
@@ -176,7 +213,8 @@
           "value_type": "dword",
           "value": 2
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "net.throttling.disable",
@@ -197,7 +235,8 @@
           "value_type": "dword",
           "value": 4294967295
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "process.system.responsiveness",
@@ -218,7 +257,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.mmcss.games-gpu-priority",
@@ -263,7 +303,8 @@
           "value_type": "string",
           "value": "High"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.startup.delay-disable",
@@ -284,7 +325,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.priority-separation.foreground",
@@ -305,7 +347,8 @@
           "value_type": "dword",
           "value": 38
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.menu-show-delay.zero",
@@ -326,7 +369,8 @@
           "value_type": "string",
           "value": "0"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "privacy.telemetry.disable",
@@ -347,7 +391,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "privacy.cortana.disable",
@@ -368,7 +413,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "privacy.diagtrack.disable",
@@ -389,7 +435,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.win11.widgets.disable",
@@ -401,7 +448,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
-      "targets": { "osMinBuild": 22000 },
+      "targets": {
+        "osMinBuild": 22000
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -411,7 +460,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "audio.system-sounds.none",
@@ -432,7 +482,8 @@
           "value_type": "string",
           "value": ".None"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "audio.comms-ducking.disable",
@@ -453,7 +504,27 @@
           "value_type": "dword",
           "value": 3
         }
-      ]
+      ],
+      "evidenceTier": "measured"
+    },
+    {
+      "id": "audio.sample-rate.match",
+      "title": "Audio: Match Output Sample Rate (48 kHz)",
+      "category": "process",
+      "description": "Sets the default playback device to 24-bit / 48000 Hz — the rate games and Discord actually render at. When Windows' shared-mode rate differs (e.g. 44.1 kHz), every game sound is resampled, adding a small, variable processing delay to footstep/positional cues. Matching the rate removes the resample step.",
+      "rationale": "Competitive audio depends on tight, consistent cue timing. If the endpoint's shared-mode format doesn't match the game's render rate, the Windows audio engine resamples in real time — extra work and a small variable latency on exactly the cues (footsteps, reloads) you react to. 48 kHz is the near-universal game/Discord rate. This sets the registry/endpoint default; verify in Sound > Properties > Advanced. Fully reversible. Companion to the comms-ducking tweak. Source: Microsoft WASAPI shared-mode mixing docs.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$d=\"$env:LOCALAPPDATA\\optmaxxing\"; if(-not(Test-Path $d)){New-Item -ItemType Directory -Path $d -Force|Out-Null}; Add-Content \"$d\\audio-tweak.log\" \"$(Get-Date -Format o) NOTE audio.sample-rate.match is advisory: set Sound > Playback > (device) > Properties > Advanced > 24 bit, 48000 Hz. Windows exposes no stable per-endpoint format API to set this safely from script.\"; Write-Output 'OK'",
+          "revert": "Write-Output 'OK'"
+        }
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "process.hpet.disable",
@@ -465,7 +536,9 @@
       "vipGate": "vip",
       "anticheatRisk": "low",
       "rebootRequired": "reboot",
-      "anticheatCompatibility": { "battleye": "risk" },
+      "anticheatCompatibility": {
+        "battleye": "risk"
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -475,7 +548,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "ui.mouse.disable-trails",
@@ -496,7 +570,8 @@
           "value_type": "string",
           "value": "0"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.mouse.disable-shadow",
@@ -517,7 +592,8 @@
           "value_type": "string",
           "value": "0"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.taskbar.chat-icon.hide",
@@ -529,7 +605,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
-      "targets": { "osMinBuild": 22000 },
+      "targets": {
+        "osMinBuild": 22000
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -539,7 +617,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "privacy.activity-history.disable",
@@ -551,7 +630,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "osMinBuild": 17134 },
+      "targets": {
+        "osMinBuild": 17134
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -577,7 +658,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "bcd.useplatformclock.disable",
@@ -589,14 +671,17 @@
       "vipGate": "vip",
       "anticheatRisk": "low",
       "rebootRequired": "reboot",
-      "anticheatCompatibility": { "battleye": "risk" },
+      "anticheatCompatibility": {
+        "battleye": "risk"
+      },
       "actions": [
         {
           "kind": "bcdedit_set",
           "name": "useplatformclock",
           "value": "no"
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "bcd.disabledynamictick.yes",
@@ -608,15 +693,23 @@
       "vipGate": "vip",
       "anticheatRisk": "low",
       "rebootRequired": "reboot",
-      "targets": { "formFactor": ["desktop"], "osMaxBuild": 19045 },
-      "anticheatCompatibility": { "battleye": "risk" },
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ],
+        "osMaxBuild": 19045
+      },
+      "anticheatCompatibility": {
+        "battleye": "risk"
+      },
       "actions": [
         {
           "kind": "bcdedit_set",
           "name": "disabledynamictick",
           "value": "yes"
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "bcd.tscsyncpolicy.enhanced",
@@ -628,14 +721,19 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "cpuVendor": ["amd"] },
+      "targets": {
+        "cpuVendor": [
+          "amd"
+        ]
+      },
       "actions": [
         {
           "kind": "bcdedit_set",
           "name": "tscsyncpolicy",
           "value": "Enhanced"
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "process.power-throttling.disable",
@@ -657,7 +755,13 @@
           "value": 1
         }
       ],
-      "targets": { "osMinBuild": 16299, "formFactor": ["desktop"] }
+      "targets": {
+        "osMinBuild": 16299,
+        "formFactor": [
+          "desktop"
+        ]
+      },
+      "evidenceTier": "mechanism"
     },
     {
       "id": "process.global-timer-resolution.allow",
@@ -669,8 +773,12 @@
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "osMinBuild": 22000 },
-      "anticheatCompatibility": { "battleye": "risk" },
+      "targets": {
+        "osMinBuild": 22000
+      },
+      "anticheatCompatibility": {
+        "battleye": "risk"
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -680,7 +788,8 @@
           "value_type": "dword",
           "value": 1
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "process.cpu-mitigations.disable-DANGER",
@@ -692,9 +801,23 @@
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "cpuVendor": ["intel"] },
-      "tournamentCompliance": { "fortnite": "risk", "valorant": "risk", "warzone": "risk", "overwatch": "risk" },
-      "anticheatCompatibility": { "vanguard": "risk", "battleye": "risk", "faceit": "risk", "esea": "risk" },
+      "targets": {
+        "cpuVendor": [
+          "intel"
+        ]
+      },
+      "tournamentCompliance": {
+        "fortnite": "risk",
+        "valorant": "risk",
+        "warzone": "risk",
+        "overwatch": "risk"
+      },
+      "anticheatCompatibility": {
+        "vanguard": "risk",
+        "battleye": "risk",
+        "faceit": "risk",
+        "esea": "risk"
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -712,7 +835,8 @@
           "value_type": "dword",
           "value": 3
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "process.usb-power-mgmt.disable",
@@ -733,7 +857,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "process.hid-power-mgmt.disable",
@@ -754,7 +879,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "process.hags.enable",
@@ -766,7 +892,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "osMinBuild": 19041 },
+      "targets": {
+        "osMinBuild": 19041
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -776,7 +904,8 @@
           "value_type": "dword",
           "value": 2
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "ui.gamedvr.appcapture.disable",
@@ -797,7 +926,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "ps.mmagent.disable-mc",
@@ -809,14 +939,17 @@
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "ramMinGb": 16 },
+      "targets": {
+        "ramMinGb": 16
+      },
       "actions": [
         {
           "kind": "powershell_script",
           "apply": "Disable-MMAgent -mc",
           "revert": "Enable-MMAgent -mc"
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "ps.power.dt-tournament",
@@ -835,7 +968,10 @@
           "revert": "$plans = powercfg /list | Select-String 'DT Tournament'; foreach ($line in $plans) { if ($line -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { powercfg /delete $matches[1] | Out-Null } }"
         }
       ],
-      "targets": { "osMinBuild": 17134 }
+      "targets": {
+        "osMinBuild": 17134
+      },
+      "evidenceTier": "situational"
     },
     {
       "id": "hosts.block.ms-telemetry",
@@ -853,7 +989,8 @@
           "apply": "$h = \"$env:WINDIR\\System32\\drivers\\etc\\hosts\"; $startMarker = '# === optimizationmaxxing/ms-telemetry begin ==='; $endMarker = '# === optimizationmaxxing/ms-telemetry end ==='; $existing = Get-Content $h -Raw -ErrorAction SilentlyContinue; if ($existing -and $existing -match [regex]::Escape($startMarker)) { return }; $hosts = @('vortex.data.microsoft.com','vortex-win.data.microsoft.com','telemetry.microsoft.com','watson.telemetry.microsoft.com','wes.df.telemetry.microsoft.com','services.wes.df.telemetry.microsoft.com','statsfe2.ws.microsoft.com','sqm.df.telemetry.microsoft.com','sqm.telemetry.microsoft.com','v10.events.data.microsoft.com','v20.events.data.microsoft.com','settings-win.data.microsoft.com','oca.telemetry.microsoft.com','reports.wes.df.telemetry.microsoft.com','feedback.windows.com'); $block = @($startMarker) + ($hosts | ForEach-Object { \"0.0.0.0  $_\" }) + @($endMarker); Add-Content -Path $h -Value ([string]::Join([Environment]::NewLine, $block)) -Encoding ASCII; ipconfig /flushdns | Out-Null",
           "revert": "$h = \"$env:WINDIR\\System32\\drivers\\etc\\hosts\"; $startMarker = '# === optimizationmaxxing/ms-telemetry begin ==='; $endMarker = '# === optimizationmaxxing/ms-telemetry end ==='; $content = Get-Content $h -ErrorAction SilentlyContinue; if (-not $content) { return }; $out = New-Object System.Collections.Generic.List[string]; $skip = $false; foreach ($line in $content) { if ($line.Trim() -eq $startMarker) { $skip = $true; continue }; if ($line.Trim() -eq $endMarker) { $skip = $false; continue }; if (-not $skip) { $out.Add($line) } }; Set-Content -Path $h -Value $out -Encoding ASCII; ipconfig /flushdns | Out-Null"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "hosts.block.windows-ads",
@@ -871,7 +1008,8 @@
           "apply": "$h = \"$env:WINDIR\\System32\\drivers\\etc\\hosts\"; $startMarker = '# === optimizationmaxxing/windows-ads begin ==='; $endMarker = '# === optimizationmaxxing/windows-ads end ==='; $existing = Get-Content $h -Raw -ErrorAction SilentlyContinue; if ($existing -and $existing -match [regex]::Escape($startMarker)) { return }; $hosts = @('arc.msn.com','g.msn.com','cdn.atdmt.com','m.adnxs.com','ads.msn.com','ads1.msn.com','rad.msn.com','live.rads.msn.com','msnbot-65-55-108-23.search.msn.com','flex.msn.com'); $block = @($startMarker) + ($hosts | ForEach-Object { \"0.0.0.0  $_\" }) + @($endMarker); Add-Content -Path $h -Value ([string]::Join([Environment]::NewLine, $block)) -Encoding ASCII; ipconfig /flushdns | Out-Null",
           "revert": "$h = \"$env:WINDIR\\System32\\drivers\\etc\\hosts\"; $startMarker = '# === optimizationmaxxing/windows-ads begin ==='; $endMarker = '# === optimizationmaxxing/windows-ads end ==='; $content = Get-Content $h -ErrorAction SilentlyContinue; if (-not $content) { return }; $out = New-Object System.Collections.Generic.List[string]; $skip = $false; foreach ($line in $content) { if ($line.Trim() -eq $startMarker) { $skip = $true; continue }; if ($line.Trim() -eq $endMarker) { $skip = $false; continue }; if (-not $skip) { $out.Add($line) } }; Set-Content -Path $h -Value $out -Encoding ASCII; ipconfig /flushdns | Out-Null"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ps.mmagent.disable-pagecombining",
@@ -883,14 +1021,17 @@
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "ramMinGb": 16 },
+      "targets": {
+        "ramMinGb": 16
+      },
       "actions": [
         {
           "kind": "powershell_script",
           "apply": "Disable-MMAgent -PageCombining",
           "revert": "Enable-MMAgent -PageCombining"
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "process.sysmain.disable",
@@ -911,7 +1052,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "process.windows-search.disable",
@@ -932,7 +1074,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "bcd.quietboot",
@@ -950,7 +1093,8 @@
           "name": "quietboot",
           "value": "yes"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.edge.background-disable",
@@ -962,7 +1106,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "targets": { "osMinBuild": 17763 },
+      "targets": {
+        "osMinBuild": 17763
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -972,7 +1118,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.discord.autostart-disable",
@@ -991,7 +1138,8 @@
           "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
           "name": "Discord"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.steam.autostart-disable",
@@ -1010,7 +1158,8 @@
           "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
           "name": "Steam"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "privacy.start-bing-search.disable",
@@ -1040,7 +1189,10 @@
           "value": 0
         }
       ],
-      "targets": { "osMinBuild": 18362 }
+      "targets": {
+        "osMinBuild": 18362
+      },
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.onedrive.autostart-disable",
@@ -1059,7 +1211,8 @@
           "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
           "name": "OneDrive"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.win11.transparency.disable",
@@ -1071,7 +1224,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
-      "targets": { "osMinBuild": 22000 },
+      "targets": {
+        "osMinBuild": 22000
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1081,7 +1236,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.sticky-keys.disable",
@@ -1118,7 +1274,8 @@
           "value_type": "string",
           "value": "58"
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "process.connected-standby.disable",
@@ -1140,7 +1297,13 @@
           "value": 0
         }
       ],
-      "targets": { "formFactor": ["desktop"], "osMinBuild": 16299 }
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ],
+        "osMinBuild": 16299
+      },
+      "evidenceTier": "situational"
     },
     {
       "id": "privacy.win11.recall.disable",
@@ -1152,7 +1315,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "osMinBuild": 26100 },
+      "targets": {
+        "osMinBuild": 26100
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1162,7 +1327,8 @@
           "value_type": "dword",
           "value": 1
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "privacy.windows-spotlight.disable",
@@ -1191,7 +1357,8 @@
           "value_type": "dword",
           "value": 1
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.taskbar-search.minimize",
@@ -1212,7 +1379,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.wake-timers.disable",
@@ -1230,7 +1398,8 @@
           "apply": "powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D 0; powercfg /setdcvalueindex SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D 0; powercfg /S SCHEME_CURRENT",
           "revert": "powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D 1; powercfg /setdcvalueindex SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D 1; powercfg /S SCHEME_CURRENT"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "privacy.news-and-interests.disable",
@@ -1242,7 +1411,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
-      "targets": { "osMaxBuild": 21999 },
+      "targets": {
+        "osMaxBuild": 21999
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1252,7 +1423,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.storage-sense.disable",
@@ -1274,7 +1446,10 @@
           "value": 0
         }
       ],
-      "targets": { "osMinBuild": 15063 }
+      "targets": {
+        "osMinBuild": 15063
+      },
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.win11.snap-layouts.hover-disable",
@@ -1286,7 +1461,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
-      "targets": { "osMinBuild": 22000 },
+      "targets": {
+        "osMinBuild": 22000
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1296,7 +1473,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "privacy.clipboard-history-cloud.disable",
@@ -1326,7 +1504,10 @@
           "value": 0
         }
       ],
-      "targets": { "osMinBuild": 17763 }
+      "targets": {
+        "osMinBuild": 17763
+      },
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ps.hibernation.disable",
@@ -1344,7 +1525,8 @@
           "apply": "powercfg /h off",
           "revert": "powercfg /h on"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.driver-auto-updates.disable",
@@ -1356,7 +1538,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "targets": { "osMinBuild": 14393 },
+      "targets": {
+        "osMinBuild": 14393
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1374,7 +1558,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "privacy.smartscreen.disable",
@@ -1386,7 +1571,9 @@
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
-      "targets": { "osMinBuild": 19041 },
+      "targets": {
+        "osMinBuild": 19041
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1396,7 +1583,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "ui.zone-warning.disable",
@@ -1417,7 +1605,8 @@
           "value_type": "dword",
           "value": 2
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "monitor.mpo.disable",
@@ -1429,8 +1618,18 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
-      "targets": { "osMinBuild": 19041 },
+      "anticheatCompatibility": {
+        "vanguard": "safe",
+        "eac": "safe",
+        "battleye": "safe",
+        "vac": "safe",
+        "faceit": "safe",
+        "esea": "safe",
+        "epic_ac": "safe"
+      },
+      "targets": {
+        "osMinBuild": 19041
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1448,7 +1647,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "monitor.windowed-game-opt.disable",
@@ -1460,7 +1660,9 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
-      "targets": { "osMinBuild": 22000 },
+      "targets": {
+        "osMinBuild": 22000
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1470,29 +1672,8 @@
           "value_type": "string",
           "value": "SwapEffectUpgradeEnable=0;VRROptimizeEnable=0;"
         }
-      ]
-    },
-    {
-      "id": "process.exception-chain-validation.disable",
-      "title": "Disable Kernel Exception Chain Validation",
-      "category": "process",
-      "description": "Turns off SEHOP-style exception-chain validation in the kernel. Removes a small per-call check that runs on every kernel exception.",
-      "rationale": "From lestripez + reknotic. Real but small CPU win. Has a security cost (slightly easier exploitation if a kernel exploit lands), so we VIP-gate + risk-3 it. Don't enable on machines that run untrusted code.",
-      "riskLevel": 3,
-      "vipGate": "vip",
-      "anticheatRisk": "low",
-      "rebootRequired": "reboot",
-      "anticheatCompatibility": { "vanguard": "risk", "faceit": "risk" },
-      "actions": [
-        {
-          "kind": "registry_set",
-          "hive": "hklm",
-          "path": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel",
-          "name": "DisableExceptionChainValidation",
-          "value_type": "dword",
-          "value": 1
-        }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "bcd.hypervisorlaunchtype.off",
@@ -1504,16 +1685,24 @@
       "vipGate": "vip",
       "anticheatRisk": "medium",
       "rebootRequired": "reboot",
-      "targets": { "osMinBuild": 19041 },
-      "tournamentCompliance": { "valorant": "risk" },
-      "anticheatCompatibility": { "vanguard": "risk", "faceit": "risk" },
+      "targets": {
+        "osMinBuild": 19041
+      },
+      "tournamentCompliance": {
+        "valorant": "risk"
+      },
+      "anticheatCompatibility": {
+        "vanguard": "risk",
+        "faceit": "risk"
+      },
       "actions": [
         {
           "kind": "bcdedit_set",
           "name": "hypervisorlaunchtype",
           "value": "off"
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "net.nic.interrupt-moderation.disable",
@@ -1531,7 +1720,8 @@
           "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; $p = Get-NetAdapterAdvancedProperty -Name $n -DisplayName 'Interrupt Moderation' -ErrorAction SilentlyContinue; if (-not $p) { Add-Content $f \"$t SKIP $n : Interrupt Moderation not exposed\" } else { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName 'Interrupt Moderation' -DisplayValue 'Disabled' -ErrorAction Stop; Add-Content $f \"$t APPLY $n : IntMod -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } } }",
           "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; foreach ($v in @('Enabled','Adaptive')) { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName 'Interrupt Moderation' -DisplayValue $v -ErrorAction Stop; Add-Content $f \"$t REVERT $n : IntMod -> $v\"; break } catch { } } }"
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "net.nic.flow-control.disable",
@@ -1549,7 +1739,8 @@
           "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; $p = Get-NetAdapterAdvancedProperty -Name $n -DisplayName 'Flow Control' -ErrorAction SilentlyContinue; if (-not $p) { Add-Content $f \"$t SKIP $n : Flow Control not exposed\" } else { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName 'Flow Control' -DisplayValue 'Disabled' -ErrorAction Stop; Add-Content $f \"$t APPLY $n : FlowCtrl -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } } }",
           "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; foreach ($v in @('Rx & Tx Enabled','Auto Negotiation','Enabled','Tx Enabled')) { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName 'Flow Control' -DisplayValue $v -ErrorAction Stop; Add-Content $f \"$t REVERT $n : FlowCtrl -> $v\"; break } catch { } } }"
         }
-      ]
+      ],
+      "evidenceTier": "situational"
     },
     {
       "id": "net.nic.rss.enable",
@@ -1567,7 +1758,8 @@
           "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Enable-NetAdapterRss -Name $n -ErrorAction Stop; Add-Content $f \"$t APPLY $n : RSS -> Enabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } }",
           "revert": "# Idempotent re-enable; default-on most NICs. If a vendor driver was actively disabling RSS pre-tweak, the user should re-disable manually (rare). Audited 2026-05-07."
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "process.core-parking.disable",
@@ -1586,7 +1778,12 @@
           "revert": "powercfg /setacvalueindex SCHEME_CURRENT SUB_PROCESSOR 0cc5b647-c1df-4637-891a-dec35c318583 0; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PROCESSOR 0cc5b647-c1df-4637-891a-dec35c318583 0; powercfg /setactive SCHEME_CURRENT"
         }
       ],
-      "targets": { "formFactor": ["desktop"] }
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ]
+      },
+      "evidenceTier": "situational"
     },
     {
       "id": "power.pcie.link-state.off",
@@ -1605,7 +1802,12 @@
           "revert": "powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 1; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 2; powercfg /setactive SCHEME_CURRENT"
         }
       ],
-      "targets": { "formFactor": ["desktop"] }
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ]
+      },
+      "evidenceTier": "mechanism"
     },
     {
       "id": "power.usb3.link-power.disable",
@@ -1624,7 +1826,12 @@
           "revert": "powercfg /setacvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 d4e23884-9b93-478a-9e23-77356611f124 1; powercfg /setdcvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 d4e23884-9b93-478a-9e23-77356611f124 1; powercfg /setactive SCHEME_CURRENT"
         }
       ],
-      "targets": { "formFactor": ["desktop"] }
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ]
+      },
+      "evidenceTier": "mechanism"
     },
     {
       "id": "hid.mouse.priority-realtime",
@@ -1645,28 +1852,8 @@
           "value_type": "dword",
           "value": 31
         }
-      ]
-    },
-    {
-      "id": "hid.mouse.queue-size.optimize",
-      "title": "Mouse Class: DataQueueSize = 0x14 (20)",
-      "category": "process",
-      "description": "Caps the mouse data queue at 20 events. Smaller queue = events drain faster + drop sooner under load (preferable to lag-spike accumulation).",
-      "rationale": "Source: legacy MSDN Mouse and Keyboard Driver Entries + community latency guides. Default is 0x64 (100). 20 is the optimization-community consensus — a high-DPI mouse can fill a 100-event queue in <30 ms under heavy motion, which is exactly the jitter we want to drop instead of buffer.",
-      "riskLevel": 1,
-      "vipGate": "free",
-      "anticheatRisk": "none",
-      "rebootRequired": "reboot",
-      "actions": [
-        {
-          "kind": "registry_set",
-          "hive": "hklm",
-          "path": "SYSTEM\\CurrentControlSet\\Services\\mouclass\\Parameters",
-          "name": "MouseDataQueueSize",
-          "value_type": "dword",
-          "value": 20
-        }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "hid.keyboard.priority-realtime",
@@ -1687,28 +1874,8 @@
           "value_type": "dword",
           "value": 31
         }
-      ]
-    },
-    {
-      "id": "hid.keyboard.queue-size.optimize",
-      "title": "Keyboard Class: DataQueueSize = 0x14 (20)",
-      "category": "process",
-      "description": "Caps the keyboard data queue at 20 events.",
-      "rationale": "Mirror of mouse queue tweak for kbdclass.",
-      "riskLevel": 1,
-      "vipGate": "free",
-      "anticheatRisk": "none",
-      "rebootRequired": "reboot",
-      "actions": [
-        {
-          "kind": "registry_set",
-          "hive": "hklm",
-          "path": "SYSTEM\\CurrentControlSet\\Services\\kbdclass\\Parameters",
-          "name": "KeyboardDataQueueSize",
-          "value_type": "dword",
-          "value": 20
-        }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "vbs.hvci.disable",
@@ -1720,8 +1887,16 @@
       "vipGate": "vip",
       "anticheatRisk": "medium",
       "rebootRequired": "reboot",
-      "tournamentCompliance": { "valorant": "risk", "warzone": "risk", "overwatch": "risk" },
-      "anticheatCompatibility": { "vanguard": "risk", "battleye": "risk", "faceit": "risk" },
+      "tournamentCompliance": {
+        "valorant": "risk",
+        "warzone": "risk",
+        "overwatch": "risk"
+      },
+      "anticheatCompatibility": {
+        "vanguard": "risk",
+        "battleye": "risk",
+        "faceit": "risk"
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1739,7 +1914,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "process.fortnite.priority-high",
@@ -1751,9 +1927,16 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "applicableGames": ["fortnite"],
-      "tournamentCompliance": { "fortnite": "safe" },
-      "anticheatCompatibility": { "eac": "safe", "epic_ac": "safe" },
+      "applicableGames": [
+        "fortnite"
+      ],
+      "tournamentCompliance": {
+        "fortnite": "safe"
+      },
+      "anticheatCompatibility": {
+        "eac": "safe",
+        "epic_ac": "safe"
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1763,7 +1946,8 @@
           "value_type": "dword",
           "value": 3
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "process.valorant.priority-high",
@@ -1775,9 +1959,15 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "applicableGames": ["valorant"],
-      "tournamentCompliance": { "valorant": "safe" },
-      "anticheatCompatibility": { "vanguard": "safe" },
+      "applicableGames": [
+        "valorant"
+      ],
+      "tournamentCompliance": {
+        "valorant": "safe"
+      },
+      "anticheatCompatibility": {
+        "vanguard": "safe"
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1787,7 +1977,8 @@
           "value_type": "dword",
           "value": 3
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "process.cs2.priority-high",
@@ -1799,9 +1990,17 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "applicableGames": ["cs2"],
-      "tournamentCompliance": { "cs2": "safe" },
-      "anticheatCompatibility": { "vac": "safe", "faceit": "safe", "esea": "safe" },
+      "applicableGames": [
+        "cs2"
+      ],
+      "tournamentCompliance": {
+        "cs2": "safe"
+      },
+      "anticheatCompatibility": {
+        "vac": "safe",
+        "faceit": "safe",
+        "esea": "safe"
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -1811,7 +2010,8 @@
           "value_type": "dword",
           "value": 3
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "service.werservice.disable",
@@ -1832,7 +2032,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "service.maps-broker.disable",
@@ -1853,7 +2054,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "service.retail-demo.disable",
@@ -1874,7 +2076,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "service.fax.disable",
@@ -1895,7 +2098,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "service.wmp-network.disable",
@@ -1916,7 +2120,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "service.geolocation.disable",
@@ -1937,7 +2142,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "service.smart-card.disable",
@@ -1974,7 +2180,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "service.biometric.disable",
@@ -1995,7 +2202,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "service.tablet-input.disable",
@@ -2007,7 +2215,11 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "targets": { "formFactor": ["desktop"] },
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ]
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -2017,7 +2229,8 @@
           "value_type": "dword",
           "value": 4
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "tasks.telemetry-batch.disable",
@@ -2035,7 +2248,8 @@
           "apply": "$tasks = @('\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser','\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater','\\Microsoft\\Windows\\Application Experience\\StartupAppTask','\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask','\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator','\\Microsoft\\Windows\\Customer Experience Improvement Program\\KernelCeipTask','\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip','\\Microsoft\\Windows\\Autochk\\Proxy','\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector','\\Microsoft\\Windows\\Maps\\MapsToastTask','\\Microsoft\\Windows\\Maps\\MapsUpdateTask','\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient','\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload','\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting'); foreach ($p in $tasks) { $tn = ($p -split '\\\\')[-1]; $tp = $p.Substring(0, $p.Length - $tn.Length); try { Disable-ScheduledTask -TaskPath $tp -TaskName $tn -ErrorAction Stop | Out-Null } catch { } }",
           "revert": "$tasks = @('\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser','\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater','\\Microsoft\\Windows\\Application Experience\\StartupAppTask','\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask','\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator','\\Microsoft\\Windows\\Customer Experience Improvement Program\\KernelCeipTask','\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip','\\Microsoft\\Windows\\Autochk\\Proxy','\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector','\\Microsoft\\Windows\\Maps\\MapsToastTask','\\Microsoft\\Windows\\Maps\\MapsUpdateTask','\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient','\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload','\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting'); foreach ($p in $tasks) { $tn = ($p -split '\\\\')[-1]; $tp = $p.Substring(0, $p.Length - $tn.Length); try { Enable-ScheduledTask -TaskPath $tp -TaskName $tn -ErrorAction Stop | Out-Null } catch { } }"
         }
-      ]
+      ],
+      "evidenceTier": "cosmetic"
     },
     {
       "id": "process.msi-mode.gpu-nic-audio",
@@ -2053,7 +2267,8 @@
           "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\msi-mode.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; $classes = @('Display','Net','AudioEndpoint'); foreach ($c in $classes) { Get-PnpDevice -Class $c -PresentOnly -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'OK' -and $_.InstanceId -like 'PCI\\\\*' } | ForEach-Object { $regPath = \"HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\$($_.InstanceId)\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties\"; if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force -ErrorAction SilentlyContinue | Out-Null }; try { Set-ItemProperty -Path $regPath -Name MSISupported -Value 1 -Type DWord -ErrorAction Stop; Add-Content $f \"$t APPLY $($_.FriendlyName) ($c)\" } catch { Add-Content $f \"$t FAIL $($_.FriendlyName) ($c) : $($_.Exception.Message)\" } } }",
           "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\msi-mode.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; $classes = @('Display','Net','AudioEndpoint'); foreach ($c in $classes) { Get-PnpDevice -Class $c -PresentOnly -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'OK' -and $_.InstanceId -like 'PCI\\\\*' } | ForEach-Object { $regPath = \"HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\$($_.InstanceId)\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties\"; if (Test-Path $regPath) { try { Set-ItemProperty -Path $regPath -Name MSISupported -Value 0 -Type DWord -ErrorAction Stop; Add-Content $f \"$t REVERT $($_.FriendlyName) ($c)\" } catch { Add-Content $f \"$t REVERT-FAIL $($_.FriendlyName) ($c) : $($_.Exception.Message)\" } } } }"
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "net.nic.rsc.disable",
@@ -2071,26 +2286,8 @@
           "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Disable-NetAdapterRsc -Name $n -ErrorAction Stop; Add-Content $f \"$t APPLY $n : RSC -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } }",
           "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Enable-NetAdapterRsc -Name $n -ErrorAction Stop; Add-Content $f \"$t REVERT $n : RSC -> Enabled\" } catch { } }"
         }
-      ]
-    },
-    {
-      "id": "net.nic.checksum-offload.disable",
-      "title": "NIC: Disable TCP/IPv4 Checksum Offload",
-      "category": "network",
-      "description": "Disables hardware checksum offloading for IPv4 + TCP on every up-physical NIC. The CPU computes packet checksums instead of the NIC.",
-      "rationale": "Source: Microsoft Learn `Set-NetAdapterChecksumOffload` + community testing. On a fast modern CPU (Ryzen 5xxx+, Raptor Lake), CPU-computed checksums add < 1% sustained CPU but eliminate one source of variable latency in the NIC's packet-processing pipeline — pros report more consistent frametimes after disable. Tradeoff: slightly higher CPU during heavy network load. Skip on laptops / mid-range systems where the offload is genuinely saving cycles.",
-      "riskLevel": 2,
-      "vipGate": "vip",
-      "anticheatRisk": "none",
-      "rebootRequired": "none",
-      "actions": [
-        {
-          "kind": "powershell_script",
-          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Disable-NetAdapterChecksumOffload -Name $n -ErrorAction Stop; Add-Content $f \"$t APPLY $n : ChecksumOffload -> Disabled\" } catch { Add-Content $f \"$t FAIL $n : $($_.Exception.Message)\" } }",
-          "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Enable-NetAdapterChecksumOffload -Name $n -ErrorAction Stop; Add-Content $f \"$t REVERT $n : ChecksumOffload -> Enabled\" } catch { } }"
-        }
       ],
-      "targets": { "formFactor": ["desktop"] }
+      "evidenceTier": "situational"
     },
     {
       "id": "net.nic.lso.disable",
@@ -2109,7 +2306,12 @@
           "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; try { Enable-NetAdapterLso -Name $n -ErrorAction Stop; Add-Content $f \"$t REVERT $n : LSO -> Enabled\" } catch { } }"
         }
       ],
-      "targets": { "formFactor": ["desktop"] }
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ]
+      },
+      "evidenceTier": "situational"
     },
     {
       "id": "net.nic.eee-powersave.disable",
@@ -2128,7 +2330,12 @@
           "revert": "$d = \"$env:LOCALAPPDATA\\optmaxxing\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $f = \"$d\\nic-tweak.log\"; $t = Get-Date -Format 'yyyy-MM-ddTHH:mm:ssK'; $names = @('Energy Efficient Ethernet','Energy-Efficient Ethernet','Green Ethernet','EEE','Advanced EEE','Power Saving Mode','Gigabit Lite','Ultra Low Power Mode'); Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | ForEach-Object { $n = $_.Name; foreach ($dn in $names) { $p = Get-NetAdapterAdvancedProperty -Name $n -DisplayName $dn -ErrorAction SilentlyContinue; if ($p) { try { Set-NetAdapterAdvancedProperty -Name $n -DisplayName $dn -DisplayValue 'Enabled' -ErrorAction Stop; Add-Content $f \"$t REVERT $n : $dn -> Enabled\" } catch { } } }; try { Set-NetAdapterPowerManagement -Name $n -AllowComputerToTurnOffDevice Enabled -ErrorAction Stop; Add-Content $f \"$t REVERT $n : AllowComputerToTurnOffDevice -> Enabled\" } catch { } }"
         }
       ],
-      "targets": { "formFactor": ["desktop"] }
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ]
+      },
+      "evidenceTier": "measured"
     },
     {
       "id": "nvidia.nvpi.fortnite-profile",
@@ -2140,38 +2347,59 @@
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "applicableGames": ["fortnite"],
-      "tournamentCompliance": { "fortnite": "safe" },
-      "anticheatCompatibility": { "eac": "safe", "epic_ac": "safe" },
-      "targets": { "gpuVendor": ["nvidia"] },
+      "applicableGames": [
+        "fortnite"
+      ],
+      "tournamentCompliance": {
+        "fortnite": "safe"
+      },
+      "anticheatCompatibility": {
+        "eac": "safe",
+        "epic_ac": "safe"
+      },
+      "targets": {
+        "gpuVendor": [
+          "nvidia"
+        ]
+      },
       "actions": [
         {
           "kind": "powershell_script",
           "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\\nvpi\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $p = \"$d\\Fortnite.nip\"; $xml = \"<?xml version='1.0' encoding='utf-16'?><ArrayOfProfile><Profile><ProfileName>Fortnite (optimizationmaxxing)</ProfileName><Executeables><string>FortniteClient-Win64-Shipping.exe</string></Executeables><Settings><ProfileSetting><SettingID>274197361</SettingID><SettingValue>1</SettingValue></ProfileSetting><ProfileSetting><SettingID>13510289</SettingID><SettingValue>20</SettingValue></ProfileSetting><ProfileSetting><SettingID>11041231</SettingID><SettingValue>138504007</SettingValue></ProfileSetting><ProfileSetting><SettingID>8102046</SettingID><SettingValue>0</SettingValue></ProfileSetting></Settings></Profile></ArrayOfProfile>\"; [System.IO.File]::WriteAllText($p, $xml, [System.Text.Encoding]::Unicode); Start-Process explorer.exe $d",
           "revert": "$p = \"$env:LOCALAPPDATA\\optmaxxing\\nvpi\\Fortnite.nip\"; if (Test-Path $p) { Remove-Item $p -Force }"
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "cs2.autoexec.optimize",
       "title": "CS2: competitive autoexec.cfg",
       "category": "process",
-      "description": "Writes a converged-pro autoexec.cfg to Steam\\steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg\\. Locks raw input on, m_customaccel off, 128-tick netcode (cl_cmdrate/cl_updaterate 128, cl_interp 0, cl_interp_ratio 1, lag-comp on), fps_max 0, mat_queue_mode 2 (multithreaded), snd_mixahead 0.025 for tighter audio cue timing.",
-      "rationale": "Source: ZywOo / s1mple / NiKo / m0nesy converged on these values circa 2024-2026. The 128-tick + cl_interp 0 + cl_interp_ratio 1 trio is what every IEM Cologne config exports. mat_queue_mode 2 forces multithreaded rendering — Source 2 lobbies fail to multi-thread on a few rigs without the explicit forcing. fps_max 0 lets the GPU run uncapped (use NVCP frame cap instead, per the Reflex whitepaper). Reverts cleanly via the FileWrite snapshot store.",
+      "description": "Writes a converged-pro autoexec.cfg to the CS2 cfg folder. Locks raw input on, m_customaccel off, rate 786432, fps_max 0, mat_queue_mode 2 (multithreaded), snd_mixahead 0.025 for tighter audio-cue timing. (v1.9.0: removed the cl_cmdrate/cl_updaterate/cl_interp block — CS2 is sub-tick; those CS:GO cvars are deprecated/non-functional and interp is handled by the menu buffer slider.)",
+      "rationale": "Source: pro CS2 configs (ZywOo/s1mple/NiKo/m0nesy) for the still-valid cvars. The real levers are m_rawinput 1, m_customaccel 0, rate 786432, mat_queue_mode 2 (forces multithreaded render — a few Source 2 rigs fail to multithread without it), and snd_mixahead. fps_max 0 lets the GPU run uncapped (use an NVCP frame cap per the Reflex whitepaper). The old 128-tick / cl_interp 0 / cl_interp_ratio 1 trio was CS:GO cargo-cult — CS2's sub-tick netcode ignores client tickrate cvars, so we no longer write them. Reverts cleanly via the FileWrite snapshot store.",
       "riskLevel": 2,
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "applicableGames": ["cs2"],
-      "tournamentCompliance": { "cs2": "safe" },
-      "anticheatCompatibility": { "vac": "safe", "faceit": "safe", "esea": "safe" },
+      "applicableGames": [
+        "cs2"
+      ],
+      "tournamentCompliance": {
+        "cs2": "safe"
+      },
+      "anticheatCompatibility": {
+        "vac": "safe",
+        "faceit": "safe",
+        "esea": "safe"
+      },
       "actions": [
         {
           "kind": "file_write",
           "path": "%PROGRAMFILES(X86)%\\Steam\\steamapps\\common\\Counter-Strike Global Offensive\\game\\csgo\\cfg\\autoexec.cfg",
-          "contents_b64": "Ly8gb3B0aW1pemF0aW9ubWF4eGluZyBjb21wZXRpdGl2ZSBhdXRvZXhlYyDigJQgQ1MyCi8vIFNvdXJjZS1jb252ZXJnZWQgYmFzZWxpbmUgZnJvbSBjdXJyZW50IEZOQ1MgLyBJRU0gcHJvIGNvbmZpZ3MuCi8vIExvYWRzIGZyb20gY2ZnL2F1dG9leGVjLmNmZyBhdXRvbWF0aWNhbGx5IHdoZW4gQ1MyIHN0YXJ0cy4KCi8vIOKUgOKUgCBJbnB1dCDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKbV9yYXdpbnB1dCAiMSIKbV9jdXN0b21hY2NlbCAiMCIKem9vbV9zZW5zaXRpdml0eV9yYXRpb19tb3VzZSAiMS4wIgoKLy8g4pSA4pSAIE5ldHdvcmsg4oCUIDEyOC10aWNrICsgbG93LWppdHRlciDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKcmF0ZSAiNzg2NDMyIgpjbF9jbWRyYXRlICIxMjgiCmNsX3VwZGF0ZXJhdGUgIjEyOCIKY2xfaW50ZXJwICIwIgpjbF9pbnRlcnBfcmF0aW8gIjEiCmNsX2xhZ2NvbXBfZXJyb3JjaGVjayAiMSIKY2xfbGFnY29tcGVuc2F0aW9uICIxIgpjbF9wcmVkaWN0ICIxIgpjbF9wcmVkaWN0d2VhcG9ucyAiMSIKCi8vIOKUgOKUgCBGUFMgLyByZW5kZXIg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmZwc19tYXggIjAiCmZwc19tYXhfdWkgIjAiCm1hdF9xdWV1ZV9tb2RlICIyIgplbmdpbmVfbm9fZm9jdXNfc2xlZXAgIjAiCgovLyDilIDilIAgQXVkaW8g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACnNuZF9taXhhaGVhZCAiMC4wMjUiCnNuZF9oZWFkcGhvbmVfcGFuX2V4cG9uZW50ICIyLjAiCnNuZF9mcm9udF9oZWFkcGhvbmVfcG9zaXRpb24gIjQ1LjAiCnNuZF9yZWFyX2hlYWRwaG9uZV9wb3NpdGlvbiAiOTAuMCIKCi8vIOKUgOKUgCBDb25zb2xlIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgApjb25fZW5hYmxlICIxIgplY2hvICI9PT09PSBvcHRpbWl6YXRpb25tYXh4aW5nIGF1dG9leGVjIGxvYWRlZCA9PT09PSIKaG9zdF93cml0ZWNvbmZpZwo="
+          "contents_b64": "Ly8gb3B0aW1pemF0aW9ubWF4eGluZyBjb21wZXRpdGl2ZSBhdXRvZXhlYyDigJQgQ1MyCi8vIFNvdXJjZS1jb252ZXJnZWQgYmFzZWxpbmUgZnJvbSBjdXJyZW50IEZOQ1MgLyBJRU0gcHJvIGNvbmZpZ3MuCi8vIExvYWRzIGZyb20gY2ZnL2F1dG9leGVjLmNmZyBhdXRvbWF0aWNhbGx5IHdoZW4gQ1MyIHN0YXJ0cy4KCi8vIOKUgOKUgCBJbnB1dCDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKbV9yYXdpbnB1dCAiMSIKbV9jdXN0b21hY2NlbCAiMCIKem9vbV9zZW5zaXRpdml0eV9yYXRpb19tb3VzZSAiMS4wIgoKLy8g4pSA4pSAIE5ldHdvcmsg4oCUIDEyOC10aWNrICsgbG93LWppdHRlciDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKcmF0ZSAiNzg2NDMyIgpjbF9sYWdjb21wX2Vycm9yY2hlY2sgIjEiCmNsX2xhZ2NvbXBlbnNhdGlvbiAiMSIKY2xfcHJlZGljdCAiMSIKY2xfcHJlZGljdHdlYXBvbnMgIjEiCgovLyDilIDilIAgRlBTIC8gcmVuZGVyIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgApmcHNfbWF4ICIwIgpmcHNfbWF4X3VpICIwIgptYXRfcXVldWVfbW9kZSAiMiIKZW5naW5lX25vX2ZvY3VzX3NsZWVwICIwIgoKLy8g4pSA4pSAIEF1ZGlvIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgApzbmRfbWl4YWhlYWQgIjAuMDI1IgpzbmRfaGVhZHBob25lX3Bhbl9leHBvbmVudCAiMi4wIgpzbmRfZnJvbnRfaGVhZHBob25lX3Bvc2l0aW9uICI0NS4wIgpzbmRfcmVhcl9oZWFkcGhvbmVfcG9zaXRpb24gIjkwLjAiCgovLyDilIDilIAgQ29uc29sZSDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKY29uX2VuYWJsZSAiMSIKZWNobyAiPT09PT0gb3B0aW1pemF0aW9ubWF4eGluZyBhdXRvZXhlYyBsb2FkZWQgPT09PT0iCmhvc3Rfd3JpdGVjb25maWcK"
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "apex.videoconfig.optimize",
@@ -2183,58 +2411,81 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "applicableGames": ["apex"],
-      "tournamentCompliance": { "apex": "safe" },
-      "anticheatCompatibility": { "eac": "safe" },
+      "applicableGames": [
+        "apex"
+      ],
+      "tournamentCompliance": {
+        "apex": "safe"
+      },
+      "anticheatCompatibility": {
+        "eac": "safe"
+      },
       "actions": [
         {
           "kind": "file_write",
           "path": "%USERPROFILE%\\Saved Games\\Respawn\\Apex\\local\\videoconfig.txt",
           "contents_b64": "Ly8gb3B0aW1pemF0aW9ubWF4eGluZyBjb21wZXRpdGl2ZSB2aWRlb2NvbmZpZyDigJQgQXBleCBMZWdlbmRzCi8vIFN0cmlwcyB2aXN1YWwgZWZmZWN0cyB0aGF0IGRvbid0IGhlbHAgdGFyZ2V0IHZpc2liaWxpdHkuCi8vIFNldCB0aGlzIGZpbGUgdG8gcmVhZC1vbmx5IGFmdGVyIHdyaXRpbmcgc28gdGhlIGdhbWUgZG9lc24ndCBvdmVyd3JpdGUuCi8vCi8vICAgUG93ZXJTaGVsbDogIGF0dHJpYiArUiAiJGVudjpVU0VSUFJPRklMRVxTYXZlZCBHYW1lc1xSZXNwYXduXEFwZXhcbG9jYWxcdmlkZW9jb25maWcudHh0IgoKVmlkZW9Db25maWcKewoic2V0dGluZy5jbF9naWJfYWxsb3ciCQkJCQkiMCIKInNldHRpbmcuY2xfcmFnZG9sbF9jb2xsaWRlIgkJCSIwIgoic2V0dGluZy5jbF9yYWdkb2xsX3NlbGZfY29sbGlzaW9uIgkJIjAiCiJzZXR0aW5nLmNsX3BhcnRpY2xlX2ZhbGxiYWNrX2Jhc2UiCQkiMyIKInNldHRpbmcuY2xfcGFydGljbGVfZmFsbGJhY2tfbXVsdGlwbGllciIJIjAiCiJzZXR0aW5nLm1hdF9ncmFpbl9zY2FsZV9vdmVycmlkZSIJCSIwIgoic2V0dGluZy5kdnNfc3VwZXJzYW1wbGVfZW5hYmxlIgkJIjAiCiJzZXR0aW5nLnJfbG9kX3N3aXRjaF9zY2FsZSIJCQkiMC40Igoic2V0dGluZy5jc21fZW5hYmxlZCIJCQkJCSIwIgoic2V0dGluZy5kdnNfZW5hYmxlIgkJCQkJIjAiCn0K"
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "fortnite.engine-ini.optimize",
       "title": "Fortnite: competitive Engine.ini",
       "category": "process",
-      "description": "Writes a competitive-baseline Engine.ini to %LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\. Forces post-processing / shadow / view-distance / effects / foliage scalability to 0, motion blur off, anti-aliasing off, anisotropy off, mesh LOD bias maxed (so distant geometry stays simple). Logs muted. Snapshot-backed revert restores whatever Engine.ini was there before.",
+      "description": "Writes a competitive-baseline Engine.ini to %LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\. Forces post-processing / shadow / view-distance / effects / foliage scalability to 0, motion blur off, anti-aliasing off, anisotropy off, mesh LOD bias maxed (so distant geometry stays simple). Logs muted. Snapshot-backed revert restores whatever Engine.ini was there before. NOTE (2026): the single biggest Fortnite FPS lever is in-game Performance Mode (DX11), which bypasses Nanite/Lumen — this config can't set it; enable it in Video settings for the largest gain, then these .ini tunes stack on top.",
       "rationale": "Source: Bugha + Mongraal + Clix published configs converge on these values. The same Engine.ini tweaks Eklipse / OpusClip / etc. all ship as 'pro config'. Free 6-12% FPS on most rigs in dense endgame storms — these values just disable rendering work the player can't notice anyway. Reverts cleanly via the FileWrite snapshot store. Lives in the user-profile path, no admin needed.",
       "riskLevel": 2,
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "applicableGames": ["fortnite"],
-      "tournamentCompliance": { "fortnite": "safe" },
-      "anticheatCompatibility": { "eac": "safe", "epic_ac": "safe" },
+      "applicableGames": [
+        "fortnite"
+      ],
+      "tournamentCompliance": {
+        "fortnite": "safe"
+      },
+      "anticheatCompatibility": {
+        "eac": "safe",
+        "epic_ac": "safe"
+      },
       "actions": [
         {
           "kind": "file_write",
           "path": "%LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\Engine.ini",
           "contents_b64": "W0NvcmUuU3lzdGVtXQpyLk1heEFuaXNvdHJvcHk9MApyLk1vdGlvbkJsdXJRdWFsaXR5PTAKci5Nb3Rpb25CbHVyLkFtb3VudD0wCnIuU2tlbGV0YWxNZXNoTE9EQmlhcz05OQpyLkFudGlBbGlhc2luZ01ldGhvZD0wCnNnLlBvc3RQcm9jZXNzUXVhbGl0eT0wCnNnLlNoYWRvd1F1YWxpdHk9MApzZy5WaWV3RGlzdGFuY2VRdWFsaXR5PTAKc2cuRWZmZWN0c1F1YWxpdHk9MApzZy5Gb2xpYWdlUXVhbGl0eT0wCgpbQ29uc29sZVZhcmlhYmxlc10Kci5IWkJPY2NsdXNpb249MgpyLlJlbmRlclRhcmdldFBvb2xNaW49MzAwCgpbQ29yZS5Mb2ddCkxvZ0NvbnRlbnRTdHJlYW1pbmc9Tm9Mb2dnaW5nCkxvZ1RyYWNlPU5vTG9nZ2luZwpMb2dQbGF5ZXJNYW5hZ2VtZW50PU5vTG9nZ2luZwo="
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "fortnite.gus-ini.competitive",
       "title": "Fortnite: competitive GameUserSettings.ini",
       "category": "process",
-      "description": "Pairs with Engine.ini. Writes %LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\GameUserSettings.ini with FrameRateLimit=240, bUseMaxFrameRate=True, bUseVSync=False, bMotionBlur=False, bShowGrass=False, bUseHDRDisplayOutput=False, fullscreen-windowed mode (FullscreenMode=0 — Fortnite's lowest-input-lag mode since fullscreen-exclusive was removed in Ch5), 1920x1080. Snapshot-backed revert restores the prior file byte-for-byte.",
+      "description": "Pairs with Engine.ini. Writes %LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\GameUserSettings.ini with FrameRateLimit=240, bUseMaxFrameRate=True, bUseVSync=False, bMotionBlur=False, bShowGrass=False, bUseHDRDisplayOutput=False, true Fullscreen (FullscreenMode=0 — Fortnite's lowest-input-lag windowing mode), 1920x1080. Snapshot-backed revert restores the prior file byte-for-byte.",
       "rationale": "Engine.ini sets render scalability; GameUserSettings.ini sets the things you can't touch from Engine.ini — frame cap, VSync, fullscreen mode, resolution. Locks in the Peterbot/Clix/Bugha consensus. NOTE: Fortnite rewrites GameUserSettings.ini on every launch with whatever the in-game Settings panel last had. To make this stick across launches, mark the file read-only after applying — or just re-apply after any session where you opened in-game Settings. We don't auto-set read-only because that breaks legitimate in-game tweaking.",
       "riskLevel": 2,
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "none",
-      "applicableGames": ["fortnite"],
-      "tournamentCompliance": { "fortnite": "safe" },
-      "anticheatCompatibility": { "eac": "safe", "epic_ac": "safe" },
+      "applicableGames": [
+        "fortnite"
+      ],
+      "tournamentCompliance": {
+        "fortnite": "safe"
+      },
+      "anticheatCompatibility": {
+        "eac": "safe",
+        "epic_ac": "safe"
+      },
       "actions": [
         {
           "kind": "file_write",
           "path": "%LOCALAPPDATA%\\FortniteGame\\Saved\\Config\\WindowsClient\\GameUserSettings.ini",
           "contents_b64": "Wy9TY3JpcHQvRm9ydG5pdGVHYW1lLkZvcnRHYW1lVXNlclNldHRpbmdzXQpGcmFtZVJhdGVMaW1pdD0yNDAuMDAwMDAwCmJVc2VGaXhlZEZyYW1lUmF0ZT1GYWxzZQpiVXNlTWF4RnJhbWVSYXRlPVRydWUKYk1vdGlvbkJsdXI9RmFsc2UKYlNob3dHcmFzcz1GYWxzZQpiVXNlSERSRGlzcGxheU91dHB1dD1GYWxzZQpiVXNlRHluYW1pY1Jlc29sdXRpb249RmFsc2UKClsvU2NyaXB0L0VuZ2luZS5HYW1lVXNlclNldHRpbmdzXQpiVXNlVlN5bmM9RmFsc2UKYlVzZUR5bmFtaWNSZXNvbHV0aW9uPUZhbHNlClJlc29sdXRpb25TaXplWD0xOTIwClJlc29sdXRpb25TaXplWT0xMDgwCkxhc3RVc2VyQ29uZmlybWVkUmVzb2x1dGlvblNpemVYPTE5MjAKTGFzdFVzZXJDb25maXJtZWRSZXNvbHV0aW9uU2l6ZVk9MTA4MApXaW5kb3dQb3NYPS0xCldpbmRvd1Bvc1k9LTEKRnVsbHNjcmVlbk1vZGU9MApMYXN0Q29uZmlybWVkRnVsbHNjcmVlbk1vZGU9MApQcmVmZXJyZWRGdWxsc2NyZWVuTW9kZT0wClZlcnNpb249NQ=="
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "peripherals.rgb-control-apps.autostart-disable",
@@ -2246,26 +2497,43 @@
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "logout",
-      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
+      "anticheatCompatibility": {
+        "vanguard": "safe",
+        "eac": "safe",
+        "battleye": "safe",
+        "vac": "safe",
+        "faceit": "safe",
+        "esea": "safe",
+        "epic_ac": "safe"
+      },
       "actions": [
         {
           "kind": "powershell_script",
           "apply": "$ErrorActionPreference='SilentlyContinue'; $stashDir=\"$env:LOCALAPPDATA\\optmaxxing\\backups\"; New-Item -ItemType Directory -Path $stashDir -Force | Out-Null; $stashFile=\"$stashDir\\rgb-autostart-stash.json\"; $kw=@('Aura','Armoury','ArmouryCrate','ROG Live','LightingService','iCUE','Corsair','Mystic','MSI Center','RGB Fusion','GIGABYTE Control','AORUS','Razer','RzPlatform','Logitech G HUB','LGHUB','T-Force','TForce','BLITZ','NZXT CAM','NZXT','EVGA Precision','MasterPlus','Cooler Master','OpenRGB','SignalRGB','OMEN Lighting','OmenLighting','AlienFX','Alienware Command'); $runKeys=@('HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run','HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce','HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run','HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce','HKLM:\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run'); $stash=@{runKeyEntries=@();scheduledTasks=@()}; foreach ($p in $runKeys) { if (-not (Test-Path $p)) { continue }; $props=Get-ItemProperty -Path $p; foreach ($n in $props.PSObject.Properties.Name) { if ($n -like 'PS*') { continue }; $hay=\"$n $($props.$n)\"; $hit=$false; foreach ($k in $kw) { if ($hay -like \"*$k*\") { $hit=$true; break } }; if ($hit) { $stash.runKeyEntries+=@{key=$p;name=$n;data=[string]$props.$n}; Remove-ItemProperty -Path $p -Name $n -Force } } }; try { $tasks=Get-ScheduledTask -ErrorAction Stop; foreach ($t in $tasks) { if ([string]$t.State -eq 'Disabled') { continue }; $hay=\"$($t.TaskName) $($t.TaskPath)\"; $hit=$false; foreach ($k in $kw) { if ($hay -like \"*$k*\") { $hit=$true; break } }; if ($hit) { $stash.scheduledTasks+=@{path=$t.TaskPath;name=$t.TaskName}; Disable-ScheduledTask -TaskPath $t.TaskPath -TaskName $t.TaskName | Out-Null } } } catch {}; ($stash | ConvertTo-Json -Depth 6) | Set-Content -Path $stashFile -Encoding UTF8; Write-Output (\"OK removed=\"+$stash.runKeyEntries.Count+\" disabledTasks=\"+$stash.scheduledTasks.Count)",
           "revert": "$ErrorActionPreference='SilentlyContinue'; $stashFile=\"$env:LOCALAPPDATA\\optmaxxing\\backups\\rgb-autostart-stash.json\"; if (-not (Test-Path $stashFile)) { Write-Output 'NOSTASH'; return }; $stash=Get-Content $stashFile -Raw | ConvertFrom-Json; foreach ($e in $stash.runKeyEntries) { if (-not (Test-Path $e.key)) { New-Item -Path $e.key -Force | Out-Null }; New-ItemProperty -Path $e.key -Name $e.name -Value $e.data -PropertyType String -Force | Out-Null }; foreach ($t in $stash.scheduledTasks) { try { Enable-ScheduledTask -TaskPath $t.path -TaskName $t.name | Out-Null } catch {} }; Remove-Item $stashFile -Force -ErrorAction SilentlyContinue; Write-Output 'OK'"
         }
-      ]
+      ],
+      "evidenceTier": "measured"
     },
     {
       "id": "peripherals.usb.coalescing-disable-pinnacle",
       "title": "USB pinnacle — kill interrupt coalescing + selective suspend + boost HID/mouse/keyboard IRQ priority",
       "category": "input-latency",
       "description": "Seven registry writes that together pull USB devices (mouse, keyboard, HID controllers) onto the lowest-latency path Windows exposes. Disables USB Selective Suspend at three driver layers (root USB / USB 2.0 hub / USB 3.0 hub), promotes the HID service to boot-start so it's loaded before the desktop session, and raises IRQ priority on mouclass / kbdclass / HidUsb so their interrupts get scheduled ahead of background drivers. Single UAC. Every value snapshot-backed for byte-perfect revert.",
-      "rationale": "Documented input-lag stack from PC-Tuning + Calypto + Xiseous guides. Disabling Selective Suspend prevents Windows from idling USB hubs mid-game (~0.3-0.6ms saved on first-poll-after-idle). Boot-starting hidserv (Start=0) means USB HID input is initialized in the kernel boot path instead of after login, removing a class of first-input stutters. IRQPriority=1 on mouclass/kbdclass/HidUsb is the canonical 'pinnacle' move from PC-Tuning's research.md — measurable ~0.2-0.5ms median input-to-photon reduction on LDAT. Stacks with our existing Win32PrioritySeparation/HAGS/Reflex tweaks; doesn't conflict with any of them. AC-safe across Vanguard/EAC/BattlEye (driver service config, not memory/binary).",
+      "rationale": "Documented input-lag stack from PC-Tuning + Calypto + Xiseous guides. Disabling Selective Suspend prevents Windows idling USB hubs mid-game (removes first-poll-after-idle wake stalls). Boot-starting hidserv (Start=0) initializes USB HID in the kernel boot path. IRQPriority=1 on mouclass/kbdclass/HidUsb is a community 'pinnacle' move (PC-Tuning research.md) — not Microsoft-documented and unmeasured, so treat it as mechanism, not a guaranteed ms figure. AC-safe across Vanguard/EAC/BattlEye (driver service config, not memory/binary).",
       "riskLevel": 2,
       "vipGate": "vip",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
-      "anticheatCompatibility": { "vanguard": "safe", "eac": "safe", "battleye": "safe", "vac": "safe", "faceit": "safe", "esea": "safe", "epic_ac": "safe" },
+      "anticheatCompatibility": {
+        "vanguard": "safe",
+        "eac": "safe",
+        "battleye": "safe",
+        "vac": "safe",
+        "faceit": "safe",
+        "esea": "safe",
+        "epic_ac": "safe"
+      },
       "actions": [
         {
           "kind": "registry_set",
@@ -2323,7 +2591,8 @@
           "value_type": "dword",
           "value": 1
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     },
     {
       "id": "power.fast-startup.disable",
@@ -2344,7 +2613,8 @@
           "value_type": "dword",
           "value": 0
         }
-      ]
+      ],
+      "evidenceTier": "mechanism"
     }
   ]
 }

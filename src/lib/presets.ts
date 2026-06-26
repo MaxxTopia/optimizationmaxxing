@@ -29,13 +29,13 @@ export const PRESETS: PresetBundle[] = [
     glyph: '⚡',
     tagline: 'Lowest input lag · ranked matches',
     description:
-      'Strips DWM compositor lag, maxes scheduler bias to your focused game, removes mouse acceleration. Proven on competitive Val, CS2, Apex.',
+      'The measured input-latency levers: max refresh rate, MSI-mode interrupts (lower DPC), mouse acceleration off, Game DVR off. v1.9.0: dropped SystemResponsiveness + PrioritySeparation — efficacy audit found no measured latency effect (MMCSS only touches registered threads; the foreground boost is already the client default).',
     tweakIds: [
-      'ui.gamedvr.disable',
-      'ui.fse.disable-global',
+      'display.refresh.maximize',
+      'process.msi-mode.gpu-nic-audio',
       'ui.mouse.disable-acceleration',
-      'process.system.responsiveness',
-      'process.priority-separation.foreground',
+      'ui.gamedvr.disable',
+      'ui.sticky-keys.disable',
     ],
     vipGate: 'vip',
   },
@@ -46,12 +46,12 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🎯',
     tagline: 'Max FPS · stable 1% lows · endgame stability',
     description:
-      'MMCSS GPU priority maxed, visual effects stripped, Game DVR off. Tuned for Fortnite endgame storms and Warzone final circles.',
+      'Frees the resources that actually spike in endgame storms: RGB-software DPC/RAM tax killed, Windows Search indexer off, Game DVR off, game pinned to High priority. v1.9.0: dropped MMCSS GPU-priority + visual-fx + SystemResponsiveness — efficacy audit found these don\'t reach the game (folklore / desktop-only).',
     tweakIds: [
       'ui.gamedvr.disable',
-      'ui.visualfx.best-performance',
-      'process.mmcss.games-gpu-priority',
-      'process.system.responsiveness',
+      'peripherals.rgb-control-apps.autostart-disable',
+      'process.windows-search.disable',
+      'process.fortnite.priority-high',
     ],
     vipGate: 'vip',
   },
@@ -93,10 +93,10 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🌐',
     tagline: 'NIC-level interrupt + RSS · throttle + telemetry off',
     description:
-      'Rebuilt 2026-05-07 around tweaks that actually move the needle on Win10/11 (Microsoft autotuning made the old TCP-stack tweaks no-ops). NIC interrupt-moderation off, flow control off, RSS enabled, MS telemetry + Windows ad endpoints blocked at hosts. (v0.2.6: dropped NetworkThrottlingIndex — 2026 testing shows no measured latency gain vs default.)',
+      'Rebuilt around tweaks with a real in-match mechanism. EEE/green-ethernet power-save off (the one tweak that fixes real PHY wake micro-stalls on a thin UDP flow), NIC interrupt-moderation off (immediate RX IRQ), RSS on, telemetry/ad hosts blocked. v1.9.0: dropped flow-control (only fires on link saturation) — efficacy audit. Honest: ping/jitter are ISP/route-dominated; this removes local failure modes, it can\'t lower your base ping.',
     tweakIds: [
+      'net.nic.eee-powersave.disable',
       'net.nic.interrupt-moderation.disable',
-      'net.nic.flow-control.disable',
       'net.nic.rss.enable',
       'hosts.block.ms-telemetry',
       'hosts.block.windows-ads',
@@ -115,22 +115,19 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🗡',
     tagline: 'Push the rig to its limit · ~12-22 ms off click-to-pixel',
     description:
-      "For the kids on stock rigs born to chase pros they shouldn't be able to catch. Combines every aggressive tweak this app ships: HID priority, mitigations off, Hyper-V off, HVCI off, NIC interrupts off, MMCSS GPU bias maxed, IFEO priority for FN/Val/CS2, kernel timer at 0.5ms, MSI mode on display+net+audio, expanded service kills, telemetry/ads hosts blocked, Fortnite Engine.ini + GameUserSettings.ini hand-tunes, HAGS on. Apply once, revert any tweak via Restore Point. The 'unpolite' Tournament FPS preset.",
+      "For the kids on stock rigs born to chase pros they shouldn't be able to catch. v1.9.0: rebuilt around the efficacy audit's measured wins — max refresh, MSI-mode interrupts, mouse-accel off, mitigations off, Hyper-V/HVCI off, NIC interrupt-moderation + EEE-off, IFEO priority for FN/Val/CS2, kernel timer at 0.5ms, RGB-software DPC tax killed, expanded service kills, telemetry/ads hosts blocked, Fortnite Engine.ini + GameUserSettings.ini hand-tunes, HAGS on. The placebo folklore (MMCSS GPU-priority, SystemResponsiveness, HID queue-size) was dropped. Apply once, revert any tweak via Restore Point. The 'unpolite' Tournament FPS preset.",
     tweakIds: [
-      // Core latency
+      // Core latency (measured wins)
+      'display.refresh.maximize',
+      'process.msi-mode.gpu-nic-audio',
       'ui.mouse.disable-acceleration',
+      'ui.sticky-keys.disable',
+      'audio.comms-ducking.disable',
       'ui.gamedvr.disable',
       'ui.gamedvr.appcapture.disable',
       'ui.fse.disable-global',
-      'ui.visualfx.best-performance',
-      'process.priority-separation.foreground',
-      'process.system.responsiveness',
-      'process.mmcss.games-gpu-priority',
       // HID realtime
       'hid.mouse.priority-realtime',
-      'hid.mouse.queue-size.optimize',
-      'hid.keyboard.priority-realtime',
-      'hid.keyboard.queue-size.optimize',
       // Per-game IFEO priority
       'process.fortnite.priority-high',
       'process.valorant.priority-high',
@@ -146,18 +143,13 @@ export const PRESETS: PresetBundle[] = [
       'power.usb3.link-power.disable',
       'process.usb-power-mgmt.disable',
       'process.hid-power-mgmt.disable',
-      // Network
+      // Network (the real in-match wins only)
+      'net.nic.eee-powersave.disable',
       'net.nic.interrupt-moderation.disable',
-      'net.nic.flow-control.disable',
       'net.nic.rss.enable',
-      'net.nic.rsc.disable',
-      'net.nic.checksum-offload.disable',
-      'net.nic.lso.disable',
       // GPU + display
       'process.hags.enable',
-      'monitor.mpo.disable',
-      'monitor.windowed-game-opt.disable',
-      'process.msi-mode.gpu-nic-audio',
+      'process.windows-search.disable',
       // Boot + kernel
       'bcd.tscsyncpolicy.enhanced',
       // Memory
