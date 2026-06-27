@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { ResearchCard } from '../components/ResearchCard'
@@ -19,6 +19,15 @@ export function Guides() {
   })
   const [search, setSearch] = useState('')
   const [showAdvanced, setShowAdvanced] = useState(true)
+
+  // Deep-link target (e.g. a Match Scan finding links here with ?open=<id>):
+  // auto-expand that article and scroll it into view.
+  const openId = searchParams.get('open')
+  useEffect(() => {
+    if (!openId) return
+    const el = document.getElementById(openId)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [openId])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -109,7 +118,12 @@ export function Guides() {
 
       <div className="space-y-3">
         {filtered.map((article) => (
-          <ResearchCard key={article.id} article={article} highlightGame={activeGame} />
+          <ResearchCard
+            key={article.id}
+            article={article}
+            highlightGame={activeGame}
+            defaultOpen={article.id === openId}
+          />
         ))}
       </div>
     </div>

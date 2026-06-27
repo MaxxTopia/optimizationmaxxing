@@ -143,6 +143,11 @@ pub struct Finding {
     pub evidence: Option<String>,
     /// catalog tweak id that addresses it, if one exists
     pub tweak_id: Option<String>,
+    /// research guide id (see src/lib/research.ts) that explains the fix, if one
+    /// exists — e.g. a "couldn't read sensors" finding points at the AV-exclusion
+    /// guide. Rendered as a deep-link in the finding card.
+    #[serde(default)]
+    pub guide_id: Option<String>,
 }
 
 #[derive(Serialize, Clone)]
@@ -198,6 +203,7 @@ pub fn run_preflight() -> MatchScanReport {
                     fix: "Reboot into BIOS, enable the XMP/EXPO profile (often one toggle), save & exit. This is usually the single biggest free FPS / 1%-low gain on a stock build.".into(),
                     evidence,
                     tweak_id: None,
+                    guide_id: None,
                 }),
                 Some(true) => findings.push(Finding {
                     id: "ram.xmp-on".into(),
@@ -207,6 +213,7 @@ pub fn run_preflight() -> MatchScanReport {
                     fix: String::new(),
                     evidence,
                     tweak_id: None,
+                    guide_id: None,
                 }),
                 None => notes.push(
                     "Couldn't confirm XMP/EXPO state on this board (some report the rated speed inconsistently).".into(),
@@ -229,6 +236,7 @@ pub fn run_preflight() -> MatchScanReport {
                         fix: "Switch to High Performance (or the Win11 24H2+ Low-Latency profile) for ranked sessions: Control Panel > Power Options, or the app's power tweaks.".into(),
                         evidence: Some(format!("active plan: {name}")),
                         tweak_id: None,
+                        guide_id: None,
                     });
                 } else {
                     findings.push(Finding {
@@ -239,6 +247,7 @@ pub fn run_preflight() -> MatchScanReport {
                         fix: String::new(),
                         evidence: None,
                         tweak_id: None,
+                        guide_id: None,
                     });
                 }
             }
@@ -264,6 +273,7 @@ pub fn run_preflight() -> MatchScanReport {
                     fix: "Turn it off: Settings > Bluetooth & devices > Mouse > Additional settings > Pointer Options > uncheck 'Enhance pointer precision'. Or apply the app's mouse-acceleration tweak.".into(),
                     evidence: Some(format!("MouseSpeed={a}, Threshold1={b}, Threshold2={c}")),
                     tweak_id: Some("ui.mouse.disable-acceleration".into()),
+                    guide_id: None,
                 });
             } else {
                 findings.push(Finding {
@@ -274,6 +284,7 @@ pub fn run_preflight() -> MatchScanReport {
                     fix: String::new(),
                     evidence: None,
                     tweak_id: None,
+                    guide_id: None,
                 });
             }
         }
@@ -292,6 +303,7 @@ pub fn run_preflight() -> MatchScanReport {
                 fix: "Set the pointer-speed slider to the 6th notch (the default), which is 1:1: Mouse settings > Additional settings > Pointer Options.".into(),
                 evidence: Some(format!("MouseSensitivity={sens} (10 = 6/11)")),
                 tweak_id: None,
+                guide_id: None,
             });
         }
     }
@@ -308,6 +320,7 @@ pub fn run_preflight() -> MatchScanReport {
                 fix: "Turn it off (Settings > Gaming > Captures) or apply the app's Game DVR tweak. Use a dedicated recorder (OBS/ShadowPlay) only when you actually want to record.".into(),
                 evidence: Some("GameDVR_Enabled=1".into()),
                 tweak_id: Some("ui.gamedvr.disable".into()),
+                guide_id: None,
             });
         }
     }
@@ -337,6 +350,7 @@ pub fn run_preflight() -> MatchScanReport {
                     r.current_hz, r.max_hz, r.width, r.height
                 )),
                 tweak_id: Some("display.refresh.maximize".into()),
+                guide_id: None,
             });
         } else {
             findings.push(Finding {
@@ -347,6 +361,7 @@ pub fn run_preflight() -> MatchScanReport {
                 fix: String::new(),
                 evidence: None,
                 tweak_id: None,
+                guide_id: None,
             });
         }
     } else {
@@ -367,6 +382,7 @@ pub fn run_preflight() -> MatchScanReport {
                     fix: "If your anti-cheat doesn't require it (some do — Vanguard/FACEIT), turn off Memory Integrity (Windows Security > Device Security > Core Isolation) and/or apply the app's VBS/HVCI tweak. Tournament Mode can also gate this.".into(),
                     evidence: Some(v.status.clone()),
                     tweak_id: Some("vbs.hvci.disable".into()),
+                    guide_id: None,
                 });
             }
         }
@@ -387,6 +403,7 @@ pub fn run_preflight() -> MatchScanReport {
                         fix: "Back off your most recent overclock/undervolt or RAM EXPO/XMP one step and re-test. On Intel 13/14th-gen, make sure your BIOS + microcode are updated to the stability patch. If it persists, RMA territory.".into(),
                         evidence: Some(format!("{n} WHEA-Logger events / 30 days; {}", m.status)),
                         tweak_id: None,
+                        guide_id: None,
                     });
                 }
             }
@@ -411,6 +428,7 @@ pub fn run_preflight() -> MatchScanReport {
                             fix: "Move the GPU to the top PCIe x16 slot wired straight to the CPU, reseat it, and check BIOS for a slot-bifurcation / M.2-sharing setting that's stealing lanes.".into(),
                             evidence: Some(format!("{}: max x{maxw}", gpu.device)),
                             tweak_id: None,
+                            guide_id: None,
                         });
                     }
                 }
@@ -434,6 +452,7 @@ pub fn run_preflight() -> MatchScanReport {
             fix: "Add a second matching stick (same kit) and populate the dual-channel slots your manual specifies (usually A2+B2 / slots 2+4). Then enable XMP/EXPO.".into(),
             evidence: Some(format!("{populated} DIMM populated")),
             tweak_id: None,
+            guide_id: None,
         });
     }
 
@@ -456,6 +475,7 @@ pub fn run_preflight() -> MatchScanReport {
                     fix: "For ranked, plug in Ethernet — it's the single biggest connection upgrade. If you truly can't, be on the 5/6 GHz band right next to the router and turn off the Wi-Fi adapter's power-saving.".into(),
                     evidence: Some(format!("active adapter: {}", net.adapter_name.unwrap_or_else(|| "Wi-Fi".into()))),
                     tweak_id: None,
+                    guide_id: None,
                 });
             }
             if let Some(mbps) = net.link_speed_mbps {
@@ -468,6 +488,7 @@ pub fn run_preflight() -> MatchScanReport {
                         fix: "Swap to a known-good Cat5e/Cat6 cable and try a different port. It's a cable-health flag, not a bandwidth problem.".into(),
                         evidence: Some(format!("link speed: {mbps} Mbps")),
                         tweak_id: None,
+                        guide_id: None,
                     });
                 }
             }
@@ -481,6 +502,7 @@ pub fn run_preflight() -> MatchScanReport {
                         fix: "Go wired, drop powerline/MoCA adapters, and make sure nothing on your network is mid-download. Then re-check.".into(),
                         evidence: Some(format!("{rtt:.1} ms to gateway")),
                         tweak_id: None,
+                        guide_id: None,
                     });
                 }
             }
@@ -502,6 +524,7 @@ pub fn run_preflight() -> MatchScanReport {
                 fix: format!("Make sure your ranked games are installed on an SSD/NVMe, not the HDD ({hdd}). Move the install if needed (Steam/Epic let you move a game between drives)."),
                 evidence: Some(format!("HDD: {hdd}")),
                 tweak_id: None,
+                guide_id: None,
             });
         }
     }
@@ -596,6 +619,7 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     fix: "Repaste the GPU (or reseat the cooler / check mounting pressure). A fresh high-quality paste or PTM7950 pad typically drops the delta back under 15C.".into(),
                     evidence: Some(format!("{}: core {c:.0}C, hotspot {h:.0}C (delta {delta:.0}C)", comp.name)),
                     tweak_id: None,
+                    guide_id: None,
                 });
             }
         }
@@ -610,6 +634,7 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     fix: "Improve case airflow (a fan blowing across the back of the card helps a lot), and on a 3080/3090 consider replacing the memory thermal pads. Keep VRAM under ~90C.".into(),
                     evidence: Some(format!("{}: VRAM/memory-junction {m:.0}C", comp.name)),
                     tweak_id: None,
+                    guide_id: None,
                 });
             }
         }
@@ -623,6 +648,7 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     fix: String::new(),
                     evidence: hotspot.map(|h| format!("hotspot {h:.0}C")),
                     tweak_id: None,
+                    guide_id: None,
                 });
             }
         }
@@ -635,9 +661,10 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
             severity: "unknown".into(),
             title: "Couldn't read GPU temperatures".into(),
             cause: "The hardware monitor returned no GPU temperature sensors. Antivirus may have blocked the bundled monitor from loading, or the card is older than the hotspot/junction sensors the scan reads (pre-RTX-30 / some AMD cards).".into(),
-            fix: "If you're on an RTX 30/40/50 or RX 6000/7000 card, add a Windows Defender / AV exclusion for the hardware-monitor and re-run. On older cards, hotspot/VRAM-junction temps simply aren't exposed.".into(),
+            fix: "If you're on an RTX 30/40/50 or RX 6000/7000 card, add the antivirus exclusion in the linked guide and re-run. On older cards, hotspot/VRAM-junction temps simply aren't exposed.".into(),
             evidence: None,
             tweak_id: None,
+            guide_id: Some("winring0-av-exclusion".into()),
         });
     }
     notes.push("Hotspot & VRAM-junction temps come from NVAPI/ADL (RTX 30/40/50 + RX 6000/7000). Pre-RTX-30 and some cards don't expose them; CPU temps/throttle need the deep CPU scan.".into());
@@ -721,6 +748,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     fix: "Improve cooling: reseat/repaste the cooler, raise the fan curve, or set a conservative undervolt / PBO offset (Curve Optimizer / PL adjustment) to drop temps without losing real performance.".into(),
                     evidence: Some(format!("hottest core {max_temp:.0}C")),
                     tweak_id: None,
+                    guide_id: None,
                 });
             } else if max_temp >= 85.0 {
                 findings.push(Finding {
@@ -731,6 +759,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     fix: "Tidy cooling / airflow now (or a light undervolt) so a long ranked set doesn't tip into throttling.".into(),
                     evidence: Some(format!("hottest core {max_temp:.0}C")),
                     tweak_id: None,
+                    guide_id: None,
                 });
             }
         }
@@ -744,6 +773,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     fix: "In BIOS, set a sensible Load-Line Calibration and a modest undervolt / Curve Optimizer negative offset — you keep the clocks at lower voltage and temps.".into(),
                     evidence: Some(format!("Vcore {v:.3} V")),
                     tweak_id: None,
+                    guide_id: None,
                 });
             }
         }
@@ -756,6 +786,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                 fix: String::new(),
                 evidence: vcore.map(|v| format!("Vcore {v:.3} V")),
                 tweak_id: None,
+                guide_id: None,
             });
         }
     }
@@ -769,9 +800,10 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
             severity: "unknown".into(),
             title: "Couldn't read CPU core temperature or voltage".into(),
             cause: "The deep CPU scan needs admin (UAC) plus the WinRing0 kernel driver. Either UAC wasn't accepted, or your antivirus blocked the driver from loading — so the scan got no core sensors this run.".into(),
-            fix: "Re-run the CPU deep scan and accept the UAC prompt. If it still comes back empty, add a Windows Defender / AV exclusion for the hardware-monitor driver (see /guides -> \"WinRing0 / LHM antivirus exclusion\"), then try again.".into(),
+            fix: "Re-run the CPU deep scan and accept the UAC prompt. If it still comes back empty, your antivirus is blocking the hardware-monitor driver — add the exclusion in the linked guide, then try again.".into(),
             evidence: None,
             tweak_id: None,
+            guide_id: Some("winring0-av-exclusion".into()),
         });
     }
     notes.push("CPU core temp / Vcore come from the elevated hardware monitor (WinRing0). Effective-clock-vs-rated and the exact throttle-reason bits are the next add.".into());
@@ -904,6 +936,7 @@ pub fn run_live_spotcheck() -> MatchScanReport {
             } else {
                 None
             },
+            guide_id: None,
         });
     }
 
@@ -949,6 +982,7 @@ pub fn run_live_spotcheck() -> MatchScanReport {
                 fix: "Close it, or turn off its hardware acceleration, before you queue.".into(),
                 evidence: Some(format!("{g:.0}% GPU")),
                 tweak_id: None,
+                guide_id: None,
             });
         }
     }
@@ -962,6 +996,7 @@ pub fn run_live_spotcheck() -> MatchScanReport {
             fix: String::new(),
             evidence: None,
             tweak_id: None,
+            guide_id: None,
         });
     }
 
@@ -1267,6 +1302,7 @@ pub fn session_stop() -> MatchScanReport {
                 fix: "Run Start before you queue, play your match, then Stop.".into(),
                 evidence: None,
                 tweak_id: None,
+                guide_id: None,
             }],
             checked: 0,
             notes,
@@ -1296,6 +1332,7 @@ pub fn session_stop() -> MatchScanReport {
             fix: "Improve case airflow / raise the fan curve, and make sure the power limit isn't set low in MSI Afterburner. If only the hotspot is high, repaste (run the GPU deep scan).".into(),
             evidence: Some(evidence),
             tweak_id: None,
+            guide_id: None,
         });
     } else if gpu_temp_measured && max_gpu >= 84.0 {
         findings.push(Finding {
@@ -1306,6 +1343,7 @@ pub fn session_stop() -> MatchScanReport {
             fix: "Give it more airflow now so a long ranked set doesn't tip into throttling.".into(),
             evidence: Some(format!("peak {max_gpu:.0}C")),
             tweak_id: None,
+            guide_id: None,
         });
     }
 
@@ -1320,6 +1358,7 @@ pub fn session_stop() -> MatchScanReport {
             fix: "Use LatencyMon to find the offending driver, then update it. Killing RGB/peripheral software (see the Live spot-check) often clears it.".into(),
             evidence: Some(format!("peak DPC {max_dpc:.1}%")),
             tweak_id: Some("peripherals.rgb-control-apps.autostart-disable".into()),
+            guide_id: None,
         });
     }
 
@@ -1338,6 +1377,7 @@ pub fn session_stop() -> MatchScanReport {
             fix: "Close background apps before you play, or add RAM (32GB is the 2026 comfortable floor for the game + Discord + browser stack).".into(),
             evidence: Some(format!("min free RAM {min_mem:.0}%")),
             tweak_id: None,
+            guide_id: None,
         });
     }
 
@@ -1352,6 +1392,7 @@ pub fn session_stop() -> MatchScanReport {
                 fix: "Back your most recent overclock/undervolt or RAM EXPO/XMP off one step and re-test. On Intel 13/14th-gen, update BIOS/microcode.".into(),
                 evidence: Some(format!("WHEA {start} -> {now}")),
                 tweak_id: None,
+                guide_id: None,
             });
         }
     }
@@ -1379,6 +1420,7 @@ pub fn session_stop() -> MatchScanReport {
                 },
                 evidence: Some(format!("{} frames captured", fs.frames)),
                 tweak_id: None,
+                guide_id: None,
             });
             if fs.bound_measured {
                 let (title, cause, fix) = if fs.cpu_bound_pct >= 60.0 {
@@ -1411,6 +1453,7 @@ pub fn session_stop() -> MatchScanReport {
                     fix,
                     evidence: None,
                     tweak_id: None,
+                    guide_id: None,
                 });
             } else {
                 notes.push("CPU-vs-GPU-bound couldn't be computed — this PresentMon capture didn't include the per-frame MsCPUBusy/MsGPUBusy columns.".into());
@@ -1491,7 +1534,8 @@ mod tests {
             r.headline
         );
         assert!(!r.headline.to_lowercase().contains("healthy"));
-        assert!(r.findings.iter().any(|f| f.severity == "unknown"));
+        let f = r.findings.iter().find(|f| f.severity == "unknown").unwrap();
+        assert_eq!(f.guide_id.as_deref(), Some("winring0-av-exclusion"));
     }
 
     #[test]
@@ -1540,7 +1584,8 @@ mod tests {
         assert_eq!(r.checked, 0);
         assert!(r.headline.to_lowercase().contains("couldn't read"));
         assert!(!r.headline.to_lowercase().contains("healthy"));
-        assert!(r.findings.iter().any(|f| f.id == "gpu.no-signal"));
+        let f = r.findings.iter().find(|f| f.id == "gpu.no-signal").unwrap();
+        assert_eq!(f.guide_id.as_deref(), Some("winring0-av-exclusion"));
     }
 
     #[test]

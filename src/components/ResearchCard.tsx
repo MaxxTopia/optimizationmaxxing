@@ -18,11 +18,13 @@ import { ScewinFlowPanel } from './ScewinFlowPanel'
 export function ResearchCard({
   article,
   highlightGame,
+  defaultOpen = false,
 }: {
   article: ResearchArticle
   highlightGame?: GameId | 'any'
+  defaultOpen?: boolean
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
   const callouts = article.perGameCallouts ?? {}
   const calloutEntries = (Object.entries(callouts) as [GameId, string][])
     .filter(([, body]) => Boolean(body))

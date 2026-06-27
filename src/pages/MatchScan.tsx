@@ -320,6 +320,14 @@ function FindingCard({ f }: { f: MatchScanFinding }) {
               Open the tweak that fixes this →
             </Link>
           )}
+          {f.guideId && (
+            <Link
+              to={`/guides?open=${encodeURIComponent(f.guideId)}`}
+              className="text-accent text-sm underline block"
+            >
+              Open the guide that fixes this →
+            </Link>
+          )}
         </div>
       )}
       {f.evidence && (

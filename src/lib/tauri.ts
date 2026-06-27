@@ -319,6 +319,8 @@ export interface MatchScanFinding {
   fix: string
   evidence: string | null
   tweakId: string | null
+  /** research guide id (see lib/research.ts) that explains the fix, if any */
+  guideId: string | null
 }
 
 export interface MatchScanReport {

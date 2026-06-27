@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.2',
+    date: '2026-06-27',
+    highlights: [
+      'NEW **One-click fix links in Match Scan.** When a scan can\'t read your sensors, the finding now links straight to the exact guide that fixes it (the antivirus/WinRing0 exclusion) — it opens and scrolls right to it instead of leaving you to hunt the Guides page.',
+    ],
+  },
+  {
     version: '0.3.1',
     date: '2026-06-27',
     highlights: [
