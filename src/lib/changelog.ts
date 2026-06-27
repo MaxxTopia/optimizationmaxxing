@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.1',
+    date: '2026-06-27',
+    highlights: [
+      'FIX **Match Scan no longer reports "healthy" when it read nothing.** The CPU and GPU deep scans now say "Couldn\'t read your sensors — state unknown" (with the admin/antivirus fix) instead of falsely showing green when the hardware-monitor driver didn\'t load. Same fix applied to the GPU temps and the match-recorder verdict.',
+      'FIX **GPU deep scan stops misreading VRAM as the core hotspot** — a "Memory Junction" sensor was being mistaken for the GPU hotspot, sometimes inventing a fake "paste pump-out" warning. It\'s now correctly read as VRAM-junction throttling.',
+      'FIX **Match recorder no longer claims "no throttling" it never measured.** GPU throttle detection is NVIDIA-only; on AMD/Intel rigs the verdict now says it wasn\'t sampled rather than implying your rig was clean. Also fixed a garbage peak-temperature number and a bogus CPU-vs-GPU-bound result when frametime data was incomplete.',
+    ],
+  },
+  {
     version: '0.3.0',
     date: '2026-06-26',
     highlights: [

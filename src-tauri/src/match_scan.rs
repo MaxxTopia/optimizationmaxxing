@@ -541,7 +541,9 @@ pub fn run_preflight() -> MatchScanReport {
 pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
     let mut findings: Vec<Finding> = Vec::new();
     let mut notes: Vec<String> = Vec::new();
-    let mut found_gpu = false;
+    // Did we read at least one usable GPU temperature? Matching a GPU component
+    // but reading no temps must not collapse to a green headline.
+    let mut read_signal = false;
 
     for comp in &lhm.components {
         let kind = comp.kind.to_lowercase();
@@ -554,7 +556,6 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         if !is_gpu {
             continue;
         }
-        found_gpu = true;
 
         let temp = |needle: &str| -> Option<f64> {
             comp.sensors
@@ -562,9 +563,26 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                 .find(|s| s.kind.to_lowercase().contains("temperature") && s.name.to_lowercase().contains(needle))
                 .and_then(|s| s.value)
         };
+        // A "junction"/"memory" sensor is VRAM, not the core hotspot — only fall
+        // back to a bare "junction" reading when it isn't a memory sensor, or we
+        // misread VRAM temp as the core hotspot and flag a bogus delta.
+        let non_mem_junction = comp
+            .sensors
+            .iter()
+            .find(|s| {
+                let n = s.name.to_lowercase();
+                s.kind.to_lowercase().contains("temperature")
+                    && n.contains("junction")
+                    && !n.contains("memory")
+                    && !n.contains("vram")
+            })
+            .and_then(|s| s.value);
         let core = temp("core").or_else(|| temp("gpu "));
-        let hotspot = temp("hot spot").or_else(|| temp("hotspot")).or_else(|| temp("junction"));
+        let hotspot = temp("hot spot").or_else(|| temp("hotspot")).or(non_mem_junction);
         let memjunc = temp("memory junction").or_else(|| temp("vram")).or_else(|| temp("memory"));
+        if core.is_some() || hotspot.is_some() || memjunc.is_some() {
+            read_signal = true;
+        }
 
         // Hotspot vs edge delta — >20C signals paste pump-out / bad mount.
         if let (Some(c), Some(h)) = (core, hotspot) {
@@ -610,8 +628,17 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         }
     }
 
-    if !found_gpu {
+    if !read_signal {
         notes.push("No GPU sensors were returned — the bundled hardware monitor may have been blocked by antivirus, or the GPU is older than the sensors expose.".into());
+        findings.push(Finding {
+            id: "gpu.no-signal".into(),
+            severity: "unknown".into(),
+            title: "Couldn't read GPU temperatures".into(),
+            cause: "The hardware monitor returned no GPU temperature sensors. Antivirus may have blocked the bundled monitor from loading, or the card is older than the hotspot/junction sensors the scan reads (pre-RTX-30 / some AMD cards).".into(),
+            fix: "If you're on an RTX 30/40/50 or RX 6000/7000 card, add a Windows Defender / AV exclusion for the hardware-monitor and re-run. On older cards, hotspot/VRAM-junction temps simply aren't exposed.".into(),
+            evidence: None,
+            tweak_id: None,
+        });
     }
     notes.push("Hotspot & VRAM-junction temps come from NVAPI/ADL (RTX 30/40/50 + RX 6000/7000). Pre-RTX-30 and some cards don't expose them; CPU temps/throttle need the deep CPU scan.".into());
 
@@ -621,6 +648,8 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         "Your GPU is throttling on a temperature you'd never normally see.".into()
     } else if warn {
         "Your GPU has a thermal issue worth fixing.".into()
+    } else if !read_signal {
+        "Couldn't read your GPU temperatures — thermal state unknown.".into()
     } else {
         "GPU thermals look healthy.".into()
     };
@@ -628,7 +657,7 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
     MatchScanReport {
         headline,
         findings,
-        checked: 1,
+        checked: if read_signal { 1 } else { 0 },
         notes,
     }
 }
@@ -640,7 +669,10 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
 pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
     let mut findings: Vec<Finding> = Vec::new();
     let mut notes: Vec<String> = Vec::new();
-    let mut found_cpu = false;
+    // Did we actually read a usable thermal/voltage signal? A CPU component can
+    // match yet expose zero sensors (probe ran but WinRing0 didn't load) — that
+    // must NOT collapse to a green "healthy" headline.
+    let mut read_signal = false;
 
     for comp in &lhm.components {
         let kind = comp.kind.to_lowercase();
@@ -653,14 +685,17 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         if !is_cpu {
             continue;
         }
-        found_cpu = true;
 
+        // Seed with NEG_INFINITY, NOT f64::MIN: f64::MIN is the most-negative
+        // *finite* value, so an empty iterator would fold to a finite number
+        // and pass the `is_finite()` guards below — rendering a phantom
+        // "healthy (-1.8e308C)" reading when no temp sensors came back.
         let max_temp = comp
             .sensors
             .iter()
             .filter(|s| s.kind.to_lowercase().contains("temperature"))
             .filter_map(|s| s.value)
-            .fold(f64::MIN, f64::max);
+            .fold(f64::NEG_INFINITY, f64::max);
         let vcore = comp
             .sensors
             .iter()
@@ -671,6 +706,10 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                         || s.name.to_lowercase().contains("vid"))
             })
             .and_then(|s| s.value);
+
+        if max_temp.is_finite() || vcore.is_some() {
+            read_signal = true;
+        }
 
         if max_temp.is_finite() {
             if max_temp >= 95.0 {
@@ -721,8 +760,19 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         }
     }
 
-    if !found_cpu {
+    if !read_signal {
         notes.push("No CPU sensors came back — the elevated probe needs admin (UAC) + the WinRing0 driver, which some antivirus blocks. Temps shown elsewhere from WMI are motherboard-only, not the cores.".into());
+        // No-data run: surface an explicit "couldn't read" finding so the UI
+        // shows an unknown state instead of an empty (and falsely green) card.
+        findings.push(Finding {
+            id: "cpu.no-signal".into(),
+            severity: "unknown".into(),
+            title: "Couldn't read CPU core temperature or voltage".into(),
+            cause: "The deep CPU scan needs admin (UAC) plus the WinRing0 kernel driver. Either UAC wasn't accepted, or your antivirus blocked the driver from loading — so the scan got no core sensors this run.".into(),
+            fix: "Re-run the CPU deep scan and accept the UAC prompt. If it still comes back empty, add a Windows Defender / AV exclusion for the hardware-monitor driver (see /guides -> \"WinRing0 / LHM antivirus exclusion\"), then try again.".into(),
+            evidence: None,
+            tweak_id: None,
+        });
     }
     notes.push("CPU core temp / Vcore come from the elevated hardware monitor (WinRing0). Effective-clock-vs-rated and the exact throttle-reason bits are the next add.".into());
 
@@ -732,6 +782,8 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         "Your CPU is thermal-throttling — cooling is costing you frames.".into()
     } else if warn {
         "Your CPU has a thermal / voltage issue worth addressing.".into()
+    } else if !read_signal {
+        "Couldn't read your CPU sensors — thermal state unknown (needs admin + WinRing0).".into()
     } else {
         "CPU thermals and voltage look healthy.".into()
     };
@@ -739,7 +791,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
     MatchScanReport {
         headline,
         findings,
-        checked: 1,
+        checked: if read_signal { 1 } else { 0 },
         notes,
     }
 }
@@ -999,6 +1051,10 @@ struct FrameStats {
     low01_fps: f32,
     cpu_bound_pct: f32,
     gpu_bound_pct: f32,
+    /// True only when the CSV had MsCPUBusy + MsGPUBusy columns AND at least one
+    /// frame was classified. When false, the cpu/gpu bound percentages are
+    /// meaningless (no data) and must not be surfaced as a bottleneck verdict.
+    bound_measured: bool,
 }
 
 /// Parse a PresentMon 2.x CSV: MsBetweenPresents = frametime; MsCPUBusy /
@@ -1044,7 +1100,8 @@ fn parse_presentmon_csv(path: &str) -> Option<FrameStats> {
         let rank = ((p / 100.0) * (n as f32 - 1.0)).round() as usize;
         ft[rank.min(n - 1)]
     };
-    let bound_total = (cpu_bound + gpu_bound).max(1) as f32;
+    let classified = cpu_bound + gpu_bound;
+    let bound_total = classified.max(1) as f32;
     Some(FrameStats {
         frames: n,
         avg_fps: 1000.0 / avg_ms,
@@ -1052,6 +1109,7 @@ fn parse_presentmon_csv(path: &str) -> Option<FrameStats> {
         low01_fps: 1000.0 / pct(99.9),
         cpu_bound_pct: cpu_bound as f32 / bound_total * 100.0,
         gpu_bound_pct: gpu_bound as f32 / bound_total * 100.0,
+        bound_measured: i_cpu.is_some() && i_gpu.is_some() && classified > 0,
     })
 }
 
@@ -1222,18 +1280,24 @@ pub fn session_stop() -> MatchScanReport {
         .iter()
         .filter_map(|s| s.gpu_temp_c)
         .fold(f32::MIN, f32::max);
+    let gpu_temp_measured = max_gpu != f32::MIN;
     if throttle_samples > 0 {
         let secs = throttle_samples as u64 * 2;
+        let evidence = if gpu_temp_measured {
+            format!("{throttle_samples} of {n} samples throttling; peak {max_gpu:.0}C")
+        } else {
+            format!("{throttle_samples} of {n} samples throttling")
+        };
         findings.push(Finding {
             id: "session.gpu-throttle".into(),
             severity: "critical".into(),
             title: format!("Your GPU throttled for ~{secs}s during the match"),
             cause: "The GPU hit a thermal or power limit and cut its clocks mid-match — that's frame drops exactly when the action heats it up.".into(),
             fix: "Improve case airflow / raise the fan curve, and make sure the power limit isn't set low in MSI Afterburner. If only the hotspot is high, repaste (run the GPU deep scan).".into(),
-            evidence: Some(format!("{throttle_samples} of {n} samples throttling; peak {max_gpu:.0}C")),
+            evidence: Some(evidence),
             tweak_id: None,
         });
-    } else if max_gpu >= 84.0 {
+    } else if gpu_temp_measured && max_gpu >= 84.0 {
         findings.push(Finding {
             id: "session.gpu-hot".into(),
             severity: "warn".into(),
@@ -1316,37 +1380,41 @@ pub fn session_stop() -> MatchScanReport {
                 evidence: Some(format!("{} frames captured", fs.frames)),
                 tweak_id: None,
             });
-            let (title, cause, fix) = if fs.cpu_bound_pct >= 60.0 {
-                (
-                    format!("You were CPU-bound {:.0}% of the match", fs.cpu_bound_pct),
-                    "The GPU sat idle waiting on the CPU most of the time — your CPU is the bottleneck, not the graphics card.".to_string(),
-                    "A faster GPU will NOT raise your FPS here. The levers are CPU cooling/clocks, faster + tighter RAM (XMP/EXPO), and the CPU-bound tweaks. See the 'where your next margin is' guide.".to_string(),
-                )
-            } else if fs.gpu_bound_pct >= 60.0 {
-                (
-                    format!("You were GPU-bound {:.0}% of the match", fs.gpu_bound_pct),
-                    "The GPU was saturated most of the time — it's the bottleneck.".to_string(),
-                    "Lower a few graphics settings for instant FPS; a faster GPU is the upgrade that actually helps here (unlike a CPU-bound rig).".to_string(),
-                )
+            if fs.bound_measured {
+                let (title, cause, fix) = if fs.cpu_bound_pct >= 60.0 {
+                    (
+                        format!("You were CPU-bound {:.0}% of the match", fs.cpu_bound_pct),
+                        "The GPU sat idle waiting on the CPU most of the time — your CPU is the bottleneck, not the graphics card.".to_string(),
+                        "A faster GPU will NOT raise your FPS here. The levers are CPU cooling/clocks, faster + tighter RAM (XMP/EXPO), and the CPU-bound tweaks. See the 'where your next margin is' guide.".to_string(),
+                    )
+                } else if fs.gpu_bound_pct >= 60.0 {
+                    (
+                        format!("You were GPU-bound {:.0}% of the match", fs.gpu_bound_pct),
+                        "The GPU was saturated most of the time — it's the bottleneck.".to_string(),
+                        "Lower a few graphics settings for instant FPS; a faster GPU is the upgrade that actually helps here (unlike a CPU-bound rig).".to_string(),
+                    )
+                } else {
+                    (
+                        format!(
+                            "Balanced load ({:.0}% CPU-bound / {:.0}% GPU-bound)",
+                            fs.cpu_bound_pct, fs.gpu_bound_pct
+                        ),
+                        "Neither part is a clear bottleneck.".to_string(),
+                        "Chase settings + thermals before spending on any upgrade.".to_string(),
+                    )
+                };
+                findings.push(Finding {
+                    id: "session.bound".into(),
+                    severity: "info".into(),
+                    title,
+                    cause,
+                    fix,
+                    evidence: None,
+                    tweak_id: None,
+                });
             } else {
-                (
-                    format!(
-                        "Balanced load ({:.0}% CPU-bound / {:.0}% GPU-bound)",
-                        fs.cpu_bound_pct, fs.gpu_bound_pct
-                    ),
-                    "Neither part is a clear bottleneck.".to_string(),
-                    "Chase settings + thermals before spending on any upgrade.".to_string(),
-                )
-            };
-            findings.push(Finding {
-                id: "session.bound".into(),
-                severity: "info".into(),
-                title,
-                cause,
-                fix,
-                evidence: None,
-                tweak_id: None,
-            });
+                notes.push("CPU-vs-GPU-bound couldn't be computed — this PresentMon capture didn't include the per-frame MsCPUBusy/MsGPUBusy columns.".into());
+            }
         }
         None => {
             if st.presentmon_csv.is_some() {
@@ -1370,6 +1438,10 @@ pub fn session_stop() -> MatchScanReport {
         "Your rig didn't hold up — something throttled or destabilised mid-match.".into()
     } else if warns > 0 {
         format!("Mostly fine, but {} thing{} hurt you during the match.", warns, if warns == 1 { "" } else { "s" })
+    } else if !gpu_temp_measured {
+        // Clean on what we COULD measure, but GPU throttle was never sampled
+        // (NVIDIA-only) — don't claim "no throttling" we didn't observe.
+        "Stable memory and low DPC the whole match — no issues in what was sampled. GPU throttle wasn't measured (NVIDIA-only); the bottleneck is likely settings, network, or aim.".into()
     } else {
         "Your rig held peak the whole match — no throttling, stable memory, low DPC. The bottleneck is elsewhere (settings, network, or aim).".into()
     };
@@ -1379,5 +1451,167 @@ pub fn session_stop() -> MatchScanReport {
         findings,
         checked: n as u32,
         notes,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::toolkit::{LhmComponent, LhmReport, LhmSensorReading};
+
+    fn sensor(name: &str, kind: &str, value: f64) -> LhmSensorReading {
+        LhmSensorReading {
+            name: name.into(),
+            kind: kind.into(),
+            value: Some(value),
+            min: None,
+            max: None,
+        }
+    }
+
+    fn report(components: Vec<LhmComponent>) -> LhmReport {
+        LhmReport {
+            ok: true,
+            elevated: true,
+            lhm_version: Some("0.9.6".into()),
+            components,
+            error: None,
+        }
+    }
+
+    // ---- CPU: no-data must NOT read as healthy --------------------------
+
+    #[test]
+    fn cpu_no_components_reports_unknown_not_healthy() {
+        let r = interpret_lhm_cpu(&report(vec![]));
+        assert_eq!(r.checked, 0, "a no-data scan checked nothing");
+        assert!(
+            r.headline.to_lowercase().contains("couldn't read"),
+            "headline must say it couldn't read, got: {}",
+            r.headline
+        );
+        assert!(!r.headline.to_lowercase().contains("healthy"));
+        assert!(r.findings.iter().any(|f| f.severity == "unknown"));
+    }
+
+    #[test]
+    fn cpu_component_with_no_sensors_reports_unknown() {
+        // WinRing0 didn't load: the CPU is named but exposes zero sensors.
+        let comp = LhmComponent {
+            name: "Intel Core i7-13700K".into(),
+            kind: "cpu".into(),
+            sensors: vec![],
+        };
+        let r = interpret_lhm_cpu(&report(vec![comp]));
+        assert_eq!(r.checked, 0);
+        assert!(r.headline.to_lowercase().contains("couldn't read"));
+        assert!(r.findings.iter().any(|f| f.id == "cpu.no-signal"));
+    }
+
+    #[test]
+    fn cpu_with_healthy_temp_reads_healthy() {
+        let comp = LhmComponent {
+            name: "AMD Ryzen 7 7800X3D".into(),
+            kind: "cpu".into(),
+            sensors: vec![sensor("Core (Tctl/Tdie)", "temperature", 62.0)],
+        };
+        let r = interpret_lhm_cpu(&report(vec![comp]));
+        assert_eq!(r.checked, 1);
+        assert!(r.headline.to_lowercase().contains("healthy"));
+        assert!(r.findings.iter().any(|f| f.severity == "ok"));
+    }
+
+    #[test]
+    fn cpu_critical_temp_still_flags() {
+        let comp = LhmComponent {
+            name: "Intel Core i9-14900K".into(),
+            kind: "cpu".into(),
+            sensors: vec![sensor("Core Max", "temperature", 98.0)],
+        };
+        let r = interpret_lhm_cpu(&report(vec![comp]));
+        assert!(r.findings.iter().any(|f| f.id == "cpu.thermal" && f.severity == "critical"));
+    }
+
+    // ---- GPU: no-data must NOT read as healthy -------------------------
+
+    #[test]
+    fn gpu_no_components_reports_unknown_not_healthy() {
+        let r = interpret_lhm_gpu(&report(vec![]));
+        assert_eq!(r.checked, 0);
+        assert!(r.headline.to_lowercase().contains("couldn't read"));
+        assert!(!r.headline.to_lowercase().contains("healthy"));
+        assert!(r.findings.iter().any(|f| f.id == "gpu.no-signal"));
+    }
+
+    #[test]
+    fn gpu_with_core_temp_reads_healthy() {
+        let comp = LhmComponent {
+            name: "NVIDIA GeForce RTX 4080".into(),
+            kind: "gpu_nvidia".into(),
+            sensors: vec![sensor("GPU Core", "temperature", 65.0)],
+        };
+        let r = interpret_lhm_gpu(&report(vec![comp]));
+        assert_eq!(r.checked, 1);
+        assert!(r.headline.to_lowercase().contains("healthy"));
+    }
+
+    #[test]
+    fn gpu_memory_junction_not_misread_as_core_hotspot() {
+        // Card exposes a "GPU Memory Junction" temp but NO core hotspot. The
+        // memory junction must not be treated as the hotspot (that produced a
+        // bogus hotspot-delta warn). It should still flag the VRAM throttle.
+        let comp = LhmComponent {
+            name: "NVIDIA GeForce RTX 3090".into(),
+            kind: "gpu_nvidia".into(),
+            sensors: vec![
+                sensor("GPU Core", "temperature", 60.0),
+                sensor("GPU Memory Junction", "temperature", 100.0),
+            ],
+        };
+        let r = interpret_lhm_gpu(&report(vec![comp]));
+        assert!(
+            !r.findings.iter().any(|f| f.id == "gpu.hotspot-delta"),
+            "memory junction must not be read as the core hotspot"
+        );
+        assert!(
+            r.findings.iter().any(|f| f.id == "gpu.vram-throttle"),
+            "VRAM at 100C should still flag the memory-junction throttle"
+        );
+    }
+
+    // ---- PresentMon: bound% with no busy columns is not 'balanced' -----
+
+    #[test]
+    fn presentmon_without_busy_columns_is_not_measured() {
+        let dir = std::env::temp_dir();
+        let path = dir.join("optmaxxing_test_no_busy.csv");
+        // Header has frametime but NO MsCPUBusy / MsGPUBusy columns.
+        let mut csv = String::from("Application,MsBetweenPresents\n");
+        for _ in 0..50 {
+            csv.push_str("game.exe,6.94\n");
+        }
+        std::fs::write(&path, csv).unwrap();
+        let fs = parse_presentmon_csv(path.to_str().unwrap()).expect("enough frames");
+        let _ = std::fs::remove_file(&path);
+        assert!(
+            !fs.bound_measured,
+            "no busy columns means CPU/GPU-bound cannot be claimed"
+        );
+    }
+
+    #[test]
+    fn presentmon_with_busy_columns_is_measured() {
+        let dir = std::env::temp_dir();
+        let path = dir.join("optmaxxing_test_with_busy.csv");
+        let mut csv = String::from("Application,MsBetweenPresents,MsCPUBusy,MsGPUBusy\n");
+        for _ in 0..50 {
+            // GPU busy ~= frametime -> GPU-bound frames.
+            csv.push_str("game.exe,6.94,3.0,6.90\n");
+        }
+        std::fs::write(&path, csv).unwrap();
+        let fs = parse_presentmon_csv(path.to_str().unwrap()).expect("enough frames");
+        let _ = std::fs::remove_file(&path);
+        assert!(fs.bound_measured);
+        assert!(fs.gpu_bound_pct > 90.0, "frames were GPU-bound");
     }
 }

@@ -312,8 +312,8 @@ export async function diskFree(): Promise<DiskFreeRow[]> {
 
 export interface MatchScanFinding {
   id: string
-  /** 'critical' | 'warn' | 'info' | 'ok' */
-  severity: 'critical' | 'warn' | 'info' | 'ok'
+  /** 'critical' | 'warn' | 'info' | 'ok' | 'unknown' */
+  severity: 'critical' | 'warn' | 'info' | 'ok' | 'unknown'
   title: string
   cause: string
   fix: string

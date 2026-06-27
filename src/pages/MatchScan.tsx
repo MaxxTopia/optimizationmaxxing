@@ -31,8 +31,9 @@ const SEV_META: Record<
 > = {
   critical: { label: 'Costing you performance', dot: 'bg-red-500', order: 0 },
   warn: { label: 'Worth tightening', dot: 'bg-amber-400', order: 1 },
-  info: { label: 'Minor / FYI', dot: 'bg-sky-400', order: 2 },
-  ok: { label: 'Looks good', dot: 'bg-emerald-500', order: 3 },
+  unknown: { label: "Couldn't read", dot: 'bg-slate-400', order: 2 },
+  info: { label: 'Minor / FYI', dot: 'bg-sky-400', order: 3 },
+  ok: { label: 'Looks good', dot: 'bg-emerald-500', order: 4 },
 }
 
 function fmtElapsed(s: number): string {
