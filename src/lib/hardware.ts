@@ -30,7 +30,7 @@ export type HardwareTier = 'goat' | 'pro' | 'budget' | 'principle'
 /** Pulled from pro rig snapshots in /grind + ProSettings.net + community
  * scene consensus (May 2026). Bump this when a category's GOAT pick
  * changes — the date stamp tells users how fresh the picks are. */
-export const HARDWARE_LAST_VERIFIED = '2026-05-14'
+export const HARDWARE_LAST_VERIFIED = '2026-06-27'
 
 export interface HardwareItem {
   /** Display name. */
@@ -66,11 +66,20 @@ export const HARDWARE: HardwareSection[] = [
       "Fortnite is CPU-limited at high refresh. X3D cache is the single biggest unlock — Ryzen 7 X3D parts win at 1080p competitive even against $700+ Intel flagships. Pin the game to the X3D CCD if you've got a dual-CCD chip.",
     items: [
       {
-        name: 'AMD Ryzen 7 9800X3D',
-        price: '$479',
+        name: 'AMD Ryzen 7 9850X3D',
+        price: '$499',
         tier: 'goat',
         why:
-          'Current undisputed esports CPU. 8 cores, 96MB L3 (3D V-Cache stack), 5.2GHz boost. ~10% over 7800X3D in 1% lows on UE5, ~25% over a stock 14900K once thermals bind on the Intel. Unlocked for PBO + Curve Optimizer; runs cool because of how the cache stacks under the cores in Zen 5 instead of on top.',
+          'New fastest gaming CPU (launched Jan 2026). 8 cores, 96MB 3D V-Cache, 5.6GHz boost on a better-binned die — ~3-4% over the 9800X3D on average (more in some titles) in CPU-bound games like Fortnite. The literal #1 now, though the 9800X3D is within 2-4% for ~$20+ less.',
+        link: 'https://www.tomshardware.com/pc-components/cpus/amd-ryzen-7-9850x3d-vs-ryzen-7-9800x3d',
+        citedPro: 'Most current FNCS top-100 builds',
+      },
+      {
+        name: 'AMD Ryzen 7 9800X3D',
+        price: '$479',
+        tier: 'pro',
+        why:
+          'The value pick now that the 9850X3D leads — only 2-4% behind for less money. 8 cores, 96MB L3 (3D V-Cache stack), 5.2GHz boost. ~10% over 7800X3D in 1% lows on UE5, ~25% over a stock 14900K once thermals bind on the Intel. Unlocked for PBO + Curve Optimizer; runs cool because of how the cache stacks under the cores in Zen 5 instead of on top.',
         link: 'https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9800x3d.html',
         citedPro: 'Most current FNCS top-100 builds',
       },
@@ -144,11 +153,11 @@ export const HARDWARE: HardwareSection[] = [
     id: 'ram',
     label: 'RAM',
     blurb:
-      "DDR5-6000 CL30 is the AM5 sweet spot (1:1 FCLK / UCLK ratio). Past 6400 MT/s you drop to Gear 2 on Intel and 2:1 on AMD — latency tanks. Two sticks only; 4-stick kits won't train at 6000 on most boards.",
+      "DDR5-6000 CL30 is the AM5 sweet spot (1:1 FCLK / UCLK ratio). Past 6400 MT/s you drop to Gear 2 on Intel and 2:1 on AMD — latency tanks. Two sticks only; 4-stick kits won't train at 6000 on most boards. Heads-up: the mid-2026 AI-driven DRAM shortage has pushed 32GB DDR5 prices 2-4x over 2025 (a kit that was ~$100 now runs ~$270-$420) — budget accordingly.",
     items: [
       {
         name: 'G.Skill Trident Z5 Royal Neo 32GB DDR5-6000 CL28',
-        price: '$169',
+        price: '$390-$420',
         tier: 'goat',
         why:
           'Hand-binned Hynix A-die. CL28 is the tightest primary timing in mass production for 6000 MT/s. Tightens further with our /guides → RAM BIOS recipes — A-die loves a -100mV VDDQ and tightens to CL26 stable.',
@@ -156,14 +165,14 @@ export const HARDWARE: HardwareSection[] = [
       },
       {
         name: 'Corsair Vengeance 32GB DDR5-6000 CL30',
-        price: '$129',
+        price: '$340-$370',
         tier: 'pro',
         why:
           'AMD EXPO + Intel XMP both on the SPD. Hynix M-die or A-die depending on stocked batch (check Thaiphoon Burner before tightening). The most-bought 6000 CL30 kit on AM5 builds.',
       },
       {
         name: 'Kingston Fury Beast 32GB DDR5-6000 CL36',
-        price: '$99',
+        price: '$270-$300',
         tier: 'budget',
         why:
           'The "just works" budget kit. CL36 isn\'t tightening territory but it boots EXPO-on across every AM5 board on first POST. Upgrade timings in BIOS later if you want; the kit is what it is.',
@@ -203,11 +212,11 @@ export const HARDWARE: HardwareSection[] = [
     id: 'storage',
     label: 'Storage',
     blurb:
-      "PCIe Gen4 NVMe for the boot/game drive. Gen5 doesn't move load times outside of DirectStorage titles. Put Fortnite on the boot drive; second drive for everything else.",
+      "PCIe Gen4 NVMe for the boot/game drive. Gen5 doesn't move load times outside of DirectStorage titles. Put Fortnite on the boot drive; second drive for everything else. Heads-up: the mid-2026 NAND shortage has roughly tripled the popular 2TB gaming SSDs from their 2025 lows — prices below assume current inflated retail.",
     items: [
       {
         name: 'Samsung 990 Pro 2TB NVMe',
-        price: '$169',
+        price: '$370-$430',
         tier: 'goat',
         why:
           '7450 MB/s read, 200K IOPS random. The de-facto pro-build NVMe. Samsung Magician (avoid it after first install) does firmware updates — uninstall the daemon after.',
@@ -217,14 +226,14 @@ export const HARDWARE: HardwareSection[] = [
       },
       {
         name: 'WD Black SN850X 2TB',
-        price: '$149',
+        price: '$280-$350',
         tier: 'pro',
         why:
           '7300 MB/s, identical real-world perf to 990 Pro. WD\'s software is less aggressive — install Dashboard once for firmware, never sees it again.',
       },
       {
         name: 'Crucial T705 / Samsung 9100 Pro (Gen5)',
-        price: '$299+',
+        price: '$400+',
         tier: 'principle',
         why:
           'PCIe Gen5 12-14 GB/s. Useless for Fortnite — game load is bottlenecked by Epic\'s pak file decryption, not SSD bandwidth. Buy for productivity workloads, not for the game.',
@@ -409,7 +418,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$159',
         tier: 'pro',
         why:
-          '54g, Focus Pro 35K sensor, native 8K Hz polling with the HyperPolling dongle. The current Razer flagship and the one cited FNCS pros (e.g. Mongraal) actually run — replaced the older V2 Pro. Lighter than the G PRO X S2.',
+          "54g, Focus Pro 35K sensor, native 8K Hz polling with the HyperPolling dongle. Razer's previous flagship (now succeeded by the Viper V4 Pro) and still the single most-used mouse among FNCS pros — what cited pros like Mongraal actually run. Lighter than the G PRO X S2.",
         citedPro: 'Mongraal',
         link: 'https://www.razer.com/gaming-mice/razer-viper-v3-pro',
       },
@@ -516,14 +525,22 @@ export const HARDWARE: HardwareSection[] = [
     id: 'monitor',
     label: 'Monitor',
     blurb:
-      "Refresh rate matters more than resolution for FPS. 1080p @ 240+ Hz is the converged pro choice. The other lever pros now obsess over: **DyAC+** (BenQ ZOWIE's panel-side motion-blur reduction). It strobes the backlight in sync with the refresh — eliminates trail-blur on tracking moves at the panel level, not via driver. Once you've tracked an enemy with DyAC+ on, going back to a regular IPS feels like dragging a smear.",
+      "Refresh rate matters more than resolution for FPS. 1080p @ 240+ Hz is the converged pro choice. The other lever pros now obsess over: BenQ ZOWIE's panel-side motion-blur reduction — older DyAC+ (XL2566K / XL2546K, still what most Fortnite pros run) and the current **DyAc 2** generation (XL2566X+ 400Hz, XL2586X 540Hz, XL2586X+ 600Hz flagship). It strobes the backlight in sync with the refresh — eliminates trail-blur on tracking moves at the panel level, not via driver. Once you've tracked an enemy with DyAc on, going back to a regular IPS feels like dragging a smear.",
     items: [
+      {
+        name: 'BenQ ZOWIE XL2586X+ — 600 Hz + DyAc 2',
+        price: '$$$',
+        tier: 'goat',
+        why:
+          "BenQ ZOWIE's current flagship. 600 Hz Fast-TN with the new DyAc 2 motion-blur reduction (the XL2586X 540Hz and XL2566X+ 400Hz round out the DyAc 2 lineup). The true top tier now — though Fortnite caps at 240 FPS, so the proven XL2566K below is still all most pros run.",
+        link: 'https://zowie.benq.com/en-us/monitor/xl2586x-plus.html',
+      },
       {
         name: 'BenQ ZOWIE XL2566K — 360 Hz + DyAC+',
         price: '$550',
         tier: 'goat',
         why:
-          'The pro standard. 360 Hz TN panel with DyAC+ motion-blur reduction. **What Peterbot runs.** TN sounds dated but at 360 Hz + DyAC+ the response time + motion clarity beats every IPS at this price. Small panel (24.5") on purpose — pro-eye-distance.',
+          'The proven Fortnite pick — still the #2 most-used monitor among pros and **what Peterbot runs** — now one generation behind ZOWIE\'s DyAc 2 flagships. 360 Hz TN panel with DyAC+ motion-blur reduction. TN sounds dated but at 360 Hz + DyAC+ the response time + motion clarity beats every IPS at this price. Small panel (24.5") on purpose — pro-eye-distance.',
         citedPro: 'Peterbot',
         link: 'https://zowie.benq.com/en-us/monitor/xl2566k.html',
       },

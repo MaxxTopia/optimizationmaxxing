@@ -4,7 +4,7 @@ Hardware tier lists rot fast (a "best mouse 2026" article is wrong by Q3). What 
 
 ## Mouse — what to demand
 
-- **Sensor:** PixArt PMW3950 / PAW3395 / Razer Focus Pro 30K. Anything older = pass. Track DPI deviation, lift-off distance < 1 mm, no smoothing.
+- **Sensor:** PixArt PMW3950 / PAW3395 / Razer Focus Pro 35K / 50K. Anything older = pass. Track DPI deviation, lift-off distance < 1 mm, no smoothing. (Razer's named flagship has moved on: the Viper V3 Pro ships the [Focus Pro 35K Gen-2](https://www.razer.com/gaming-mice/razer-viper-v3-pro) and the current top sensor is the [Focus Pro 50K Gen-3](https://www.razer.com/technology/razer-focus-pro-sensor) — the older 30K is still tournament-viable, the spec is illustrative of the "recent sensor, no smoothing, <1 mm LOD" principle.)
 - **Polling rate:** 1000 Hz minimum. **8000 Hz on flagship** is not placebo — the latency distribution tightens visibly under our polling-rate stability test (deferred feature). 4000 Hz is a sweet spot for most rigs (8000 Hz can DPC-spike on weaker USB hosts).
 - **Wireless:** the right wireless mouse beats a wired one because it's lighter, not because the radio is faster. If you're not on a 4K-receiver-with-paracord-style donglehub, wired is honest.
 - **Weight:** under 65 g. Modern flagships hit 50 g without sacrificing battery. A heavy mouse trains slower flicks — period.

@@ -8,7 +8,7 @@ Arc depends on **Resizable BAR** far more than other GPUs. Without it, an Arc ca
 
 - Enable in BIOS: look for **Resizable BAR** / **Above 4G Decoding** / **ReBAR**.
 - Requires UEFI boot (CSM off) and a reasonably modern platform (Intel 10th-gen+ or Ryzen 3000+).
-- Confirm it's "Enabled" in Arc Control / Intel Graphics Software after rebooting.
+- Confirm it's "Enabled" in **Intel Graphics Software** (the app that now ships with the driver — it replaced the old Arc Control) after rebooting.
 
 ## Stay current on drivers (but spot-check each release)
 
@@ -21,9 +21,11 @@ XeSS 2 bundles three parts:
 - **XeSS-SR (super resolution)** — fine for headroom if you need frames; run native for max clarity.
 - **XeSS-FG / XeSS 3 multi-frame-generation** — adds latency and artifacts. **Leave off** for CS2 / Valorant / Apex / Fortnite.
 
-## Arc Control caveats
+## Intel Graphics Software caveats
 
-- Arc Control's built-in **frame-rate cap only covers DX9/DX11** (not DX12/Vulkan), and its **Speed Sync / Smart V-Sync** have been unreliable. For competitive play, use the **in-game** FPS cap and in-game V-Sync-off rather than relying on Arc Control for those.
+> Intel retired **Arc Control** and folded it (plus the old Intel Graphics Command Center) into a single app, **Intel Graphics Software (IGS)** — that's what current Arc/Iris/UHD driver installs ship. The caveats below are unchanged; they just live in IGS now.
+
+- IGS's built-in **frame-rate cap only covers DX9/DX11** (not DX12/Vulkan), and its **Speed Sync / Smart V-Sync** have been unreliable. For competitive play, use the **in-game** FPS cap and in-game V-Sync-off rather than relying on IGS for those.
 
 ## Display basics
 

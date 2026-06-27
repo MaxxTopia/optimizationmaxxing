@@ -1882,13 +1882,14 @@
       "title": "Disable HVCI / Memory Integrity (VBS off)",
       "category": "process",
       "description": "Disables Hypervisor-Enforced Code Integrity at the registry-policy level. Companion to `bcd.hypervisorlaunchtype.off` — both are needed for VBS to fully cost 0%. Settings → Device security → Core isolation → Memory Integrity must also be flipped manually if it's on (we can't toggle it programmatically without trust-store risk).",
-      "rationale": "Microsoft Learn: HVCI is the primary VBS perf cost. Disabling can recover 5-15% in CPU-bound games (28% on Cyberpunk in some tests). **Anti-cheat caveat**: Riot Vanguard, FACEIT, BattlEye on some titles refuse to run without VBS / Secure Boot / TPM. Verify your game list before applying. Pair with `bcd.hypervisorlaunchtype.off` and reboot for full effect; check the VBS Status card on /diagnostics afterward.",
+      "rationale": "Microsoft Learn: HVCI is the primary VBS perf cost. Disabling can recover 5-15% in CPU-bound games (28% on Cyberpunk in some tests). **Anti-cheat caveat**: Riot Vanguard, FACEIT, BattlEye on some titles refuse to run without VBS / Secure Boot / TPM. As of FACEIT's staged rollout (TPM 2.0 + Secure Boot mandatory for all CS2 players since Nov 25 2025; IOMMU + VBS enforced for everyone above 3,000 Elo since Aug 2025 and expanding), disabling HVCI/VBS can stop FACEIT Anti-Cheat from launching and break competitive CS2 eligibility — base-game VAC/Premier still has no BIOS-level requirement. Verify your game list before applying. Pair with `bcd.hypervisorlaunchtype.off` and reboot for full effect; check the VBS Status card on /diagnostics afterward.",
       "riskLevel": 3,
       "vipGate": "vip",
       "anticheatRisk": "medium",
       "rebootRequired": "reboot",
       "tournamentCompliance": {
         "valorant": "risk",
+        "cs2": "risk",
         "warzone": "risk",
         "overwatch": "risk"
       },

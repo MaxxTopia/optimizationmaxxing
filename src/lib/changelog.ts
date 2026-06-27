@@ -12,6 +12,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.3',
+    date: '2026-06-27',
+    highlights: [
+      'BIG content freshness pass — a multi-agent audit checked every perishable guide + the hardware list against live 2026 sources and fixed 50 confirmed-stale items. Highlights below.',
+      'CRITICAL **Anti-cheat eligibility brought current.** Fortnite/FNCS now requires **IOMMU** (VT-d / AMD-Vi) on top of TPM 2.0 + Secure Boot (Epic, Feb 2026); CS2 on FACEIT now mandates TPM + Secure Boot for everyone (with IOMMU/VBS by Elo); Warzone/BO7 require TPM + Secure Boot for **all** playlists. The tournament guide + the "Disable HVCI/VBS" tweak\'s CS2 risk tag were corrected so you don\'t follow advice that locks you out.',
+      'FIX **Intel 13th/14th-gen degradation guidance added** — the Vcore/Vmin instability saga + the 0x12B microcode fix are now documented (flash latest BIOS, run Intel Default profile).',
+      'FIX **Windows version advice de-rotted** — guides recommended 22H2/23H2, both now end-of-life. Updated to Win11 24H2 / 25H2 (and noted Win10\'s Oct 2025 EOL).',
+      'FIX **FNCS now explicitly bans hardware macros** (Rules §8.2.1) — the pickup-macro guide was updated so it doesn\'t walk you into a DQ.',
+      'FIX **Browser guide** — full uBlock Origin no longer runs on native Chrome (MV2 removed in Chrome 138); now points you to browsers where it still works.',
+      'FIX **Hardware list repriced** for the mid-2026 DRAM/NAND shortage (RAM + SSD bands were 2-4x too low), refreshed GPU-driver/mouse/keyboard/monitor picks, and stamped HARDWARE_LAST_VERIFIED to today.',
+    ],
+  },
+  {
     version: '0.3.2',
     date: '2026-06-27',
     highlights: [

@@ -10,7 +10,7 @@ In October 2023, driver 23.10.1 shipped **Anti-Lag+**, which worked by detouring
 
 - **Anti-Lag 2** is a developer-integrated SDK: the latency reduction is inserted *inside the game's logic*, just before your input is sampled. That makes it both more effective and anti-cheat-safe (it's not a driver hook).
 - **Supported GPUs:** RDNA 1 and newer (RX 5000-series and up, plus Ryzen 6000-series APUs and newer).
-- **It's per-game integrated, not a global driver toggle.** Of the competitive titles, **Counter-Strike 2** has it (a launch title, built with Valve); Dota 2 also. It is **not** natively in Valorant, Fortnite, or Apex yet — for those, use the in-game latency/Reflex-style option if present and cap your FPS.
+- **It's per-game integrated, not a global driver toggle.** The supported list keeps growing — among competitive titles it now includes **Counter-Strike 2** (a launch title, built with Valve), **Dota 2**, **Apex Legends**, **THE FINALS**, **Marvel Rivals**, **NARAKA: BLADEPOINT**, **Deadlock**, **FragPunk**, and **Call of Duty: Black Ops 6 / Warzone**. It is still **not** natively in Valorant or Fortnite — for those, use the in-game latency/Reflex-style option if present and cap your FPS.
 - Turn it on in the game's settings (or the per-game Adrenalin profile) where the option exists.
 
 ## Skip HYPR-RX for competitive — set things manually

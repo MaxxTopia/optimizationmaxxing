@@ -2,13 +2,17 @@
 
 **No. Reflex *reduces* input delay.** Common myth driven by old Pre-Render Limit confusion. The real gotcha is that **NVCP and in-game settings can fight each other** — see "common confusion" at the bottom.
 
-> **2026 note:** the NVCP settings below live in the **legacy NVIDIA Control Panel**, which still ships in 2026. GeForce Experience was discontinued in late 2024 — install the **NVIDIA App** (not GFE); it can launch the Control Panel, or right-click the desktop → "NVIDIA Control Panel".
+> **2026 note:** As of GeForce driver **610.47 WHQL** (released late May 2026), the classic **NVIDIA Control Panel** is officially retired for Game Ready / Studio (GeForce) drivers — all actively supported Control Panel features have moved into the **NVIDIA App**. The NVCP settings below now live under **NVIDIA App → Graphics → Global/Program Settings → "Show Legacy Settings."** On a clean 610.47+ install the old panel (and the "right-click desktop → NVIDIA Control Panel" entry) is gone by default; it's preserved only for NVIDIA RTX PRO users and on in-place driver upgrades. GeForce Experience was already discontinued in late 2024 — install the **NVIDIA App** (not GFE). ([TechPowerUp](https://www.techpowerup.com/349359/nvidia-geforce-graphics-drivers-610-47-whql-drops-control-panel-support))
 
 ## What it actually does
 
 - **Reflex Low Latency mode** pulls the CPU's render-queue submission timing forward so the GPU is never idle waiting for the next frame *and* the render queue never balloons. Result: lower end-to-end input-to-photon latency.
 - **Reflex Boost** forces the GPU clock to stay at max (no power-saving idle) when the title is GPU-bound, shaving an additional 1-3 ms.
 - **Reflex Latency Marker** (the on-screen overlay) just measures; it's not part of the latency reduction.
+
+## Reflex 2 / Frame Warp (announced — not yet usable)
+
+NVIDIA's current Reflex page leads with **"Reflex 2 — Frame Warp,"** which warps the rendered frame using the very latest mouse input just before scanout to cut latency further. As of 2026-06-27 it is still labeled **"coming soon"** — slated to debut first in **VALORANT** and **THE FINALS** on **RTX 50-series**, so it is announced but **not yet enableable** by competitive players. Everything below is **Reflex 1** (Low Latency mode + Boost + Latency Marker), which is what you can actually turn on today; ignore Frame Warp until it ships in your title. ([NVIDIA Reflex](https://www.nvidia.com/en-us/geforce/technologies/reflex/), [NVIDIA — Reflex 2 / Frame Warp](https://www.nvidia.com/en-us/geforce/news/reflex-2-even-lower-latency-gameplay-with-frame-warp/))
 
 ## Verified gains (NVIDIA + Battle(non)sense + Hardware Unboxed, RTX 30/40-series)
 

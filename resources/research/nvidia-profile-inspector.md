@@ -4,7 +4,7 @@ NVIDIA Control Panel exposes maybe 15% of the actual driver knobs. The rest live
 
 Requires a GeForce 900-series or newer (Reflex hardware floor). 1000/2000/3000/4000/5000 all work.
 
-> **2026 orientation:** NVIDIA discontinued GeForce Experience in late 2024 — install the **NVIDIA App** (the only official driver software now), not GFE. The legacy **NVIDIA Control Panel still exists** in 2026 and is where the global 3D settings referenced below live; if you can't find it on a fresh install, right-click the desktop → "NVIDIA Control Panel", or open it from inside the NVIDIA App. NVPI itself is unaffected and is still the only way to reach the undocumented flags.
+> **2026 orientation:** NVIDIA discontinued GeForce Experience in late 2024 — install the **NVIDIA App** (the only official driver software now), not GFE. As of GeForce driver **610.47 WHQL** (late May 2026) the classic **NVIDIA Control Panel is retired** for Game Ready / Studio (GeForce) drivers; its actively supported features moved into the NVIDIA App, with the old 3D options now under **NVIDIA App → Graphics → Global/Program Settings → "Show Legacy Settings."** On a clean 610.47+ install the standalone panel is gone by default (preserved only for RTX PRO users and on in-place upgrades). **NVPI itself is unaffected** — it talks straight to the driver profile DB and is still the only way to reach the undocumented flags below, regardless of the Control Panel's retirement. ([TechPowerUp](https://www.techpowerup.com/349359/nvidia-geforce-graphics-drivers-610-47-whql-drops-control-panel-support))
 
 ## TL;DR — 60-second setup
 
@@ -153,7 +153,7 @@ Try `26` first. If you have a 12+ core CPU with HT and the FPS feels great but i
 
 The original NVPI from Orbmu2k is on extended pause. The community-maintained fork has been the active version since 2024:
 
-- **[github.com/xHybred/NvidiaProfileInspectorRevamped](https://github.com/xHybred/NvidiaProfileInspectorRevamped)** — v7.0.2.0 (April 2026). Adds DLSS 4.5 preset L/M, RTX 50 PhysX switch, better naming for undocumented flags, dark mode, search improvements.
+- **[github.com/xHybred/NvidiaProfileInspectorRevamped](https://github.com/xHybred/NvidiaProfileInspectorRevamped)** — v7.1.0.0 (latest). Its changelog adds support for the newest NVIDIA drivers and **NVIDIA's DLSS 5.0 settings**, plus parity with the main branch and extra themes — superseding the earlier v7.0.2.0 (DLSS 4.5 preset L/M, RTX 50 PhysX switch, better undocumented-flag naming, dark mode, search). ([Nexus Mods](https://www.nexusmods.com/site/mods/1287))
 
 Identical workflow — same `.exe`, same import path. Use Revamped if you want the latest DLSS preset toggles. Use Orbmu2k's if you want the most-cited canonical build.
 
@@ -184,7 +184,7 @@ We generate the profile but we **never touch the NVIDIA driver profile DB oursel
 ## Citations
 
 - **[github.com/Orbmu2k/nvidiaProfileInspector](https://github.com/Orbmu2k/nvidiaProfileInspector/releases)** — official NVPI. Only place to download. *(verified 200 OK May 2026)*
-- **[github.com/xHybred/NvidiaProfileInspectorRevamped](https://github.com/xHybred/NvidiaProfileInspectorRevamped)** — active fork, v7.0.2.0 April 2026. *(verified 200 OK)*
+- **[github.com/xHybred/NvidiaProfileInspectorRevamped](https://github.com/xHybred/NvidiaProfileInspectorRevamped)** — active fork, v7.1.0.0 (adds DLSS 5.0 settings + newest-driver support). *(verified 200 OK)*
 - **[github.com/Calypto/FortniteProcessPriority](https://github.com/Calypto/FortniteProcessPriority)** — Calypto's only currently-published optimization repo (process priority utility, not NVPI presets). *(verified 200 OK)*
 - **[github.com/BoringBoredom/PC-Optimization-Hub](https://github.com/BoringBoredom/PC-Optimization-Hub)** — aggregator of latency-optimization resources. *(verified)*
 - **[pcgamingwiki.com/wiki/Nvidia_Profile_Inspector](https://www.pcgamingwiki.com/wiki/Nvidia_Profile_Inspector)** — canonical NVPI wiki page, import flow.

@@ -12,7 +12,7 @@ The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag w
 
 ## Display tab
 
-- **Window Mode: Fullscreen Windowed (Borderless).** Epic removed exclusive-fullscreen in Chapter 5; "Fullscreen" is now a relabel of borderless. Lowest input lag of the surviving options.
+- **Window Mode: Fullscreen or Windowed Fullscreen — both still offered as distinct options.** [Epic's own 2026 competitive guide](https://store.epicgames.com/news/fortnite-on-pc-best-settings-for-competitive-play-in-2026?lang=en-US) recommends **Fullscreen** for lowest input lag. Many pros run **Windowed Fullscreen** instead for fast alt-tab — [Peterbot's config](https://prosettings.net/players/peterbot/) lists Windowed Fullscreen — with negligible lag difference on modern hardware. Pick Fullscreen if you never alt-tab mid-match; Windowed Fullscreen if you do.
 - **Resolution: native (1920×1080 for the vast majority of pros).** Higher resolutions on pro 240+Hz monitors cost frames the player can't see anyway. Some pros stretch (1440×1080) — purely for FOV preference, not perf.
 - **Frame Rate Limit: match your monitor refresh.** 240 Hz monitor → 240 cap. Uncapped + VSync off creates frame-pacing drift; matching cap stabilizes 1% lows. The catalog's GameUserSettings.ini tweak sets this to 240 by default.
 - **VSync: Off.** Always. Adds frames of input lag. The catalog enforces this in GameUserSettings.ini.
@@ -24,13 +24,12 @@ The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag w
 |---|---|---|
 | Quality Presets | **Custom** (then individual values below) | Auto-presets touch settings you don't want touched |
 | Rendering Mode | **Performance (DirectX 12)** (NOT DX11 / DX12 / Cinematic) | As of patch 37.00 Epic rebuilt Performance Mode on **DirectX 12** — it bypasses Nanite + Lumen entirely. Epic's own 2026 competitive guide names this the **#1 setting**: highest and most *consistent* FPS in 50-player endgame, lowest input lag, low VRAM, and it sidesteps most DX12 shader-comp stutter. This is what every T1 pro runs. |
-| Anti-Aliasing | **Off** | Costs frames; sharper enemy outlines without it |
 | 3D Resolution | **100%** | Lowering it scales everything; doesn't help past 100 |
-| View Distance | **Far** (NOT Epic) | Epic adds detail beyond what matters at engagement range |
-| Shadows | **Off** | Costs frames + reveals enemies' positions to opponents (their shadow gives them away too) |
+| View Distance | **Far** (NOT Epic) | Epic's guide says Near, but pros run Far ([Peterbot](https://prosettings.net/players/peterbot/) = Far) — Epic adds detail beyond what matters at engagement range without the cost of full Epic distance |
 | Textures | **Low** | Aim is on enemy outlines, not foliage detail |
-| Effects | **Low** | Reduces explosion / build-particle clutter — easier to track shots through chaos |
-| Post Processing | **Low** | Removes camera grain + bloom that hide enemy outlines |
+| Meshes | **Low** | Lowers object/build geometry detail for frames; cleaner reads through builds |
+
+> **Performance Mode exposes only these four Graphics Quality sliders** — View Distance, 3D Resolution, Textures, Meshes. Anti-Aliasing, Shadows, Effects, and Post Processing **do not appear** in Performance Mode (DirectX 12); they live in the non-performance DX11/DX12 render paths. If you ever switch off Performance Mode, set all four of those to Off/Low. ([Epic 2026 competitive guide](https://store.epicgames.com/news/fortnite-on-pc-best-settings-for-competitive-play-in-2026?lang=en-US), [Peterbot ProSettings](https://prosettings.net/players/peterbot/))
 
 ### 2026 stutter fix: kill cosmetic streaming
 

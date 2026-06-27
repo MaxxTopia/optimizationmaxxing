@@ -16,7 +16,7 @@ Boot into BIOS → look for "Save Profile" / "Backup CMOS" / "Export to USB". Sa
 - **Energy-Saving USB:** OFF for gaming peripherals (some boards label as "USB Power Save").
 
 ## Intel Z-series (Z690 / Z790 / Z890)
-- **MultiCore Enhancement / Force Intel Specs:** OFF for safety on 13th/14th gen post-degradation drama. Use Intel Default Profile (200W PL1, 253W PL2 on K-SKUs).
+- **MultiCore Enhancement / Force Intel Specs:** OFF for safety on 13th/14th gen post-degradation drama. Use Intel's official Default Settings on i9 K-SKUs (13900K/KF, 14900K/KF): **Performance** = PL1 125W / PL2 253W, or **Extreme** = PL1 253W / PL2 253W (both PL4 380W, ICCMAX 400A). There is no 200W PL1 tier — pick Performance unless you have the cooling for sustained 253W ([hardwaretimes](https://hardwaretimes.com/intel-cpu-baseline-settings-core-i9-13900k-14900k/)).
 - **CPU SVID / Voltage Mode:** Adaptive + offset (small negative). Avoid override unless you've validated thermals.
 - **LLC (Load Line Calibration):** Mode 3-4 typical for 13/14th gen. Don't go aggressive (mode 5+) without thermal headroom.
 - **C-States:** ON (cycles back is faster than waking from full power state on Intel Hybrid).

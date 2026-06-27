@@ -107,11 +107,14 @@ default profile. Same for Endgame Gear's surface tuning.
 
 | Mouse | Weight | Polling | Sensor | Verdict |
 |---|---|---|---|---|
-| [Logitech G Pro X Superlight 2](https://www.logitechg.com/en-us/products/gaming-mice/pro-x-superlight-2-wireless-lightspeed.html) | 60 g | 8000 Hz | HERO 2 | All-rounder GOAT — Peterbot / Mongraal / Veno / Reet |
-| [Razer Viper V3 Pro](https://www.razer.com/gaming-mice/razer-viper-v3-pro) | 54 g | 8000 Hz | Focus Pro 35K | Fastest sensor on the market |
+| [Logitech G Pro X Superlight 2](https://www.logitechg.com/en-us/products/gaming-mice/pro-x-superlight-2-wireless-lightspeed.html) | 60 g | 8000 Hz | HERO 2 | All-rounder GOAT — Peterbot / Mongraal / Veno / Reet. Still #3 most-used Valorant pro mouse (8.37%, Jun 2026), but now one generation behind Logitech's own flagship (Superstrike, below). |
+| [Logitech G PRO X2 SUPERSTRIKE](https://www.logitechg.com/en-us/shop/p/pro-x2-superstrike-mouse) | 61 g | 8000 Hz | HERO 2 | Logitech's newest flagship ($179.99) — Haptic Inductive Trigger System (HITS) replaces microswitches with 10 selectable actuation levels. Already #5 Valorant pro mouse (6.88%, Jun 2026). |
+| [Razer Viper V4 Pro](https://www.razer.com/newsroom/product-news/viper-v4-pro-gigantus-v2-pro) | 49 g | 8000 Hz | Focus Pro 50K | Razer's new flagship (Mar 2026) — Focus Pro 50K + Frame Sync, 930 IPS / 90 G, 0.36 ms motion latency. Supersedes the V3 Pro's sensor; #2 Valorant pro mouse (14.50%, Jun 2026). |
+| [Razer Viper V3 Pro](https://www.razer.com/gaming-mice/razer-viper-v3-pro) | 54 g | 8000 Hz | Focus Pro 35K | Still the #1 most-used Valorant pro mouse (17.34%, Jun 2026) — a proven pick, though the V4 Pro above now carries Razer's fastest/newest sensor. |
 | [Pulsar X2 V3](https://www.pulsar.gg/products/x2-v3-gaming-mouse) | 52 g | 8000 Hz | XS-1 | Best price-perf flagship |
-| [Endgame Gear OP1 8K](https://endgamegear.com/gaming-mice/op1-8k) | 52 g | 8000 Hz | PAW3950 | Minimal shape, hardcore |
-| [ZOWIE EC2-CW / EC3-CW](https://zowie.benq.com/en-us/peripheral/mouse.html) | 70–77 g | 1000 Hz | 3370 | CS-tier classic ergo |
+| [Endgame Gear OP1 8K v2](https://endgamegear.com/products/op1-8k-v2-wired-gaming-mouse) | 52 g | 8000 Hz | PAW3950 U+ | Minimal shape, hardcore. Current shipping revision (v2): custom PAW3950 U+, Kailh GX hot-swap switches, <70 µs click latency. |
+| [Razer DeathAdder V4 Pro](https://www.razer.com/gaming-mice/razer-deathadder-v4-pro) | 56–57 g | 8000 Hz | Focus Pro 45K | Modern lightweight 8K ergo — true 8000 Hz wireless, 900 IPS / 85 G, optical scroll. ~6.13% of Valorant pros (Jun 2026). Fills the gap the heavy 1000 Hz EC-CW leaves. |
+| [ZOWIE EC2-CW / EC3-CW](https://zowie.benq.com/en-us/peripheral/mouse.html) | 70–77 g | 1000 Hz | 3370 | CS-tier classic ergo — but ~15–20 g heavier and 8× lower polling than the DeathAdder V4 Pro above. Pick it for the shape/feel, not the specs. |
 | **Finalmouse UltralightX Prophecy** | 33 g | 8000 Hz | proprietary | **Lightest serious competitive mouse — and configures via [xpanel.finalmouse.com](https://xpanel.finalmouse.com) in your browser, no software install. Same model in 3 sizes (classic / medium / small).** |
 
 **Why the Finalmouse XPANEL matters:** zero driver/daemon to install, kill,

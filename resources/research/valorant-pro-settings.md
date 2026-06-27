@@ -19,7 +19,7 @@
 | UI Quality | **Low** | Free frames, no visual penalty |
 | Vignette | **Off** | Adds a faint dark edge that hides peripheral movement |
 | VSync | **Off** | Always |
-| Anti-Aliasing | **MSAA 2x** OR **None** | Pros split. yay runs MSAA 2x for outline clarity; TenZ runs none for raw fps |
+| Anti-Aliasing | **MSAA 2x** OR **None** | Pros split. yay and TenZ both run MSAA 2x for outline clarity; some pros drop to None for raw fps |
 | Anisotropic Filtering | **1x** | No competitive read; costs frames |
 | Improve Clarity | **Off** | Adds a sharpening pass = halos around enemy edges that look like outlines but aren't. Confuses target-acquisition |
 | Bloom | **Off** | Blooms ability VFX into white-out splashes that hide enemies |
@@ -43,7 +43,7 @@
 
 ## Crosshair / Settings.ini
 
-- **Crosshair Outlines: thin or off.** Per-pro preference. yay = no outline; TenZ = thin.
+- **Crosshair Outlines: thin or off.** Per-pro preference. yay = no outline; TenZ toggles Outlines On but with Outline Opacity 0 (`o;0` in his crosshair code) — i.e. effectively invisible, not thin.
 - **Center Dot: off** (most pros — adds visual noise on long flicks). On for some controller-style players.
 - **Color: cyan or yellow.** Avoid red (blends with enemy outlines, blood splatters). Pro split: cyan #00FFFF or yellow #FFFF00.
 
