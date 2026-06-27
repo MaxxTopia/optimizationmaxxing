@@ -237,7 +237,7 @@ export function MatchScan() {
             <div className="text-sm text-text-muted">
               {session?.running
                 ? `Recording your match — ${fmtElapsed(session.elapsedS)}, ${session.samples} samples. Play, then Stop for the verdict.`
-                : 'Start before you queue, play your ranked/scrim, then Stop. Catches thermal throttling, DPC stutter, memory pressure, and instability over the whole match.'}
+                : 'Start before you queue, play your ranked/scrim, then Stop. Catches thermal throttling, DPC stutter, memory pressure, instability — and real frametimes (1% / 0.1% lows) + whether you were CPU- or GPU-bound. If a supported game is open it captures frametimes via PresentMon (one-time admin prompt).'}
             </div>
           </div>
           <button

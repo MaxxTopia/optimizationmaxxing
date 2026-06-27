@@ -57,7 +57,9 @@
       "resources/lhm/*.dll",
       "resources/lhm/read_sensors.ps1",
       "resources/scripts/clear_standby.ps1",
-      "resources/scripts/hide_launcher.vbs"
+      "resources/scripts/hide_launcher.vbs",
+      "resources/presentmon/PresentMon-2.4.1-x64.exe",
+      "resources/presentmon/LICENSE-PresentMon.txt"
     ],
     "windows": {
       "nsis": {

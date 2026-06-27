@@ -955,6 +955,104 @@ struct SessionState {
     samples: Vec<SessionSample>,
     started: Option<Instant>,
     whea_at_start: Option<u32>,
+    /// Path to the PresentMon CSV being captured this session, if a supported
+    /// game was found at Start.
+    presentmon_csv: Option<String>,
+}
+
+/// Known competitive-game executables we'll point PresentMon at.
+const GAME_EXES: &[&str] = &[
+    "fortniteclient-win64-shipping.exe",
+    "valorant-win64-shipping.exe",
+    "valorant.exe",
+    "cs2.exe",
+    "r5apex.exe",
+    "r5apex_dx12.exe",
+    "overwatch.exe",
+    "cod.exe",
+    "modernwarfare.exe",
+    "rainbowsix.exe",
+    "rocketleague.exe",
+    "destiny2.exe",
+    "pubg.exe",
+    "tslgame.exe",
+    "marvel-win64-shipping.exe",
+    "discovery.exe",
+];
+
+fn find_game_pid() -> Option<u32> {
+    let mut sys = sysinfo::System::new();
+    sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
+    for (pid, p) in sys.processes() {
+        let n = p.name().to_string_lossy().to_lowercase();
+        if GAME_EXES.iter().any(|g| n == *g) {
+            return Some(pid.as_u32());
+        }
+    }
+    None
+}
+
+struct FrameStats {
+    frames: usize,
+    avg_fps: f32,
+    low1_fps: f32,
+    low01_fps: f32,
+    cpu_bound_pct: f32,
+    gpu_bound_pct: f32,
+}
+
+/// Parse a PresentMon 2.x CSV: MsBetweenPresents = frametime; MsCPUBusy /
+/// MsGPUBusy decide CPU-vs-GPU-bound. Columns are found by header name so a
+/// reordering won't break it. None if too few frames were captured.
+fn parse_presentmon_csv(path: &str) -> Option<FrameStats> {
+    let text = std::fs::read_to_string(path).ok()?;
+    let mut lines = text.lines();
+    let header = lines.next()?;
+    let cols: Vec<&str> = header.split(',').map(|c| c.trim()).collect();
+    let idx = |name: &str| cols.iter().position(|c| c.eq_ignore_ascii_case(name));
+    let i_ft = idx("MsBetweenPresents")?;
+    let i_cpu = idx("MsCPUBusy");
+    let i_gpu = idx("MsGPUBusy");
+
+    let mut ft: Vec<f32> = Vec::new();
+    let mut cpu_bound = 0usize;
+    let mut gpu_bound = 0usize;
+    for line in lines {
+        let f: Vec<&str> = line.split(',').collect();
+        let frametime = match f.get(i_ft).and_then(|v| v.trim().parse::<f32>().ok()) {
+            Some(x) if x > 0.0 && x < 1000.0 => x,
+            _ => continue,
+        };
+        ft.push(frametime);
+        if let (Some(ic), Some(ig)) = (i_cpu, i_gpu) {
+            let cpu = f.get(ic).and_then(|v| v.trim().parse::<f32>().ok()).unwrap_or(0.0);
+            let gpu = f.get(ig).and_then(|v| v.trim().parse::<f32>().ok()).unwrap_or(0.0);
+            if gpu >= frametime * 0.95 {
+                gpu_bound += 1;
+            } else if cpu > gpu {
+                cpu_bound += 1;
+            }
+        }
+    }
+    if ft.len() < 30 {
+        return None;
+    }
+    let n = ft.len();
+    let avg_ms = ft.iter().sum::<f32>() / n as f32;
+    ft.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let pct = |p: f32| -> f32 {
+        let rank = ((p / 100.0) * (n as f32 - 1.0)).round() as usize;
+        ft[rank.min(n - 1)]
+    };
+    let bound_total = (cpu_bound + gpu_bound).max(1) as f32;
+    Some(FrameStats {
+        frames: n,
+        avg_fps: 1000.0 / avg_ms,
+        low1_fps: 1000.0 / pct(99.0),
+        low01_fps: 1000.0 / pct(99.9),
+        cpu_bound_pct: cpu_bound as f32 / bound_total * 100.0,
+        gpu_bound_pct: gpu_bound as f32 / bound_total * 100.0,
+    })
 }
 
 static SESSION_RUNNING: AtomicBool = AtomicBool::new(false);
@@ -1013,18 +1111,47 @@ pub fn session_status() -> SessionStatus {
     }
 }
 
-pub fn session_start() -> Result<(), String> {
+pub fn session_start(presentmon_exe: Option<String>, csv_path: String) -> Result<(), String> {
     if SESSION_RUNNING.load(Ordering::SeqCst) {
         return Err("A session is already recording.".into());
     }
     let whea = toolkit::read_microcode_report()
         .ok()
         .and_then(|m| m.whea_events_30d);
+
+    // If a supported game is running and PresentMon is bundled, start a frametime
+    // capture against it (ETW, no injection; PresentMon self-elevates -> one UAC).
+    let mut csv_used: Option<String> = None;
+    if let Some(exe) = presentmon_exe {
+        if std::path::Path::new(&exe).exists() {
+            if let Some(pid) = find_game_pid() {
+                let _ = std::fs::remove_file(&csv_path);
+                let mut cmd = std::process::Command::new(&exe);
+                cmd.args([
+                    "--process_id",
+                    &pid.to_string(),
+                    "--output_file",
+                    &csv_path,
+                    "--stop_existing_session",
+                    "--restart_as_admin",
+                    "--timed",
+                    "5400",
+                    "--terminate_after_timed",
+                ]);
+                process_helpers::make_hidden(&mut cmd);
+                if cmd.spawn().is_ok() {
+                    csv_used = Some(csv_path);
+                }
+            }
+        }
+    }
+
     {
         let mut st = session_state().lock();
         st.samples.clear();
         st.started = Some(Instant::now());
         st.whea_at_start = whea;
+        st.presentmon_csv = csv_used;
     }
     SESSION_RUNNING.store(true, Ordering::SeqCst);
     let handle = std::thread::spawn(|| {
@@ -1162,6 +1289,71 @@ pub fn session_stop() -> MatchScanReport {
                 evidence: Some(format!("WHEA {start} -> {now}")),
                 tweak_id: None,
             });
+        }
+    }
+
+    // Frametime + CPU-vs-GPU-bound from PresentMon (the bottleneck truth).
+    match st.presentmon_csv.clone().as_deref().and_then(parse_presentmon_csv) {
+        Some(fs) => {
+            let stutter = fs.low01_fps < fs.avg_fps * 0.5;
+            findings.push(Finding {
+                id: "session.frametime".into(),
+                severity: if stutter { "warn".into() } else { "info".into() },
+                title: format!(
+                    "Frametime: {:.0} FPS avg, {:.0} FPS 1% low, {:.0} FPS 0.1% low",
+                    fs.avg_fps, fs.low1_fps, fs.low01_fps
+                ),
+                cause: if stutter {
+                    "Your 0.1% lows are less than half your average — that's stutter/hitching spikes, the thing you feel even when the FPS counter looks high.".into()
+                } else {
+                    "Captured per-frame with PresentMon — frame pacing is consistent.".into()
+                },
+                fix: if stutter {
+                    "Chase the stutter sources (DPC, background apps, shader-comp, memory pressure) above — smoothing the lows matters more than raising the average.".into()
+                } else {
+                    "No action — your frame delivery is even.".into()
+                },
+                evidence: Some(format!("{} frames captured", fs.frames)),
+                tweak_id: None,
+            });
+            let (title, cause, fix) = if fs.cpu_bound_pct >= 60.0 {
+                (
+                    format!("You were CPU-bound {:.0}% of the match", fs.cpu_bound_pct),
+                    "The GPU sat idle waiting on the CPU most of the time — your CPU is the bottleneck, not the graphics card.".to_string(),
+                    "A faster GPU will NOT raise your FPS here. The levers are CPU cooling/clocks, faster + tighter RAM (XMP/EXPO), and the CPU-bound tweaks. See the 'where your next margin is' guide.".to_string(),
+                )
+            } else if fs.gpu_bound_pct >= 60.0 {
+                (
+                    format!("You were GPU-bound {:.0}% of the match", fs.gpu_bound_pct),
+                    "The GPU was saturated most of the time — it's the bottleneck.".to_string(),
+                    "Lower a few graphics settings for instant FPS; a faster GPU is the upgrade that actually helps here (unlike a CPU-bound rig).".to_string(),
+                )
+            } else {
+                (
+                    format!(
+                        "Balanced load ({:.0}% CPU-bound / {:.0}% GPU-bound)",
+                        fs.cpu_bound_pct, fs.gpu_bound_pct
+                    ),
+                    "Neither part is a clear bottleneck.".to_string(),
+                    "Chase settings + thermals before spending on any upgrade.".to_string(),
+                )
+            };
+            findings.push(Finding {
+                id: "session.bound".into(),
+                severity: "info".into(),
+                title,
+                cause,
+                fix,
+                evidence: None,
+                tweak_id: None,
+            });
+        }
+        None => {
+            if st.presentmon_csv.is_some() {
+                notes.push("Frametime capture started but produced too few frames (short session, or an anti-cheat blocked the ETW trace).".into());
+            } else {
+                notes.push("Frametime + CPU/GPU-bound need a supported game running when you hit Start (PresentMon attaches to it, one-time admin prompt). No supported game was detected this session.".into());
+            }
         }
     }
 

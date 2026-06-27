@@ -413,8 +413,25 @@ async fn match_scan_deep_cpu(app: tauri::AppHandle) -> Result<match_scan::MatchS
 }
 
 #[tauri::command]
-async fn match_scan_session_start() -> Result<(), String> {
-    match_scan::session_start()
+async fn match_scan_session_start(app: tauri::AppHandle) -> Result<(), String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let exe = resource_dir.join("resources/presentmon/PresentMon-2.4.1-x64.exe");
+    let exe_str = strip_verbatim_prefix(&exe.to_string_lossy());
+    let exe_opt = if std::path::Path::new(&exe_str).exists() {
+        Some(exe_str)
+    } else {
+        None
+    };
+    let csv = std::env::var("LOCALAPPDATA")
+        .map(|l| format!("{l}\\optmaxxing\\match-scans\\session.csv"))
+        .unwrap_or_else(|_| "session-frametimes.csv".into());
+    if let Some(parent) = std::path::Path::new(&csv).parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    match_scan::session_start(exe_opt, csv)
 }
 
 #[tauri::command]
