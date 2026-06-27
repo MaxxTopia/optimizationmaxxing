@@ -27,6 +27,7 @@ import rgbShutoff from '../../resources/research/rgb-shutoff.md?raw'
 import ramBiosRecipes from '../../resources/research/ram-bios-recipes.md?raw'
 import pickupMacros from '../../resources/research/pickup-macros.md?raw'
 import snakeOilTweaks from '../../resources/research/snake-oil-tweaks.md?raw'
+import nextMargin from '../../resources/research/where-your-next-margin-is.md?raw'
 import amdRadeonAdrenalin from '../../resources/research/amd-radeon-adrenalin.md?raw'
 import intelArcSetup from '../../resources/research/intel-arc-setup.md?raw'
 
@@ -63,6 +64,14 @@ export const RESEARCH: ResearchArticle[] = [
       "The honest list: popular 'FPS boost' tweaks that 2026 evidence shows are placebo or harmful (page file off, Realtime priority, 8000 Hz polling, debloat scripts, disabling Defender/mitigations) plus the ones whose advice reversed (HAGS/Game Mode stay ON, bcdedit clock flags revert, MPO is conditional). Why we left them out.",
     badge: 'NO SNAKE-OIL',
     body: snakeOilTweaks,
+  },
+  {
+    id: 'where-your-next-margin-is',
+    title: 'Where your next margin is — after the scan comes back clean',
+    blurb:
+      "The honest layer model: software/config is ~70% of the gap and the cheapest 70% you'll ever buy — but 'everything except hardware' skips two layers. After a clean scan the order is in-game/peripheral settings (we can only advise) -> your own mechanics (the biggest lever) -> targeted hardware only where Match Scan proves you're bottlenecked. Don't buy a GPU to fix a 60Hz cable.",
+    badge: 'READ FIRST',
+    body: nextMargin,
   },
   {
     id: 'nvidia-profile-inspector',
