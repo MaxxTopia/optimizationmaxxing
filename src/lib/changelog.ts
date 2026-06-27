@@ -12,6 +12,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.0',
+    date: '2026-06-26',
+    highlights: [
+      'NEW **Match Scan (VIP)** — a read-only scanner that finds the silent things hurting your game and tells you, in plain English, what\'s wrong → what\'s causing it → how to fix it. It never changes a setting on its own.',
+      'NEW **Pre-game scan** — ~1 second before you queue, 12 checks for the silent killers: RAM not at XMP/EXPO, monitor stuck below its max refresh, single-channel RAM, GPU on a PCIe x8 link, VBS/Memory Integrity, mouse acceleration, Game DVR, Wi-Fi, a mechanical HDD, and more.',
+      'NEW **Live spot-check** — names whatever\'s stealing CPU/GPU from your game *right now* (a Defender scan, a browser, Discord, RGB software).',
+      'NEW **GPU + CPU deep scans** — the temps your normal monitor hides: GPU hotspot-vs-edge (paste pump-out), VRAM-junction throttling, and CPU core temp/voltage.',
+      'NEW **Match recorder** — Start before you queue, play, Stop for a verdict: did you thermal-throttle, stutter (DPC), run out of RAM, or destabilize — plus real frametimes (1% / 0.1% lows) and **whether you were CPU- or GPU-bound**, so you never buy the wrong upgrade. (Frametime capture uses Intel PresentMon — read-only, anti-cheat-safe.)',
+      'NEW guide **"Where your next margin is"** — the honest order of what to fix after a clean scan: settings → your own mechanics → hardware (last).',
+    ],
+  },
+  {
     version: '0.2.13',
     date: '2026-06-26',
     highlights: [
