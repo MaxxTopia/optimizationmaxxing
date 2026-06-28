@@ -15,7 +15,7 @@ use anyhow::{anyhow, Result};
 use super::actions::TweakAction;
 
 /// Base64-encode UTF-16-LE bytes for `powershell -EncodedCommand`.
-fn encode_for_ps(script: &str) -> String {
+pub fn encode_for_ps(script: &str) -> String {
     let mut bytes: Vec<u8> = Vec::with_capacity(script.len() * 2);
     for unit in script.encode_utf16() {
         bytes.extend_from_slice(&unit.to_le_bytes());

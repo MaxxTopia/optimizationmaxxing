@@ -1729,17 +1729,29 @@ pub fn probe_lhm_sensors_elevated(script_path: &str, dll_path: &str) -> LhmRepor
     // The outer powershell.exe is unelevated and just calls Start-Process
     // -Verb RunAs to fire an elevated child. The child writes the JSON to
     // out_path and exits. We then read the file.
+    //
+    // The inner command is passed to the elevated child via -EncodedCommand
+    // (base64-utf16-le). This is the ONLY safe way to cross the two PowerShell
+    // layers (outer `-Command` string -> Start-Process `-ArgumentList`): a
+    // raw nested string double-escaped the path single-quotes into `''path''`,
+    // which PowerShell parses as empty-string + garbage, so the elevated child
+    // silently failed and wrote nothing on every `C:\Program Files` install.
+    // Single-quote doubling inside inner_cmd is still correct here (the paths
+    // live in single-quoted PS string literals); base64 then makes the whole
+    // thing quote-proof for the outer layers.
     let inner_cmd = format!(
         "& '{}' -DllPath '{}' | Out-File -FilePath '{}' -Encoding utf8",
         script_path.replace('\'', "''"),
         dll_path.replace('\'', "''"),
         out_path.to_string_lossy().replace('\'', "''")
     );
-    // ArgumentList for Start-Process needs all flags as separate strings.
+    let enc = crate::engine::powershell::encode_for_ps(&inner_cmd);
+    // ArgumentList for Start-Process needs all flags as separate strings. `enc`
+    // is pure base64 (no quotes/spaces), so it is safe inside the single-quoted
+    // arg and through the outer `-Command` layer.
     let outer = format!(
         "$ErrorActionPreference='Stop'; \
-         Start-Process powershell -ArgumentList '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-Command',\"{}\" -Verb RunAs -Wait -WindowStyle Hidden",
-        inner_cmd.replace('\'', "''").replace('"', "`\"")
+         Start-Process powershell -ArgumentList '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-EncodedCommand','{enc}' -Verb RunAs -Wait -WindowStyle Hidden"
     );
     let status = match hidden_powershell()
         .args(["-NoProfile", "-NonInteractive", "-Command", &outer])

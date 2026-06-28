@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.4',
+    date: '2026-06-27',
+    highlights: [
+      'FIX **CPU deep scan now actually works.** A quote-escaping bug mangled the elevated probe command on any normal "C:\\Program Files" install, so the scan silently got no sensors and (even with admin granted and antivirus off) always showed "couldn\'t read." The elevated probe now uses -EncodedCommand (base64), which is quote-proof — real core temps + voltage come back.',
+      'IMPROVE **Honest, specific failure messages.** When the scan genuinely can\'t read sensors it now tells you *why*: "the admin (UAC) prompt was declined — re-run and click Yes" vs "the WinRing0 driver was blocked (usually antivirus) — add the exclusion," instead of always blaming antivirus.',
+    ],
+  },
+  {
     version: '0.3.3',
     date: '2026-06-27',
     highlights: [

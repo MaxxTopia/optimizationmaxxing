@@ -791,20 +791,52 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         }
     }
 
+    // Classify WHY no sensors came back so the card gives accurate advice
+    // instead of always blaming antivirus. The elevated probe reports the
+    // reason in `error` (UAC code 1223, a driver/parse failure, etc.).
+    let err_lc = lhm.error.as_deref().unwrap_or("").to_lowercase();
+    let uac_denied = err_lc.contains("uac denied") || err_lc.contains("1223");
+    let probe_failed = !err_lc.is_empty() && !uac_denied;
     if !read_signal {
-        notes.push("No CPU sensors came back — the elevated probe needs admin (UAC) + the WinRing0 driver, which some antivirus blocks. Temps shown elsewhere from WMI are motherboard-only, not the cores.".into());
         // No-data run: surface an explicit "couldn't read" finding so the UI
         // shows an unknown state instead of an empty (and falsely green) card.
-        findings.push(Finding {
-            id: "cpu.no-signal".into(),
-            severity: "unknown".into(),
-            title: "Couldn't read CPU core temperature or voltage".into(),
-            cause: "The deep CPU scan needs admin (UAC) plus the WinRing0 kernel driver. Either UAC wasn't accepted, or your antivirus blocked the driver from loading — so the scan got no core sensors this run.".into(),
-            fix: "Re-run the CPU deep scan and accept the UAC prompt. If it still comes back empty, your antivirus is blocking the hardware-monitor driver — add the exclusion in the linked guide, then try again.".into(),
-            evidence: None,
-            tweak_id: None,
-            guide_id: Some("winring0-av-exclusion".into()),
-        });
+        if uac_denied {
+            notes.push("The admin (UAC) prompt was declined, so the elevated probe never ran — no CPU sensors this run.".into());
+            findings.push(Finding {
+                id: "cpu.no-signal".into(),
+                severity: "unknown".into(),
+                title: "Couldn't read CPU sensors — the admin prompt was declined".into(),
+                cause: "The deep CPU scan needs admin to load WinRing0, the driver that reads core temps and voltages. The Windows admin (UAC) prompt was dismissed or declined, so the probe didn't run.".into(),
+                fix: "Re-run the CPU deep scan and click \"Yes\" on the Windows admin (UAC) prompt.".into(),
+                evidence: None,
+                tweak_id: None,
+                guide_id: None,
+            });
+        } else if probe_failed {
+            notes.push("Admin was granted but the elevated probe returned no CPU sensors — usually antivirus blocking the WinRing0 driver from loading.".into());
+            findings.push(Finding {
+                id: "cpu.no-signal".into(),
+                severity: "unknown".into(),
+                title: "Couldn't read CPU sensors — the hardware-monitor driver didn't load".into(),
+                cause: "Admin was granted, but the WinRing0 kernel driver didn't load — almost always antivirus (Windows Defender included) blocking it, since the same CPU registers are used by some malware. It's a false positive.".into(),
+                fix: "Add a Windows Defender / AV exclusion for the hardware-monitor driver (see the linked guide), then re-run the CPU deep scan.".into(),
+                evidence: lhm.error.clone(),
+                tweak_id: None,
+                guide_id: Some("winring0-av-exclusion".into()),
+            });
+        } else {
+            notes.push("No CPU sensors came back — the elevated probe needs admin (UAC) + the WinRing0 driver, which some antivirus blocks. Temps shown elsewhere from WMI are motherboard-only, not the cores.".into());
+            findings.push(Finding {
+                id: "cpu.no-signal".into(),
+                severity: "unknown".into(),
+                title: "Couldn't read CPU core temperature or voltage".into(),
+                cause: "The deep CPU scan needs admin (UAC) plus the WinRing0 kernel driver. Either UAC wasn't accepted, or your antivirus blocked the driver from loading — so the scan got no core sensors this run.".into(),
+                fix: "Re-run the CPU deep scan and accept the UAC prompt. If it still comes back empty, your antivirus is blocking the hardware-monitor driver — add the exclusion in the linked guide, then try again.".into(),
+                evidence: None,
+                tweak_id: None,
+                guide_id: Some("winring0-av-exclusion".into()),
+            });
+        }
     }
     notes.push("CPU core temp / Vcore come from the elevated hardware monitor (WinRing0). Effective-clock-vs-rated and the exact throttle-reason bits are the next add.".into());
 
@@ -815,7 +847,13 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
     } else if warn {
         "Your CPU has a thermal / voltage issue worth addressing.".into()
     } else if !read_signal {
-        "Couldn't read your CPU sensors — thermal state unknown (needs admin + WinRing0).".into()
+        if uac_denied {
+            "Couldn't read your CPU sensors — the admin (UAC) prompt was declined. Re-run and click Yes.".into()
+        } else if probe_failed {
+            "Couldn't read your CPU sensors — the WinRing0 driver was blocked (usually antivirus).".into()
+        } else {
+            "Couldn't read your CPU sensors — thermal state unknown (needs admin + WinRing0).".into()
+        }
     } else {
         "CPU thermals and voltage look healthy.".into()
     };
@@ -1520,6 +1558,40 @@ mod tests {
             components,
             error: None,
         }
+    }
+
+    fn failed_report(err: &str) -> LhmReport {
+        LhmReport {
+            ok: false,
+            elevated: false,
+            lhm_version: None,
+            components: vec![],
+            error: Some(err.into()),
+        }
+    }
+
+    #[test]
+    fn cpu_uac_denied_reports_prompt_not_antivirus() {
+        // Elevated probe returns the UAC-denied error (exit code 1223).
+        let r = interpret_lhm_cpu(&failed_report("elevated probe exited with code 1223 (UAC denied)"));
+        assert_eq!(r.checked, 0);
+        let f = r.findings.iter().find(|f| f.id == "cpu.no-signal").unwrap();
+        // UAC case must steer to the prompt, NOT an AV exclusion / guide link.
+        assert!(f.title.to_lowercase().contains("admin prompt"));
+        assert!(f.fix.to_lowercase().contains("yes"));
+        assert_eq!(f.guide_id, None, "declining UAC is not an AV problem");
+        assert!(r.headline.to_lowercase().contains("uac"));
+    }
+
+    #[test]
+    fn cpu_probe_failure_blames_driver_with_guide() {
+        // Admin granted but the driver/probe failed (e.g. parse/driver-load error).
+        let r = interpret_lhm_cpu(&failed_report("couldn't parse elevated LHM output: expected value"));
+        assert_eq!(r.checked, 0);
+        let f = r.findings.iter().find(|f| f.id == "cpu.no-signal").unwrap();
+        assert!(f.fix.to_lowercase().contains("exclusion"));
+        assert_eq!(f.guide_id.as_deref(), Some("winring0-av-exclusion"));
+        assert!(!r.headline.to_lowercase().contains("uac"));
     }
 
     // ---- CPU: no-data must NOT read as healthy --------------------------
