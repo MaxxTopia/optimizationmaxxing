@@ -1,0 +1,28 @@
+Third-party sensor components bundled in resources/lhm
+=======================================================
+
+This app reads hardware sensors (CPU/GPU temperatures, voltages, fan speeds,
+etc.) using the following third-party components, redistributed unmodified.
+
+1) PawnIO (PawnIO_setup.exe)
+   - Microsoft-signed kernel driver that runs sandboxed signed modules; the
+     app communicates with it only over the device IO-control (IOCTL)
+     interface.
+   - License: GNU General Public License v2.0 or later, WITH a linking
+     exception permitting independent programs that communicate through the
+     IOCTL interface (and modules over the Pawn interface).
+   - Source / corresponding source offer: https://github.com/namazso/PawnIO
+     Installer: https://github.com/namazso/PawnIO.Setup
+
+2) PawnIO modules (IntelMSR, AMD family modules, LpcIO, SMBus, RyzenSMU, ...)
+   - Compiled Pawn bytecode embedded inside LibreHardwareMonitorLib.dll.
+   - License: GNU Lesser General Public License v2.1.
+   - Source: https://github.com/namazso/PawnIO.Modules
+
+3) LibreHardwareMonitorLib.dll
+   - License: Mozilla Public License 2.0 (file-level copyleft). Redistributed
+     unmodified.
+   - Source: https://github.com/LibreHardwareMonitor/LibreHardwareMonitor
+
+No modifications were made to any of the above binaries. Their full license
+texts are available at the source URLs listed.

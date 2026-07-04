@@ -1739,11 +1739,23 @@ pub fn probe_lhm_sensors_elevated(script_path: &str, dll_path: &str) -> LhmRepor
     // Single-quote doubling inside inner_cmd is still correct here (the paths
     // live in single-quoted PS string literals); base64 then makes the whole
     // thing quote-proof for the outer layers.
+    // PawnIO_setup.exe sits next to the DLL in resources/lhm. The elevated
+    // child installs PawnIO silently if its driver isn't already present, then
+    // runs the sensor reader -- both inside the single UAC we already trigger.
+    // PawnIO is LibreHardwareMonitor's Microsoft-signed replacement for WinRing0
+    // (which the Windows vulnerable-driver blocklist blocks by default on Win11,
+    // and which returns null MSR temps on some Intel rigs -- e.g. the 14900K).
+    // The install is a no-op once the "PawnIO" driver service is registered.
+    let pawnio_setup = std::path::Path::new(dll_path)
+        .parent()
+        .map(|d| d.join("PawnIO_setup.exe").to_string_lossy().into_owned())
+        .unwrap_or_default();
     let inner_cmd = format!(
-        "& '{}' -DllPath '{}' | Out-File -FilePath '{}' -Encoding utf8",
-        script_path.replace('\'', "''"),
-        dll_path.replace('\'', "''"),
-        out_path.to_string_lossy().replace('\'', "''")
+        "if (-not (Get-CimInstance Win32_SystemDriver -Filter \"Name='PawnIO'\" -ErrorAction SilentlyContinue)) {{ try {{ Start-Process -FilePath '{pawnio}' -ArgumentList '-install','-silent' -Wait -NoNewWindow -ErrorAction Stop }} catch {{}} }} ; & '{script}' -DllPath '{dll}' | Out-File -FilePath '{out}' -Encoding utf8",
+        pawnio = pawnio_setup.replace('\'', "''"),
+        script = script_path.replace('\'', "''"),
+        dll = dll_path.replace('\'', "''"),
+        out = out_path.to_string_lossy().replace('\'', "''")
     );
     let enc = crate::engine::powershell::encode_for_ps(&inner_cmd);
     // ArgumentList for Start-Process needs all flags as separate strings. `enc`

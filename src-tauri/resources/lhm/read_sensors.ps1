@@ -213,7 +213,7 @@ foreach ($hw in $computer.Hardware) {
 $out = [pscustomobject]@{
     ok          = $true
     elevated    = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    lhm_version = '0.9.6'
+    lhm_version = '0.9.7-pre705'
     components  = $components
 }
 

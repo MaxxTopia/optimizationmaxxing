@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.6',
+    date: '2026-07-04',
+    highlights: [
+      'FIX **CPU deep scan now reads temps on rigs where it came back blank.** Switched the sensor engine from the old WinRing0 driver to **PawnIO** — a Microsoft-signed driver that works even with Windows Memory Integrity / the vulnerable-driver blocklist on (the default on Win11), and that reads the Intel package / per-core temperatures WinRing0 returned empty on some chips (e.g. the i9-14900K). It installs itself silently the first time you run a deep scan (one UAC) — no separate download. If Windows asks for a reboot to finish, do that once and the temps come through.',
+      'Smaller, cleaner sensor bundle (dropped ~14 libraries the reader never used).',
+    ],
+  },
+  {
     version: '0.3.5',
     date: '2026-07-04',
     highlights: [
