@@ -28,9 +28,9 @@ export type HardwareCategory =
 export type HardwareTier = 'goat' | 'pro' | 'budget' | 'principle'
 
 /** Pulled from pro rig snapshots in /grind + ProSettings.net + community
- * scene consensus (May 2026). Bump this when a category's GOAT pick
+ * scene consensus (July 2026). Bump this when a category's GOAT pick
  * changes — the date stamp tells users how fresh the picks are. */
-export const HARDWARE_LAST_VERIFIED = '2026-06-27'
+export const HARDWARE_LAST_VERIFIED = '2026-07-04'
 
 export interface HardwareItem {
   /** Display name. */
@@ -401,25 +401,32 @@ export const HARDWARE: HardwareSection[] = [
     id: 'mouse',
     label: 'Mouse',
     blurb:
-      "Lightest-possible body + flagship sensor. Sub-60g is the converged-mechanics standard. Polling 1000 Hz minimum (4K Hz on Razer). Every cited GOAT runs in the same band.",
+      "Lightest-possible body + flagship sensor. Sub-60g is the converged-mechanics standard. Polling 1000 Hz minimum (8K Hz on current Razer/Logitech flagships). Every cited GOAT runs in the same band.",
     items: [
       {
         name: 'Logitech G PRO X Superlight 2',
         price: '$159',
         tier: 'goat',
         why:
-          '60g, HERO 2 sensor (32K DPI, 888 IPS). Industry-default — Peterbot, Reet, and a large slice of the active FNCS field. Wireless dongle is sub-1ms latency.',
+          '60g, HERO 2 sensor (44K DPI, 888 IPS), now with 8K polling. Industry-default — Peterbot, Reet, and a large slice of the active FNCS field. Wireless dongle is sub-1ms latency.',
         citedPro: 'Peterbot',
         link: 'https://www.logitechg.com/en-us/products/gaming-mice/pro-x-superlight-2.html',
         caveat: 'White colorway has a known coating wear after 6+ months of heavy use. Black holds up.',
       },
       {
-        name: 'Razer Viper V3 Pro',
+        name: 'Razer Viper V4 Pro',
         price: '$159',
         tier: 'pro',
         why:
-          "54g, Focus Pro 35K sensor, native 8K Hz polling with the HyperPolling dongle. Razer's previous flagship (now succeeded by the Viper V4 Pro) and still the single most-used mouse among FNCS pros — what cited pros like Mongraal actually run. Lighter than the G PRO X S2.",
-        citedPro: 'Mongraal',
+          "49g, Focus Pro 45K sensor, native 8000 Hz HyperSpeed Gen-2 (no separate dongle needed). Razer's current flagship, launched March 2026 — lighter than the V3 Pro and the G PRO X S2. The Razer pick if you want the newest sensor + native 8K.",
+        link: 'https://www.razer.com/gaming-mice/razer-viper-v4-pro',
+      },
+      {
+        name: 'Razer Viper V3 Pro',
+        price: '$129',
+        tier: 'budget',
+        why:
+          '54g, Focus Pro 35K sensor, native 8K Hz polling with the HyperPolling dongle. Razer\'s last-gen flagship — now discounted and still a top-tier competitive mouse. Buy this over the V4 Pro if you find it cheap and don\'t need the newest sensor.',
         link: 'https://www.razer.com/gaming-mice/razer-viper-v3-pro',
       },
       {

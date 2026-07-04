@@ -31,12 +31,14 @@ export function Grind() {
   return (
     <div className="space-y-8">
       <header>
-        <p className="text-xs uppercase tracking-widest text-text-subtle">channel</p>
-        <h1 className="text-3xl font-bold">Grind</h1>
-        <p className="text-text-muted text-sm max-w-2xl mt-1">
-          Receipts. Not vibes. Curated insights from the pros + creators actually winning right
-          now — Peterbot, Veno, Aussie, EpikWhale, Mongraal, Clix, Reet, Bugha, Th0masHD. Every claim
-          cites a real source where one exists.
+        <p className="text-xs uppercase tracking-[0.25em] text-accent font-bold">channel</p>
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-accent via-secondary to-accent bg-clip-text text-transparent">
+          Grind
+        </h1>
+        <p className="text-text text-base md:text-lg max-w-2xl mt-2 leading-relaxed font-medium">
+          <span className="text-accent font-bold">Receipts. Not vibes.</span> Curated insights from the
+          pros + creators actually winning right now — Peterbot, Veno, Aussie, EpikWhale, Mongraal,
+          Clix, Reet, Bugha, Th0masHD. Every claim cites a real source.
         </p>
       </header>
 
@@ -119,14 +121,14 @@ function GoatCard({ entry }: { entry: GrindEntry }) {
 
 function GrindCard({ entry }: { entry: GrindEntry }) {
   return (
-    <article className="surface-card p-5 space-y-3">
+    <article className="surface-card p-5 space-y-3 border-l-4 border-l-accent">
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
         <div>
-          <p className="text-[10px] uppercase tracking-widest text-text-subtle">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold">
             {entry.kind} · {entry.games.join(' · ')}
           </p>
-          <h3 className="text-xl font-bold">{entry.name}</h3>
-          <p className="text-xs text-text-muted">{entry.credential}</p>
+          <h3 className="text-2xl font-extrabold tracking-tight">{entry.name}</h3>
+          <p className="text-sm text-text-muted font-medium">{entry.credential}</p>
         </div>
         {entry.link && (
           <a
@@ -139,7 +141,9 @@ function GrindCard({ entry }: { entry: GrindEntry }) {
           </a>
         )}
       </div>
-      <p className="text-sm text-text leading-relaxed italic">"{entry.voice}"</p>
+      <p className="text-base md:text-lg text-text leading-relaxed italic font-medium border-l-2 border-accent pl-3">
+        "{entry.voice}"
+      </p>
       <RigSnapshot entry={entry} />
       <Routine entry={entry} />
       <Insights entry={entry} />
@@ -199,8 +203,8 @@ function RigSnapshot({ entry }: { entry: GrindEntry }) {
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 border-t border-border">
       {items.map((it) => (
         <div key={it.label}>
-          <p className="text-[10px] uppercase tracking-widest text-text-subtle">{it.label}</p>
-          <p className="text-xs font-semibold tabular-nums">{it.value}</p>
+          <p className="text-[10px] uppercase tracking-widest text-accent font-bold">{it.label}</p>
+          <p className="text-sm text-text font-bold tabular-nums">{it.value}</p>
         </div>
       ))}
     </div>
@@ -210,10 +214,10 @@ function RigSnapshot({ entry }: { entry: GrindEntry }) {
 function Insights({ entry }: { entry: GrindEntry }) {
   if (!entry.insights || entry.insights.length === 0) return null
   return (
-    <ul className="space-y-2 mt-3">
+    <ul className="space-y-3 mt-4">
       {entry.insights.map((ins, i) => (
-        <li key={i} className="flex gap-2 text-sm text-text-muted leading-snug">
-          <span className="text-accent shrink-0">▸</span>
+        <li key={i} className="flex gap-3 text-[15px] md:text-base text-text leading-relaxed font-medium">
+          <span className="text-accent text-lg leading-none shrink-0" aria-hidden="true">▸</span>
           <span>
             {ins.text}
             {ins.citation && (

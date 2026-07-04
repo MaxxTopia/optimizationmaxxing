@@ -94,7 +94,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
       sensitivity: '6.4% / 6.4% (X / Y, ADS 45%)',
       pollingHz: 1000,
       monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz, DyAC+)',
-      mouse: 'Logitech G PRO X Superlight 2 (White)',
+      mouse: 'Logitech G PRO X Superlight 2 (Black)',
       keyboard: 'SteelSeries Apex Pro TKL',
     },
     insights: [

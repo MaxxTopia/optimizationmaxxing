@@ -206,10 +206,7 @@ function ProductItem({ product }: { product: MaxxerProduct }) {
           </svg>
         </span>
       )}
-      <span className="maxxer-sidebar-tooltip">
-        {product.name}
-        {product.status === 'soon' ? ' · coming soon' : product.status === 'dev' ? ' · in development' : ''}
-      </span>
+      <span className="maxxer-sidebar-tooltip">{product.name}</span>
     </button>
   )
 }

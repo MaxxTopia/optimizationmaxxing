@@ -276,5 +276,5 @@ export const profiles: Record<ProfileId, ProfileTheme> = {
   },
 }
 
-export const DEFAULT_PROFILE: ProfileId = 'val'
+export const DEFAULT_PROFILE: ProfileId = 'adventure-time'
 export const PROFILE_ORDER: ProfileId[] = ['val', 'sonic', 'dmc', 'bumblebee', 'element-115', 'akatsuki', 'adventure-time', 'cosmo-wanda']

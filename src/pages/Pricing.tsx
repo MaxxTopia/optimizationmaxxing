@@ -109,7 +109,7 @@ export function Pricing() {
           name="VIP"
           price="$115"
           regularPrice="$180"
-          tagline="One-time · lifetime · summer sale ends 2026-05-31"
+          tagline="One-time · lifetime · $180 → $115 locked in forever"
           highlighted
           highlightLabel={isVip ? 'Active' : 'Element 115 launch'}
           features={VIP_FEATURES}
@@ -141,8 +141,8 @@ export function Pricing() {
           BO3 Zombies fans know. <strong className="text-text">Element 115 (Mc · Moscovium)</strong>{' '}
           is what turns dead things into living ones in Treyarch's lore — the perfect price
           point for the substance that turns dead PCs into living ones. The number isn't an
-          accident, and the discount isn't fake-marketing. After 2026-05-31 it goes to $180 and
-          stays there.
+          accident, and the discount isn't fake-marketing. The list price is $180 — you pay
+          $115, locked in forever.
         </p>
       </section>
 

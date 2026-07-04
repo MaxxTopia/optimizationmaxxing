@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { RamAdvisor } from '../components/RamAdvisor'
+import { UpgradeAdvisor } from '../components/UpgradeAdvisor'
 import { detectSpecs, type SpecProfile } from '../lib/tauri'
 
 export function Profile() {
@@ -174,6 +175,12 @@ export function Profile() {
               Re-scan after BIOS / driver / RAM changes. Cached on disk by the engine in Phase 4.
             </p>
           </SpecCard>
+        </div>
+      )}
+
+      {spec && (
+        <div className="md:col-span-2">
+          <UpgradeAdvisor spec={spec} />
         </div>
       )}
 

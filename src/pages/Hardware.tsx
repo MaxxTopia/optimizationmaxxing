@@ -115,7 +115,7 @@ function ProBuildStack() {
         <p className="text-[10px] uppercase tracking-widest text-accent font-semibold">
           👑 Build like Peterbot
         </p>
-        <h2 className="text-2xl md:text-3xl font-bold mt-1">Pro-tier PC stack — May 2026</h2>
+        <h2 className="text-2xl md:text-3xl font-bold mt-1">Pro-tier PC stack — July 2026</h2>
         <p className="text-sm text-text-muted mt-1 max-w-3xl leading-snug">
           The current canonical pro-Fortnite rig — one GOAT pick per category. Every entry is
           something at least one active FNCS pro currently runs, sourced from /grind + ProSettings.

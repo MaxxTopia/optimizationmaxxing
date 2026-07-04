@@ -12,6 +12,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.5',
+    date: '2026-07-04',
+    highlights: [
+      'NEW **Upgrade Advisor on your Profile.** It reads your detected rig, finds the one part holding back your Fortnite frames (CPU / GPU / RAM, weighted for competitive play), and gives a platform-aware call: the best drop-in that fits your current board vs the best overall — with the full new-platform cost spelled out, so you never buy a chip that won\'t fit.',
+      'FIX **CPU deep scan reads Intel temps more reliably.** The sensor probe now polls twice with a short settle so Intel package / per-core temps populate instead of coming back blank on the first read. (A few Intel rigs still need the newer sensor driver landing in the next version.)',
+      'IMPROVE **Grind + Updates pages restyled** — bigger, bolder, higher-contrast text that\'s actually easy to read instead of a wall of grey.',
+      'CONTENT **Hardware list refreshed to July 2026** — added the Razer Viper V4 Pro (the current Razer flagship), corrected mouse polling + sensor specs, and re-stamped the pro-tier picks.',
+      'UPDATE **VIP is a permanent $115** (down from $180). The launch price is locked in for good — no end date.',
+      'Default theme is now Adventure Time.',
+    ],
+  },
+  {
     version: '0.3.4',
     date: '2026-06-27',
     highlights: [

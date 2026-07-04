@@ -6,10 +6,10 @@
 # readings.
 #
 # Drives both probe paths:
-#   * Unelevated   — ACPI thermal zones, GPU sensors via vendor APIs (NVAPI/
+#   * Unelevated   -- ACPI thermal zones, GPU sensors via vendor APIs (NVAPI/
 #                    ADL through LHM), storage SMART (often). CPU package
 #                    temp + per-core clocks usually NOT available.
-#   * Elevated     — full sensor coverage including CPU package + per-core
+#   * Elevated     -- full sensor coverage including CPU package + per-core
 #                    + voltage rails. Requires the WinRing0 kernel driver
 #                    to load successfully.
 #
@@ -69,7 +69,7 @@ if (-not (Test-Path -LiteralPath $DllPath)) {
 Try-Step 'Unblock-DLLs' {
     Unblock-File -LiteralPath $DllPath -ErrorAction SilentlyContinue
     # NOTE: Split-Path on Windows can't parse `\\?\`-prefixed (extended-
-    # length) paths returned by Tauri's resource_dir() — it errors out with
+    # length) paths returned by Tauri's resource_dir() -- it errors out with
     # "Cannot process argument because the value of argument 'drive' is
     # null", killing the whole probe before LHM even loads. Use the .NET
     # Path API instead; it handles both regular and `\\?\` paths cleanly.
@@ -87,9 +87,9 @@ Try-Step 'Add-Type' {
 }
 
 # Each subsystem enabled inside its own try so a single bad subsystem
-# (Storage is the historic offender — see "argument 'drive' is null" issue
+# (Storage is the historic offender -- see "argument 'drive' is null" issue
 # on rigs with removable USB / locked BitLocker volumes / 8+ drives)
-# doesn't kill the whole probe. Storage is OFF by default — we don't
+# doesn't kill the whole probe. Storage is OFF by default -- we don't
 # surface storage temps in the UI yet, and it's the most failure-prone
 # path in LHM 0.9.6.
 $computer = $null
@@ -106,11 +106,22 @@ try { $computer.IsPsuEnabled        = $true } catch {}
 
 Try-Step 'Computer.Open' { $script:computer.Open() }
 
-# Update every component once so sensor values populate.
-foreach ($hw in $computer.Hardware) {
-    try { $hw.Update() } catch {}
-    foreach ($sub in $hw.SubHardware) { try { $sub.Update() } catch {} }
+# Update every component so sensor values populate. Intel CPU package /
+# per-core temps (and some voltages) read NULL on the very first Update()
+# pass -- LHM needs a second poll after a short settle for the MSR/PECI
+# values to land. AMD Tctl/Tdie populates on the first pass, but Intel
+# 12/13/14th-gen (and Core Ultra) come back empty without this, which made
+# the CPU deep scan report "couldn't read" on Intel rigs even when the
+# elevated probe fully succeeded. Poll twice with a short gap.
+function Update-AllHardware {
+    foreach ($hw in $computer.Hardware) {
+        try { $hw.Update() } catch {}
+        foreach ($sub in $hw.SubHardware) { try { $sub.Update() } catch {} }
+    }
 }
+Update-AllHardware
+Start-Sleep -Milliseconds 750
+Update-AllHardware
 
 # Map LHM's enum to lowercase string kinds.
 function Sensor-Kind($s) {
