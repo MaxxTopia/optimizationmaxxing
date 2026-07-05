@@ -553,6 +553,31 @@ export async function pawnioUninstall(): Promise<string> {
   return invoke<string>('pawnio_uninstall')
 }
 
+export interface SpdDimm {
+  slot: string
+  type: string
+  dramVendor: string | null
+  moduleVendor: string | null
+  part: string | null
+  serial: string | null
+  capacityGb: number | null
+  spdRev: string | null
+  dieStepping: number | null
+}
+
+export interface SpdReport {
+  ok: boolean
+  busCount: number
+  dimms: SpdDimm[]
+  error: string | null
+}
+
+/** Read each DIMM's SPD for real DRAM manufacturer + die inputs (one UAC — SMBus
+ * needs admin; installs PawnIO if missing). */
+export async function spdDimms(): Promise<SpdReport> {
+  return invoke<SpdReport>('spd_dimms')
+}
+
 export async function vipHwid(): Promise<string> {
   return invoke<string>('vip_hwid')
 }

@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { lookupKit } from '../lib/ramAdvisor'
 import { suggestSecondaries, type SecondarySuggestion } from '../lib/ramSecondaries'
-import type { RamInfo } from '../lib/tauri'
+import { decodeDie, type DieResult } from '../lib/ramDie'
+import { inTauri, spdDimms, type RamInfo } from '../lib/tauri'
 
 /**
  * RAM Advisor card — what kit you have, what it's actually capable of,
@@ -11,7 +13,45 @@ import type { RamInfo } from '../lib/tauri'
  * changes from the same place.
  */
 export function RamAdvisor({ ram }: { ram: RamInfo }) {
+  const isNative = inTauri()
+  const [spdDie, setSpdDie] = useState<DieResult | null>(null)
+  const [spdBusy, setSpdBusy] = useState(false)
+  const [spdMsg, setSpdMsg] = useState<string | null>(null)
+
+  async function readSpd() {
+    if (spdBusy) return
+    setSpdBusy(true)
+    setSpdMsg(null)
+    try {
+      const r = await spdDimms()
+      if (!r.ok) {
+        setSpdMsg(r.error || 'SPD read failed.')
+        return
+      }
+      if (!r.dimms.length) {
+        setSpdMsg('No SPD returned — the SMBus may be busy. Close HWiNFO/CPU-Z/AIDA and retry.')
+        return
+      }
+      setSpdDie(decodeDie(r.dimms[0]))
+    } catch (e) {
+      setSpdMsg(typeof e === 'string' ? e : (e as Error).message ?? String(e))
+    } finally {
+      setSpdBusy(false)
+    }
+  }
+
+  const spdControl = (
+    <SpdDieControl
+      isNative={isNative}
+      busy={spdBusy}
+      msg={spdMsg}
+      die={spdDie}
+      onRead={readSpd}
+    />
+  )
+
   const kit = lookupKit(ram.partNumber)
+  const running = ram.configuredSpeedMts ?? ram.speedMts ?? 0
 
   if (!kit) {
     return (
@@ -23,14 +63,16 @@ export function RamAdvisor({ ram }: { ram: RamInfo }) {
           <code className="text-accent">
             {ram.partNumber || '(no part number)'}
           </code>{' '}
-          which we haven't profiled yet. Add it via Discord and we'll get tuning targets up.
+          which we haven't profiled yet — but we can read the real die straight off the SPD chip.
         </p>
+        {spdControl}
+        {spdDie && spdDie.die && (
+          <SecondaryTimings die={spdDie.die} speed={running} spd={spdDie} />
+        )}
         <StabilityLauncher />
       </div>
     )
   }
-
-  const running = ram.configuredSpeedMts ?? ram.speedMts ?? 0
   const onXmp = running > 0 && Math.abs(running - kit.rated_speed_mts) < 200
   const dropToJedec = running > 0 && running < kit.rated_speed_mts - 400
 
@@ -99,7 +141,9 @@ export function RamAdvisor({ ram }: { ram: RamInfo }) {
         </div>
       </div>
 
-      <SecondaryTimings die={kit.die_inferred} speed={running} />
+      {spdControl}
+
+      <SecondaryTimings die={spdDie?.die || kit.die_inferred} speed={running} spd={spdDie} />
 
       {kit.notes && (
         <p className="text-xs text-text-muted italic border-l-2 border-accent pl-3">
@@ -118,7 +162,15 @@ export function RamAdvisor({ ram }: { ram: RamInfo }) {
   )
 }
 
-function SecondaryTimings({ die, speed }: { die: string; speed: number }) {
+function SecondaryTimings({
+  die,
+  speed,
+  spd,
+}: {
+  die: string
+  speed: number
+  spd?: DieResult | null
+}) {
   const s: SecondarySuggestion = suggestSecondaries(die, speed)
 
   return (
@@ -127,11 +179,23 @@ function SecondaryTimings({ die, speed }: { die: string; speed: number }) {
         <p className="text-xs uppercase tracking-widest text-text-subtle">
           secondary timings · the real latency win
         </p>
+        {spd && (
+          <p className="text-xs mt-1">
+            <span className="text-text-subtle">Real DRAM vendor (from SPD): </span>
+            <span className="text-accent font-semibold">{spd.vendor}</span>
+            <span className="text-text-subtle">
+              {' '}· die {spd.confidence === 'confident' ? 'confirmed' : spd.confidence === 'likely' ? 'inferred (likely)' : 'not determined'}
+            </span>
+          </p>
+        )}
         <p className="text-xs text-text-muted leading-snug mt-1">
           {s.ddr} · {s.dieLabel}
           {s.speedMts ? ` · ${s.speedMts} MT/s` : ''} — most kits leave these loose after XMP.
           Tightening them (especially tRFC) is where the latency actually drops.
         </p>
+        {spd?.note && (
+          <p className="text-[11px] text-text-subtle italic mt-1">{spd.note}</p>
+        )}
       </div>
 
       {!s.known ? (
@@ -201,6 +265,48 @@ function SecondaryTimings({ die, speed }: { die: string; speed: number }) {
       >
         {s.guide.label} ↗
       </a>
+    </div>
+  )
+}
+
+function SpdDieControl({
+  isNative,
+  busy,
+  msg,
+  die,
+  onRead,
+}: {
+  isNative: boolean
+  busy: boolean
+  msg: string | null
+  die: DieResult | null
+  onRead: () => void
+}) {
+  if (!isNative) return null
+  return (
+    <div className="rounded-md border border-border bg-bg-raised/40 p-3 space-y-1.5">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-text">Exact die from SPD</p>
+          <p className="text-[11px] text-text-subtle leading-snug">
+            Reads the DRAM chip directly (not the part number) for the true maker + die. One UAC.
+          </p>
+        </div>
+        <button
+          onClick={onRead}
+          disabled={busy}
+          className="btn-chrome px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-40 shrink-0"
+        >
+          {busy ? 'Reading SPD…' : die ? 'Re-read SPD' : 'Read die from SPD (UAC)'}
+        </button>
+      </div>
+      {die && (
+        <p className="text-xs text-text-muted">
+          SPD says: <span className="text-accent font-semibold">{die.vendor}</span>
+          {die.die ? ` → ${die.die}` : ' (die not determinable from SPD alone)'}
+        </p>
+      )}
+      {msg && <p className="text-[11px] text-text-subtle leading-snug">{msg}</p>}
     </div>
   )
 }

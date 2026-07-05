@@ -1829,6 +1829,105 @@ pub fn probe_lhm_sensors_elevated(script_path: &str, dll_path: &str) -> LhmRepor
     }
 }
 
+#[derive(Debug, Clone, Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpdDimm {
+    pub slot: String,
+    #[serde(rename = "type")]
+    pub mem_type: String,
+    #[serde(default)]
+    pub dram_vendor: Option<String>,
+    #[serde(default)]
+    pub module_vendor: Option<String>,
+    #[serde(default)]
+    pub part: Option<String>,
+    #[serde(default)]
+    pub serial: Option<String>,
+    #[serde(default)]
+    pub capacity_gb: Option<f64>,
+    #[serde(default)]
+    pub spd_rev: Option<String>,
+    /// DDR5 die-stepping byte (0x22A). None on DDR4 / when unpopulated.
+    #[serde(default)]
+    pub die_stepping: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpdReport {
+    pub ok: bool,
+    #[serde(default)]
+    pub bus_count: i64,
+    #[serde(default)]
+    pub dimms: Vec<SpdDimm>,
+    #[serde(default)]
+    pub error: Option<String>,
+}
+
+/// Read each DIMM's SPD (real DRAM manufacturer + part + serial + DDR5 die
+/// stepping) via RAMSPDToolkit through the PawnIO SMBus driver. Elevated (SMBus
+/// is ring-0); installs PawnIO first if missing, inside the same single UAC.
+/// This is the honest die-detection input -- the DRAM vendor comes from SPD
+/// bytes, not the module part number.
+pub fn probe_spd_elevated(script_path: &str, lhm_dir: &str) -> SpdReport {
+    let tmp_dir = std::env::var("LOCALAPPDATA")
+        .map(|p| std::path::PathBuf::from(p).join("optmaxxing"))
+        .unwrap_or_else(|_| std::env::temp_dir().join("optmaxxing"));
+    let _ = std::fs::create_dir_all(&tmp_dir);
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or(0);
+    let out_path = tmp_dir.join(format!("spd-{}.json", stamp));
+
+    let pawnio_setup = std::path::Path::new(lhm_dir)
+        .join("PawnIO_setup.exe")
+        .to_string_lossy()
+        .into_owned();
+    let inner_cmd = format!(
+        "if (-not (Get-CimInstance Win32_SystemDriver -Filter \"Name='PawnIO'\" -ErrorAction SilentlyContinue)) {{ try {{ Start-Process -FilePath '{pawnio}' -ArgumentList '-install','-silent' -Wait -NoNewWindow -ErrorAction Stop }} catch {{}} }} ; & '{script}' -LhmDir '{dir}' | Out-File -FilePath '{out}' -Encoding utf8",
+        pawnio = pawnio_setup.replace('\'', "''"),
+        script = script_path.replace('\'', "''"),
+        dir = lhm_dir.replace('\'', "''"),
+        out = out_path.to_string_lossy().replace('\'', "''")
+    );
+    let enc = crate::engine::powershell::encode_for_ps(&inner_cmd);
+    let outer = format!(
+        "$ErrorActionPreference='Stop'; \
+         Start-Process powershell -ArgumentList '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-EncodedCommand','{enc}' -Verb RunAs -Wait -WindowStyle Hidden"
+    );
+    let err = |m: String| SpdReport { ok: false, bus_count: 0, dimms: vec![], error: Some(m) };
+    let status = match hidden_powershell()
+        .args(["-NoProfile", "-NonInteractive", "-Command", &outer])
+        .status()
+    {
+        Ok(s) => s,
+        Err(e) => return err(format!("elevated SPD probe spawn failed: {e}")),
+    };
+    if !status.success() {
+        let code = status.code().unwrap_or(-1);
+        let mut msg = format!("elevated SPD probe exited with code {code}");
+        if code == 1223 {
+            msg.push_str(" (UAC denied)");
+        }
+        return err(msg);
+    }
+    let body = match std::fs::read_to_string(&out_path) {
+        Ok(s) => s,
+        Err(e) => return err(format!("could not read SPD probe output: {e}")),
+    };
+    let _ = std::fs::remove_file(&out_path);
+    let trimmed = body.trim_start_matches('\u{FEFF}').trim();
+    let json_start = trimmed.find('{').unwrap_or(0);
+    match serde_json::from_str::<SpdReport>(&trimmed[json_start..]) {
+        Ok(r) => r,
+        Err(e) => err(format!(
+            "couldn't parse SPD output: {e} · first 200 chars: {}",
+            trimmed.chars().take(200).collect::<String>()
+        )),
+    }
+}
+
 /// True if the PawnIO kernel-driver service is registered on this machine.
 /// PawnIO is demand-start + installed lazily by the elevated probe, so
 /// "registered" is the signal for whether the sensor driver is present and

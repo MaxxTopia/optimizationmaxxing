@@ -733,6 +733,24 @@ async fn pawnio_uninstall(app: tauri::AppHandle) -> Result<String, String> {
         .map_err(|e| format!("pawnio uninstall task failed: {e}"))?
 }
 
+/// Read each DIMM's SPD to identify the real DRAM manufacturer + die inputs
+/// (elevated — SMBus; installs PawnIO first if missing). Powers confident RAM
+/// die detection instead of guessing from the module part number.
+#[tauri::command]
+async fn spd_dimms(app: tauri::AppHandle) -> Result<toolkit::SpdReport, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let script = resource_dir.join("resources/lhm/read_spd.ps1");
+    let lhm_dir = resource_dir.join("resources/lhm");
+    let script_str = strip_verbatim_prefix(&script.to_string_lossy());
+    let dir_str = strip_verbatim_prefix(&lhm_dir.to_string_lossy());
+    tokio::task::spawn_blocking(move || toolkit::probe_spd_elevated(&script_str, &dir_str))
+        .await
+        .map_err(|e| format!("spd task failed: {e}"))
+}
+
 #[tauri::command]
 async fn pcie_links() -> Result<Vec<toolkit::PcieLink>, String> {
     tokio::task::spawn_blocking(|| toolkit::read_pcie_links().map_err(|e| format!("{:#}", e)))
@@ -991,6 +1009,7 @@ pub fn run() {
             lhm_sensors_elevated,
             pawnio_status,
             pawnio_uninstall,
+            spd_dimms,
             vip_hwid,
             vip_verify,
             vip_claim_online,

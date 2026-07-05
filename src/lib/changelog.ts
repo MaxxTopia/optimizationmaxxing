@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.8',
+    date: '2026-07-05',
+    highlights: [
+      'NEW **Real RAM die detection from the SPD chip.** The RAM Advisor can now read your memory\'s SPD directly (one UAC, over the same signed driver the thermal scan uses) to get the *true* DRAM maker + die — instead of guessing from the kit\'s part number. It correctly names the actual silicon (Nanya / SK Hynix / Micron / Samsung), which the old part-number guess often couldn\'t, and feeds it straight into the timing suggestions so "die not identified" nearly disappears.',
+      'Honest confidence: DDR5 gets the die confidently (its SPD stores a die field); DDR4 gives the real DRAM vendor + a best-guess die letter (DDR4 SPD doesn\'t store the exact revision — so it\'s a real read, honestly labelled, not a fabricated certainty).',
+    ],
+  },
+  {
     version: '0.3.7',
     date: '2026-07-05',
     highlights: [
