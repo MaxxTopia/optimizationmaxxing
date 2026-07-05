@@ -4,6 +4,8 @@ import {
   liveThermals,
   lhmSensors,
   lhmSensorsElevated,
+  pawnioStatus,
+  pawnioUninstall,
   type LhmComponent,
   type LhmReport,
   type LhmSensorReading,
@@ -19,9 +21,11 @@ import {
  *      sensors, NVMe SMART. Most rigs already get CPU / GPU temps at this
  *      tier without admin.
  *   2. "Enable full sensor access" button — fires the elevated probe (one
- *      UAC) which loads the WinRing0 kernel driver. Unlocks CPU package
- *      + per-core temps + voltage rails. Persists in localStorage so the
- *      next launch attempts elevated automatically.
+ *      UAC) which installs + loads the PawnIO sensor driver (Microsoft-signed,
+ *      demand-start) on first use. Unlocks CPU package + per-core temps +
+ *      voltage rails. Persists in localStorage so the next launch attempts
+ *      elevated automatically. PawnIO can be removed again via the Uninstall
+ *      control shown once it's installed.
  *
  * Falls back to the simple WMI/nvidia-smi probe (LiveThermalsReport) if
  * the LHM bundle fails entirely (e.g. AV blocked the DLL load). That
@@ -50,11 +54,41 @@ export function LiveThermalsCard() {
   const [preferElevated, setPreferElevated] = useState<boolean>(() =>
     localStorage.getItem(ELEVATE_PREF_KEY) === '1',
   )
+  // PawnIO sensor-driver state — drives the Uninstall control. null = unknown.
+  const [pawnioInstalled, setPawnioInstalled] = useState<boolean | null>(null)
+  const [pawnioBusy, setPawnioBusy] = useState(false)
+  const [pawnioMsg, setPawnioMsg] = useState<string | null>(null)
   const timer = useRef<number | null>(null)
 
   useEffect(() => {
     localStorage.setItem(ELEVATE_PREF_KEY, preferElevated ? '1' : '0')
   }, [preferElevated])
+
+  // Check whether the PawnIO driver is installed so we can offer Uninstall.
+  useEffect(() => {
+    if (!isNative) return
+    let cancelled = false
+    pawnioStatus()
+      .then((v) => { if (!cancelled) setPawnioInstalled(v) })
+      .catch(() => { if (!cancelled) setPawnioInstalled(null) })
+    return () => { cancelled = true }
+  }, [isNative])
+
+  async function uninstallPawnio() {
+    if (pawnioBusy) return
+    setPawnioBusy(true)
+    setPawnioMsg(null)
+    try {
+      const msg = await pawnioUninstall()
+      setPawnioMsg(msg)
+      const still = await pawnioStatus().catch(() => false)
+      setPawnioInstalled(still)
+    } catch (e) {
+      setPawnioMsg(typeof e === 'string' ? e : (e as Error).message ?? String(e))
+    } finally {
+      setPawnioBusy(false)
+    }
+  }
 
   useEffect(() => {
     if (!isNative) return
@@ -115,6 +149,9 @@ export function LiveThermalsCard() {
         error: r.ok ? null : r.error,
       }))
       if (r.ok) setPreferElevated(true)
+      // The elevated probe installs PawnIO on first use — refresh the flag so
+      // the Uninstall control appears.
+      pawnioStatus().then(setPawnioInstalled).catch(() => {})
     } catch (e) {
       setState((s) => ({
         ...s,
@@ -177,6 +214,23 @@ export function LiveThermalsCard() {
               ? 'Probing…'
               : 'Enable full sensor access (UAC)'}
           </button>
+        )}
+        {isNative && pawnioInstalled && (
+          <div className="text-right">
+            <button
+              onClick={uninstallPawnio}
+              disabled={pawnioBusy}
+              className="text-[11px] text-text-subtle underline hover:text-text disabled:opacity-40"
+              title="Remove the PawnIO sensor driver from this PC (reversible — re-enabling reinstalls it)"
+            >
+              {pawnioBusy ? 'Uninstalling…' : 'Uninstall sensor driver'}
+            </button>
+            {pawnioMsg && (
+              <p className="text-[10px] text-text-subtle mt-0.5 max-w-[13rem] leading-snug">
+                {pawnioMsg}
+              </p>
+            )}
+          </div>
         )}
       </div>
 

@@ -709,6 +709,30 @@ async fn lhm_sensors_elevated(app: tauri::AppHandle) -> Result<toolkit::LhmRepor
     .map_err(|e| format!("lhm task failed: {e}"))
 }
 
+/// Whether the PawnIO sensor driver is currently installed. Drives the
+/// Uninstall control in the Live Thermals card.
+#[tauri::command]
+async fn pawnio_status() -> Result<bool, String> {
+    tokio::task::spawn_blocking(toolkit::pawnio_installed)
+        .await
+        .map_err(|e| format!("pawnio status task failed: {e}"))
+}
+
+/// Uninstall the PawnIO sensor driver (one UAC), from the same place it was
+/// enabled.
+#[tauri::command]
+async fn pawnio_uninstall(app: tauri::AppHandle) -> Result<String, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let setup = resource_dir.join("resources/lhm/PawnIO_setup.exe");
+    let setup_str = strip_verbatim_prefix(&setup.to_string_lossy());
+    tokio::task::spawn_blocking(move || toolkit::pawnio_uninstall(&setup_str))
+        .await
+        .map_err(|e| format!("pawnio uninstall task failed: {e}"))?
+}
+
 #[tauri::command]
 async fn pcie_links() -> Result<Vec<toolkit::PcieLink>, String> {
     tokio::task::spawn_blocking(|| toolkit::read_pcie_links().map_err(|e| format!("{:#}", e)))
@@ -965,6 +989,8 @@ pub fn run() {
             live_thermals,
             lhm_sensors,
             lhm_sensors_elevated,
+            pawnio_status,
+            pawnio_uninstall,
             vip_hwid,
             vip_verify,
             vip_claim_online,

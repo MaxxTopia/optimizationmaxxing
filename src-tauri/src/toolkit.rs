@@ -1829,6 +1829,55 @@ pub fn probe_lhm_sensors_elevated(script_path: &str, dll_path: &str) -> LhmRepor
     }
 }
 
+/// True if the PawnIO kernel-driver service is registered on this machine.
+/// PawnIO is demand-start + installed lazily by the elevated probe, so
+/// "registered" is the signal for whether the sensor driver is present and
+/// therefore whether we should offer an Uninstall control. On any query
+/// failure we report false (worst case: we re-offer install, a safe no-op).
+pub fn pawnio_installed() -> bool {
+    let out = hidden_powershell()
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "if (Get-CimInstance Win32_SystemDriver -Filter \"Name='PawnIO'\" -ErrorAction SilentlyContinue) { 'yes' } else { 'no' }",
+        ])
+        .output();
+    match out {
+        Ok(o) => String::from_utf8_lossy(&o.stdout).trim() == "yes",
+        Err(_) => false,
+    }
+}
+
+/// Uninstall PawnIO via its bundled setup (`PawnIO_setup.exe -uninstall
+/// -silent`), elevated (one UAC). Lets a user fully remove the sensor driver
+/// from the same place they enabled it. Returns a short status string.
+pub fn pawnio_uninstall(setup_path: &str) -> Result<String, String> {
+    if !std::path::Path::new(setup_path).exists() {
+        return Err(format!("PawnIO_setup.exe not found at {setup_path}"));
+    }
+    let outer = format!(
+        "$ErrorActionPreference='Stop'; \
+         $p = Start-Process -FilePath '{}' -ArgumentList '-uninstall','-silent' -Verb RunAs -Wait -PassThru -WindowStyle Hidden; \
+         exit $p.ExitCode",
+        setup_path.replace('\'', "''")
+    );
+    let status = hidden_powershell()
+        .args(["-NoProfile", "-NonInteractive", "-Command", &outer])
+        .status()
+        .map_err(|e| format!("uninstall spawn failed: {e}"))?;
+    match status.code() {
+        Some(0) => Ok("PawnIO sensor driver uninstalled.".to_string()),
+        Some(3010) => {
+            Ok("PawnIO uninstalled - reboot once to finish removing the driver.".to_string())
+        }
+        // 1223 = ERROR_CANCELLED (UAC declined).
+        Some(1223) => Err("The UAC prompt was declined - nothing was uninstalled.".to_string()),
+        Some(c) => Err(format!("PawnIO uninstaller exited with code {c}.")),
+        None => Err("PawnIO uninstaller was terminated before it finished.".to_string()),
+    }
+}
+
 /// Run the LHM reader script via hidden_powershell. Returns the parsed
 /// LhmReport on success, or an error wrapped as a "failed" report so the
 /// frontend has a uniform shape.

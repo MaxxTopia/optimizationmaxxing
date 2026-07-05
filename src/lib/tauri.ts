@@ -543,6 +543,16 @@ export async function lhmSensorsElevated(): Promise<LhmReport> {
   return invoke<LhmReport>('lhm_sensors_elevated')
 }
 
+/** Whether the PawnIO sensor driver is currently installed. */
+export async function pawnioStatus(): Promise<boolean> {
+  return invoke<boolean>('pawnio_status')
+}
+
+/** Uninstall the PawnIO sensor driver (triggers one UAC). Returns a status line. */
+export async function pawnioUninstall(): Promise<string> {
+  return invoke<string>('pawnio_uninstall')
+}
+
 export async function vipHwid(): Promise<string> {
   return invoke<string>('vip_hwid')
 }
