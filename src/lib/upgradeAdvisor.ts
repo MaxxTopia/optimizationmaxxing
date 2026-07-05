@@ -1,21 +1,18 @@
 /**
  * Upgrade Advisor — turns detected specs into a Fortnite-weighted upgrade call.
  *
- * Design (per the two-tier model):
- *  1. Find the BOTTLENECK first, not parts first. Fortnite is CPU-limited at
- *     competitive settings, so the component weighting is game-specific, not a
- *     generic AAA benchmark.
- *  2. Give TWO platform-aware picks for that bottleneck:
- *       - dropIn  : the best part that fits the user's CURRENT socket — no new
- *                   motherboard/RAM. This is the recommended, one-part move.
- *       - overall : the genuinely best part even if it means replatforming,
- *                   with `overallReplatform` + `replatformCost` spelling out the
- *                   full CPU+mobo+RAM shopping list so nobody buys a chip that
- *                   won't fit.
- *
- * The tool already reads the CPU vendor/gen + motherboard, so it can tell a
- * drop-in from a platform jump — that's what makes an honest "best part" call
- * possible instead of a naive single recommendation.
+ * Philosophy:
+ *  - ALWAYS surface the best real upgrade available for each part — never a
+ *    dead-end "you're set." A strong rig still has a ceiling (a 14900K is great,
+ *    but AMD's X3D wins Fortnite 1% lows; 32 GB DDR5-6000 is fine, but a tuned
+ *    kit shaves a little more). We show those, honestly tiered.
+ *  - Rank by IMPACT for competitive Fortnite, not generic AAA:
+ *      high   = a real bottleneck holding your frames/1% lows back.
+ *      medium = a worthwhile gain (e.g. Intel -> X3D for 1% lows).
+ *      low    = diminishing returns / ceiling polish.
+ *  - Platform-aware: each pick is split into the best DROP-IN (fits your current
+ *    board) vs the best OVERALL (may need a new platform, cost spelled out), so
+ *    nobody buys a chip that won't fit.
  */
 
 import type { SpecProfile } from './tauri'
@@ -29,29 +26,38 @@ export type Platform =
   | 'older'
   | 'unknown'
 
+export type Impact = 'high' | 'medium' | 'low'
+
 export interface UpgradePick {
   part: string
   note: string
   link?: string
 }
 
-export interface UpgradePlan {
-  bottleneck: 'cpu' | 'gpu' | 'ram' | 'none'
-  platform: Platform
-  headline: string
-  detail: string
-  /** Best part that fits the current board (no replatform). Null when the
-   * current platform is too old for a worthwhile drop-in. */
+export interface UpgradeOpportunity {
+  component: 'cpu' | 'gpu' | 'ram'
+  impact: Impact
+  /** What they have now. */
+  current: string
+  /** Best part that fits the current board (no replatform). */
   dropIn: UpgradePick | null
   /** Best part regardless of platform. */
   overall: UpgradePick | null
-  /** True when `overall` requires a new motherboard/RAM. */
+  /** True when `overall` needs a new motherboard/RAM. */
   overallReplatform: boolean
-  /** What the replatform actually costs in parts, when relevant. */
   replatformCost?: string
-  /** Extra context (e.g. the monitor we can't detect). */
+}
+
+export interface UpgradePlan {
+  /** True when nothing is a hard bottleneck — the opportunities are optional
+   * ceiling upgrades rather than fixes. */
+  ceiling: boolean
+  platform: Platform
+  headline: string
+  detail: string
+  /** Ranked best-impact-first. Empty only if every part is already top-tier. */
+  opportunities: UpgradeOpportunity[]
   notes: string[]
-  /** Transparency: the three component scores (0-100) that drove the call. */
   scores: { cpu: number; gpu: number; ram: number }
 }
 
@@ -67,6 +73,9 @@ const LINK_RTX5070TI =
 function hasX3D(cpu: SpecProfile['cpu']): boolean {
   return /x3d/i.test(`${cpu.model} ${cpu.marketing}`)
 }
+function isTopX3D(cpu: SpecProfile['cpu']): boolean {
+  return /9[89]50?x3d|9800x3d|9850x3d/i.test(`${cpu.model} ${cpu.marketing}`)
+}
 
 function inferPlatform(spec: SpecProfile): Platform {
   const v = spec.cpu.vendor.toLowerCase()
@@ -74,7 +83,7 @@ function inferPlatform(spec: SpecProfile): Platform {
   const chip = (spec.mobo.product || '').toLowerCase()
   if (v.includes('amd')) {
     if (gen != null) return gen >= 4 ? 'AM5' : 'AM4'
-    if (/\b[xb]6\d0|\b[xba]8\d0/.test(chip)) return 'AM5' // 600/800-series chipsets
+    if (/\b[xb]6\d0|\b[xba]8\d0/.test(chip)) return 'AM5'
     if (/\b[xb]5\d0|\b[xb]4\d0|\bx370|\bb350|\ba320/.test(chip)) return 'AM4'
     return 'unknown'
   }
@@ -93,7 +102,6 @@ function inferPlatform(spec: SpecProfile): Platform {
 function isDdr5Platform(spec: SpecProfile, platform: Platform): boolean {
   if (platform === 'AM5' || platform === 'LGA1851') return true
   if (platform === 'AM4' || platform === 'LGA1200' || platform === 'older') return false
-  // LGA1700 boards ship in DDR4 or DDR5 flavors — infer from the installed kit.
   const speed = spec.ram.speedMts ?? spec.ram.configuredSpeedMts ?? 0
   return speed >= 4400
 }
@@ -108,7 +116,7 @@ function cpuScore(spec: SpecProfile): number {
     else if (g >= 4) s = 74
     else if (g >= 3) s = 64
     else if (g >= 2) s = 44
-    else s = 34 // Zen / Zen+ (1000 / 2000 series)
+    else s = 34
   } else if (v.includes('intel')) {
     if (g >= 15) s = 80
     else if (g >= 14) s = 78
@@ -134,7 +142,7 @@ function gpuScore(spec: SpecProfile): number {
   if (/rx\s?6\d{3}/.test(m)) return 78
   if (/rx\s?5\d{3}/.test(m)) return 62
   if (/(uhd|iris|vega|radeon\s+graphics)/.test(m) || /integrated/.test(m)) return 26
-  return 55 // unknown discrete — assume midrange rather than alarm
+  return 55
 }
 
 function ramScore(spec: SpecProfile, platform: Platform): number {
@@ -153,27 +161,29 @@ function ramScore(spec: SpecProfile, platform: Platform): number {
   } else if (platform === 'LGA1700') {
     if (speed && speed < 5600) s -= 6
   }
-  if (spec.ram.stickCount < 2) s -= 12 // single channel ≈ half the bandwidth
+  if (spec.ram.stickCount < 2) s -= 12
   return Math.max(0, Math.min(100, s))
 }
 
-function cpuPlan(platform: Platform): Pick<
-  UpgradePlan,
-  'dropIn' | 'overall' | 'overallReplatform' | 'replatformCost'
-> {
+// ---- best-part pickers (shared by the opportunity builders) ----
+
+function cpuPicks(platform: Platform): {
+  dropIn: UpgradePick | null
+  overall: UpgradePick
+  overallReplatform: boolean
+  replatformCost?: string
+} {
   const overall: UpgradePick = {
     part: 'AMD Ryzen 7 9800X3D',
     note: 'The outright fastest gaming CPU for Fortnite — 3D V-cache delivers the biggest 1%-low jump you can buy.',
     link: LINK_9800X3D,
   }
-  if (platform === 'AM5') {
-    return { dropIn: overall, overall, overallReplatform: false }
-  }
+  if (platform === 'AM5') return { dropIn: overall, overall, overallReplatform: false }
   if (platform === 'AM4') {
     return {
       dropIn: {
         part: 'AMD Ryzen 7 5800X3D',
-        note: "Drops straight into your AM4 board with a BIOS update — no new motherboard or RAM. X3D V-cache is the single biggest Fortnite lever on AM4 and a massive jump from an older Ryzen. (The 5700X3D is the near-equal value pick.)",
+        note: "Drops into your AM4 board with a BIOS update — no new motherboard or RAM. X3D V-cache is the single biggest Fortnite lever on AM4. (5700X3D is the value near-equal.)",
         link: LINK_5800X3D,
       },
       overall,
@@ -185,59 +195,130 @@ function cpuPlan(platform: Platform): Pick<
     return {
       dropIn: {
         part: 'Intel Core i7-14700K',
-        note: "The best gaming chip your LGA1700 board takes without replacing it (BIOS update + latest microcode). Strong, but still trails AMD X3D in Fortnite 1% lows.",
+        note: "The best gaming chip your LGA1700 board takes without replacing it (BIOS + latest microcode). Still trails AMD X3D in Fortnite 1% lows.",
         link: LINK_14700K,
       },
       overall,
       overallReplatform: true,
-      replatformCost: 'a new AM5 board + DDR5-6000 kit (leaving the Intel platform for the X3D)',
+      replatformCost: 'a new AM5 board + DDR5-6000 kit (leaving Intel for the X3D)',
     }
   }
   if (platform === 'LGA1851') {
     return {
       dropIn: {
         part: 'Intel Core Ultra 9 285K',
-        note: 'The top chip your LGA1851 board takes. A great all-rounder, but AMD X3D still wins Fortnite 1% lows.',
+        note: 'The top chip your LGA1851 board takes. Great all-rounder, but AMD X3D still wins Fortnite 1% lows.',
       },
       overall,
       overallReplatform: true,
-      replatformCost: 'a new AM5 board + DDR5-6000 kit (leaving the Intel platform for the X3D)',
+      replatformCost: 'a new AM5 board + DDR5-6000 kit (leaving Intel for the X3D)',
     }
   }
-  // older / unknown — any modern chip is a full new build
   return {
     dropIn: null,
     overall,
     overallReplatform: true,
     replatformCost:
-      'a whole new platform — CPU + motherboard + DDR5 (your current board is too old for a worthwhile drop-in)',
+      'a whole new platform — CPU + motherboard + DDR5 (your board is too old for a worthwhile drop-in)',
   }
 }
 
-function gpuPlan(): Pick<UpgradePlan, 'dropIn' | 'overall' | 'overallReplatform'> {
+function cpuOpportunity(spec: SpecProfile, platform: Platform): UpgradeOpportunity | null {
+  if (isTopX3D(spec.cpu)) return null // already the Fortnite king
+  const v = spec.cpu.vendor.toLowerCase()
+  const g = spec.cpu.genOrZen ?? 0
+  const x3d = hasX3D(spec.cpu)
+  let impact: Impact
+  if (x3d) impact = 'low' // e.g. 5800X3D / 7800X3D — already excellent
+  else if ((v.includes('amd') && g >= 4) || (v.includes('intel') && g >= 12)) impact = 'medium'
+  else impact = 'high'
+  if (spec.cpu.cores && spec.cpu.cores < 6) impact = 'high'
+  const p = cpuPicks(platform)
+  // Don't offer a same-socket Intel drop-in to someone already on an i9-class
+  // chip (e.g. a 14900K) — nothing better fits their board, so only the
+  // replatform overall (X3D) is a real upgrade.
+  const intelTop =
+    v.includes('intel') && /i9|ultra\s?9|1[234]900/i.test(`${spec.cpu.model} ${spec.cpu.marketing}`)
+  const dropIn = intelTop ? null : p.dropIn
+  return {
+    component: 'cpu',
+    impact,
+    current: spec.cpu.model,
+    dropIn,
+    overall: p.overall,
+    overallReplatform: p.overallReplatform,
+    replatformCost: p.replatformCost,
+  }
+}
+
+function gpuOpportunity(spec: SpecProfile): UpgradeOpportunity | null {
+  const m = `${spec.gpu.model}`.toLowerCase()
+  if (/rtx\s?50(80|90)/.test(m)) return null // already flagship
+  const score = gpuScore(spec)
+  // Fortnite is rarely GPU-bound at competitive settings, so cap impact:
+  // only a genuinely weak card (can't hold 240+ in Performance mode) is 'high'.
+  const impact: Impact = score < 60 ? 'high' : 'low'
   const pick: UpgradePick = {
     part: 'NVIDIA RTX 5070 Ti (or 5080)',
-    note: "For competitive Fortnite you rarely need more — either holds 240+ FPS in Performance mode with Reflex. A GPU is always a drop-in: it fits any modern board, no platform change.",
+    note:
+      score < 60
+        ? "Your card is struggling to hold competitive frame rates. Either of these locks 240+ FPS in Performance mode. A GPU is a universal drop-in — no platform change."
+        : "Only worth it if you also play GPU-heavy titles or want 1440p+ — for Fortnite at competitive settings your current card isn't the limiter. A GPU is always a drop-in.",
     link: LINK_RTX5070TI,
   }
-  return { dropIn: pick, overall: pick, overallReplatform: false }
+  return {
+    component: 'gpu',
+    impact,
+    current: spec.gpu.model,
+    dropIn: pick,
+    overall: pick,
+    overallReplatform: false,
+  }
 }
 
-function ramPlan(
-  spec: SpecProfile,
-  platform: Platform,
-): Pick<UpgradePlan, 'dropIn' | 'overall' | 'overallReplatform'> {
-  const pick: UpgradePick = isDdr5Platform(spec, platform)
-    ? {
-        part: '32 GB DDR5-6000 CL30 (2×16)',
-        note: 'Dual-channel 32 GB at 6000 MT/s is the competitive sweet spot on your platform — fixes low capacity and slow timings in one matched kit.',
-      }
-    : {
-        part: '32 GB DDR4-3600 CL16 (2×16)',
-        note: 'Dual-channel 32 GB at 3600 CL16 is the AM4 sweet spot — matches your current board and fixes both capacity and speed.',
-      }
-  return { dropIn: pick, overall: pick, overallReplatform: false }
+function ramOpportunity(spec: SpecProfile, platform: Platform): UpgradeOpportunity | null {
+  const gb = spec.ram.totalGb
+  const speed = spec.ram.configuredSpeedMts ?? spec.ram.speedMts ?? 0
+  const single = spec.ram.stickCount < 2
+  const ddr5 = isDdr5Platform(spec, platform)
+  const fastEnough = ddr5 ? speed >= 6000 : speed >= 3600
+
+  let impact: Impact
+  let pick: UpgradePick
+  if (gb < 16 || single) {
+    impact = 'high'
+    pick = ddr5
+      ? { part: '32 GB DDR5-6000 CL30 (2×16)', note: `${single ? 'A single stick runs about half the bandwidth of a matched pair. ' : ''}Dual-channel 32 GB at 6000 is the competitive sweet spot — matches your board.` }
+      : { part: '32 GB DDR4-3600 CL16 (2×16)', note: `${single ? 'A single stick runs about half the bandwidth of a matched pair. ' : ''}Dual-channel 32 GB at 3600 CL16 is the AM4 sweet spot — matches your board.` }
+  } else if (gb < 32) {
+    impact = 'medium'
+    pick = ddr5
+      ? { part: '32 GB DDR5-6000 CL30 (2×16)', note: '16 GB is fine today but tight with a browser/Discord/OBS open behind Fortnite — 32 GB removes that ceiling.' }
+      : { part: '32 GB DDR4-3600 CL16 (2×16)', note: '16 GB is fine today but tight with a browser/Discord/OBS open behind Fortnite — 32 GB removes that ceiling.' }
+  } else {
+    // 32 GB+ : capacity is fine. Only a speed/timing ceiling remains.
+    impact = 'low'
+    if (fastEnough) {
+      pick = ddr5
+        ? { part: 'Tuned DDR5 (6400+ CL30 or hand-tuned subtimings)', note: 'Your capacity + speed are already in the sweet spot. Faster/tighter-timing kits give only marginal Fortnite 1%-low gains — a polish upgrade, not a fix.' }
+        : { part: 'Tuned DDR4 (3600 CL14 / tightened subtimings)', note: 'Your 32 GB is already good. Tighter timings give only marginal Fortnite 1%-low gains — a polish upgrade, not a fix.' }
+    } else {
+      pick = ddr5
+        ? { part: '32 GB DDR5-6000 CL30 (2×16)', note: 'Capacity is set; bumping to 6000 CL30 (or enabling EXPO) is the one real RAM gain left on your platform.' }
+        : { part: '32 GB DDR4-3600 CL16 (2×16)', note: 'Capacity is set; getting to 3600 CL16 (or enabling XMP) is the one real RAM gain left on AM4.' }
+    }
+  }
+  return {
+    component: 'ram',
+    impact,
+    current: `${gb} GB${single ? ' single-channel' : ''}${speed ? ` @ ${speed} MT/s` : ''}`,
+    dropIn: pick,
+    overall: pick,
+    overallReplatform: false,
+  }
 }
+
+const IMPACT_ORDER: Record<Impact, number> = { high: 0, medium: 1, low: 2 }
 
 export function buildUpgradePlan(spec: SpecProfile): UpgradePlan {
   const platform = inferPlatform(spec)
@@ -246,69 +327,46 @@ export function buildUpgradePlan(spec: SpecProfile): UpgradePlan {
     gpu: gpuScore(spec),
     ram: ramScore(spec, platform),
   }
-  const bottleneck = (['cpu', 'gpu', 'ram'] as const).slice().sort(
-    (a, b) => scores[a] - scores[b],
-  )[0]
+
+  const opportunities = [
+    cpuOpportunity(spec, platform),
+    gpuOpportunity(spec),
+    ramOpportunity(spec, platform),
+  ]
+    .filter((o): o is UpgradeOpportunity => o !== null && (o.dropIn !== null || o.overall !== null))
+    .sort((a, b) => IMPACT_ORDER[a.impact] - IMPACT_ORDER[b.impact])
+
   const notes = [
-    "We can't read your monitor from Windows — if you're not on a 240 Hz+ display, that's the next competitive upgrade after this part.",
+    "We can't read your monitor from Windows — a 240 Hz+ display is the upgrade that helps competitive Fortnite most once the parts below are handled.",
   ]
 
-  // Everything healthy → don't invent an upgrade.
-  if (scores[bottleneck] >= 78) {
+  const hasHigh = opportunities.some((o) => o.impact === 'high')
+  const ceiling = !hasHigh
+
+  if (opportunities.length === 0) {
     return {
-      bottleneck: 'none',
+      ceiling: true,
       platform,
-      headline: 'Your rig is already competitive-ready.',
+      headline: 'Your rig is maxed for competitive Fortnite.',
       detail:
-        'Nothing here is holding you back for Fortnite — CPU, GPU and RAM all score well. Put money into a high-refresh monitor, dialed settings, and reps instead of parts.',
-      dropIn: null,
-      overall: null,
-      overallReplatform: false,
+        'CPU, GPU and RAM are already top-tier — there is no part upgrade worth buying for this game. Put everything into a high-refresh monitor, dialed settings, and reps.',
+      opportunities: [],
       notes,
       scores,
     }
   }
 
-  if (bottleneck === 'cpu') {
-    const p = cpuPlan(platform)
-    return {
-      bottleneck,
-      platform,
-      headline: `Your CPU is the bottleneck (${spec.cpu.model}).`,
-      detail: `Fortnite is CPU-limited at competitive settings, so your ${spec.cpu.model} is what's capping your frames and 1% lows — not your GPU. This is the upgrade that moves the needle most.`,
-      notes,
-      scores,
-      ...p,
-    }
+  let headline: string
+  let detail: string
+  if (hasHigh) {
+    const top = opportunities[0]
+    const label = { cpu: 'CPU', gpu: 'GPU', ram: 'RAM' }[top.component]
+    headline = `Your ${label} is the bottleneck (${top.current}).`
+    detail = `This is the upgrade that actually moves your Fortnite frames right now. The rest below are ranked underneath it.`
+  } else {
+    headline = 'Your rig is competitive-ready — here are the ceiling upgrades.'
+    detail = `Nothing here is holding you back, so treat these as optional. They\'re ranked by how much they actually help competitive Fortnite — the top one is the only one worth real money; the rest are polish.`
   }
-  if (bottleneck === 'gpu') {
-    const p = gpuPlan()
-    return {
-      bottleneck,
-      platform,
-      headline: `Your GPU is the bottleneck (${spec.gpu.model}).`,
-      detail: `Your ${spec.gpu.model} is struggling to hold competitive frame rates even in Performance mode. A GPU is a universal drop-in — no platform change, whatever board you're on.`,
-      notes,
-      scores,
-      ...p,
-    }
-  }
-  const p = ramPlan(spec, platform)
-  const ramWhy =
-    spec.ram.totalGb < 16
-      ? "16 GB is the modern floor and you're under it"
-      : spec.ram.stickCount < 2
-        ? 'a single stick runs about half the bandwidth of a matched pair'
-        : 'faster, dual-channel memory'
-  return {
-    bottleneck,
-    platform,
-    headline: `Your RAM is the bottleneck (${spec.ram.totalGb} GB${
-      spec.ram.stickCount < 2 ? ', single-channel' : ''
-    }).`,
-    detail: `${ramWhy} — RAM is the cheapest fix of the three and it matches your current board, so it's a pure drop-in.`,
-    notes,
-    scores,
-    ...p,
-  }
+
+  return { ceiling, platform, headline, detail, opportunities, notes, scores }
 }

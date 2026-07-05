@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.7',
+    date: '2026-07-05',
+    highlights: [
+      'IMPROVE **Upgrade Advisor now shows the real upgrades even when your rig is already strong.** Instead of a dead-end "you\'re set," it ranks the best CPU / GPU / RAM upgrade for *competitive Fortnite* — bottleneck vs worthwhile vs optional-ceiling — with the best drop-in (fits your board) vs best overall (new platform, cost spelled out). A 14900K now correctly surfaces the 9800X3D as the one real 1%-low gain instead of a lesser i7.',
+      'NEW **RAM secondary-timing guidance.** The RAM Advisor now reads your die + speed and suggests a safe starting tRFC + secondary set (the biggest latency win most kits leave loose), with the mandatory stability-test workflow. Read-only — it hands you the numbers for BIOS; it never writes SPD or suggests voltages (that\'s how memory controllers get killed).',
+      'NEW **Part-serials panel** on the Profile page — every serial Windows reports for your board, BIOS, drives and system, in one place. Handy for warranty claims and catching a "new" part whose serial says it was refurbished.',
+      'FIX **GPU VRAM shows the real value.** Windows\' WMI caps reported VRAM at ~4 GB (a 12 GB card read as 4.0 GB); we now pull the true figure from nvidia-smi for NVIDIA cards.',
+      'VIP card on the pricing page refreshed — 100+ tweaks + Match Scan.',
+    ],
+  },
+  {
     version: '0.3.6',
     date: '2026-07-04',
     highlights: [

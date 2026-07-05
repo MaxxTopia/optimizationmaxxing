@@ -39,14 +39,15 @@ const FREE_FEATURES = [
 ]
 
 const VIP_FEATURES = [
-  'Full ~96 tweak catalog (every Engine.ini, GameUserSettings.ini, IFEO, NIC)',
-  'All 11 curated + community presets (Esports / BR / Streamer / Asta Mode / etc.)',
+  'Full 100+ tweak catalog (every Engine.ini, GameUserSettings.ini, IFEO, NIC)',
+  'Match Scan — deep CPU/GPU thermal + throttle scan (real core temps + voltages via a Microsoft-signed sensor driver) with plain-English fix-it steps',
+  'All curated + community presets (Esports / BR / Streamer / Asta Mode / etc.)',
   '/tune wizard applies VIP tweaks too — close the last 30% latency gap',
   'Asta Mode — the most aggressive bundled preset (~30 tweaks, anti-magic visual)',
-  'Tournament Audit + per-game compliance flags',
+  'Tournament Audit + per-game anti-cheat compliance flags',
   'Day-1 game configs as new titles drop',
   'Priority Discord support',
-  'Lifetime — pay once, every future tweak pack included',
+  'Lifetime — pay once, every future tweak pack + new feature included',
 ]
 
 export function Pricing() {

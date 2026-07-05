@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { RamAdvisor } from '../components/RamAdvisor'
 import { UpgradeAdvisor } from '../components/UpgradeAdvisor'
+import { PartSerials } from '../components/PartSerials'
 import { detectSpecs, type SpecProfile } from '../lib/tauri'
 
 export function Profile() {
@@ -100,7 +101,9 @@ export function Profile() {
               <Row
                 label="VRAM"
                 value={`${(spec.gpu.vramMb / 1024).toFixed(1)} GB${
-                  spec.gpu.vramMb >= 4090 ? ' (WMI caps at ~4 GB)' : ''
+                  spec.gpu.vramMb >= 4000 && spec.gpu.vramMb <= 4200
+                    ? ' (Windows caps this at ~4 GB — actual is likely higher)'
+                    : ''
                 }`}
               />
             )}
@@ -181,6 +184,12 @@ export function Profile() {
       {spec && (
         <div className="md:col-span-2">
           <UpgradeAdvisor spec={spec} />
+        </div>
+      )}
+
+      {spec && (
+        <div className="md:col-span-2">
+          <PartSerials spec={spec} />
         </div>
       )}
 

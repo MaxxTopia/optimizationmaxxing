@@ -64,13 +64,25 @@ pub fn detect(wmi: &WMIConnection) -> anyhow::Result<GpuInfo> {
     let model = string_or_default(&primary, "Name");
     let vendor = infer_vendor(&model);
     let vram_bytes = u64_or_default(&primary, "AdapterRAM");
-    let vram_mb = if vram_bytes > 0 {
+    let mut vram_mb = if vram_bytes > 0 {
         // Win32_VideoController.AdapterRAM saturates at 4GB on 32-bit DWORD —
-        // a known WMI limitation; we still report it but note caveat in UI.
+        // a known WMI limitation (a 12GB card reports ~4GB). For NVIDIA we
+        // override with nvidia-smi's true value just below.
         Some((vram_bytes / 1_048_576) as u32)
     } else {
         None
     };
+    // NVIDIA drivers ship nvidia-smi in System32; it reports the real VRAM,
+    // dodging the WMI 4GB DWORD cap. Prefer it whenever it's at least as large
+    // as the WMI value (so a legit 8/12/16/24GB card shows correctly). Silent
+    // fallback to WMI if nvidia-smi is absent (no NVIDIA driver) or errors.
+    if vendor == "NVIDIA" {
+        if let Some(real) = nvidia_smi_vram_mb() {
+            if vram_mb.map_or(true, |w| real >= w) {
+                vram_mb = Some(real);
+            }
+        }
+    }
     let driver_version = match primary.get("DriverVersion") {
         Some(Variant::String(s)) if !s.is_empty() => Some(s.clone()),
         _ => None,
@@ -84,6 +96,34 @@ pub fn detect(wmi: &WMIConnection) -> anyhow::Result<GpuInfo> {
         driver_version,
         arch,
     })
+}
+
+/// Real VRAM (MiB) for the first NVIDIA GPU via `nvidia-smi`, or None if the
+/// tool is missing / errors. Runs windowless so no console flashes on scan.
+#[cfg(windows)]
+fn nvidia_smi_vram_mb() -> Option<u32> {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    let out = std::process::Command::new("nvidia-smi")
+        .args(["--query-gpu=memory.total", "--format=csv,noheader,nounits"])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    // First GPU line, integer MiB (nounits strips " MiB").
+    String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .next()?
+        .trim()
+        .parse::<u32>()
+        .ok()
+}
+
+#[cfg(not(windows))]
+fn nvidia_smi_vram_mb() -> Option<u32> {
+    None
 }
 
 /// Capture cards register as display-class devices via WMI even though they

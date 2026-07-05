@@ -1,14 +1,19 @@
 import { useMemo } from 'react'
-import { buildUpgradePlan, type UpgradePick, type UpgradePlan } from '../lib/upgradeAdvisor'
+import {
+  buildUpgradePlan,
+  type Impact,
+  type UpgradeOpportunity,
+  type UpgradePick,
+} from '../lib/upgradeAdvisor'
 import type { SpecProfile } from '../lib/tauri'
 
 /**
- * Upgrade Advisor card for the Profile page. Reads the detected spec, finds the
- * Fortnite bottleneck, and shows the two-tier call:
- *   - Best drop-in  (fits your current board)
- *   - Best overall  (may need a new platform — cost spelled out)
- * When the drop-in IS the best overall (already on AM5, or a GPU/RAM pick that
- * fits any board), it collapses to a single "drops right in" card.
+ * Upgrade Advisor card for the Profile page. Reads the detected spec and shows
+ * the best real upgrade for each part, ranked by how much it helps competitive
+ * Fortnite (bottleneck -> worthwhile -> ceiling polish). Each opportunity is a
+ * two-tier call: best drop-in (fits your board) vs best overall (may need a new
+ * platform, cost spelled out). Never a dead-end "you're set" — a strong rig
+ * still gets its ceiling upgrades shown, just honestly labelled optional.
  */
 export function UpgradeAdvisor({ spec }: { spec: SpecProfile }) {
   const plan = useMemo(() => buildUpgradePlan(spec), [spec])
@@ -21,39 +26,11 @@ export function UpgradeAdvisor({ spec }: { spec: SpecProfile }) {
         {plan.detail}
       </p>
 
-      {plan.bottleneck !== 'none' && (
-        <div className="mt-5">
-          {isSinglePick(plan) ? (
-            <PickCard
-              badge="Best upgrade · drops right in"
-              badgeTone="drop"
-              pick={plan.overall ?? plan.dropIn!}
-              subtext={dropInSubtext(plan)}
-            />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {plan.dropIn && (
-                <PickCard
-                  badge="Best drop-in · fits your board"
-                  badgeTone="drop"
-                  pick={plan.dropIn}
-                  subtext={dropInSubtext(plan)}
-                />
-              )}
-              {plan.overall && (
-                <PickCard
-                  badge={plan.overallReplatform ? 'Best overall · new platform' : 'Best overall'}
-                  badgeTone={plan.overallReplatform ? 'replatform' : 'drop'}
-                  pick={plan.overall}
-                  subtext={
-                    plan.overallReplatform && plan.replatformCost
-                      ? `Heads up: this is not one part — it needs ${plan.replatformCost}.`
-                      : undefined
-                  }
-                />
-              )}
-            </div>
-          )}
+      {plan.opportunities.length > 0 && (
+        <div className="mt-5 space-y-4">
+          {plan.opportunities.map((opp) => (
+            <OpportunityRow key={opp.component} opp={opp} />
+          ))}
         </div>
       )}
 
@@ -74,54 +51,87 @@ export function UpgradeAdvisor({ spec }: { spec: SpecProfile }) {
   )
 }
 
-function isSinglePick(plan: UpgradePlan): boolean {
+const IMPACT_META: Record<Impact, { label: string; cls: string }> = {
+  high: { label: 'Biggest gain · buy this first', cls: 'bg-accent text-bg-base' },
+  medium: { label: 'Worthwhile gain', cls: 'bg-secondary/20 text-secondary border border-secondary/40' },
+  low: { label: 'Optional · diminishing returns', cls: 'bg-bg-raised text-text-muted border border-border' },
+}
+
+const COMPONENT_LABEL: Record<UpgradeOpportunity['component'], string> = {
+  cpu: 'CPU',
+  gpu: 'GPU',
+  ram: 'RAM',
+}
+
+function OpportunityRow({ opp }: { opp: UpgradeOpportunity }) {
+  const meta = IMPACT_META[opp.impact]
+  const singlePick =
+    !!opp.dropIn &&
+    !!opp.overall &&
+    opp.dropIn.part === opp.overall.part &&
+    !opp.overallReplatform
+
   return (
-    !!plan.dropIn &&
-    !!plan.overall &&
-    plan.dropIn.part === plan.overall.part &&
-    !plan.overallReplatform
+    <div className="rounded-lg bg-bg-raised/40 border border-border p-4">
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-1">
+        <p className="text-sm font-bold text-text">
+          {COMPONENT_LABEL[opp.component]}
+          <span className="text-text-subtle font-normal"> · you have {opp.current}</span>
+        </p>
+        <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full ${meta.cls}`}>
+          {meta.label}
+        </span>
+      </div>
+
+      {singlePick ? (
+        <PickBlock badge="Drops right in" tone="drop" pick={opp.overall ?? opp.dropIn!} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+          {opp.dropIn && <PickBlock badge="Best drop-in · fits your board" tone="drop" pick={opp.dropIn} />}
+          {opp.overall && (
+            <PickBlock
+              badge={opp.overallReplatform ? 'Best overall · new platform' : 'Best overall'}
+              tone={opp.overallReplatform ? 'replatform' : 'drop'}
+              pick={opp.overall}
+              subtext={
+                opp.overallReplatform && opp.replatformCost
+                  ? `Not one part — needs ${opp.replatformCost}.`
+                  : undefined
+              }
+            />
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
-function dropInSubtext(plan: UpgradePlan): string | undefined {
-  // When the best overall requires a replatform, reassure that the drop-in is
-  // the recommended one-part move.
-  if (plan.overallReplatform && plan.dropIn) {
-    return 'Recommended — this is the single-part move that fits what you already own.'
-  }
-  return undefined
-}
-
-function PickCard({
+function PickBlock({
   badge,
-  badgeTone,
+  tone,
   pick,
   subtext,
 }: {
   badge: string
-  badgeTone: 'drop' | 'replatform'
+  tone: 'drop' | 'replatform'
   pick: UpgradePick
   subtext?: string
 }) {
   return (
-    <div className="rounded-lg bg-bg-raised/60 border border-border p-4 flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       <span
         className={`self-start text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full ${
-          badgeTone === 'replatform'
+          tone === 'replatform'
             ? 'bg-secondary/20 text-secondary border border-secondary/40'
             : 'bg-accent text-bg-base'
         }`}
       >
         {badge}
       </span>
-      <p className="text-lg font-extrabold tracking-tight text-text">{pick.part}</p>
+      <p className="text-base font-extrabold tracking-tight text-text">{pick.part}</p>
       <p className="text-sm text-text-muted leading-relaxed">{pick.note}</p>
       {subtext && (
-        <p
-          className={`text-xs font-semibold leading-snug ${
-            badgeTone === 'replatform' ? 'text-secondary' : 'text-accent'
-          }`}
-        >
+        <p className={`text-xs font-semibold leading-snug ${tone === 'replatform' ? 'text-secondary' : 'text-accent'}`}>
           {subtext}
         </p>
       )}

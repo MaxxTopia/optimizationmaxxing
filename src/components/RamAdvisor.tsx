@@ -1,4 +1,5 @@
 import { lookupKit } from '../lib/ramAdvisor'
+import { suggestSecondaries, type SecondarySuggestion } from '../lib/ramSecondaries'
 import type { RamInfo } from '../lib/tauri'
 
 /**
@@ -98,6 +99,8 @@ export function RamAdvisor({ ram }: { ram: RamInfo }) {
         </div>
       </div>
 
+      <SecondaryTimings die={kit.die_inferred} speed={running} />
+
       {kit.notes && (
         <p className="text-xs text-text-muted italic border-l-2 border-accent pl-3">
           {kit.notes}
@@ -111,6 +114,93 @@ export function RamAdvisor({ ram }: { ram: RamInfo }) {
       </p>
 
       <StabilityLauncher />
+    </div>
+  )
+}
+
+function SecondaryTimings({ die, speed }: { die: string; speed: number }) {
+  const s: SecondarySuggestion = suggestSecondaries(die, speed)
+
+  return (
+    <div className="border-t border-border pt-3 space-y-3">
+      <div>
+        <p className="text-xs uppercase tracking-widest text-text-subtle">
+          secondary timings · the real latency win
+        </p>
+        <p className="text-xs text-text-muted leading-snug mt-1">
+          {s.ddr} · {s.dieLabel}
+          {s.speedMts ? ` · ${s.speedMts} MT/s` : ''} — most kits leave these loose after XMP.
+          Tightening them (especially tRFC) is where the latency actually drops.
+        </p>
+      </div>
+
+      {!s.known ? (
+        <div className="rounded-md border border-border bg-bg-raised/40 p-3 space-y-1.5">
+          {s.caveats.map((c, i) => (
+            <p key={i} className="text-xs text-text-muted leading-snug flex gap-2">
+              <span className="text-accent shrink-0" aria-hidden="true">▸</span>
+              <span>{c}</span>
+            </p>
+          ))}
+        </div>
+      ) : (
+        <>
+          {s.trfc && (
+            <div className="rounded-md border border-accent/50 bg-accent/5 p-3">
+              <p className="text-[10px] uppercase tracking-widest text-accent font-bold">
+                tRFC — the #1 win
+              </p>
+              <p className="text-lg font-extrabold tabular-nums text-text">
+                {s.trfc.clocks}{' '}
+                <span className="text-sm font-normal text-text-muted">
+                  (~{s.trfc.ns} ns) — safe starting value
+                </span>
+              </p>
+              <p className="text-xs text-text-subtle mt-0.5">Then {s.trfc.tightenToward}.</p>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            {s.rows.map((r, i) => (
+              <div
+                key={i}
+                className="flex items-start justify-between gap-3 text-sm border border-border rounded-md px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <span className="text-text font-medium">{r.timing}</span>
+                  {r.note && <p className="text-xs text-text-subtle leading-snug">{r.note}</p>}
+                </div>
+                <span className="text-text font-semibold tabular-nums shrink-0">{r.value}</span>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-xs text-text-muted leading-snug border-l-2 border-border pl-3">
+            {s.platformNote}
+          </p>
+
+          <div className="rounded-md border border-accent/40 bg-accent/5 p-3 space-y-1.5">
+            <p className="text-[10px] uppercase tracking-widest text-accent font-bold">
+              read this before you apply anything
+            </p>
+            {s.caveats.map((c, i) => (
+              <p key={i} className="text-xs text-text-muted leading-snug flex gap-2">
+                <span className="text-accent shrink-0" aria-hidden="true">▸</span>
+                <span>{c}</span>
+              </p>
+            ))}
+          </div>
+        </>
+      )}
+
+      <a
+        href={s.guide.url}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-block text-xs underline text-accent hover:text-text"
+      >
+        {s.guide.label} ↗
+      </a>
     </div>
   )
 }
