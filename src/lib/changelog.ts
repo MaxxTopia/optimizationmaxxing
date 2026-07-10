@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.10',
+    date: '2026-07-10',
+    highlights: [
+      'FIX **the suite sidebar collapse/expand orbs.** The "Banish the Menu" tooltip was clipped and half the collapse button\'s click target was cut off (so clicks fell through to the header behind it — the orb "sometimes did nothing"), and the "Unleash the Menu" reopen orb could get stuck behind page chrome. Both orbs now sit above everything and are fully clickable, tooltips included.',
+    ],
+  },
+  {
     version: '0.3.9',
     date: '2026-07-10',
     highlights: [

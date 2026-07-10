@@ -717,7 +717,11 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   padding: 16px 0;
   background: rgba(10, 6, 18, 0.85);
   border-right: 1px solid var(--border);
-  overflow: hidden;
+  /* NOTE: no `overflow: hidden` here — the close orb sits at right:-16px and its
+   * "Banish the Menu" tooltip renders below/right of the rail, so clipping the
+   * overflow hid the tooltip AND lopped off half the orb's click target (clicks
+   * on the cut half fell through to the header behind). The noise ::before is
+   * inset:0 so it stays contained without clipping. */
   isolation: isolate;
 }
 
@@ -782,18 +786,21 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   body.sidebar-collapsed .app-shell { padding-left: 0; }
 }
 
+/* Both orbs sit ABOVE the sticky header (z-10) and the rail (z-30) so their
+ * click targets are never covered — the reopen orb was getting stuck behind
+ * page chrome. z-60 keeps them clickable everywhere. */
 .maxxer-sidebar-opener {
   position: fixed;
   left: 14px;
   top: 70px;
-  z-index: 31;
+  z-index: 60;
 }
 
 .maxxer-sidebar-close {
   position: absolute;
   right: -16px;
   top: 10px;
-  z-index: 32;
+  z-index: 60;
 }
 
 .maxxer-sidebar-root {
