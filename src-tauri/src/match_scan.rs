@@ -1072,7 +1072,29 @@ struct SessionSample {
     dpc_pct: f32,
     mem_avail_pct: f32,
     gpu_temp_c: Option<f32>,
-    gpu_throttling: bool,
+    /// Raw nvidia-smi `clocks_throttle_reasons.active` bitmask this sample (0 if
+    /// no NVIDIA GPU / read failed). Decoded to named flags at Stop.
+    gpu_throttle_mask: u64,
+    /// CPU effective clock this sample = rated base MHz x (% Processor
+    /// Performance / 100). Driver-free (perf counter), so it includes turbo
+    /// (>base) and catches throttling (<base under load). None if unreadable.
+    eff_clock_mhz: Option<f32>,
+    /// Machine-wide CPU utility % this sample — used to only count effective
+    /// clock "under load" (idle core-parking downclock is not throttling).
+    cpu_util_pct: Option<f32>,
+}
+
+/// UDP + NIC error/discard counters — snapshotted at Start and again at Stop.
+/// The delta is the packet-LOSS check: loss deletes inputs, latency only delays
+/// them. All driver-free, no admin. (Ported from Desktop\fight-capture.)
+#[derive(Clone, Default)]
+struct NetSnap {
+    udp_recv_errors: i64,
+    udp_no_port: i64,
+    rx_discarded: i64,
+    rx_errors: i64,
+    tx_discarded: i64,
+    tx_errors: i64,
 }
 
 #[derive(Default)]
@@ -1083,6 +1105,11 @@ struct SessionState {
     /// Path to the PresentMon CSV being captured this session, if a supported
     /// game was found at Start.
     presentmon_csv: Option<String>,
+    /// Rated CPU base clock (MHz) from Win32_Processor.MaxClockSpeed — the
+    /// reference the effective clock is throttle-checked against.
+    base_clock_mhz: Option<f32>,
+    /// UDP/NIC error counters captured at Start; deltaed at Stop for loss.
+    net_before: Option<NetSnap>,
 }
 
 /// Known competitive-game executables we'll point PresentMon at.
@@ -1122,6 +1149,17 @@ struct FrameStats {
     avg_fps: f32,
     low1_fps: f32,
     low01_fps: f32,
+    /// Worst single frametime (ms) over the whole capture — the one 100 ms frame
+    /// that eats one edit even when the average FPS looks fine.
+    worst_ms: f32,
+    /// Median frametime (ms), the baseline the spike count is measured against.
+    median_ms: f32,
+    /// How many frames exceeded ~2x the median frametime (visible hitches).
+    spikes_2x: usize,
+    /// Dominant PresentMon PresentMode ("Hardware: Independent Flip" = true
+    /// fullscreen / lowest latency; "Composed: Flip" = you're not truly
+    /// fullscreen and paying input lag for it). None if the column is absent.
+    present_mode: Option<String>,
     cpu_bound_pct: f32,
     gpu_bound_pct: f32,
     /// True only when the CSV had MsCPUBusy + MsGPUBusy columns AND at least one
@@ -1142,10 +1180,12 @@ fn parse_presentmon_csv(path: &str) -> Option<FrameStats> {
     let i_ft = idx("MsBetweenPresents")?;
     let i_cpu = idx("MsCPUBusy");
     let i_gpu = idx("MsGPUBusy");
+    let i_mode = idx("PresentMode");
 
     let mut ft: Vec<f32> = Vec::new();
     let mut cpu_bound = 0usize;
     let mut gpu_bound = 0usize;
+    let mut mode_counts: HashMap<String, usize> = HashMap::new();
     for line in lines {
         let f: Vec<&str> = line.split(',').collect();
         let frametime = match f.get(i_ft).and_then(|v| v.trim().parse::<f32>().ok()) {
@@ -1153,6 +1193,11 @@ fn parse_presentmon_csv(path: &str) -> Option<FrameStats> {
             _ => continue,
         };
         ft.push(frametime);
+        if let Some(im) = i_mode {
+            if let Some(m) = f.get(im).map(|v| v.trim()).filter(|v| !v.is_empty()) {
+                *mode_counts.entry(m.to_string()).or_insert(0) += 1;
+            }
+        }
         if let (Some(ic), Some(ig)) = (i_cpu, i_gpu) {
             let cpu = f.get(ic).and_then(|v| v.trim().parse::<f32>().ok()).unwrap_or(0.0);
             let gpu = f.get(ig).and_then(|v| v.trim().parse::<f32>().ok()).unwrap_or(0.0);
@@ -1168,11 +1213,18 @@ fn parse_presentmon_csv(path: &str) -> Option<FrameStats> {
     }
     let n = ft.len();
     let avg_ms = ft.iter().sum::<f32>() / n as f32;
+    let worst_ms = ft.iter().copied().fold(0.0f32, f32::max);
     ft.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let median_ms = ft[n / 2];
+    let spikes_2x = ft.iter().filter(|&&x| x > median_ms * 2.0).count();
     let pct = |p: f32| -> f32 {
         let rank = ((p / 100.0) * (n as f32 - 1.0)).round() as usize;
         ft[rank.min(n - 1)]
     };
+    let present_mode = mode_counts
+        .into_iter()
+        .max_by_key(|(_, c)| *c)
+        .map(|(m, _)| m);
     let classified = cpu_bound + gpu_bound;
     let bound_total = classified.max(1) as f32;
     Some(FrameStats {
@@ -1180,6 +1232,10 @@ fn parse_presentmon_csv(path: &str) -> Option<FrameStats> {
         avg_fps: 1000.0 / avg_ms,
         low1_fps: 1000.0 / pct(99.0),
         low01_fps: 1000.0 / pct(99.9),
+        worst_ms,
+        median_ms,
+        spikes_2x,
+        present_mode,
         cpu_bound_pct: cpu_bound as f32 / bound_total * 100.0,
         gpu_bound_pct: gpu_bound as f32 / bound_total * 100.0,
         bound_measured: i_cpu.is_some() && i_gpu.is_some() && classified > 0,
@@ -1197,9 +1253,11 @@ fn session_thread() -> &'static Mutex<Option<JoinHandle<()>>> {
     SESSION_THREAD.get_or_init(|| Mutex::new(None))
 }
 
-/// Best-effort GPU temp + throttle via nvidia-smi (no admin). (None, false) if
-/// nvidia-smi is missing (AMD/Intel/integrated) or anything fails.
-fn read_gpu_quick() -> (Option<f32>, bool) {
+/// Best-effort GPU temp + the raw throttle-reason bitmask via nvidia-smi (no
+/// admin). (None, 0) if nvidia-smi is missing (AMD/Intel/integrated) or anything
+/// fails. The mask is decoded to named flags at Stop; bit 0x1 (GpuIdle) is
+/// benign and stripped there.
+fn read_gpu_quick() -> (Option<f32>, u64) {
     let mut cmd = std::process::Command::new("nvidia-smi");
     cmd.args([
         "--query-gpu=temperature.gpu,clocks_throttle_reasons.active",
@@ -1208,21 +1266,102 @@ fn read_gpu_quick() -> (Option<f32>, bool) {
     process_helpers::make_hidden(&mut cmd);
     let out = match cmd.output() {
         Ok(o) if o.status.success() => o,
-        _ => return (None, false),
+        _ => return (None, 0),
     };
     let s = String::from_utf8_lossy(&out.stdout);
     let line = s.lines().next().unwrap_or("");
     let parts: Vec<&str> = line.split(',').map(|x| x.trim()).collect();
     let temp = parts.first().and_then(|t| t.parse::<f32>().ok());
-    let throttling = parts
+    let mask = parts
         .get(1)
-        .map(|h| {
-            let v = u64::from_str_radix(h.trim_start_matches("0x"), 16).unwrap_or(0);
-            // bit 0 (0x1) = GpuIdle, not a problem — mask it out.
-            (v & !0x1) != 0
-        })
-        .unwrap_or(false);
-    (temp, throttling)
+        .map(|h| u64::from_str_radix(h.trim_start_matches("0x"), 16).unwrap_or(0))
+        .unwrap_or(0);
+    (temp, mask)
+}
+
+/// True if the mask has a *meaningful* throttle bit set (idle / app-clocks /
+/// sync-boost / display are benign and ignored).
+fn gpu_mask_is_throttling(mask: u64) -> bool {
+    // 0x4 SW power cap, 0x8 HW slowdown, 0x20 SW thermal, 0x40 HW thermal,
+    // 0x80 HW power brake — the ones that actually cut your clocks.
+    (mask & 0x00EC) != 0
+}
+
+/// Decode an nvidia-smi throttle-reason mask to human flags, most-serious first.
+fn decode_gpu_throttle(mask: u64) -> Vec<&'static str> {
+    let mut out = Vec::new();
+    if mask & 0x40 != 0 {
+        out.push("HW thermal slowdown");
+    }
+    if mask & 0x20 != 0 {
+        out.push("SW thermal slowdown");
+    }
+    if mask & 0x80 != 0 {
+        out.push("HW power-brake slowdown");
+    }
+    if mask & 0x04 != 0 {
+        out.push("SW power cap");
+    }
+    if mask & 0x08 != 0 {
+        out.push("HW slowdown");
+    }
+    out
+}
+
+/// CPU effective-clock inputs, driver-free: (busiest-core % Processor
+/// Performance, whole-package % Processor Utility). Performance is relative to
+/// the rated base clock and exceeds 100 under turbo, so base x perf/100 is the
+/// real (effective) clock — the number HWiNFO calls "Effective Clock". We take
+/// the MAX across per-core instances (not `_Total`), because `_Total` averages
+/// in idle/parked cores and would underreport the working core's clock — a
+/// false throttle. Utility gates "under load" so idle downclock isn't mistaken
+/// for throttling.
+fn read_cpu_perf() -> Option<(f32, f32)> {
+    let script = "$s=(Get-Counter '\\Processor Information(*)\\% Processor Performance','\\Processor Information(_Total)\\% Processor Utility' -ErrorAction SilentlyContinue).CounterSamples; \
+$p=($s | Where-Object { $_.Path -like '*performance*' -and $_.InstanceName -ne '_Total' } | Measure-Object -Property CookedValue -Maximum).Maximum; \
+$u=($s | Where-Object { $_.Path -like '*utility*' } | Select-Object -First 1).CookedValue; \
+\"$p;$u\"";
+    let out = run_ps(script)?;
+    let mut it = out.split(';');
+    let perf = it.next()?.trim().parse::<f32>().ok()?;
+    let util = it.next().and_then(|v| v.trim().parse::<f32>().ok());
+    Some((perf, util.unwrap_or(0.0)))
+}
+
+/// Rated CPU base clock (MHz) from Win32_Processor.MaxClockSpeed — the reference
+/// the effective clock is throttle-checked against. None if the WMI read fails.
+fn read_base_clock_mhz() -> Option<f32> {
+    let out = run_ps(
+        "(Get-CimInstance Win32_Processor | Select-Object -First 1 -ExpandProperty MaxClockSpeed)",
+    )?;
+    out.trim().parse::<f32>().ok().filter(|v| *v > 0.0)
+}
+
+/// Snapshot UDP receive-error / no-port counters + summed NIC discard/error
+/// counters across the Up, non-virtual adapters. Driver-free, no admin.
+fn read_net_snapshot() -> Option<NetSnap> {
+    let script = "$u = netstat -s -p udp; $re=0; $np=0; \
+foreach ($l in $u) { if ($l -match 'Receive Errors\\s*=\\s*(\\d+)') { $re=[int64]$Matches[1] }; if ($l -match 'No Ports\\s*=\\s*(\\d+)') { $np=[int64]$Matches[1] } } \
+$rxd=0; $rxe=0; $txd=0; $txe=0; \
+foreach ($a in (Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq 'Up' -and -not $_.Virtual })) { $s=Get-NetAdapterStatistics -Name $a.Name -ErrorAction SilentlyContinue; if ($s) { $rxd+=[int64]$s.ReceivedDiscardedPackets; $rxe+=[int64]$s.ReceivedPacketErrors; $txd+=[int64]$s.OutboundDiscardedPackets; $txe+=[int64]$s.OutboundPacketErrors } } \
+\"$re;$np;$rxd;$rxe;$txd;$txe\"";
+    let out = run_ps(script)?;
+    let n: Vec<i64> = out
+        .trim()
+        .split(';')
+        .map(|v| v.trim().parse::<i64>().unwrap_or(0))
+        .collect();
+    if n.len() < 6 {
+        return None;
+    }
+    Some(NetSnap {
+        udp_recv_errors: n[0],
+        udp_no_port: n[1],
+        rx_discarded: n[2],
+        rx_errors: n[3],
+        tx_discarded: n[4],
+        tx_errors: n[5],
+    })
 }
 
 #[derive(Serialize, Clone)]
@@ -1249,6 +1388,10 @@ pub fn session_start(presentmon_exe: Option<String>, csv_path: String) -> Result
     let whea = toolkit::read_microcode_report()
         .ok()
         .and_then(|m| m.whea_events_30d);
+    // Rated base clock + a network baseline for the loss check — both cheap,
+    // both driver-free. Captured once at Start.
+    let base_clock_mhz = read_base_clock_mhz();
+    let net_before = read_net_snapshot();
 
     // If a supported game is running and PresentMon is bundled, start a frametime
     // capture against it (ETW, no injection; PresentMon self-elevates -> one UAC).
@@ -1283,9 +1426,11 @@ pub fn session_start(presentmon_exe: Option<String>, csv_path: String) -> Result
         st.started = Some(Instant::now());
         st.whea_at_start = whea;
         st.presentmon_csv = csv_used;
+        st.base_clock_mhz = base_clock_mhz;
+        st.net_before = net_before;
     }
     SESSION_RUNNING.store(true, Ordering::SeqCst);
-    let handle = std::thread::spawn(|| {
+    let handle = std::thread::spawn(move || {
         let mut sys = sysinfo::System::new();
         while SESSION_RUNNING.load(Ordering::SeqCst) {
             std::thread::sleep(Duration::from_millis(2000));
@@ -1301,12 +1446,22 @@ pub fn session_start(presentmon_exe: Option<String>, csv_path: String) -> Result
             let dpc = toolkit::read_dpc_snapshot()
                 .map(|d| d.total_dpc_percent)
                 .unwrap_or(0.0);
-            let (gpu_temp_c, gpu_throttling) = read_gpu_quick();
+            let (gpu_temp_c, gpu_throttle_mask) = read_gpu_quick();
+            // CPU effective clock = base MHz x (% Processor Performance / 100).
+            let (eff_clock_mhz, cpu_util_pct) = match read_cpu_perf() {
+                Some((perf, util)) => (
+                    base_clock_mhz.map(|b| b * perf / 100.0),
+                    Some(util),
+                ),
+                None => (None, None),
+            };
             session_state().lock().samples.push(SessionSample {
                 dpc_pct: dpc,
                 mem_avail_pct,
                 gpu_temp_c,
-                gpu_throttling,
+                gpu_throttle_mask,
+                eff_clock_mhz,
+                cpu_util_pct,
             });
         }
     });
@@ -1347,32 +1502,117 @@ pub fn session_stop() -> MatchScanReport {
         };
     }
 
-    // GPU thermal throttling during the match.
-    let throttle_samples = st.samples.iter().filter(|s| s.gpu_throttling).count();
+    // ── Headline #1: throttle flags (GPU reasons + CPU effective-clock drop) ──
+    let gpu_or_mask: u64 = st.samples.iter().fold(0u64, |a, s| a | s.gpu_throttle_mask);
+    let throttle_samples = st
+        .samples
+        .iter()
+        .filter(|s| gpu_mask_is_throttling(s.gpu_throttle_mask))
+        .count();
+    let gpu_reasons = decode_gpu_throttle(gpu_or_mask);
     let max_gpu = st
         .samples
         .iter()
         .filter_map(|s| s.gpu_temp_c)
         .fold(f32::MIN, f32::max);
     let gpu_temp_measured = max_gpu != f32::MIN;
-    if throttle_samples > 0 {
-        let secs = throttle_samples as u64 * 2;
-        let evidence = if gpu_temp_measured {
-            format!("{throttle_samples} of {n} samples throttling; peak {max_gpu:.0}C")
+
+    // CPU effective clock: the busiest core's actual clock, minimum while the
+    // machine was under load (util >= 15%). Below base under load = throttling.
+    let base = st.base_clock_mhz;
+    let loaded_eff: Vec<f32> = st
+        .samples
+        .iter()
+        .filter(|s| s.cpu_util_pct.map(|u| u >= 15.0).unwrap_or(false))
+        .filter_map(|s| s.eff_clock_mhz)
+        .collect();
+    let all_eff: Vec<f32> = st.samples.iter().filter_map(|s| s.eff_clock_mhz).collect();
+    let eff_measured = !all_eff.is_empty();
+    let max_eff = all_eff.iter().copied().fold(0.0f32, f32::max);
+    let has_loaded = !loaded_eff.is_empty();
+    let min_eff = if has_loaded {
+        loaded_eff.iter().copied().fold(f32::MAX, f32::min)
+    } else {
+        all_eff.iter().copied().fold(f32::MAX, f32::min)
+    };
+    let cpu_throttled = has_loaded && base.map(|b| min_eff < b * 0.97).unwrap_or(false);
+
+    let mut flags: Vec<String> = Vec::new();
+    if cpu_throttled {
+        flags.push("CPU (effective clock fell below base under load)".into());
+    }
+    for r in &gpu_reasons {
+        flags.push(format!("GPU {r}"));
+    }
+    let hw_thermal_or_power = (gpu_or_mask & (0x40 | 0x08 | 0x80)) != 0;
+    if !flags.is_empty() {
+        let sev = if cpu_throttled || hw_thermal_or_power {
+            "critical"
         } else {
-            format!("{throttle_samples} of {n} samples throttling")
+            "warn"
         };
         findings.push(Finding {
-            id: "session.gpu-throttle".into(),
-            severity: "critical".into(),
-            title: format!("Your GPU throttled for ~{secs}s during the match"),
-            cause: "The GPU hit a thermal or power limit and cut its clocks mid-match — that's frame drops exactly when the action heats it up.".into(),
-            fix: "Improve case airflow / raise the fan curve, and make sure the power limit isn't set low in MSI Afterburner. If only the hotspot is high, repaste (run the GPU deep scan).".into(),
-            evidence: Some(evidence),
+            id: "session.throttle-flags".into(),
+            severity: sev.into(),
+            title: format!("Throttle flags tripped: {}", flags.join("; ")),
+            cause: "A throttle flag means the CPU or GPU cut its own clocks mid-match to stay inside a thermal or power limit — you lose frames and 1% lows exactly when a fight loads the rig.".into(),
+            fix: "Thermal flag: improve airflow / fan curve, repaste (run the GPU or CPU deep scan for the temp behind it). Power flag: check the GPU power limit in Afterburner and the CPU power limits (PL1/PL2) in BIOS.".into(),
+            evidence: Some(if throttle_samples > 0 {
+                format!("GPU throttling in {throttle_samples} of {n} samples; reasons 0x{gpu_or_mask:X}")
+            } else {
+                format!("reasons mask 0x{gpu_or_mask:X}")
+            }),
             tweak_id: None,
             guide_id: None,
         });
-    } else if gpu_temp_measured && max_gpu >= 84.0 {
+    } else {
+        findings.push(Finding {
+            id: "session.throttle-flags".into(),
+            severity: "ok".into(),
+            title: "No throttle flags tripped during the match".into(),
+            cause: String::new(),
+            fix: String::new(),
+            evidence: if !eff_measured && !gpu_temp_measured {
+                Some("neither CPU effective clock nor NVIDIA throttle reasons could be read this run".into())
+            } else {
+                None
+            },
+            tweak_id: None,
+            guide_id: None,
+        });
+    }
+
+    // ── Headline #2: lowest effective clock under load ──────────────────────
+    if eff_measured {
+        let base_txt = base.map(|b| format!(", base {b:.0} MHz")).unwrap_or_default();
+        let sev = if cpu_throttled { "warn" } else { "info" };
+        let load_txt = if has_loaded {
+            "under load"
+        } else {
+            "(no loaded samples this run)"
+        };
+        findings.push(Finding {
+            id: "session.eff-clock".into(),
+            severity: sev.into(),
+            title: format!("Lowest CPU effective clock {load_txt}: {min_eff:.0} MHz{base_txt}"),
+            cause: if cpu_throttled {
+                "The busiest core dropped below the rated base clock while the machine was loaded — that's the CPU throttling (thermal or power limit), the thing average FPS never shows.".into()
+            } else {
+                "The busiest core held at or above its base clock the whole match — the CPU wasn't clock-throttling.".into()
+            },
+            fix: if cpu_throttled {
+                "Chase CPU cooling (reseat/repaste, fan curve) or set a modest undervolt / Curve Optimizer offset, and check BIOS power limits aren't set low. Run the CPU deep scan for the temperature behind it.".into()
+            } else {
+                "No action — the CPU clock held. If FPS still feels low you're likely CPU-bound at full clock (a faster CPU helps) or the bottleneck is elsewhere.".into()
+            },
+            evidence: Some(format!("peak {max_eff:.0} MHz, min {min_eff:.0} MHz")),
+            tweak_id: None,
+            guide_id: None,
+        });
+    }
+
+    // GPU ran hot but never tripped a throttle flag — a heads-up.
+    if throttle_samples == 0 && gpu_temp_measured && max_gpu >= 84.0 {
         findings.push(Finding {
             id: "session.gpu-hot".into(),
             severity: "warn".into(),
@@ -1460,6 +1700,62 @@ pub fn session_stop() -> MatchScanReport {
                 tweak_id: None,
                 guide_id: None,
             });
+
+            // ── Headline #3: worst single frametime spike ───────────────────
+            let worst_fps = if fs.worst_ms > 0.0 { 1000.0 / fs.worst_ms } else { 0.0 };
+            let big_spike = fs.worst_ms > 50.0 || fs.spikes_2x > 0;
+            findings.push(Finding {
+                id: "session.worst-frame".into(),
+                severity: if fs.worst_ms > 50.0 {
+                    "warn".into()
+                } else {
+                    "info".into()
+                },
+                title: format!(
+                    "Worst frametime spike: {:.1} ms ({:.0} FPS for that frame)",
+                    fs.worst_ms, worst_fps
+                ),
+                cause: if big_spike {
+                    "One long frame in an otherwise smooth graph is what eats a single edit in a single fight — average FPS hides it completely. Line each eaten edit on your recording up against this: on a spike -> the machine; on a flat graph -> the game.".into()
+                } else {
+                    "No large single-frame spikes — frame delivery stayed tight, so an eaten edit is far more likely the game than the machine.".into()
+                },
+                fix: if big_spike {
+                    "Chase the spike sources below (DPC driver stalls, background apps, shader compilation, memory pressure). Smoothing these matters more than raising the average.".into()
+                } else {
+                    "No action on frametime — the machine held. If inputs still feel eaten, the cause is upstream (game/netcode), not a local hitch.".into()
+                },
+                evidence: Some(format!(
+                    "median {:.1} ms; {} frame(s) over 2x median",
+                    fs.median_ms, fs.spikes_2x
+                )),
+                tweak_id: None,
+                guide_id: None,
+            });
+
+            // Present mode — true fullscreen vs composed (added input lag).
+            if let Some(mode) = fs.present_mode.as_deref() {
+                let composed = mode.to_lowercase().contains("composed");
+                findings.push(Finding {
+                    id: "session.present-mode".into(),
+                    severity: if composed { "warn".into() } else { "ok".into() },
+                    title: format!("Present mode: {mode}"),
+                    cause: if composed {
+                        "\"Composed\" flip means you're not truly fullscreen — the desktop compositor is in the path, adding a frame of input lag. It's a common cost of borderless/windowed or an overlay forcing composition.".into()
+                    } else {
+                        "\"Independent Flip\" is true fullscreen — the lowest-latency present path, exactly what you want.".into()
+                    },
+                    fix: if composed {
+                        "Use the game's Fullscreen mode (not borderless) where possible, and close overlays that force composition. In Fortnite, fullscreen-windowed is its lowest-lag mode since exclusive fullscreen was removed — verify it flips to Independent Flip here.".into()
+                    } else {
+                        String::new()
+                    },
+                    evidence: None,
+                    tweak_id: None,
+                    guide_id: None,
+                });
+            }
+
             if fs.bound_measured {
                 let (title, cause, fix) = if fs.cpu_bound_pct >= 60.0 {
                     (
@@ -1506,11 +1802,55 @@ pub fn session_stop() -> MatchScanReport {
         }
     }
 
+    // ── UDP + NIC packet-loss delta (loss deletes inputs; latency only delays) ──
+    if let Some(before) = st.net_before.clone() {
+        if let Some(after) = read_net_snapshot() {
+            let udp_err = (after.udp_recv_errors - before.udp_recv_errors).max(0);
+            let udp_np = (after.udp_no_port - before.udp_no_port).max(0);
+            let rxd = (after.rx_discarded - before.rx_discarded).max(0);
+            let rxe = (after.rx_errors - before.rx_errors).max(0);
+            let txd = (after.tx_discarded - before.tx_discarded).max(0);
+            let txe = (after.tx_errors - before.tx_errors).max(0);
+            let nic_bad = rxd + rxe + txd + txe;
+            if udp_err > 0 || nic_bad > 0 {
+                findings.push(Finding {
+                    id: "session.net-loss".into(),
+                    severity: "warn".into(),
+                    title: format!(
+                        "Packets were lost or errored during the match (UDP errors +{udp_err}, NIC bad +{nic_bad})"
+                    ),
+                    cause: "Game traffic is UDP: lost or errored packets DELETE inputs outright — unlike latency, which only delays them. Counters climbing during the fight point at the route / cable / adapter, not your ping.".into(),
+                    fix: "Go wired with a known-good Cat5e/6 cable into a CPU-direct port, drop powerline/MoCA/Wi-Fi extenders, and update the NIC driver. Re-run to confirm the counters stay flat.".into(),
+                    evidence: Some(format!(
+                        "UDP recv-err +{udp_err}, no-port +{udp_np}; NIC rx-disc +{rxd} rx-err +{rxe} tx-disc +{txd} tx-err +{txe}"
+                    )),
+                    tweak_id: None,
+                    guide_id: None,
+                });
+            } else {
+                findings.push(Finding {
+                    id: "session.net-clean".into(),
+                    severity: "ok".into(),
+                    title: "No UDP or NIC packet loss during the match".into(),
+                    cause: String::new(),
+                    fix: String::new(),
+                    evidence: Some("no receive errors or adapter discards accrued".into()),
+                    tweak_id: None,
+                    guide_id: None,
+                });
+            }
+        }
+    }
+
     if max_gpu == f32::MIN {
-        notes.push("No NVIDIA GPU temps were available (AMD/Intel/integrated, or nvidia-smi missing) — GPU throttle detection this pass is NVIDIA-only. Use the GPU deep scan for AMD/edge+hotspot.".into());
+        notes.push("No NVIDIA GPU temps / throttle reasons were available (AMD/Intel/integrated, or nvidia-smi missing) — GPU throttle detection is NVIDIA-only. Use the GPU deep scan for AMD edge+hotspot.".into());
+    }
+    if !eff_measured {
+        notes.push("CPU effective clock couldn't be read this run (the Windows performance counter was unavailable) — the clock/throttle verdict fell back to GPU-only.".into());
     }
     notes.push(format!(
-        "Sampled {n} times over {duration_s}s. CPU effective-clock/throttle bits and per-frame frametime (CPU-vs-GPU bound) need the deep CPU scan + PresentMon — the next build.",
+        "Sampled {n} times over {duration_s}s. GPU throttle reasons come from nvidia-smi (NVIDIA-only); CPU effective clock is the busiest core via Windows perf counters (base {}); frametime, worst spike and present mode come from PresentMon.",
+        base.map(|b| format!("{b:.0} MHz")).unwrap_or_else(|| "unknown".into())
     ));
 
     let crits = findings.iter().filter(|f| f.severity == "critical").count();
@@ -1730,5 +2070,35 @@ mod tests {
         let _ = std::fs::remove_file(&path);
         assert!(fs.bound_measured);
         assert!(fs.gpu_bound_pct > 90.0, "frames were GPU-bound");
+    }
+
+    #[test]
+    fn presentmon_reports_worst_spike_and_present_mode() {
+        let dir = std::env::temp_dir();
+        let path = dir.join("optmaxxing_test_spike.csv");
+        let mut csv = String::from("Application,MsBetweenPresents,PresentMode\n");
+        for _ in 0..60 {
+            csv.push_str("game.exe,6.94,Hardware: Independent Flip\n");
+        }
+        // One big hitch — the single frame that eats an edit.
+        csv.push_str("game.exe,120.0,Hardware: Independent Flip\n");
+        std::fs::write(&path, &csv).unwrap();
+        let fs = parse_presentmon_csv(path.to_str().unwrap()).expect("enough frames");
+        let _ = std::fs::remove_file(&path);
+        assert!(fs.worst_ms >= 119.0, "worst single frame captured");
+        assert!(fs.spikes_2x >= 1, "the 120ms frame is a >2x-median spike");
+        assert_eq!(fs.present_mode.as_deref(), Some("Hardware: Independent Flip"));
+    }
+
+    #[test]
+    fn gpu_throttle_mask_decodes_named_flags() {
+        // 0x1 idle alone is not a throttle; benign bits decode to nothing.
+        assert!(!gpu_mask_is_throttling(0x1));
+        assert!(decode_gpu_throttle(0x1 | 0x2 | 0x10).is_empty());
+        // HW thermal (0x40) + SW power cap (0x4) are real throttles.
+        assert!(gpu_mask_is_throttling(0x40));
+        let names = decode_gpu_throttle(0x40 | 0x4);
+        assert!(names.iter().any(|n| n.contains("HW thermal")));
+        assert!(names.iter().any(|n| n.contains("power cap")));
     }
 }

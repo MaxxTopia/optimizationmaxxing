@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Dark squircle backdrop -->
+  <rect width="24" height="24" rx="5.5" fill="#0a0605"/>
+  <rect width="24" height="24" rx="5.5" fill="url(#sm-bg)" opacity="0.85"/>
+
+  <defs>
+    <radialGradient id="sm-bg" cx="50%" cy="34%" r="70%">
+      <stop offset="0%"  stop-color="#3a1410"/>
+      <stop offset="100%" stop-color="#0a0605" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sm-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#ffb15b"/>
+      <stop offset="45%" stop-color="#ff5c2e"/>
+      <stop offset="100%" stop-color="#e10600"/>
+    </linearGradient>
+    <filter id="sm-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="0.45" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!--
+    SNIPER-SCOPE RETICLE — snipemaxxer mark.
+    - Outer ring = the scope, warm red->orange family gradient
+    - Long outer crosshair ticks extend past the ring (white core)
+    - Short inner reticle lines feather toward the target
+    - Hot center dot = the lock / "plasma seam" motif shared with maxxtopia.svg
+  -->
+
+  <!-- Scope outer ring -->
+  <circle cx="12" cy="12" r="7.3" fill="none"
+          stroke="url(#sm-ring)" stroke-width="1.6" filter="url(#sm-glow)"/>
+
+  <!-- Outer crosshair ticks (extend past the ring) — white core -->
+  <g stroke="#fff2ea" stroke-width="1.1" stroke-linecap="square">
+    <line x1="12" y1="2.6"  x2="12" y2="8.4"/>
+    <line x1="12" y1="15.6" x2="12" y2="21.4"/>
+    <line x1="2.6"  y1="12" x2="8.4"  y2="12"/>
+    <line x1="15.6" y1="12" x2="21.4" y2="12"/>
+  </g>
+
+  <!-- Inner reticle lines feathering toward the target — accent gradient -->
+  <g stroke="url(#sm-ring)" stroke-width="0.9" stroke-linecap="round" opacity="0.9">
+    <line x1="12" y1="6.4"  x2="12" y2="10.3"/>
+    <line x1="12" y1="13.7" x2="12" y2="17.6"/>
+    <line x1="6.4"  y1="12" x2="10.3" y2="12"/>
+    <line x1="13.7" y1="12" x2="17.6" y2="12"/>
+  </g>
+
+  <!-- Hot center dot — the lock point. -->
+  <g filter="url(#sm-glow)">
+    <circle cx="12" cy="12" r="1.15" fill="url(#sm-ring)"/>
+  </g>
+  <circle cx="12" cy="12" r="0.55" fill="#fff2ea"/>
+</svg>

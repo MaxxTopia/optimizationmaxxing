@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.9',
+    date: '2026-07-10',
+    highlights: [
+      'NEW **Fight Capture** — record one real build fight and get the answer to "is it the machine or the game?" in plain English. On Match Scan, hit Start before you queue, get into an actual fight until inputs get eaten, then Stop. It records both streams at once — machine sensors and per-frame timing — and hands you the three numbers that decide where your next month goes.',
+      'The three headline reads: **throttle flags** (GPU thermal/power slowdown, decoded by name, plus CPU throttling when the busiest core drops below its base clock under load), the **lowest effective clock under load** (the real clock the working core held — what average FPS never shows), and the **worst single frametime spike** (the one 100 ms frame that eats an edit while the FPS counter looks fine).',
+      'Also captured every fight: **UDP + NIC packet loss** (loss deletes inputs, latency only delays them), **present mode** (true Independent-Flip fullscreen vs composed = added input lag), DPC stutter, memory pressure, WHEA instability, and CPU-vs-GPU bound. All driver-free and read-only — no install, no anti-cheat path; frametimes use the bundled PresentMon if a supported game is open.',
+      'This folds the whole "install HWiNFO + CapFrameX and read seven numbers by hand" routine into one button inside the app.',
+      'Suite sidebar refreshed to match maxxtopia.com — AdBlock-Maxxer, Streammaxxing, Snipemaxxer and Playlistmaxxing added; statuses and rail order now mirror the live site.',
+    ],
+  },
+  {
     version: '0.3.8',
     date: '2026-07-05',
     highlights: [

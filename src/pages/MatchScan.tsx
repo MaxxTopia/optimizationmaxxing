@@ -127,8 +127,9 @@ export function MatchScan() {
           never changes a setting on its own.
         </p>
         <p className="text-xs text-text-subtle">
-          This is the fast pre-game scan (config landmines). Live in-match
-          scanning and the deep hardware scan are coming next.
+          Four scans plus Fight Capture below: the fast pre-game config scan, a
+          live spot-check, GPU/CPU deep scans for the temps your monitor hides,
+          and a full record-a-real-fight verdict.
         </p>
       </header>
 
@@ -223,11 +224,11 @@ export function MatchScan() {
         )}
       </div>
 
-      <div className="surface-card p-5">
+      <div className="surface-card p-5 space-y-3">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <div className="font-semibold text-text">
-              Match recorder
+              Fight Capture
               {session?.running && (
                 <span className="ml-2 inline-flex items-center gap-1 text-xs text-red-400">
                   <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -237,8 +238,8 @@ export function MatchScan() {
             </div>
             <div className="text-sm text-text-muted">
               {session?.running
-                ? `Recording your match — ${fmtElapsed(session.elapsedS)}, ${session.samples} samples. Play, then Stop for the verdict.`
-                : 'Start before you queue, play your ranked/scrim, then Stop. Catches thermal throttling, DPC stutter, memory pressure, instability — and real frametimes (1% / 0.1% lows) + whether you were CPU- or GPU-bound. If a supported game is open it captures frametimes via PresentMon (one-time admin prompt).'}
+                ? `Recording your fight — ${fmtElapsed(session.elapsedS)}, ${session.samples} samples. Get into a real build fight until inputs get eaten a few times, then Stop for the verdict.`
+                : 'One real build fight, everything measured around it. Start before you queue, get into an actual fight (not a lobby), then Stop. It records both streams at once — machine sensors + per-frame timing — and answers whether eaten inputs are the machine or the game.'}
             </div>
           </div>
           <button
@@ -252,9 +253,20 @@ export function MatchScan() {
               ? '👑 VIP only'
               : session?.running
                 ? 'Stop & get verdict'
-                : 'Start recording'}
+                : 'Start fight capture'}
           </button>
         </div>
+        {!session?.running && isVip && (
+          <div className="text-xs text-text-subtle border-t border-border pt-3 leading-relaxed">
+            <span className="text-text-muted font-medium">You get back:</span>{' '}
+            the throttle flags (GPU thermal/power + CPU clock drop), the lowest
+            effective clock under load, and the worst single frametime spike —
+            plus UDP/NIC packet loss, present mode, DPC, and CPU-vs-GPU bound.
+            For CPU temps behind a throttle, run the CPU deep scan too. If a
+            supported game is open it captures frametimes via PresentMon
+            (one-time admin prompt).
+          </div>
+        )}
       </div>
 
       {report && (

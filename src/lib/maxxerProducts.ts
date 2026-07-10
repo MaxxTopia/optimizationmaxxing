@@ -23,17 +23,21 @@ export interface MaxxerProduct {
 }
 
 export const MAXXER_PRODUCTS: MaxxerProduct[] = [
-  // optimizationmaxxing + discordmaxxer keep their original OG app marks — do NOT
-  // swap these for the website's rail icons. The rest mirror maxxtopia.com's
-  // sidebar rail (its `icon ?? logo`) so the app and site read as one family.
-  { slug: 'optimizationmaxxing', name: 'Optimizationmaxxing', status: 'live', accentHex: '#e25bff', logo: '/logos/optimizationmaxxing.svg' },
+  // Mirrors maxxtopia.com's sidebar rail — same top-to-bottom RAIL_ORDER, same
+  // status + accent + icon (the site's `icon ?? logo`) so the app and site read
+  // as one family. optimizationmaxxing + discordmaxxer keep their original OG
+  // app marks — do NOT swap those two for the website's rail icons.
+  // Re-copy the icon from maxxtopia/public/logos when a mark changes upstream.
+  { slug: 'extensionmaxxing',    name: 'AdBlock-Maxxer',      status: 'live', accentHex: '#00d4ff', logo: '/logos/adblockmaxxer.png' },
   { slug: 'discordmaxxer',       name: 'Discordmaxxer',       status: 'live', accentHex: '#5865F2', logo: '/logos/discordmaxxer-icon.png' },
-  { slug: 'clipmaxxer',          name: 'Clipmaxxer',          status: 'soon', accentHex: '#00d4ff', logo: '/logos/clipmaxxer-icon.svg' },
+  { slug: 'optimizationmaxxing', name: 'Optimizationmaxxing', status: 'live', accentHex: '#e25bff', logo: '/logos/optimizationmaxxing.svg' },
+  { slug: 'streammaxxing',       name: 'Streammaxxing',       status: 'live', accentHex: '#22d3a0', logo: '/logos/streammaxxing-icon.png' },
+  { slug: 'viewmaxxing',         name: 'Viewmaxxing',         status: 'beta', accentHex: '#10b981', logo: '/logos/viewmaxxing-icon.png' },
+  { slug: 'clipmaxxer',          name: 'Clipmaxxer',          status: 'beta', accentHex: '#00d4ff', logo: '/logos/clipmaxxer-icon.svg' },
+  { slug: 'snipemaxxer',         name: 'Snipemaxxer',         status: 'beta', accentHex: '#ff3b3b', logo: '/logos/snipemaxxer.svg' },
+  { slug: 'playlistmaxxing',     name: 'Playlistmaxxing',     status: 'live', accentHex: '#ff2e88', logo: '/logos/playlistmaxxing.webp' },
   { slug: 'dropmaxxer',          name: 'Dropmaxxer',          status: 'beta', accentHex: '#4c51f7', logo: '/logos/dropmaxxer-icon.svg' },
   { slug: 'aimmaxxer',           name: 'Aimmaxxer',           status: 'soon', accentHex: '#f3af19', logo: '/logos/aimmaxxer-icon.png' },
-  { slug: 'viewmaxxing',         name: 'Viewmaxxing',         status: 'soon', accentHex: '#10b981', logo: '/logos/viewmaxxing-icon.png' },
-  // editmaxxing has no logo art on the website yet → keep the monogram fallback.
-  { slug: 'editmaxxing',         name: 'Editmaxxing',         status: 'soon', accentHex: '#ff6b8b' },
 ]
 
 /** Two-letter monogram from product name (e.g., "Optimizationmaxxing" → "OM"). */
