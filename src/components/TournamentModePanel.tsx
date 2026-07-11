@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { GAMES, type GameId, getGame } from '../lib/games'
-import { catalog, type AnticheatId } from '../lib/catalog'
+import { catalog } from '../lib/catalog'
+import { inTauri } from '../lib/tauri'
 import {
-  applyBatch,
-  inTauri,
-  listApplied,
-  revertTweak,
-  type AppliedTweak,
-  type BatchItem,
-} from '../lib/tauri'
+  gamePrimaryAc,
+  nowStamp,
+  readSchedule,
+  writeSchedule,
+  triggerRestoreNow,
+  triggerRetryRevert,
+  SCHEDULE_EVENT,
+  type TournamentSchedule,
+} from '../lib/tournamentDriver'
 
 /**
  * Tournament Mode — temporal toggle for AC compliance.
@@ -22,51 +25,6 @@ import {
  * before a Vanguard or BattlEye match, then restore after. That's a 5-minute
  * ritual every scrim. This automates it.
  */
-
-const SCHEDULE_KEY = 'optmaxxing-tournament-schedule'
-
-interface TournamentSchedule {
-  /** ISO datetime string. */
-  matchStartIso: string
-  game: GameId
-  revertBeforeMin: number
-  restoreAfterMin: number
-  /** State machine. */
-  state: 'pending' | 'active' | 'done'
-  /** Tweak IDs we reverted (so we re-apply the same set later). */
-  revertedTweakIds: string[]
-  /** Status messages (last few; truncated). */
-  log: string[]
-}
-
-/** Map a game to its primary anti-cheat. Used to pick which AnticheatId
- * verdict to read off each tweak. */
-function gamePrimaryAc(game: GameId): AnticheatId | null {
-  const g = getGame(game)
-  if (!g) return null
-  if (g.anticheat === 'none') return null
-  return g.anticheat as AnticheatId
-}
-
-function readSchedule(): TournamentSchedule | null {
-  try {
-    const raw = localStorage.getItem(SCHEDULE_KEY)
-    if (!raw) return null
-    const s = JSON.parse(raw) as TournamentSchedule
-    if (!s.matchStartIso || !s.game || !s.state) return null
-    return s
-  } catch {
-    return null
-  }
-}
-
-function writeSchedule(s: TournamentSchedule | null) {
-  if (s == null) {
-    localStorage.removeItem(SCHEDULE_KEY)
-  } else {
-    localStorage.setItem(SCHEDULE_KEY, JSON.stringify(s))
-  }
-}
 
 /** Local-time ISO string for the next occurrence of HH:MM today (or tomorrow
  * if HH:MM is already in the past). Returned as ISO so localStorage survives
@@ -125,90 +83,16 @@ export function TournamentModePanel() {
     return () => clearInterval(tick)
   }, [schedule])
 
-  // State-machine driver: when we cross T-N or T+M, fire the corresponding
-  // batch action. Runs whenever `now` ticks forward.
+  // The actual firing of revert/restore now lives in the always-mounted
+  // <TournamentModeDriver/> (see src/lib/tournamentDriver.ts), so it survives
+  // leaving this page — the old page-scoped driver silently stopped on navigate
+  // = the ban-risk. This panel only REFLECTS the persisted schedule: re-read it
+  // whenever the driver (or one of our own buttons) writes a change.
   useEffect(() => {
-    if (!schedule || !isNative) return
-    let cancelled = false
-    const matchMs = new Date(schedule.matchStartIso).getTime()
-    const revertAt = matchMs - schedule.revertBeforeMin * 60_000
-    const restoreAt = matchMs + schedule.restoreAfterMin * 60_000
-
-    async function maybeRevert() {
-      if (cancelled || schedule!.state !== 'pending') return
-      if (Date.now() < revertAt) return
-      setBusy(true)
-      try {
-        const ac = gamePrimaryAc(schedule!.game)
-        const list = await listApplied()
-        const flagged = pickFlaggedTweaks(list, schedule!.game, ac)
-        const ids: string[] = []
-        const newLog: string[] = []
-        for (const a of flagged) {
-          try {
-            await revertTweak(a.receiptId)
-            ids.push(a.tweakId)
-            newLog.push(`reverted ${a.tweakId}`)
-          } catch (e) {
-            newLog.push(`FAILED revert ${a.tweakId}: ${stringErr(e)}`)
-          }
-        }
-        const next: TournamentSchedule = {
-          ...schedule!,
-          state: 'active',
-          revertedTweakIds: ids,
-          log: [`${nowStamp()} reverted ${ids.length} tweak(s) for ${schedule!.game}`, ...newLog, ...(schedule!.log ?? [])].slice(0, 30),
-        }
-        writeSchedule(next)
-        setSchedule(next)
-      } catch (e) {
-        setErr(stringErr(e))
-      } finally {
-        setBusy(false)
-      }
-    }
-
-    async function maybeRestore() {
-      if (cancelled || schedule!.state !== 'active') return
-      if (Date.now() < restoreAt) return
-      setBusy(true)
-      try {
-        const items: BatchItem[] = []
-        for (const tweakId of schedule!.revertedTweakIds) {
-          const t = catalog.tweaks.find((x) => x.id === tweakId)
-          if (!t) continue
-          for (const action of t.actions) {
-            items.push({ tweakId, action })
-          }
-        }
-        if (items.length > 0) {
-          await applyBatch(items)
-        }
-        const next: TournamentSchedule = {
-          ...schedule!,
-          state: 'done',
-          log: [`${nowStamp()} restored ${schedule!.revertedTweakIds.length} tweak(s)`, ...(schedule!.log ?? [])].slice(0, 30),
-        }
-        writeSchedule(next)
-        setSchedule(next)
-      } catch (e) {
-        setErr(stringErr(e))
-      } finally {
-        setBusy(false)
-      }
-    }
-
-    if (schedule.state === 'pending') maybeRevert()
-    else if (schedule.state === 'active') maybeRestore()
-
-    return () => {
-      cancelled = true
-    }
-    // We DELIBERATELY include `now` to re-check on every tick. The
-    // dependencies are also stable across renders since schedule is the
-    // localStorage-mirrored state.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [now, schedule, isNative])
+    const onChange = () => setSchedule(readSchedule())
+    window.addEventListener(SCHEDULE_EVENT, onChange)
+    return () => window.removeEventListener(SCHEDULE_EVENT, onChange)
+  }, [])
 
   // Compute which tweaks WOULD be reverted if the user activates now (for
   // preview before they hit Start).
@@ -240,10 +124,32 @@ export function TournamentModePanel() {
     setSchedule(null)
   }
 
-  function handleRestoreNow() {
-    if (!schedule || schedule.state !== 'active') return
-    if (!confirm(`Restore all ${schedule.revertedTweakIds.length} reverted tweak(s) now?`)) return
-    setNow(Date.now() + schedule.restoreAfterMin * 60_000 + 1000) // force tick past restoreAt
+  async function handleRestoreNow() {
+    if (!schedule || (schedule.state !== 'active' && schedule.state !== 'error')) return
+    if (!confirm(`Re-apply all ${schedule.revertedTweakIds.length} reverted tweak(s) now?`)) return
+    setErr(null)
+    setBusy(true)
+    try {
+      await triggerRestoreNow()
+    } catch (e) {
+      setErr(String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Error state = a revert failed. Let the user re-attempt (re-prompts UAC).
+  async function handleRetryRevert() {
+    if (!schedule || schedule.state !== 'error') return
+    setErr(null)
+    setBusy(true)
+    try {
+      await triggerRetryRevert()
+    } catch (e) {
+      setErr(String(e))
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -294,6 +200,7 @@ export function TournamentModePanel() {
           busy={busy}
           onCancel={handleCancel}
           onRestoreNow={handleRestoreNow}
+          onRetryRevert={handleRetryRevert}
           onClear={() => {
             writeSchedule(null)
             setSchedule(null)
@@ -421,6 +328,7 @@ function ActiveSchedule({
   busy,
   onCancel,
   onRestoreNow,
+  onRetryRevert,
   onClear,
 }: {
   schedule: TournamentSchedule
@@ -428,6 +336,7 @@ function ActiveSchedule({
   busy: boolean
   onCancel: () => void
   onRestoreNow: () => void
+  onRetryRevert: () => void
   onClear: () => void
 }) {
   const matchMs = new Date(schedule.matchStartIso).getTime()
@@ -446,6 +355,9 @@ function ActiveSchedule({
     stateLabel = 'Active — match in progress'
     stateColor = 'text-emerald-300'
     countdown = restoreAt - now
+  } else if (schedule.state === 'error') {
+    stateLabel = 'NOT SAFE — revert failed'
+    stateColor = 'text-red-400'
   } else {
     stateLabel = 'Done — tweaks restored'
     stateColor = 'text-text-muted'
@@ -453,6 +365,24 @@ function ActiveSchedule({
 
   return (
     <div className="space-y-3">
+      {schedule.state === 'error' && (
+        <div className="rounded-md border-2 border-red-500 bg-red-500/15 px-4 py-3 text-sm text-red-200">
+          <p className="font-bold text-red-300">⚠ NOT SAFE TO PLAY — a tweak failed to revert.</p>
+          <p className="mt-1 text-xs leading-snug">
+            One or more anti-cheat-flagged tweaks are STILL APPLIED (usually a missed or denied UAC
+            prompt). Do not join your match until this is cleared. Hit <strong>Retry revert</strong> and
+            approve the UAC prompt — the activity log below lists exactly which tweaks failed.
+          </p>
+        </div>
+      )}
+
+      {schedule.state === 'pending' && (
+        <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 leading-snug">
+          Keep this app running until after your match — the revert fires from inside the app (any
+          page is fine). If the app is fully closed at match time, the revert can’t run.
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Stat label="Match" value={fmtLocal(schedule.matchStartIso)} sub={game ? `${game.glyph} ${game.label}` : schedule.game} />
         <Stat
@@ -471,7 +401,7 @@ function ActiveSchedule({
           value={
             countdown != null && countdown > 0 ? (
               <span className="tabular-nums">{fmtCountdown(countdown)}</span>
-            ) : schedule.state === 'done' ? (
+            ) : schedule.state === 'done' || schedule.state === 'error' ? (
               `${schedule.revertedTweakIds.length} tweak(s)`
             ) : (
               <span className="text-amber-300">due now</span>
@@ -495,13 +425,22 @@ function ActiveSchedule({
       )}
 
       <div className="flex gap-2 flex-wrap">
-        {schedule.state === 'active' && (
+        {schedule.state === 'error' && (
+          <button
+            onClick={onRetryRevert}
+            disabled={busy}
+            className="px-3 py-1.5 rounded-md border border-red-500/60 bg-red-500/15 text-xs text-red-200 hover:border-red-400 disabled:opacity-50"
+          >
+            Retry revert
+          </button>
+        )}
+        {(schedule.state === 'active' || schedule.state === 'error') && (
           <button
             onClick={onRestoreNow}
             disabled={busy}
             className="px-3 py-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 text-xs text-emerald-300 hover:border-emerald-500 disabled:opacity-50"
           >
-            Restore now
+            {schedule.state === 'error' ? 'Put tweaks back' : 'Restore now'}
           </button>
         )}
         {schedule.state !== 'done' ? (
@@ -550,44 +489,6 @@ function Stat({
       {sub && <p className="text-xs text-text-subtle mt-0.5">{sub}</p>}
     </div>
   )
-}
-
-function nowStamp(): string {
-  const d = new Date()
-  return d.toLocaleTimeString()
-}
-
-function stringErr(e: unknown): string {
-  if (e == null) return 'unknown error'
-  if (typeof e === 'string') return e
-  if (e instanceof Error) return e.message
-  return String(e)
-}
-
-/** Pick currently-applied tweaks that are flagged risky/breaking for the
- * given game's anti-cheat. Reads `anticheatCompatibility` first; falls back
- * to `tournamentCompliance[game]` if no per-AC verdict exists. */
-function pickFlaggedTweaks(
-  applied: AppliedTweak[],
-  game: GameId,
-  ac: AnticheatId | null,
-): AppliedTweak[] {
-  const out: AppliedTweak[] = []
-  for (const a of applied) {
-    if (a.status !== 'applied') continue
-    const tweak = catalog.tweaks.find((t) => t.id === a.tweakId)
-    if (!tweak) continue
-    let verdict: 'safe' | 'risk' | 'breaks' | undefined
-    if (ac && tweak.anticheatCompatibility?.[ac]) {
-      verdict = tweak.anticheatCompatibility[ac]
-    } else {
-      verdict = tweak.tournamentCompliance?.[game]
-    }
-    if (verdict === 'risk' || verdict === 'breaks') {
-      out.push(a)
-    }
-  }
-  return out
 }
 
 /** Preview which catalog tweaks (regardless of applied state) WOULD be flagged.

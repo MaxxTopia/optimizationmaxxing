@@ -5,6 +5,7 @@ import { Layout } from './components/Layout'
 import { Element115Vial } from './components/Element115Vial'
 import { TipsToast } from './components/TipsToast'
 import { UpdateBanner } from './components/UpdateBanner'
+import { TournamentModeDriver } from './components/TournamentModeDriver'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { Dashboard } from './pages/Dashboard'
 import { TuneNow } from './pages/TuneNow'
@@ -82,6 +83,7 @@ export default function App() {
     <CrashBoundary>
       <Layout>
         <UpdateBanner />
+        <TournamentModeDriver />
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/tune" element={<TuneNow />} />
