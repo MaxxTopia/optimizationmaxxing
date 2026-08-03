@@ -316,7 +316,8 @@ function buildChecks(a: BiosAudit, profile: GameProfile, ui: BiosUiMap | null): 
     checks.push({
       label: 'TPM 2.0',
       verdict: 'unknown',
-      detail: 'Could not query TPM (Get-Tpm failed — needs admin on some boards).',
+      detail: 'Could not query TPM state (WMI access restricted or non-elevated). Try running optimizationmaxxing as admin.',
+      fix: `If enabled in BIOS, verify in Windows by pressing Win+R and running "tpm.msc".${path('tpm')}`,
     })
   } else {
     const need = profile.ideal.tpm
@@ -330,11 +331,11 @@ function buildChecks(a: BiosAudit, profile: GameProfile, ui: BiosUiMap | null): 
       checks.push({
         label: 'TPM 2.0',
         verdict: need === 'required' ? 'fail' : 'warn',
-        detail: 'Not ready / disabled.',
+        detail: 'Not ready or disabled in BIOS / Windows.',
         fix:
           need === 'required'
-            ? `${profile.label} requires TPM 2.0.${path('tpm')} Then in Windows run "tpm.msc" to verify it shows Ready.`
-            : `Optional for this title — enable if you also play Valorant or FNCS.${path('tpm')}`,
+            ? `${profile.label} anti-cheat requires TPM 2.0 (fTPM for AMD / PTT for Intel).${path('tpm')} Run "tpm.msc" in Windows to verify.`
+            : `Optional for this title — enable fTPM (AMD) / PTT (Intel) if you play Valorant or FNCS.${path('tpm')}`,
       })
     }
   }

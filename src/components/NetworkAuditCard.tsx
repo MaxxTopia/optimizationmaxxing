@@ -175,7 +175,17 @@ interface Check {
   fixUrl?: string
 }
 
-function buildChecks(a: NetworkAudit): Check[] {
+function maskPublicIp(ip: string | null | undefined, show: boolean): string {
+  if (!ip) return 'unknown'
+  if (show) return ip
+  const parts = ip.split('.')
+  if (parts.length === 4) {
+    return `${parts[0]}.${parts[1]}.***.***`
+  }
+  return '***.***.***.***'
+}
+
+function buildChecks(a: NetworkAudit, showPublicIp: boolean): Check[] {
   const checks: Check[] = []
 
   // Wired vs wifi
@@ -226,12 +236,13 @@ function buildChecks(a: NetworkAudit): Check[] {
       detail: 'Public IP probe did not return (offline or worker blocked).',
     })
   } else {
+    const ipStr = maskPublicIp(a.publicIpv4, showPublicIp)
     checks.push({
       label: 'Direct public IP (no CGNAT)',
       verdict: a.cgnat ? 'fail' : 'pass',
       detail: a.cgnat
-        ? `Your public IP ${a.publicIpv4 ?? ''} is in the CGNAT range (100.64.0.0/10) — your ISP is double-NATing you.`
-        : `Public IP ${a.publicIpv4 ?? ''} routes directly.`,
+        ? `Your public IP (${ipStr}) is in the CGNAT range (100.64.0.0/10) — your ISP is double-NATing you.`
+        : `Public IP (${ipStr}) routes directly to your router.`,
       fix: a.cgnat
         ? 'Call your ISP and ask for a non-CGNAT IP (usually free on residential plans, sometimes a "static IP" upcharge on cellular / 5G home internet). Port-forwarding and some P2P paths require this.'
         : undefined,
@@ -303,6 +314,7 @@ export function NetworkAuditCard() {
   const [audit, setAudit] = useState<NetworkAudit | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showPublicIp, setShowPublicIp] = useState(false)
 
   async function refresh() {
     if (!isNative) return
@@ -324,7 +336,7 @@ export function NetworkAuditCard() {
 
   if (!isNative) return null
 
-  const checks = audit ? buildChecks(audit) : []
+  const checks = audit ? buildChecks(audit, showPublicIp) : []
   const tips = audit ? findTips(audit.gatewayVendor) : null
   const passCount = checks.filter((c) => c.verdict === 'pass').length
   const failCount = checks.filter((c) => c.verdict === 'fail').length
@@ -356,6 +368,24 @@ export function NetworkAuditCard() {
         >
           {loading ? 'Probing…' : 'Re-probe'}
         </button>
+      </div>
+
+      <div className="rounded-md border border-border bg-bg-raised/40 p-3 space-y-1 text-xs">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <span className="text-[10px] uppercase tracking-widest text-accent font-semibold flex items-center gap-1.5">
+            <span>💡 What is a Public IP & CGNAT?</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowPublicIp((v) => !v)}
+            className="px-2 py-0.5 rounded border border-border text-[11px] text-text-muted hover:text-text hover:border-border-glow flex items-center gap-1"
+          >
+            {showPublicIp ? '👁️ Mask Public IP' : '🔒 Reveal Public IP'}
+          </button>
+        </div>
+        <p className="text-text-muted leading-snug">
+          Your <strong className="text-text">Public IP address</strong> is your router's unique identifier on the internet assigned by your ISP. Fortnite matchmakers and servers use it to send game data back to your PC. We check it to verify you aren't stuck behind <strong className="text-text">CGNAT (Double NAT)</strong>, which causes random ping spikes. For privacy when streaming or taking screenshots, your Public IP is masked by default below.
+        </p>
       </div>
 
       {err && <p className="text-xs text-red-300">Probe failed: {err}</p>}

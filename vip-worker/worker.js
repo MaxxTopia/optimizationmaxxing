@@ -62,6 +62,16 @@ const ALLOWED_CODE_RE = /^[0-9A-HJKMNP-Z]{16}$/;
 const ALLOWED_HWID_RE = /^[a-f0-9]{32}$/;
 const ALLOWED_USER_ID_RE = /^[0-9]{17,20}$/;
 
+// ─── Waitlist (DM-on-launch) ───────────────────────────────────────────
+// Lets a visitor click "notify me" on a SOON product, do one Discord OAuth
+// click, and get DM'd by the Maxx bot when it launches. Reuses the OAuth +
+// bot already wired here, and the SAME registered /discord-link redirect URI
+// (tagged via a `wl_<product>` state) so no second dev-portal redirect is
+// needed. Signups stored as waitlist:<product>:<userId> in VIP_CLAIMS.
+const WAITLIST_KV_PREFIX = 'waitlist:';
+const PRODUCT_SLUG_RE = /^[a-z0-9-]{2,32}$/;
+const MAX_DM_PER_CALL = 20; // free-tier subrequest budget — ~2 subrequests per DM
+
 // Profile-flair validation. URLs must be https:// and ≤256 chars; viewer
 // plugin HEAD-checks Content-Length at render time to enforce file-size caps.
 // Colors must be lowercase #RRGGBB.
@@ -123,6 +133,17 @@ export default {
       return handleDiscordLink(url, env, corsHeaders);
     }
 
+    // Waitlist: start (redirect into Discord OAuth), public count, admin notify.
+    if (url.pathname === '/waitlist/start' && request.method === 'GET') {
+      return handleWaitlistStart(url, env);
+    }
+    if (url.pathname === '/waitlist/count' && request.method === 'GET') {
+      return handleWaitlistCount(url, env, corsHeaders);
+    }
+    if (url.pathname === '/waitlist/notify' && request.method === 'POST') {
+      return handleWaitlistNotify(request, env, corsHeaders);
+    }
+
     if (url.pathname === '/profile' && request.method === 'POST') {
       let body;
       try {
@@ -150,6 +171,14 @@ export default {
       return json({ ok: false, error: 'not found' }, 404, corsHeaders);
     }
 
+    // Per-IP write-flood brake (Cache-API backed; costs no KV writes). Stops a
+    // single source from spamming /claim to burn the shared account-wide KV write
+    // budget OR to grief the scarce Founder slots (1-33) with crafted FNDR codes.
+    // Does NOT change who is accepted — only how fast one IP may try.
+    if (await rateLimited(request, 'vip-claim', 20, 60)) {
+      return json({ ok: false, error: 'rate limited, slow down' }, 429, corsHeaders);
+    }
+
     let body;
     try {
       body = await request.json();
@@ -159,6 +188,28 @@ export default {
     return handleClaim(body, env, ctx, corsHeaders);
   },
 };
+
+// Per-IP write-flood brake backed by the Cache API. The Cache API is FREE and
+// separate from the KV write budget, so this guard never itself consumes the
+// account-wide ~1000-writes/day KV cap it exists to protect. Per-colo (not
+// global), which is enough to stop the trivial single-source curl flood that
+// could otherwise drain the cap and take down every KV feature at once.
+// Returns true if the caller is OVER the limit and should be rejected.
+async function rateLimited(request, keyPrefix, limit, windowSec) {
+  try {
+    const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const bucket = Math.floor(Date.now() / (windowSec * 1000));
+    const cacheKey = new Request(`https://rl.internal/${keyPrefix}/${encodeURIComponent(ip)}/${bucket}`);
+    const cache = caches.default;
+    const hit = await cache.match(cacheKey);
+    const count = hit ? (parseInt(await hit.text(), 10) || 0) : 0;
+    if (count >= limit) return true;
+    await cache.put(cacheKey, new Response(String(count + 1), { headers: { 'Cache-Control': `max-age=${windowSec}` } }));
+    return false;
+  } catch {
+    return false; // never let the limiter itself break the endpoint
+  }
+}
 
 async function handleClaim(body, env, ctx, corsHeaders) {
   const code = typeof body.code === 'string' ? body.code : '';
@@ -757,6 +808,11 @@ async function handleDiscordLink(url, env, corsHeaders) {
       400,
     );
   }
+  // Waitlist signups share this redirect URI, tagged `wl_<product>`. Route them
+  // out BEFORE the HWID-claim logic so the VIP path is never touched.
+  if (state.startsWith('wl_')) {
+    return handleWaitlistJoin(code, state, env);
+  }
   if (!ALLOWED_HWID_RE.test(state.toLowerCase())) {
     return htmlPage(`<h1>Bad state</h1><p>HWID format invalid.</p>`, 400);
   }
@@ -875,6 +931,217 @@ async function handleDiscordLink(url, env, corsHeaders) {
       `<p style="opacity:0.6;font-size:12px">User ${escapeHtml(userId)} · tier ${tier}</p>`,
     200,
   );
+}
+
+// ─── Waitlist handlers ─────────────────────────────────────────────────
+
+// GET /waitlist/start?product=<slug> — bounce the visitor into Discord OAuth
+// with a `wl_<product>` state and the identify + guilds.join scopes. The site's
+// "Get on the waitlist" buttons point straight here.
+function handleWaitlistStart(url, env) {
+  const product = (url.searchParams.get('product') || '').toLowerCase();
+  if (!PRODUCT_SLUG_RE.test(product)) {
+    return htmlPage(`<h1>Missing product</h1><p>Expected /waitlist/start?product=&lt;slug&gt;</p>`, 400);
+  }
+  if (!env.DISCORD_OAUTH_CLIENT_ID || !env.DISCORD_OAUTH_REDIRECT_URI) {
+    return htmlPage(`<h1>OAuth not configured</h1><p>Tell Diggy.</p>`, 500);
+  }
+  const authUrl =
+    'https://discord.com/api/oauth2/authorize?' +
+    new URLSearchParams({
+      client_id: env.DISCORD_OAUTH_CLIENT_ID,
+      redirect_uri: env.DISCORD_OAUTH_REDIRECT_URI,
+      response_type: 'code',
+      scope: 'identify guilds.join',
+      state: `wl_${product}`,
+      prompt: 'consent',
+    }).toString();
+  return Response.redirect(authUrl, 302);
+}
+
+// OAuth callback for a waitlist signup: code → token → identify → add to the
+// Maxxtopia guild (so the bot can DM) → store the signup. guild-join is
+// best-effort; if it fails we still record the signup and tell them to join.
+async function handleWaitlistJoin(code, state, env) {
+  const product = state.slice(3); // strip 'wl_'
+  if (!PRODUCT_SLUG_RE.test(product)) {
+    return htmlPage(`<h1>Bad waitlist link</h1>`, 400);
+  }
+  if (!env.DISCORD_OAUTH_CLIENT_ID || !env.DISCORD_OAUTH_CLIENT_SECRET || !env.DISCORD_OAUTH_REDIRECT_URI) {
+    return htmlPage(`<h1>OAuth not configured</h1><p>Tell Diggy.</p>`, 500);
+  }
+
+  // 1. code → access token.
+  let accessToken;
+  try {
+    const tokenRes = await fetch('https://discord.com/api/v10/oauth2/token', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: env.DISCORD_OAUTH_CLIENT_ID,
+        client_secret: env.DISCORD_OAUTH_CLIENT_SECRET,
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: env.DISCORD_OAUTH_REDIRECT_URI,
+      }),
+    });
+    if (!tokenRes.ok) {
+      const t = await tokenRes.text().catch(() => '');
+      return htmlPage(`<h1>Discord rejected the sign-in</h1><p>${tokenRes.status}: ${escapeHtml(t.slice(0, 200))}</p>`, 400);
+    }
+    accessToken = (await tokenRes.json()).access_token;
+  } catch (e) {
+    return htmlPage(`<h1>Sign-in failed</h1><p>${escapeHtml(String(e))}</p>`, 502);
+  }
+  if (!accessToken) return htmlPage(`<h1>No access token from Discord</h1>`, 502);
+
+  // 2. identify.
+  let userJson;
+  try {
+    const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    if (!userRes.ok) return htmlPage(`<h1>Couldn't read your Discord account</h1>`, 502);
+    userJson = await userRes.json();
+  } catch (e) {
+    return htmlPage(`<h1>Identify failed</h1>`, 502);
+  }
+  const userId = userJson.id;
+  if (!userId || !ALLOWED_USER_ID_RE.test(String(userId))) {
+    return htmlPage(`<h1>Discord returned a bad user id</h1>`, 502);
+  }
+  const username = typeof userJson.username === 'string' ? userJson.username : '';
+
+  // 3. Add to the Maxxtopia guild so the bot shares a server with them and can
+  //    DM on launch. 201 = added, 204 = already a member. Non-fatal otherwise.
+  let joined = false;
+  if (env.DISCORD_BOT_TOKEN && env.DISCORD_GUILD_ID) {
+    try {
+      const jr = await fetch(
+        `https://discord.com/api/v10/guilds/${env.DISCORD_GUILD_ID}/members/${userId}`,
+        {
+          method: 'PUT',
+          headers: { authorization: `Bot ${env.DISCORD_BOT_TOKEN}`, 'content-type': 'application/json' },
+          body: JSON.stringify({ access_token: accessToken }),
+        },
+      );
+      joined = jr.status === 201 || jr.status === 204;
+    } catch (_) {
+      /* non-fatal — they can join manually */
+    }
+  }
+
+  // 4. Store the signup (idempotent per product+user).
+  const key = `${WAITLIST_KV_PREFIX}${product}:${userId}`;
+  if (!(await env.VIP_CLAIMS.get(key))) {
+    await env.VIP_CLAIMS.put(
+      key,
+      JSON.stringify({ userId, username, product, joinedAt: Date.now() }),
+    );
+  }
+
+  return htmlPage(
+    `<h1>✓ You're on the ${escapeHtml(product)} waitlist</h1>` +
+      `<p>The Maxxtopia bot will DM you the moment <b>${escapeHtml(product)}</b> goes live.</p>` +
+      (joined
+        ? `<p style="opacity:.7">You've been added to the Maxxtopia Discord so the bot can reach you.</p>`
+        : `<p><b>One step left:</b> join the Discord so the bot can DM you → <a href="https://discord.gg/S78eecbWdx">discord.gg/S78eecbWdx</a></p>`) +
+      `<p style="opacity:.6;font-size:12px">Signed up as ${escapeHtml(username)} · ${escapeHtml(String(userId))}. You can close this tab.</p>`,
+    200,
+  );
+}
+
+// GET /waitlist/count?product=<slug> — public signup count (for "N waiting" UI).
+async function handleWaitlistCount(url, env, corsHeaders) {
+  const product = (url.searchParams.get('product') || '').toLowerCase();
+  if (!PRODUCT_SLUG_RE.test(product)) {
+    return json({ ok: false, error: 'bad product' }, 400, corsHeaders);
+  }
+  let count = 0;
+  let cursor;
+  do {
+    const page = await env.VIP_CLAIMS.list({ prefix: `${WAITLIST_KV_PREFIX}${product}:`, cursor, limit: 1000 });
+    count += page.keys.length;
+    cursor = page.cursor;
+    if (page.list_complete) break;
+  } while (cursor);
+  return json({ ok: true, product, count }, 200, corsHeaders);
+}
+
+// POST /waitlist/notify {product, message?, dryRun?} — admin only. DMs up to
+// MAX_DM_PER_CALL un-notified signups via the bot, marks them, returns the
+// remaining count. Call again until remaining = 0 (keeps each call inside the
+// free-tier subrequest budget and below Discord's DM-open rate limit).
+async function handleWaitlistNotify(request, env, corsHeaders) {
+  if (!adminAuthed(request, env)) {
+    return json({ ok: false, error: 'unauthorized' }, 401, corsHeaders);
+  }
+  let b;
+  try { b = await request.json(); } catch (e) {
+    return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+  }
+  const product = typeof b.product === 'string' ? b.product.toLowerCase() : '';
+  if (!PRODUCT_SLUG_RE.test(product)) {
+    return json({ ok: false, error: 'bad product' }, 400, corsHeaders);
+  }
+  const message =
+    typeof b.message === 'string' && b.message.trim()
+      ? b.message.trim().slice(0, 1800)
+      : `🎉 ${product} is now live! You asked for a heads-up on maxxtopia.com — here it is. → https://maxxtopia.com/${product}/`;
+  const dryRun = b.dryRun === true;
+
+  // Gather all signup keys for the product.
+  const keys = [];
+  let cursor;
+  do {
+    const page = await env.VIP_CLAIMS.list({ prefix: `${WAITLIST_KV_PREFIX}${product}:`, cursor, limit: 1000 });
+    for (const k of page.keys) keys.push(k.name);
+    cursor = page.cursor;
+    if (page.list_complete) break;
+  } while (cursor);
+
+  let sent = 0, failed = 0, alreadyNotified = 0, remaining = 0;
+  for (const key of keys) {
+    if (sent >= MAX_DM_PER_CALL) { remaining++; continue; }
+    const raw = await env.VIP_CLAIMS.get(key);
+    if (!raw) continue;
+    let rec;
+    try { rec = JSON.parse(raw); } catch { continue; }
+    if (rec.notifiedAt) { alreadyNotified++; continue; }
+    if (dryRun) { remaining++; continue; }
+    const ok = await dmUser(env, rec.userId, message);
+    if (ok) {
+      sent++;
+      rec.notifiedAt = Date.now();
+      await env.VIP_CLAIMS.put(key, JSON.stringify(rec));
+    } else {
+      failed++;
+    }
+  }
+  return json({ ok: true, product, sent, failed, alreadyNotified, remaining, total: keys.length, dryRun }, 200, corsHeaders);
+}
+
+// Open (or reuse) a DM channel and send one message via the Maxx bot.
+async function dmUser(env, userId, content) {
+  if (!env.DISCORD_BOT_TOKEN) return false;
+  try {
+    const chRes = await fetch('https://discord.com/api/v10/users/@me/channels', {
+      method: 'POST',
+      headers: { authorization: `Bot ${env.DISCORD_BOT_TOKEN}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ recipient_id: userId }),
+    });
+    if (!chRes.ok) return false;
+    const ch = await chRes.json();
+    if (!ch.id) return false;
+    const msgRes = await fetch(`https://discord.com/api/v10/channels/${ch.id}/messages`, {
+      method: 'POST',
+      headers: { authorization: `Bot ${env.DISCORD_BOT_TOKEN}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+    return msgRes.ok;
+  } catch {
+    return false;
+  }
 }
 
 function htmlPage(bodyHtml, status = 200) {

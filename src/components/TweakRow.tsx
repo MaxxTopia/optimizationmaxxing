@@ -27,16 +27,16 @@ interface TweakRowProps {
 }
 
 const RISK_LABEL: Record<number, string> = {
-  1: 'Safe',
+  1: 'Beginner Safe',
   2: 'Standard',
   3: 'Expert',
-  4: 'Extreme',
+  4: 'Extreme (Risk 4)',
 }
 
 const RISK_COLOR: Record<number, string> = {
-  1: 'text-text-muted',
-  2: 'text-text',
-  3: 'text-accent',
+  1: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10',
+  2: 'text-text-muted',
+  3: 'text-amber-300',
   4: 'text-accent font-semibold',
 }
 

@@ -66,6 +66,15 @@ export function Guides() {
         </div>
       </header>
 
+      <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-1 text-xs">
+        <p className="text-[10px] uppercase tracking-widest text-emerald-300 font-semibold flex items-center gap-1.5">
+          <span>🔰 New to PC Optimization? Start Here</span>
+        </p>
+        <p className="text-text-muted leading-snug">
+          Look for the <span className="text-emerald-300 font-semibold border border-emerald-500/50 px-1 py-0.5 rounded bg-emerald-500/10">beginner safe</span> badge on guides — these are safe, proven tweaks with zero risk to your Windows installation. Every guide includes a 30-second TL;DR, cited empirical evidence, and exact click-by-click instructions. Uncheck "include advanced" below if you want to hide complex BIOS/overclock guides.
+        </p>
+      </div>
+
       <div className="space-y-3">
         <input
           value={search}

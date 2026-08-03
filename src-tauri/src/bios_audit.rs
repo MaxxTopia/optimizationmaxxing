@@ -131,11 +131,20 @@ try {
 } catch {}
 
 try {
-    $tpm = Get-Tpm -ErrorAction Stop
+    $tpm = Get-Tpm -ErrorAction SilentlyContinue
     if ($null -ne $tpm) {
-        $out.tpmEnabled = ([bool]$tpm.TpmReady -and [bool]$tpm.TpmEnabled)
+        $out.tpmEnabled = ([bool]$tpm.TpmPresent -and ([bool]$tpm.TpmReady -or [bool]$tpm.TpmEnabled))
     }
 } catch {}
+
+if ($null -eq $out.tpmEnabled) {
+    try {
+        $wmiTpm = Get-CimInstance -Namespace root/cimv2/security/microsofttpm -ClassName Win32_Tpm -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($null -ne $wmiTpm) {
+            $out.tpmEnabled = ([bool]$wmiTpm.IsEnabled_InitialValue -or [bool]$wmiTpm.IsReady_InitialValue)
+        }
+    } catch {}
+}
 
 try {
     $cpu = Get-CimInstance Win32_Processor -ErrorAction Stop | Select-Object -First 1
