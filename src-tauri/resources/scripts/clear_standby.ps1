@@ -1,9 +1,9 @@
-# clear_standby.ps1 — purge Windows standby memory list.
+# clear_standby.ps1 - purge Windows standby memory list.
 #
 # Runs from a scheduled task (HighestAvailable run-level) every N seconds.
 # Calls NtSetSystemInformation(SystemMemoryListInformation, MemoryPurgeStandbyList=4)
 # via inline C# P/Invoke. Same syscall RAMMap (Sysinternals) and Wagnard's ISLC use.
-# No driver, no kernel hooks, no game-process injection — anti-cheat-safe.
+# No driver, no kernel hooks, no game-process injection - anti-cheat-safe.
 #
 # Privilege: requires SeProfileSingleProcessPrivilege which is in the Admin token
 # but DISABLED by default. We enable it explicitly via AdjustTokenPrivileges before
@@ -11,7 +11,7 @@
 # RunAs SYSTEM (or elevated user) for this to succeed.
 #
 # Output: writes a single-line status to the optmaxxing telemetry log so the
-# Settings UI can show "last cleaned at <ts>". Runs silently otherwise — failures
+# Settings UI can show "last cleaned at <ts>". Runs silently otherwise - failures
 # don't surface to the user (the UI checks task last-result code instead).
 
 param(
@@ -36,7 +36,7 @@ function Log-Line($msg) {
     } catch {}
 }
 
-# Inline C# — defines StandbyCleaner with EnablePrivilege + Purge static methods.
+# Inline C# - defines StandbyCleaner with EnablePrivilege + Purge static methods.
 # Compile-once-per-process (Add-Type caches the type assembly).
 $source = @'
 using System;
@@ -106,12 +106,12 @@ try {
     exit 1
 }
 
-# Enable the privilege. Required even when running as Administrator — the privilege
+# Enable the privilege. Required even when running as Administrator - the privilege
 # is in the token but DISABLED by default. Without this the syscall returns
 # STATUS_PRIVILEGE_NOT_HELD (0xC0000061).
 $privOk = [StandbyCleaner]::EnablePrivilege("SeProfileSingleProcessPrivilege")
 if (-not $privOk) {
-    Log-Line "FAILED to enable SeProfileSingleProcessPrivilege — task must run elevated"
+    Log-Line "FAILED to enable SeProfileSingleProcessPrivilege - task must run elevated"
     exit 2
 }
 

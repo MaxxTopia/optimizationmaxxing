@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.3.12',
+    date: '2026-08-02',
+    highlights: [
+      'FIX **Windows policy tweaks now elevate automatically.** The Internet-Zone Download Warning tweak no longer fails with access denied on standard-user installs; its locked HKCU policy path is routed through the normal UAC prompt.',
+    ],
+  },
+  {
     version: '0.3.10',
     date: '2026-07-10',
     highlights: [

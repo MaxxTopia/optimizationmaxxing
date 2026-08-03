@@ -171,7 +171,13 @@ fn hkcu_path_requires_admin(hive: Hive, path: &str) -> bool {
         return false;
     }
     let normalized = path.replace('/', "\\").to_ascii_lowercase();
-    const ADMIN_ONLY_HKCU_PREFIXES: &[&str] = &["software\\policies\\"];
+    const ADMIN_ONLY_HKCU_PREFIXES: &[&str] = &[
+        "software\\policies\\",
+        // Windows policy keys under CurrentVersion are also ACL-locked for
+        // standard users. The catalog's ui.zone-warning.disable tweak writes
+        // to this branch (SaveZoneInformation).
+        "software\\microsoft\\windows\\currentversion\\policies\\",
+    ];
     ADMIN_ONLY_HKCU_PREFIXES
         .iter()
         .any(|p| normalized.starts_with(p))
@@ -245,6 +251,7 @@ mod tests {
             // Mixed case + forward slash — normalize handles both.
             "SOFTWARE\\policies\\foo",
             "Software/Policies/bar",
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Attachments",
         ] {
             assert!(
                 reg_set(Hive::Hkcu, path).requires_admin(),
@@ -264,9 +271,9 @@ mod tests {
             "Control Panel\\Mouse",
             "System\\GameConfigStore",
             "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
-            // "policies" appearing later in the path is not the protected
-            // root — only the top-level Software\Policies tree is hardened.
-            "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+            // A similarly named branch outside the two protected roots is
+            // still an ordinary per-user path.
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Policies",
         ] {
             assert!(
                 !reg_set(Hive::Hkcu, path).requires_admin(),
