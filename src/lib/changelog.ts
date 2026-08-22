@@ -15,14 +15,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '0.4.1',
     date: '2026-08-22',
     highlights: [
-      'NEW **Sonic launch.** Fastboi now fires through the Sonic theme.',
-    ],
-  },
-  {
-    version: '0.4.0',
-    date: '2026-08-22',
-    highlights: [
-      'NEW **A rare ticket might be waiting.** Your first Tune Now can now reveal a limited VIP ticket.',
+      'NEW **A chance at a rare ticket.** Your first Tune Now can reveal a one-time VIP discount, and Fastboi now launches through the Sonic theme.',
     ],
   },
   {
