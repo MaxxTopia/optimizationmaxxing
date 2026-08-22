@@ -15,11 +15,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '0.4.0',
     date: '2026-08-22',
     highlights: [
-      'NEW **A measured lab for the next margin.** OS Lab records repeatable results across Windows installs, CPU Health runs a bounded one-click stress screen with WHEA context, and Asta Fit explains when the aggressive lane is a poor match for a laptop or low-memory rig.',
-      'FIX **Presets and catalog honesty.** Esports is now a genuinely low-risk starting lane; Asta and imported community packs label experiments; risky MSI/NIC changes preserve exact per-device restore state; every catalog entry is checked for IDs, recovery metadata, warnings, and ASCII-safe scripts.',
-      'NEW **Asta rarity cards and first-tune tickets.** Asta cards earn Common through Limit Breaker from measured score, while a non-VIP user gets one locally persisted Gold, Emerald, or Diamond ticket after their first Tune Now run: $99, $77, or $69 lifetime VIP pricing from the normal $115.',
-      'IMPROVE **Tournament, SCEWIN, Hardware, and Grind.** Tournament Mode is now an eligibility safety schedule rather than an FPS switch; SCEWIN is a guided read-only workflow; the hardware and grind pages carry review dates, source boundaries, and current Windows/anti-cheat caveats.',
-      'IMPROVE **The whole app speaks to both builders and normal players.** Experimental actions show a visible warning and expected trade-off, recovery paths are stated in plain language, and first-run themes now choose from the four bottom profiles while preserving a user\'s later choice.',
+      'NEW **A rare ticket might be waiting.** Your first Tune Now can now reveal a limited VIP ticket.',
     ],
   },
   {
