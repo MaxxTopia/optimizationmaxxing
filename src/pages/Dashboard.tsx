@@ -10,6 +10,7 @@ import { RecommendedForRig } from '../components/RecommendedForRig'
 import { RecommendedTweaks } from '../components/RecommendedTweaks'
 import { RigAdvisories } from '../components/RigAdvisories'
 import { RingGauge } from '../components/RingGauge'
+import { SonicFastboi } from '../components/SonicFastboi'
 import { SystemHealth } from '../components/SystemHealth'
 import { WhyUs } from '../components/WhyUs'
 import { useMetrics } from '../store/useMetrics'
@@ -45,7 +46,8 @@ export function Dashboard() {
       {/* HERO — name, tagline, primary CTAs */}
       <section className="theme-stage-hero relative overflow-hidden rounded-2xl p-8 md:p-10 surface-card">
         <div className="hero-gradient" />
-        <div className="relative">
+        <SonicFastboi />
+        <div className="relative z-10">
           <p className="text-xs uppercase tracking-widest text-text-subtle mb-3">
             optimizationmaxxing · v0.1
           </p>

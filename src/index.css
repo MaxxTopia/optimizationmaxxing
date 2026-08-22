@@ -590,6 +590,227 @@ body.profile-sonic .surface-card:hover::after {
   }
 }
 
+/* Sonic signature — the original Sprite Cannon Super Fastboi gets one
+ * controlled launch per cycle. The launcher is a quiet corner object, not a
+ * banner: it never captures input, never covers content, and disappears
+ * completely when another theme is selected. */
+body.profile-sonic .sonic-fastboi {
+  position: absolute;
+  right: 18px;
+  bottom: 0;
+  width: 178px;
+  height: 178px;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 1;
+}
+body.profile-sonic .sonic-fastboi__launcher {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+  width: 118px;
+  height: 112px;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.36));
+}
+body.profile-sonic .sonic-fastboi__mount {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  width: 52px;
+  height: 52px;
+  border: 3px solid rgba(12, 24, 46, 0.95);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 30%, #b8d7ef 0 8%, #55708e 12% 25%, #1c3858 48%, #0b1931 72% 100%);
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.18),
+    0 0 0 2px rgba(255, 215, 0, 0.32),
+    0 0 22px rgba(0, 122, 255, 0.42);
+}
+body.profile-sonic .sonic-fastboi__mount::after {
+  content: '';
+  position: absolute;
+  inset: 17px;
+  border-radius: 50%;
+  background: #ffd700;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
+}
+body.profile-sonic .sonic-fastboi__barrel {
+  position: absolute;
+  right: 29px;
+  bottom: 38px;
+  width: 86px;
+  height: 22px;
+  border: 2px solid #101f37;
+  border-radius: 7px 4px 4px 7px;
+  background: linear-gradient(180deg, #b9cde0 0%, #5c7894 25%, #203b5b 58%, #0a172d 100%);
+  transform: rotate(-31deg);
+  transform-origin: 92% 50%;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.38),
+    0 0 11px rgba(0, 122, 255, 0.36);
+}
+body.profile-sonic .sonic-fastboi__barrel::before {
+  content: '';
+  position: absolute;
+  left: 26px;
+  top: -3px;
+  width: 11px;
+  height: 24px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #fff0a3, #ffd700 48%, #936e00);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.66);
+}
+body.profile-sonic .sonic-fastboi__barrel::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 18px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.44);
+}
+body.profile-sonic .sonic-fastboi__muzzle {
+  position: absolute;
+  right: 17px;
+  bottom: 66px;
+  width: 28px;
+  height: 31px;
+  border: 4px solid #152b49;
+  border-radius: 50%;
+  background: radial-gradient(circle, #06101f 0 42%, #ffd700 45% 58%, #527da5 62% 100%);
+  transform: rotate(-31deg);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.62), 0 0 30px rgba(0, 122, 255, 0.38);
+}
+body.profile-sonic .sonic-fastboi__spark {
+  position: absolute;
+  right: 36px;
+  bottom: 72px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.92) 0 5%, rgba(255, 215, 0, 0.8) 18%, rgba(0, 122, 255, 0) 70%);
+  animation: sonic-fastboi-spark 4.8s ease-out infinite;
+}
+body.profile-sonic .sonic-fastboi__shot {
+  position: absolute;
+  right: 59px;
+  bottom: 68px;
+  width: 67px;
+  height: 67px;
+  opacity: 0;
+  transform-origin: 58% 58%;
+  animation: sonic-fastboi-launch 4.8s cubic-bezier(0.18, 0.84, 0.24, 1) infinite;
+  filter: drop-shadow(0 0 7px rgba(255, 215, 0, 0.72)) drop-shadow(0 9px 10px rgba(0, 0, 0, 0.26));
+}
+body.profile-sonic .sonic-fastboi__shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+body.profile-sonic .sonic-fastboi__trail {
+  position: absolute;
+  right: 80px;
+  bottom: 79px;
+  width: 84px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0), rgba(255, 215, 0, 0.76), rgba(255, 255, 255, 0.9));
+  filter: blur(4px);
+  opacity: 0;
+  transform: rotate(-48deg);
+  transform-origin: right center;
+  animation: sonic-fastboi-trail 4.8s ease-out infinite;
+}
+body.profile-sonic .sonic-fastboi__trail--two {
+  width: 52px;
+  height: 10px;
+  right: 91px;
+  bottom: 95px;
+  animation-delay: 60ms;
+  filter: blur(2px);
+}
+body.profile-sonic .sonic-fastboi__ring {
+  position: absolute;
+  right: 44px;
+  bottom: 52px;
+  width: 38px;
+  height: 38px;
+  border: 2px solid rgba(255, 215, 0, 0.84);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.45);
+  animation: sonic-fastboi-ring 4.8s ease-out infinite;
+}
+body.profile-sonic .sonic-fastboi__ring--two {
+  border-color: rgba(0, 194, 255, 0.76);
+  animation-delay: 120ms;
+}
+@keyframes sonic-fastboi-launch {
+  0%, 5% {
+    opacity: 0;
+    transform: translate(8px, 16px) rotate(12deg) scale(0.78);
+  }
+  9% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-4deg) scale(1.03);
+  }
+  34% {
+    opacity: 1;
+    transform: translate(-69px, -72px) rotate(-24deg) scale(0.94);
+  }
+  53%, 100% {
+    opacity: 0;
+    transform: translate(-92px, -93px) rotate(-32deg) scale(0.74);
+  }
+}
+@keyframes sonic-fastboi-trail {
+  0%, 5% { opacity: 0; transform: rotate(-48deg) scaleX(0.2); }
+  10% { opacity: 0.88; transform: rotate(-48deg) scaleX(0.72); }
+  35% { opacity: 0.24; transform: rotate(-48deg) scaleX(1); }
+  52%, 100% { opacity: 0; transform: rotate(-48deg) scaleX(0.28); }
+}
+@keyframes sonic-fastboi-ring {
+  0%, 6% { opacity: 0; transform: scale(0.45); }
+  11% { opacity: 0.86; transform: scale(0.78); }
+  35% { opacity: 0; transform: scale(1.75); }
+  100% { opacity: 0; transform: scale(1.75); }
+}
+@keyframes sonic-fastboi-spark {
+  0%, 6%, 44%, 100% { opacity: 0.12; transform: scale(0.72); }
+  10% { opacity: 1; transform: scale(1.24); }
+  22% { opacity: 0.28; transform: scale(0.85); }
+}
+@media (max-width: 900px) {
+  body.profile-sonic .sonic-fastboi {
+    right: -24px;
+    bottom: -18px;
+    transform: scale(0.72);
+    transform-origin: bottom right;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.profile-sonic .sonic-fastboi__shot {
+    opacity: 1;
+    animation: none;
+    transform: translate(-34px, -42px) rotate(-14deg) scale(0.92);
+  }
+  body.profile-sonic .sonic-fastboi__trail,
+  body.profile-sonic .sonic-fastboi__spark {
+    opacity: 0.32;
+    animation: none;
+  }
+  body.profile-sonic .sonic-fastboi__ring {
+    opacity: 0.32;
+    animation: none;
+    transform: scale(1.2);
+  }
+}
+
 /* BO3 Zombies — Pack-a-Punch HUD corner brackets. Tag any card with
  * .bo3-hud-frame to get the four corner clips. Brackets are positioned
  * via ::before/::after on the wrapper; the wrapper provides .bo3-corner-tl

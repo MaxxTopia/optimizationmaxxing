@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.1',
+    date: '2026-08-22',
+    highlights: [
+      'NEW **Sonic launch.** Fastboi now fires through the Sonic theme.',
+    ],
+  },
+  {
     version: '0.4.0',
     date: '2026-08-22',
     highlights: [

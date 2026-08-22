@@ -64,10 +64,8 @@ jobs:
                   releaseBody: |
                       ## Highlights
 
-                      - A measured OS Lab and bounded one-click CPU Health screen now compare supported Windows installs and surface Intel instability signals without pretending to prove degradation or FPS gains.
-                      - Presets and imported community packs now separate the low-risk starting lane from clearly labeled Asta experiments; MSI and NIC script actions preserve exact per-device restore state.
-                      - Asta score cards now earn visible rarity tiers, and a non-VIP user's first Tune Now run can issue one locally persisted Gold, Emerald, or Diamond lifetime-VIP ticket at $99, $77, or $69.
-                      - Tournament, SCEWIN, Hardware, Grind, and first-run theme guidance were refreshed for current support and anti-cheat boundaries.
+                      - A chance at a rare ticket can appear after a first Tune Now.
+                      - Fastboi now launches inside the Sonic theme.
 
                       Auto-built by CI from tag `${{ github.ref_name }}`. The signed `latest.json`, installer, and signature are verified before the release is published.
                   releaseDraft: true
