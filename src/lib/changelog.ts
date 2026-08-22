@@ -15,7 +15,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '0.4.1',
     date: '2026-08-22',
     highlights: [
-      'NEW **A chance at a rare ticket.** Your first Tune Now can reveal a one-time VIP discount, and Fastboi now launches through the Sonic theme.',
+      'NEW **Tuning is easier to trust.** Better presets, clearer experimental warnings, and new CPU Health / OS Comparison checks put the useful signal first. First-time Tuners also have a chance at something rare; light theme improvements round out the pass.',
     ],
   },
   {
