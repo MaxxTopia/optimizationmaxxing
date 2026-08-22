@@ -1,10 +1,10 @@
 /**
- * Game benchmark card showing claimed FPS gain. Mirror of paragontweaks +
- * hone.gg pattern but with our themed accent + crisper typography.
+ * Game measurement card. It deliberately avoids turning a creator result into
+ * a promise for every rig.
  */
 interface GameBenchmarkProps {
   game: string
-  /** e.g. "+36% FPS" */
+  /** Short measurement prompt or directional result. */
   gain: string
   /** Detail line. */
   description: string

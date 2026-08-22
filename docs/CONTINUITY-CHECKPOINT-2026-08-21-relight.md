@@ -1,0 +1,85 @@
+# OptimizationMaxxing relight checkpoint — 2026-08-21
+
+## Scope
+
+This checkpoint covers the relight / reliability pass requested for OptimizationMaxxing:
+
+- audit and repair presets and catalog language;
+- visibly separate measured, mechanism, situational, cosmetic, and experimental tweaks;
+- add a plain-English CPU stability / degradation screening flow;
+- add repeatable OS / Windows comparison snapshots to Asta Bench;
+- improve first-run theme selection, Tune Now ticket UX, Asta rarity cards, Tournament Mode, SCEWIN guidance, Grind, Hardware, and Session language;
+- inspect the MaxxTopia and Spritecannon surfaces before any site/media change;
+- run typecheck, Rust tests, build, focused UI checks, and the documented release flow;
+- update continuity and release notes before push / deployment.
+
+## Recovered state
+
+- Repository: `C:\Users\Diggy\projects\optimizationmaxxing`
+- Branch: `main`
+- HEAD: `447f85f` / v0.3.12, aligned with `origin/main` and `origin/HEAD`
+- Initial worktree: clean tracked state; preserved untracked WIP:
+  - `_CONTENT-FRESHNESS-AUDIT-2026-06-27.md`
+  - `_IF-YOU-LOSE-CLAUDE.txt`
+  - `_PAWNIO-UPGRADE-SCOPE-2026-07-04.md`
+  - `_demo_work/`
+- Existing safety architecture: Tauri 2, SQLite apply snapshots, one-UAC batching, restore-point support, no BIOS/SPD/kernel-driver writes.
+- Existing public release: v0.3.12 OAuth / registry / UAC fixes are live; VIP redemption still has a human retry gate from the prior continuity notes.
+- No publish, deployment, push, credential rotation, or deletion has been performed in this pass yet. The working tree now contains the intended relight changes plus the pre-existing WIP listed above.
+
+## Evidence decisions locked for this pass
+
+1. WHEA counts and a short Windows workload are screening signals only. The app must never call them proof that silicon is degraded. It should say when the result warrants BIOS-default validation, longer stress testing, Intel Processor Diagnostic Tool / OCCT, or an RMA conversation.
+2. Intel’s current official guidance for affected 13th/14th-gen desktop CPUs is current vendor BIOS, Intel Default Settings, and microcode 0x12F or later. The old 0x12B floor stays historical context, not the “latest safe” headline.
+3. Fortnite tournament readiness is separate from performance tuning. Current official requirements include Secure Boot, TPM, and IOMMU. Tournament Mode should explain that it protects eligibility by reverting explicitly flagged changes and verifying state; it is a no-op safety schedule when no flags exist, not a hidden FPS mode.
+4. Microsoft documents `useplatformclock`, `tscsyncpolicy`, and related BCD options as debugging-only. They may remain available only as clearly experimental, reversible, user-acknowledged options; they must not be framed as universal wins.
+5. Generic PowerShell actions still use a deterministic inverse path and cannot claim byte-perfect restore when a prior value was not captured. MSI mode and NIC interrupt moderation now capture exact per-device pre-state, refuse a guessed restore when no backup exists, and remain experimental / expert-only; they stay excluded from Tune Now and the Esports default lane.
+6. Creator videos are useful for feature discovery and hypotheses, not efficacy proof. Every competitive recommendation must be cross-checked against authoritative Windows, vendor, Fortnite, or measured local evidence.
+7. OS comparison is a local, repeatable snapshot lab. It compares runs on the same physical rig and does not pretend to validate a custom ISO, driver stack, game scene, or long-term stability by itself.
+8. A Tune Now reward is a one-time, local ticket with a unique identifier and rig-bound proof string. It can be redeemed manually by Diggy; the app must not claim that a screenshot is cryptographically enforceable until a server claim endpoint exists.
+
+## Research anchors
+
+- Intel current Vmin Shift support: <https://www.intel.com/content/www/us/en/support/articles/000102331/processors.html>
+- Intel Processor Diagnostic Tool guide: <https://www.intel.com/content/dam/support/us/en/documents/processors/sb/theintelprocessordiagnostictoolinwindowsuserguider.pdf>
+- Epic tournament anti-cheat requirements: <https://www.fortnite.com/competitive/rules-guidelines/rules-library/new-fortnite-anti-cheat-pc-requirements-and-latest-legal-action?region=NAC>
+- Microsoft BCD reference: <https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/bcdedit--set>
+- Microsoft windowed-game optimization: <https://support.microsoft.com/en-au/windows/optimizations-for-windowed-games-in-windows-11-3f006843-2c7e-4ed0-9a5e-f9389e535952>
+- MemTest86 limitation note: <https://www.memtest86.com/help.html>
+- Hone restore-point / optimizer UX reference: <https://support.hone.gg/hc/en-gb/articles/4902940834079-Setting-Up-a-Restore-Point>
+- Creator hypothesis reference reviewed: Lecctron’s Fortnite optimization guide (December 2024): <https://www.youtube.com/watch?v=IFypHfmUVUE>
+
+## Planned implementation order
+
+1. Add catalog metadata / validation and repair preset descriptions, duplicate IDs, experimental visibility, and Tune Now eligibility.
+2. Add the CPU health screening command and UI; soften the existing Intel microcode copy.
+3. Add OS Lab snapshots / comparison to Benchmark.
+4. Add ticket modal, Asta score-based rarity, first-run theme selection, and plain-English Tournament / Session / SCEWIN flows.
+5. Refresh Grind / Hardware with dated evidence and a rig-fit summary.
+6. Inspect MaxxTopia / Spritecannon and make only focused, authorized cross-project edits.
+7. Add `RESILIENCE.md`, update changelog / continuity, verify, then present the exact release package before publishing.
+
+## Still unresolved / human gates
+
+- Real-game Fortnite input / frametime validation remains a physical-game gate.
+- CPU screening cannot replace long-duration stability testing or vendor diagnosis.
+- OS comparisons need the user to run the same workload after each OS install with the same BIOS, driver, game mode, and scene.
+- SCEWIN remains read-only guidance; AMI tool provenance and BIOS changes remain user-owned.
+- The ticket redemption is manual until a secure, server-side claim flow is approved.
+- The real Tauri CPU Health screen, thermal behavior, and native OS Lab run still need desktop validation.
+- MaxxTopia’s Fastboi/Sonic banner is locally built and visually inspected; its live route and the release-synced Optimizationmaxxing version/update card must be verified after the app release is actually live.
+- The requested completion DM still needs a safe, available Maxx bot send path; no ticket-winner identity is collected by the local app.
+
+## Implementation and verification checkpoint — 2026-08-21
+
+- Catalog: 100 entries pass `scripts/audit-catalog.mjs` with 0 errors / 0 warnings; 14 entries are explicitly experimental or risk-4. Risk, evidence tier, expected impact, warning text, ID references, and ASCII-safe apply/revert scripts are structurally checked.
+- App additions: CPU Health screening with bounded workload + WHEA context; OS Lab median-of-three snapshots; Asta Fit guardrail; score-based Asta rarity; one-time local Tune Ticket; first-run bottom-four theme default; clearer Tournament, Session, SCEWIN, Hardware, and Grind surfaces.
+- Safety edits: Tune Now excludes experimental / tournament-flagged entries; Esports is free and excludes device / boot / security experiments; MSI and NIC interrupt scripts save exact restore values; experimental confirmation/warnings are visible in tweak rows and preset apply flows.
+- Content edits: current Windows 11 / Intel 0x12F+ / Epic Secure Boot + TPM + IOMMU boundaries are reflected in visible app copy; fixed FPS, latency, “universal drop-in,” and old Windows-version claims were softened or removed.
+- Version/release notes: package, lockfile, Cargo, Tauri config, and app changelog are aligned to v0.4.0; `.github/workflows/release.yml` now emits a `## Highlights` block so MaxxTopia’s existing release-sync workflow can update `/updates`.
+- Cross-project: MaxxTopia local build passes; its homepage now uses the real `fastboi__super.png` in an animated cannon launch under a Sonic-theme banner. Existing dirty/untracked MaxxTopia work was preserved.
+- Checks passed: `node scripts/audit-catalog.mjs`; `npx tsc --noEmit`; `cargo test --manifest-path src-tauri/Cargo.toml` (84 passed); `npm run build` in both repositories; `git diff --check`; local browser inspection of app routes and MaxxTopia `/` + `/optimizationmaxxing/` with no fresh console errors.
+
+## Exact next action
+
+Stage only the intended OptimizationMaxxing files and the two focused MaxxTopia source files, review the staged diff, then run the documented tag/release flow. After the release workflow and MaxxTopia sync complete, verify the GitHub assets, `/updates`, `/optimizationmaxxing`, homepage launch scene, and live route headers before sending the completion DM.

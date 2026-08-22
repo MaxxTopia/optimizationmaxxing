@@ -431,19 +431,18 @@ pub struct MicrocodeReport {
     /// Whether the CPU model is in the Intel 13/14gen "Vmin Shift Instability"
     /// affected family (i9/i7/i5 K/KF/KS variants + 65W non-K).
     pub is_affected_family: bool,
-    /// Minimum safe microcode for affected CPUs (0x12B per Intel's Sep 2024
-    /// "final mitigation" announcement). 0x12F is the latest 2024/2025
-    /// supplemental fix.
+    /// Current Intel support guidance for affected CPUs is microcode 0x12F or
+    /// later, delivered through the motherboard vendor's BIOS.
     pub min_safe_revision: Option<String>,
     /// Headline status: "ok" | "outdated" | "unknown" | "not-affected" |
-    /// "active-degradation" (microcode at floor OR below, but WHEA event
-    /// frequency > 5 over last 30 days = clock-tree degradation in progress).
+    /// "active-degradation". The last value is intentionally a screening
+    /// signal for follow-up, never proof of degraded silicon.
     pub status: String,
     pub note: String,
     /// Count of WHEA-Logger events in the System event log over the last
     /// 30 days. None = couldn't read (event log access denied, no PS).
-    /// >5 on a 13/14-gen K-class chip is the canonical "active Raptor Lake
-    /// degradation" signature. Surfaced only for affected-family CPUs.
+    /// Any non-zero count is worth investigating, but WHEA events are not a
+    /// standalone degradation diagnosis.
     pub whea_events_30d: Option<u32>,
 }
 
@@ -478,7 +477,7 @@ pub fn read_microcode_report() -> anyhow::Result<MicrocodeReport> {
 
     let is_affected_family = brand_is_intel_13_14_affected(&brand);
     let min_safe_revision = if is_affected_family {
-        Some("0x0000012B".to_string())
+        Some("0x0000012F".to_string())
     } else {
         None
     };
@@ -503,35 +502,35 @@ pub fn read_microcode_report() -> anyhow::Result<MicrocodeReport> {
         (Some(rev), true) => {
             let rev_num = u32::from_str_radix(rev.trim_start_matches("0x"), 16).unwrap_or(0);
             let whea = whea_events_30d.unwrap_or(0);
-            let active_degradation = whea > 5;
+            let active_degradation = whea > 0;
 
             if active_degradation {
                 (
                     "active-degradation".to_string(),
                     format!(
-                        "{whea} WHEA-Logger events in the last 30 days. On an Intel 13/14gen K-class \
-                         CPU this is the canonical fingerprint of active Vmin Shift degradation — \
-                         the clock-tree circuit is deteriorating. Microcode {rev} is the current \
-                         load. Microcode updates HALT further degradation but cannot reverse what \
-                         has already happened. If you're still under Intel's extended 5-year \
-                         warranty (announced Aug 2024), file an RMA now."
+                        "{whea} WHEA-Logger event(s) appeared in the last 30 days. This is an \
+                         instability signal, not proof of Vmin Shift degradation. Running microcode \
+                         is {rev}; verify the motherboard BIOS is on Intel's current 0x12F-or-later \
+                         guidance and Intel Default Settings are active. If crashes or WHEA events \
+                         continue at stock settings, collect the logs and contact Intel about the \
+                         affected-processor warranty path."
                     ),
                 )
             } else if rev_num >= 0x12B {
                 (
                     "ok".to_string(),
                     format!(
-                        "Running microcode {rev} — at or above the 0x12B Intel-mitigation floor. \
-                         WHEA events last 30d: {whea}. You're protected from further Vmin Shift \
-                         degradation. Verify BIOS 'Intel Default Settings' / 'Intel Baseline' \
-                         profile is also active."
+                        "Running microcode {rev} — at or above Intel's current 0x12F guidance. \
+                         WHEA events last 30d: {whea}. This card cannot prove silicon health; verify \
+                         BIOS 'Intel Default Settings' / 'Intel Baseline' and use the CPU Health \
+                         screen or a longer vendor diagnostic if instability remains."
                     ),
                 )
             } else {
                 (
                     "outdated".to_string(),
                     format!(
-                        "Running microcode {rev} — BELOW the 0x12B mitigation floor. \
+                        "Running microcode {rev} — BELOW Intel's current 0x12F guidance. \
                          WHEA events last 30d: {whea}. Update BIOS from your motherboard vendor's \
                          site immediately and apply the 'Intel Default Settings' / 'Intel \
                          Baseline' profile. Already-degraded CPUs are not repairable; RMA is \
@@ -1601,6 +1600,167 @@ pub fn bench_cpu_latency() -> CpuLatencySample {
         iterations: ITERS,
         ns_per_iter: total_ns as f64 / ITERS as f64,
     }
+}
+
+/// Plain-English CPU stability screen. This is deliberately a screening tool,
+/// not a silicon-health oracle: it runs a bounded multi-worker workload and
+/// compares the WHEA event count before and after. A clean run means only
+/// "nothing failed during this window"; a failure or new WHEA event means the
+/// user should stop tuning and validate BIOS defaults with a longer diagnostic.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CpuHealthResult {
+    pub cpu_brand: String,
+    pub vendor: String,
+    pub duration_seconds: u32,
+    pub workers: u32,
+    pub iterations: u64,
+    pub internal_errors: u32,
+    pub thread_panics: u32,
+    pub whea_before: Option<u32>,
+    pub whea_after: Option<u32>,
+    pub whea_delta: Option<u32>,
+    pub cancelled: bool,
+    pub status: String,
+    pub headline: String,
+    pub note: String,
+}
+
+static CPU_HEALTH_CANCEL: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+fn health_mix(state: u64, lane: u64, worker: u64) -> u64 {
+    let mut x = state
+        .wrapping_add(lane.wrapping_mul(0x9E3779B97F4A7C15))
+        .wrapping_add(worker.wrapping_mul(0xD1B54A32D192ED03));
+    x ^= x >> 30;
+    x = x.wrapping_mul(0xBF58476D1CE4E5B9);
+    x ^= x >> 27;
+    x = x.wrapping_mul(0x94D049BB133111EB);
+    x ^ (x >> 31)
+}
+
+fn read_cpu_brand_for_health() -> String {
+    use winreg::enums::HKEY_LOCAL_MACHINE;
+    use winreg::RegKey;
+
+    RegKey::predef(HKEY_LOCAL_MACHINE)
+        .open_subkey(r"HARDWARE\DESCRIPTION\System\CentralProcessor\0")
+        .ok()
+        .and_then(|key| key.get_value::<String, _>("ProcessorNameString").ok())
+        .map(|brand| brand.trim().to_string())
+        .unwrap_or_default()
+}
+
+pub fn run_cpu_health_test(duration_seconds: u32) -> CpuHealthResult {
+    use std::sync::{atomic::{AtomicU32, Ordering}, Arc};
+    use std::time::{Duration, Instant};
+
+    let duration_seconds = duration_seconds.clamp(30, 180);
+    CPU_HEALTH_CANCEL.store(false, Ordering::Relaxed);
+    let cpu_brand = read_cpu_brand_for_health();
+    let vendor = if cpu_brand.to_ascii_lowercase().contains("intel") {
+        "intel".to_string()
+    } else if cpu_brand.to_ascii_lowercase().contains("amd") {
+        "amd".to_string()
+    } else {
+        "unknown".to_string()
+    };
+    let whea_before = whea_count_last_30_days();
+    let workers = std::thread::available_parallelism()
+        .map(|n| n.get().min(64) as u32)
+        .unwrap_or(1);
+    let deadline = Instant::now() + Duration::from_secs(duration_seconds as u64);
+    let internal_errors = Arc::new(AtomicU32::new(0));
+    let mut handles = Vec::with_capacity(workers as usize);
+
+    for worker in 0..workers {
+        let errors = Arc::clone(&internal_errors);
+        handles.push(std::thread::spawn(move || {
+            let mut state = 0x243F6A8885A308D3u64 ^ worker as u64;
+            let mut iterations = 0u64;
+            while Instant::now() < deadline && !CPU_HEALTH_CANCEL.load(Ordering::Relaxed) {
+                for lane in 0..4096u64 {
+                    let next = health_mix(state, lane, worker as u64);
+                    let verified = health_mix(state, lane, worker as u64);
+                    if next != verified {
+                        errors.fetch_add(1, Ordering::Relaxed);
+                    }
+                    state = next.rotate_left((worker % 31) + 1);
+                    iterations = iterations.saturating_add(1);
+                }
+                std::hint::black_box(state);
+            }
+            (iterations, state)
+        }));
+    }
+
+    let mut iterations = 0u64;
+    let mut thread_panics = 0u32;
+    for handle in handles {
+        match handle.join() {
+            Ok((count, state)) => {
+                iterations = iterations.saturating_add(count);
+                std::hint::black_box(state);
+            }
+            Err(_) => thread_panics = thread_panics.saturating_add(1),
+        }
+    }
+
+    let internal_errors = internal_errors.load(Ordering::Relaxed);
+    let whea_after = whea_count_last_30_days();
+    let whea_delta = match (whea_before, whea_after) {
+        (Some(before), Some(after)) => Some(after.saturating_sub(before)),
+        _ => None,
+    };
+    let failed = internal_errors > 0 || thread_panics > 0;
+    let new_whea = whea_delta.unwrap_or(0) > 0;
+    let cancelled = CPU_HEALTH_CANCEL.load(Ordering::Relaxed);
+    let status = if cancelled {
+        "cancelled"
+    } else if failed {
+        "fail"
+    } else if new_whea {
+        "warning"
+    } else {
+        "pass"
+    };
+    let headline = match status {
+        "cancelled" => "The screen was stopped before it finished; no health conclusion was made.".to_string(),
+        "fail" => "The workload reported a failure — stop tuning and investigate.".to_string(),
+        "warning" => "New WHEA hardware errors appeared during the screen.".to_string(),
+        _ => "No workload failure or new WHEA event was seen in this window.".to_string(),
+    };
+    let note = if cancelled {
+        format!(
+            "This screen stopped early after the user request. It is an incomplete result and should not be used to clear or condemn the CPU. If the run became unsafe, return BIOS and memory to stock before trying a longer Intel Processor Diagnostic Tool, OCCT, or vendor support test."
+        )
+    } else {
+        format!(
+            "This was a {duration_seconds}s Windows screening run on {workers} logical worker(s). A pass is not proof that the CPU is healthy or that it will survive an overnight stress test. WHEA reads can be unavailable; a warning or crash warrants BIOS Intel Default Settings / stock memory validation, then a longer Intel Processor Diagnostic Tool, OCCT, or vendor support test. Do not use this result alone to approve an RMA or a voltage change."
+        )
+    };
+
+    CpuHealthResult {
+        cpu_brand,
+        vendor,
+        duration_seconds,
+        workers,
+        iterations,
+        internal_errors,
+        thread_panics,
+        whea_before,
+        whea_after,
+        whea_delta,
+        cancelled,
+        status: status.to_string(),
+        headline,
+        note,
+    }
+}
+
+pub fn cancel_cpu_health_test() {
+    CPU_HEALTH_CANCEL.store(true, std::sync::atomic::Ordering::Relaxed);
 }
 
 #[derive(Debug, Clone, Serialize)]

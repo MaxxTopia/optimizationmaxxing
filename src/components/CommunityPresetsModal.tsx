@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { COMMUNITY_PRESETS, type CommunityPreset } from '../lib/communityPresets'
-import { catalog, type TweakRecord } from '../lib/catalog'
+import { catalog, isExperimentalTweak, type TweakRecord } from '../lib/catalog'
 import { useCustomPresets } from '../store/useCustomPresets'
 
 /**
@@ -63,6 +63,9 @@ export function CommunityPresetsModal({ open, onClose, onImported }: Props) {
         <div className="overflow-y-auto p-5 space-y-3">
           {COMMUNITY_PRESETS.map((p) => {
             const resolved = p.tweakIds.filter((id) => tweaksById.has(id))
+            const experimental = p.tweakIds
+              .map((id) => tweaksById.get(id))
+              .filter((t): t is TweakRecord => !!t && isExperimentalTweak(t))
             const missing = p.tweakIds.length - resolved.length
             const already = existingNames.has(p.name)
             return (
@@ -86,6 +89,9 @@ export function CommunityPresetsModal({ open, onClose, onImported }: Props) {
                 <p className="text-xs text-text-muted leading-snug">{p.description}</p>
                 <p className="text-xs text-text-subtle">
                   {resolved.length} tweaks
+                  {experimental.length > 0 && (
+                    <span className="text-amber-300"> · {experimental.length} experimental opt-in</span>
+                  )}
                   {missing > 0 && (
                     <span className="text-accent"> · {missing} not in this catalog</span>
                   )}

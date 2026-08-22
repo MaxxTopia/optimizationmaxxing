@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 /**
  * Manual logger for canonical industry benchmarks. Asta Bench measures
- * the four metrics that map to Fortnite click-to-pixel cost; this card
+ * four controlled proxies; this card
  * lets users log their Cinebench / Time Spy / Steel Nomad / Speed Way
  * runs to anchor the relative deltas Asta Bench shows. Persisted to
  * localStorage; per-benchmark history table + delta vs previous run.
@@ -95,9 +95,9 @@ export function ThirdPartyBenchLogger() {
         <p className="text-xs uppercase tracking-widest text-text-subtle">log · third-party</p>
         <h3 className="text-lg font-semibold">Cinebench / 3DMark / fps logger</h3>
         <p className="text-sm text-text-muted leading-snug max-w-2xl">
-          Asta Bench measures the four metrics that move click-to-pixel. This logs canonical
-          industry benchmarks alongside — run Cinebench R23 / 3DMark Time Spy yourself, type
-          the score in here, see the delta vs your last run.
+          Asta Bench measures four controlled proxies, not direct Fortnite FPS or click-to-pixel.
+          Log Cinebench R23 / 3DMark Time Spy alongside it — run the benchmark yourself, type the
+          score here, and compare the delta against your last run.
         </p>
       </div>
 
@@ -230,4 +230,3 @@ export function ThirdPartyBenchLogger() {
     </section>
   )
 }
-

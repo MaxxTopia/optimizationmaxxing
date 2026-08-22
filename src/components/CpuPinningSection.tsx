@@ -93,7 +93,7 @@ function getRec(cpu: CpuInfo): CpuRec {
         },
         stable: {
           label: 'All P-cores · HT on',
-          description: 'P-cores including their HT siblings — keeps you off E-cores (which are the real perf killer) but gives the game double the threads if it needs them. Safe across every game. The right pick if Max Perf gives you any hitching.',
+          description: 'P-cores including their HT siblings — keeps you off E-cores while leaving more threads available if the game needs them. Usually the steadier starting point; switch back if a title loses performance or behaves oddly.',
           cores: (max) => firstN(16, max),
         },
       }
@@ -104,7 +104,7 @@ function getRec(cpu: CpuInfo): CpuRec {
         cpuLabel: `${cpu.marketing} — 3D V-Cache on CCD0, frequency CCD on CCD1`,
         maxPerf: {
           label: 'CCD0 physical only · no SMT',
-          description: 'Game runs ONLY on the 3D V-cache die, no SMT. Crushes cross-CCD latency. ~5-8% more 1% lows in Fortnite. Game Mode + Xbox Game Bar normally does this automatically — pinning makes it explicit + works for non-Xbox-registered games too.',
+          description: 'Game runs only on the 3D V-Cache CCD with SMT off. This can reduce cross-CCD scheduling on some dual-CCD X3D systems, but the delta is workload-dependent. Game Mode and the AMD driver may already handle the routing; measure both paths.',
           cores: (max) => physicalCoresOnly(16, max),
         },
         stable: {
@@ -189,7 +189,7 @@ function getRec(cpu: CpuInfo): CpuRec {
         },
         stable: {
           label: 'All cores',
-          description: 'No specific recommendation without recognizing your CPU. "All" is always safe.',
+            description: 'No specific recommendation without recognizing your CPU. Start with All, then compare a measured P-core or V-Cache selection if you see hitches.',
           cores: (max) => allCores(max),
         },
       }

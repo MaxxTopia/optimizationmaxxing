@@ -262,7 +262,7 @@ export function Tweaks() {
           <p className="text-text-subtle text-[11px] mt-1 max-w-xl leading-snug">
             Some tweaks need admin — Windows will pop a single UAC dialog when you click Apply.
             Click <strong className="text-text">Yes</strong> and the whole batch runs in one shot.
-            Every tweak is reversible from <code className="text-accent">/diff</code>.{' '}
+            Snapshot-backed tweaks expose a revert from <code className="text-accent">/diff</code>; script-based actions show their recovery path before apply.{' '}
             {Object.keys(auditByTweakId).length === 0 && (
               <span className="text-accent">
                 Hit <strong>Verify all</strong> first to see which tweaks are already on your rig.

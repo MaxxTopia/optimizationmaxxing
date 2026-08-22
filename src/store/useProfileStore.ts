@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { DEFAULT_PROFILE, profiles, type ProfileId } from '../theme/profiles'
+import { DEFAULT_PROFILE, PROFILE_ORDER, profiles, type ProfileId } from '../theme/profiles'
 
 interface ProfileState {
   activeProfile: ProfileId
@@ -24,10 +24,19 @@ function normalizeProfileId(value: unknown): ProfileId {
   return DEFAULT_PROFILE
 }
 
+// First-run users see one of the four themes at the bottom of the picker so
+// the opening experience feels like the full MaxxTopia palette. Once a user
+// chooses a profile, Zustand persistence keeps that choice exactly.
+const FIRST_RUN_PROFILES = PROFILE_ORDER.slice(-4)
+
+function pickFirstRunProfile(): ProfileId {
+  return FIRST_RUN_PROFILES[Math.floor(Math.random() * FIRST_RUN_PROFILES.length)] ?? DEFAULT_PROFILE
+}
+
 export const useProfileStore = create<ProfileState>()(
   persist(
     (set) => ({
-      activeProfile: DEFAULT_PROFILE,
+      activeProfile: pickFirstRunProfile(),
       setProfile: (id) => set({ activeProfile: id }),
     }),
     {

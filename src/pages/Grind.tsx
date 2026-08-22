@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { GRIND_ENTRIES, type GrindEntry, type GrindKind } from '../lib/grind'
+import { GRIND_ENTRIES, GRIND_LAST_REVIEWED, type GrindEntry, type GrindKind } from '../lib/grind'
 
 /**
  * /grind — curated knowledge channel from the pros + creators who actually
@@ -19,11 +19,23 @@ const KINDS: Array<{ id: GrindKind | 'all'; label: string }> = [
 
 export function Grind() {
   const [kind, setKind] = useState<GrindKind | 'all'>('all')
+  const [query, setQuery] = useState('')
 
   const filtered = useMemo(() => {
-    if (kind === 'all') return GRIND_ENTRIES
-    return GRIND_ENTRIES.filter((e) => e.kind === kind)
-  }, [kind])
+    const normalized = query.trim().toLowerCase()
+    return GRIND_ENTRIES.filter((entry) => {
+      if (kind !== 'all' && entry.kind !== kind) return false
+      if (!normalized) return true
+      const haystack = [
+        entry.name,
+        entry.credential,
+        entry.voice,
+        entry.games.join(' '),
+        ...entry.insights.map((insight) => insight.text),
+      ].join(' ').toLowerCase()
+      return haystack.includes(normalized)
+    })
+  }, [kind, query])
 
   const goat = filtered.find((e) => e.tier === 'goat')
   const rest = filtered.filter((e) => e.tier !== 'goat')
@@ -36,9 +48,14 @@ export function Grind() {
           Grind
         </h1>
         <p className="text-text text-base md:text-lg max-w-2xl mt-2 leading-relaxed font-medium">
-          <span className="text-accent font-bold">Receipts. Not vibes.</span> Curated insights from the
-          pros + creators actually winning right now — Peterbot, Veno, Aussie, EpikWhale, Mongraal,
-          Clix, Reet, Bugha, Th0masHD. Every claim cites a real source.
+          <span className="text-accent font-bold">Receipts. Not vibes.</span> Curated insights from
+          documented pros + creators — what they did, what is transferable, and what is only a
+          historical or personal choice.
+        </p>
+        <p className="text-[11px] text-text-subtle mt-2 leading-snug">
+          Reviewed <span className="font-mono text-accent">{GRIND_LAST_REVIEWED}</span>. We favor
+          official event records, direct interviews, config databases, and linked primary sources;
+          stale claims stay labeled instead of being presented as live meta.
         </p>
       </header>
 
@@ -56,6 +73,15 @@ export function Grind() {
             {k.label}
           </button>
         ))}
+        <label className="flex-1 min-w-[220px] md:max-w-sm md:ml-auto">
+          <span className="sr-only">Search Grind</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search a player, game, or lesson"
+            className="w-full px-3 py-1.5 rounded-md bg-bg-card border border-border text-xs text-text outline-none focus:border-border-glow"
+          />
+        </label>
       </nav>
 
       {goat && kind === 'all' && <GoatCard entry={goat} />}
@@ -65,6 +91,11 @@ export function Grind() {
           <GrindCard key={e.id} entry={e} />
         ))}
         {kind !== 'all' && goat && <GrindCard entry={goat} />}
+        {filtered.length === 0 && (
+          <div className="surface-card p-6 text-sm text-text-muted">
+            No sourced entries match that search. Try a player, game, or lesson keyword.
+          </div>
+        )}
       </div>
 
       <p className="text-[11px] text-text-subtle pt-3 border-t border-border leading-snug">

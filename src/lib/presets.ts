@@ -4,14 +4,14 @@
  * save custom presets + share via export/import.
  */
 import type { TweakRecord } from './catalog'
-import { catalog } from './catalog'
+import { catalog, isExperimentalTweak } from './catalog'
 
 export interface PresetBundle {
   id: string
   name: string
   tagline: string
   description: string
-  /** IDs from v1 catalog. Bad IDs are filtered silently. */
+  /** IDs from v1 catalog. The UI reports missing IDs instead of hiding them. */
   tweakIds: string[]
   /** "Esports" / "BR" / "Streamer" — surfaces in the badge. */
   archetype: string
@@ -29,15 +29,14 @@ export const PRESETS: PresetBundle[] = [
     glyph: '⚡',
     tagline: 'Lowest input lag · ranked matches',
     description:
-      'The measured input-latency levers: max refresh rate, MSI-mode interrupts (lower DPC), mouse acceleration off, Game DVR off. v1.9.0: dropped SystemResponsiveness + PrioritySeparation — efficacy audit found no measured latency effect (MMCSS only touches registered threads; the foreground boost is already the client default).',
+      'A measured-core bundle for ranked play: max refresh rate, mouse acceleration off, Game DVR off, and sticky-keys protection. Device interrupts, boot flags, security changes, and other experiments stay out of this default lane.',
     tweakIds: [
       'display.refresh.maximize',
-      'process.msi-mode.gpu-nic-audio',
       'ui.mouse.disable-acceleration',
       'ui.gamedvr.disable',
       'ui.sticky-keys.disable',
     ],
-    vipGate: 'vip',
+    vipGate: 'free',
   },
   {
     id: 'preset.br',
@@ -105,17 +104,17 @@ export const PRESETS: PresetBundle[] = [
   },
   // ── Asta Mode ───────────────────────────────────────────────────────
   // The ceiling. Every aggressive software lever this app reaches in one
-  // bundle. VIP-only, Fortnite-leaning. ~70% of the gap between a stock
-  // budget rig and a $5K rig is software — this closes it.
+  // bundle. VIP-only, Fortnite-leaning. It is a lab preset, not a promise of
+  // a fixed millisecond or FPS gain.
   // Visual treatment: Black Clover anti-magic. See AstaCard.tsx + /asta.
   {
     id: 'preset.asta-mode',
     name: 'Asta Mode',
     archetype: 'Asta',
     glyph: '🗡',
-    tagline: 'Push the rig to its limit · ~12-22 ms off click-to-pixel',
+    tagline: 'Push the rig to its limit · measure every change',
     description:
-      "For the kids on stock rigs born to chase pros they shouldn't be able to catch. v1.9.0: rebuilt around the efficacy audit's measured wins — max refresh, MSI-mode interrupts, mouse-accel off, mitigations off, Hyper-V/HVCI off, NIC interrupt-moderation + EEE-off, IFEO priority for FN/Val/CS2, kernel timer at 0.5ms, RGB-software DPC tax killed, expanded service kills, telemetry/ads hosts blocked, Fortnite Engine.ini + GameUserSettings.ini hand-tunes, HAGS on. The placebo folklore (MMCSS GPU-priority, SystemResponsiveness, HID queue-size) was dropped. Apply once, revert any tweak via Restore Point. The 'unpolite' Tournament FPS preset.",
+      "The unpolite lab preset: measured and mechanism-backed changes first, then explicitly marked experiments such as device MSI, VBS/Hyper-V, core parking, PCIe power, timer policy, and realtime HID priority. It can improve a specific rig, do nothing, cost power, reduce security, or break tournament eligibility. Run Asta Bench before and after; keep only changes that win on your machine.",
     tweakIds: [
       // Core latency (measured wins)
       'display.refresh.maximize',
@@ -160,7 +159,6 @@ export const PRESETS: PresetBundle[] = [
       'service.werservice.disable',
       'service.maps-broker.disable',
       'service.geolocation.disable',
-      'process.windows-search.disable',
       'process.sysmain.disable',
       'hosts.block.ms-telemetry',
       'hosts.block.windows-ads',
@@ -176,6 +174,15 @@ export function presetTweaks(p: PresetBundle): TweakRecord[] {
   return p.tweakIds
     .map((id) => byId.get(id))
     .filter((t): t is TweakRecord => !!t)
+}
+
+export function presetMissingTweakIds(p: PresetBundle): string[] {
+  const ids = new Set(catalog.tweaks.map((t) => t.id))
+  return p.tweakIds.filter((id) => !ids.has(id))
+}
+
+export function presetExperimentalTweaks(p: PresetBundle): TweakRecord[] {
+  return presetTweaks(p).filter(isExperimentalTweak)
 }
 
 /** Find a preset by id (handles both 'preset.X' and 'X' for community packs). */

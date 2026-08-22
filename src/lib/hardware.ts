@@ -28,9 +28,9 @@ export type HardwareCategory =
 export type HardwareTier = 'goat' | 'pro' | 'budget' | 'principle'
 
 /** Pulled from pro rig snapshots in /grind + ProSettings.net + community
- * scene consensus (July 2026). Bump this when a category's GOAT pick
- * changes — the date stamp tells users how fresh the picks are. */
-export const HARDWARE_LAST_VERIFIED = '2026-07-04'
+ * scene consensus and vendor pages. Bump this when a category's evidence is
+ * reviewed. Prices are intentionally not treated as live data. */
+export const HARDWARE_LAST_VERIFIED = '2026-08-21'
 
 export interface HardwareItem {
   /** Display name. */
@@ -63,14 +63,14 @@ export const HARDWARE: HardwareSection[] = [
     id: 'cpu',
     label: 'CPU',
     blurb:
-      "Fortnite is CPU-limited at high refresh. X3D cache is the single biggest unlock — Ryzen 7 X3D parts win at 1080p competitive even against $700+ Intel flagships. Pin the game to the X3D CCD if you've got a dual-CCD chip.",
+      "Fortnite is often CPU-limited at high refresh, but the correct upgrade depends on your measured CPU/GPU bound time and 1% lows. X3D parts are a strong competitive reference; dual-CCD pinning is a fallback to test, not a universal requirement.",
     items: [
       {
         name: 'AMD Ryzen 7 9850X3D',
         price: '$499',
         tier: 'goat',
         why:
-          'New fastest gaming CPU (launched Jan 2026). 8 cores, 96MB 3D V-Cache, 5.6GHz boost on a better-binned die — ~3-4% over the 9800X3D on average (more in some titles) in CPU-bound games like Fortnite. The literal #1 now, though the 9800X3D is within 2-4% for ~$20+ less.',
+          'Current flagship reference for a CPU-bound competitive build. 8 cores, 96MB 3D V-Cache, and a 5.6GHz advertised boost; independent game results vary by patch, memory, and settings, so treat the 9850X3D-versus-9800X3D gap as directional rather than a guaranteed Fortnite delta.',
         link: 'https://www.tomshardware.com/pc-components/cpus/amd-ryzen-7-9850x3d-vs-ryzen-7-9800x3d',
         citedPro: 'Most current FNCS top-100 builds',
       },
@@ -79,7 +79,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$479',
         tier: 'pro',
         why:
-          'The value pick now that the 9850X3D leads — only 2-4% behind for less money. 8 cores, 96MB L3 (3D V-Cache stack), 5.2GHz boost. ~10% over 7800X3D in 1% lows on UE5, ~25% over a stock 14900K once thermals bind on the Intel. Unlocked for PBO + Curve Optimizer; runs cool because of how the cache stacks under the cores in Zen 5 instead of on top.',
+          'The value reference when the flagship premium is not justified. 8 cores, 96MB L3 (3D V-Cache stack), and a 5.2GHz advertised boost. Use current independent benchmarks for the game and patch you play; the percentage gap is not portable across every rig. Unlocked for PBO + Curve Optimizer, which still requires stability and temperature testing.',
         link: 'https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9800x3d.html',
         citedPro: 'Most current FNCS top-100 builds',
       },
@@ -96,17 +96,17 @@ export const HARDWARE: HardwareSection[] = [
         price: '$499',
         tier: 'pro',
         why:
-          '8 P-core + 16 E-core hybrid. Wins productivity, loses to X3D in Fortnite 1% lows by 5-15%. Live with the May 2024 voltage-degradation reality — load lower P-core boost, run the 0x12B microcode, and it\'s stable. Pin Fortnite to P-cores 0-15 via /auto-pin Auto-pick.',
+          '8 P-core + 16 E-core hybrid. It can remain competitive, but 13th/14th-gen stability and microcode status deserve a check before tuning. Use current BIOS guidance and Intel Default Settings, then measure your own 1% lows; do not assume a fixed gap to an X3D part. Pinning is a fallback to test, not a repair.',
         link: 'https://www.intel.com/content/www/us/en/products/sku/236773/intel-core-i9-processor-14900k-36m-cache-up-to-6-00-ghz/specifications.html',
         caveat:
-          'On 13/14th-gen K-class, check our /diagnostics microcode card. Anything older than 0x12B is on the degradation risk list. Run the latest BIOS.',
+          'On affected 13th/14th-gen desktop CPUs, check /diagnostics. Intel guidance is current BIOS/microcode 0x12F or later plus Intel Default Settings; WHEA is a signal to investigate, not proof of degradation.',
       },
       {
         name: 'AMD Ryzen 5 7600X / 9600X',
         price: '$199 / $249',
         tier: 'budget',
         why:
-          'No X3D, but 6 cores @ 5.3+ GHz still does 240+ FPS in Fortnite at low. The right budget pick if the build budget caps the CPU; pair with the same B650 / DDR5-6000 kit and upgrade to 9800X3D later (drop-in).',
+          'A sensible budget starting point for a CPU-bound build, but FPS depends on the scene, GPU, memory, and cap. Pair with a compatible B650/DDR5 platform and verify upgrade support with the board vendor instead of assuming every future CPU is a drop-in.',
       },
     ],
   },
@@ -121,7 +121,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$1999',
         tier: 'goat',
         why:
-          'Blackwell flagship, 32GB GDDR7, 575W TBP. Overkill for competitive Fortnite at 1080p (you\'ll be CPU-bound long before you saturate it), but it pulls 4K Fortnite + every other game at max while you stream. Real pros don\'t buy this for Fortnite — they buy it because it\'s also their work GPU.',
+          'Blackwell flagship, 32GB GDDR7, and 575W TBP. It is usually a poor value for 1080p competitive play unless you also need high-end 4K, creator, or AI workloads. Confirm case, PSU, connector, and thermals before buying.',
         link: 'https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/',
       },
       {
@@ -129,7 +129,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$999',
         tier: 'goat',
         why:
-          'The current-gen pro-tier pick. 16GB GDDR7, 360W. Maxes Fortnite + DLSS 4 + Reflex 2 with Frame Warp on titles that support it. Best balance of cost + ceiling. (Note: many established pros still run a 4090 — Peterbot does — since Fortnite at 1080p comp settings is CPU-bound long before a 4090 is the limiter; the 5080 is the upgrade pick, not a requirement.)',
+          'A high-end reference with 16GB GDDR7 and 360W board power. It is not required for competitive Fortnite; verify your real GPU utilization and frame-time bound before spending at this tier. Feature support varies by game and driver.',
         link: 'https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5080/',
       },
       {
@@ -137,7 +137,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$749',
         tier: 'pro',
         why:
-          '16GB GDDR7, 300W. ~95% of 4080 perf for $300 less. Fortnite at Performance mode + 360 Hz monitor caps the GPU at idle utilization — anything past this is wasted on the game itself.',
+          '16GB GDDR7 and 300W board power. A strong upper-midrange reference, but compare current independent benchmarks and your actual GPU utilization instead of carrying a fixed percentage across games.',
         link: 'https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5070-family/',
       },
       {
@@ -145,7 +145,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$449',
         tier: 'budget',
         why:
-          'The budget-pro pick. 16GB GDDR7 (the 8GB variant is a trap — skip it). Holds 240+ FPS Fortnite Performance mode on 1080p. Pair with 9800X3D and you\'ll never know it\'s the budget GPU.',
+          'A sensible starting point where 16GB VRAM and current driver support matter. Do not promise a fixed FPS target: measure your scene, resolution, and CPU pairing before buying.',
       },
     ],
   },
@@ -153,14 +153,14 @@ export const HARDWARE: HardwareSection[] = [
     id: 'ram',
     label: 'RAM',
     blurb:
-      "DDR5-6000 CL30 is the AM5 sweet spot (1:1 FCLK / UCLK ratio). Past 6400 MT/s you drop to Gear 2 on Intel and 2:1 on AMD — latency tanks. Two sticks only; 4-stick kits won't train at 6000 on most boards. Heads-up: the mid-2026 AI-driven DRAM shortage has pushed 32GB DDR5 prices 2-4x over 2025 (a kit that was ~$100 now runs ~$270-$420) — budget accordingly.",
+      "DDR5-6000 CL30 is a common AM5 starting point, not a guarantee of the best memory-controller result. Validate UCLK/MEMCLK behavior on the actual CPU and board; two matched sticks are usually easier to train than four. Retail memory pricing moves, so the bands below are approximate and not live market data.",
     items: [
       {
         name: 'G.Skill Trident Z5 Royal Neo 32GB DDR5-6000 CL28',
         price: '$390-$420',
         tier: 'goat',
         why:
-          'Hand-binned Hynix A-die. CL28 is the tightest primary timing in mass production for 6000 MT/s. Tightens further with our /guides → RAM BIOS recipes — A-die loves a -100mV VDDQ and tightens to CL26 stable.',
+          'A tight-timing reference kit. IC labeling and stable timings can vary by batch and memory controller; use the /guides recipe only as a conservative starting point, never as a guaranteed CL26 or voltage instruction. Test every BIOS change.',
         link: 'https://www.gskill.com/product/165/390/1726195627/F5-6000J2836G16GX2-TR5RKE',
       },
       {
@@ -212,14 +212,14 @@ export const HARDWARE: HardwareSection[] = [
     id: 'storage',
     label: 'Storage',
     blurb:
-      "PCIe Gen4 NVMe for the boot/game drive. Gen5 doesn't move load times outside of DirectStorage titles. Put Fortnite on the boot drive; second drive for everything else. Heads-up: the mid-2026 NAND shortage has roughly tripled the popular 2TB gaming SSDs from their 2025 lows — prices below assume current inflated retail.",
+      "PCIe Gen4 NVMe is the practical default for a game drive. Gen5 benefits depend on workload and DirectStorage adoption; game load time is not determined by sequential spec alone. Put Fortnite on a healthy SSD with free space and current firmware. Prices below are approximate, not live market data.",
     items: [
       {
         name: 'Samsung 990 Pro 2TB NVMe',
         price: '$370-$430',
         tier: 'goat',
         why:
-          '7450 MB/s read, 200K IOPS random. The de-facto pro-build NVMe. Samsung Magician (avoid it after first install) does firmware updates — uninstall the daemon after.',
+          'A strong PCIe Gen4 reference with vendor-advertised sequential and random figures. Keep firmware current, leave thermal headroom, and do not expect benchmark numbers to become proportional Fortnite input-latency gains.',
         link: 'https://www.samsung.com/us/computing/memory-storage/solid-state-drives/990-pro-pcie-4-0-nvme-ssd-2tb-mz-v9p2t0b-am/',
         caveat:
           'Samsung Magician = the autostart trap. Install once to flash firmware, then uninstall the service. Sits at 30 MB resident for nothing.',
@@ -251,7 +251,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$119',
         tier: 'goat',
         why:
-          'Best perf-per-dollar AIO on the market. 360mm radiator, beats every $200+ NZXT/Corsair AIO in dB-normalized cooling tests. Handles 14900K @ stock + 9800X3D with thermal headroom.',
+          'A strong 360mm cooling reference for high-power desktop CPUs. Check independent noise/thermal tests, socket support, radiator clearance, pump warranty, and whether your case actually benefits before treating it as an upgrade.',
       },
       {
         name: 'Thermalright Peerless Assassin 120 SE',
@@ -331,14 +331,14 @@ export const HARDWARE: HardwareSection[] = [
     id: 'networking',
     label: 'Networking',
     blurb:
-      "ISP-issued gateways add 5-15ms variable jitter. Fiber + a real router behind a bypass stick eliminates it. If you're on AT&T XGS-PON, the WAS-110 SFP+ bypass + UDM/OPNsense router is the pro-rig path — same as Peterbot's setup.",
+      "ISP gateways can add variable queueing and jitter, but the size depends on the access network, firmware, and traffic load. A bypass or separate router is an advanced network project, not a guaranteed latency upgrade; measure bufferbloat and route stability first.",
     items: [
       {
         name: 'AT&T XGS-PON bypass via WAS-110 SFP+',
         price: '$60-100',
         tier: 'goat',
         why:
-          'Replaces the BGW320 entirely. 1270nm wavelength, 802.1x clone of the gateway cert, public IP straight to your router. Saves 5-15ms of NAT + adds 5+ Gbps headroom. Flash the 8311 community firmware for the metrics page our /toolkit reads — temps, RX/TX power, optical bias current.',
+          'Can replace the BGW320 on compatible AT&T XGS-PON deployments, but firmware, authentication, optical levels, and support vary. It may simplify routing or expose better telemetry; it does not promise a fixed millisecond or bandwidth gain. Follow the current 8311 guide and keep a recovery path.',
         link: 'https://pon.wiki/xgs-pon/ont/bfw-solutions/was-110/',
         caveat:
           'Stock Azores firmware works for traffic but doesn\'t expose the 8311 metrics endpoint we read. Flash via pon.wiki\'s guide for the in-app temp card.',

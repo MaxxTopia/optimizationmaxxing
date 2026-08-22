@@ -10,21 +10,21 @@
 ### E-cores
 - **Default: keep enabled.** Intel Thread Director routes game threads to P-cores correctly.
 - **[Process Lasso](https://bitsum.com/) pin** if you see stutter: pin game .exe to P-cores only via "CPU Affinity → Always". 13900K/14900K = cores 0-15. Our own `/auto-pin → Fortnite → Auto-pick` does the same with no third-party install.
-- **Disable in BIOS only as last resort** for pre-Win11 23H2 machines that don't have Thread Director support.
+- **Disable in BIOS only as a measured last resort** on an older or misbehaving system. Use a supported, fully patched Windows 11 build first; do not select an old build solely because a creator reported a smoother result.
 - 15th gen (Core Ultra 200): Thread Director v2 + APO (Application Optimization). Leave E-cores on, install APO.
 
 ### Intel APO (Application Optimization)
 - **Install it** on supported rigs: **14th-gen K-series (14900K / 14700K / 14600K)** and **Core Ultra 200S / Arrow Lake**. Free — install **Intel APO + the Intel Dynamic Tuning (DSA)** app from the Microsoft Store / intel.com. It feeds the scheduler game-specific thread hints; documented gains run 5-15%, and up to ~24-31% in a few titles.
 - **Fortnite is NOT on Intel's official APO game list** — don't go looking for a Fortnite toggle in the APO app, there isn't one. The list (Intel KB 000098266, last reviewed 06/08/2026) covers ~49 titles — CS2, Valorant, Dota 2, League of Legends, R6 Siege, Metro Exodus, etc. — but no Fortnite. If you run those other titles, APO is still a free, native, zero-anti-cheat-risk win that most people never enable; install it and confirm the supported games you play are toggled **ON**.
 - **EAC caveat (read this):** Arrow Lake + Windows 24H2 had an EAC freeze/crash with Fortnite on early builds. It's fixed — but only if you're **fully updated**: the Nov 2024 24H2 cumulative + the Jan 2025 Intel microcode. Update Windows + GPU drivers and let EAC self-update before leaning on APO.
-- Requires Win11 23H2+.
+- Requires a supported Windows 11 build and the current Intel software/driver prerequisites; the app cannot infer APO support from CPU branding alone.
 
 ### Performance Cores Boost / Thermal Velocity Boost
 - BIOS-level. Leave on stock unless you've validated thermals at full load (20-min [Cinebench R23](https://www.maxon.net/en/downloads/cinebench-r23-downloads) + 20-min [OCCT](https://www.ocbase.com/)).
 
 ### 13th/14th-gen K-series instability — get on the fixed microcode (read this if you own a 13700K/13900K/14700K/14900K)
 - **What happened:** Intel confirmed the root cause of the 13th/14th-gen desktop instability was **elevated operating voltage causing a Vmin shift / permanent silicon degradation** on K-series chips — manifesting as crashes, decompression errors, and freezes that get worse over time.
-- **The fix:** Intel shipped microcode **0x12B** (which rolls up the earlier 0x125 and 0x129 mitigations) plus the **Intel Default Settings** power profile. A later **0x12F** update further addressed Vmin Shift. Delivered via a **motherboard BIOS update** — there's no in-Windows toggle.
+- **The fix:** Intel shipped microcode **0x12B** (which rolls up the earlier 0x125 and 0x129 mitigations) plus the **Intel Default Settings** power profile. A later **0x12F** update further addressed Vmin Shift. Delivered via a **motherboard BIOS update** — there is no in-Windows toggle, and the exact latest level is board-specific.
 - **Action:** Flash the latest BIOS for your board (check that its release notes cite microcode **0x12B or newer**) and run the **Intel Default** power profile, not the board vendor's unlimited/"performance" preset. Negligible gaming-perf cost.
 - **Important:** these stop *further* degradation but **cannot reverse damage already done** — if a chip is already unstable, RMA it. Intel extended the warranty to 5 years for affected SKUs.
 
@@ -48,12 +48,12 @@
 
 ### 3D V-Cache CCD handling — single-CCD vs dual-CCD (people get this backwards)
 
-**Single-CCD X3D (5800X3D / 7800X3D / 9800X3D): do NOTHING. There is only one CCD, and it has the V-Cache, so the game already runs on the cache cores 100% of the time. CCD "pinning" on these chips is placebo** — you can't pin to a CCD that doesn't exist. Anyone selling you an affinity tweak for a 7800X3D is selling you nothing. Just enable EXPO + Curve Optimizer and play. (This corrects older advice, including our own — there is no affinity win here.)
+**Single-CCD X3D (5800X3D / 7800X3D / 9800X3D): do not use CCD pinning. There is only one CCD and it carries the V-Cache, so there is no second CCD to route away from. Extra affinity or SMT rules are separate experiments and can hurt a title; compare them only if you have a reproducible reason. Just enable EXPO + Curve Optimizer and validate stability.**
 
 **Dual-CCD X3D (7950X3D / 9950X3D):** 16 cores across 2 CCDs, only one has 3D V-Cache — here routing matters. The stack:
 - **CPPC Preferred Cores = Driver** (or Auto) in BIOS.
 - Install the **AMD 3D V-Cache Performance Optimizer** driver (ships with the chipset driver).
-- **Keep Xbox Game Bar ON** — on Win11 23H2+ it's what flags the foreground game so the scheduler parks the frequency CCD and routes the game to the V-Cache CCD. **Don't disable Game Bar on a dual-CCD X3D.**
+- **Keep the AMD chipset driver and Windows game-routing components current.** Xbox Game Bar can participate in foreground-game detection on supported builds, but do not assume it is the only scheduler path; verify the behavior on your current install before changing it.
 - Manual `/auto-pin` (or Process Lasso) to the V-Cache CCD is a **fallback only** if the driver/Game Bar routing misbehaves — not the default.
 
 > For Fortnite specifically: EAC is sensitive to runtime manipulation of the game process. Prefer the native AMD driver + Game Bar routing above; if you must pin, pin the **launcher** and let it inherit, never set a rule directly on `FortniteClient-Win64-Shipping.exe`. See the auto-pin notes in the app.
@@ -63,16 +63,16 @@
 
 ## Both
 
-### Disable Virtualization-Based Security (VBS)
-- Adds 5-10% latency to every kernel call. **Off** for gaming. (We have this in the catalog as a tweak.)
-- Re-enable temporarily if your job's VPN / corporate IT requires it.
+### Virtualization-Based Security (VBS)
+- VBS/HVCI can trade some overhead for meaningful security and anti-cheat eligibility. Keep it on when a tournament, work policy, or game platform requires it; only compare it off in a disposable, measured lab profile.
+- Re-enable it when your job, VPN, corporate IT, or game rules require it. (The catalog labels the off switch experimental.)
 
 ### Disable Microsoft Defender Realtime (with care)
 - Real-time scanning runs alongside every PowerShell / process spawn. ~3% sustained CPU.
 - **Don't disable globally.** Use Process Exclusions for game directories + folders that game-launcher writes to.
 
 ### Disable VMP / SVM in BIOS
-- If you don't run Hyper-V, WSL2, Docker Desktop, Vanguard (yes, Vanguard *requires* virtualization off on some chips for fastest path), Sandbox, or Android emulators → **off**.
+- If you don't run Hyper-V, WSL2, Docker Desktop, Windows Sandbox, or Android emulators, you can compare virtualization settings in a separate lab profile. Do not disable them for a tournament or Vanguard system based on a generic "fastest path" claim; current game and platform requirements win.
 - If you do, leave on. The tradeoff is real but specific.
 
 ## Citations

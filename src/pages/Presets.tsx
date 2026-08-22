@@ -7,8 +7,8 @@ import {
   type AppliedTweak,
   type BatchItem,
 } from '../lib/tauri'
-import { catalog, tweakRequiresAdmin, type TweakRecord } from '../lib/catalog'
-import { PRESETS, presetTweaks } from '../lib/presets'
+import { catalog, isExperimentalTweak, tweakRequiresAdmin, type TweakRecord } from '../lib/catalog'
+import { PRESETS, presetExperimentalTweaks, presetMissingTweakIds, presetTweaks } from '../lib/presets'
 import { useIsVip } from '../store/useVipStore'
 import { useCustomPresets, type CustomPreset } from '../store/useCustomPresets'
 import { CustomPresetBuilder } from '../components/CustomPresetBuilder'
@@ -67,6 +67,17 @@ export function Presets() {
     setBusyId(presetId)
     setError(null)
     try {
+      const experimental = tweaks.filter(isExperimentalTweak)
+      if (
+        experimental.length > 0 &&
+        !window.confirm(
+          `${experimental.length} experimental tweak${experimental.length === 1 ? '' : 's'} are in this preset:\n\n` +
+            `${experimental.map((t) => `• ${t.title}`).join('\n')}\n\n` +
+            'Read each warning, create a restore point, and continue only if you accept the tradeoffs.',
+        )
+      ) {
+        return
+      }
       const items: BatchItem[] = []
       for (const t of tweaks) {
         if (appliedById[t.id]) continue
@@ -298,6 +309,8 @@ export function Presets() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {PRESETS.map((p) => {
             const tweaks = presetTweaks(p)
+            const experimental = presetExperimentalTweaks(p)
+            const missing = presetMissingTweakIds(p)
             const allApplied = tweaks.length > 0 && tweaks.every((t) => appliedById[t.id])
             const anyApplied = tweaks.some((t) => appliedById[t.id])
             const adminCount = tweaks.filter(tweakRequiresAdmin).length
@@ -336,6 +349,17 @@ export function Presets() {
                   <p className="text-sm text-text-muted">{p.tagline}</p>
                 </div>
                 <p className="text-sm text-text-muted leading-relaxed">{p.description}</p>
+                {experimental.length > 0 && (
+                  <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-snug">
+                    <strong className="text-amber-200">⚠ {experimental.length} experimental opt-in{experimental.length === 1 ? '' : 's'}.</strong>{' '}
+                    Applying this preset asks for a second confirmation. These changes can trade security, power, compatibility, or exact restore behavior for a possible local win.
+                  </div>
+                )}
+                {missing.length > 0 && (
+                  <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                    {missing.length} catalog item{missing.length === 1 ? '' : 's'} unavailable in this build; the preset will not pretend they were applied.
+                  </div>
+                )}
                 <ul className="text-xs text-text-subtle space-y-1">
                   {tweaks.map((t) => (
                     <li key={t.id} className="flex items-center gap-2">
@@ -350,7 +374,7 @@ export function Presets() {
                 </ul>
                 <div className="flex items-center justify-between text-xs text-text-subtle">
                   <span>
-                    {tweaks.length} tweaks · {adminCount > 0 ? `${adminCount} admin` : 'no admin'}
+                    {tweaks.length} tweaks · {experimental.length} experimental · {adminCount > 0 ? `${adminCount} admin` : 'no admin'}
                   </span>
                   <span>
                     {Object.keys(appliedById).length > 0 &&

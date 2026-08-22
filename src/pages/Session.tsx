@@ -180,13 +180,20 @@ export function Session() {
         <p className="text-xs uppercase tracking-widest text-text-subtle">focus</p>
         <h1 className="text-2xl font-bold">Game Session</h1>
         <p className="text-sm text-text-muted max-w-2xl">
-          Today I'm playing one game. Suspend the launchers + bloat for the other ones — they
-          freeze in place, no CPU, no IO, instant resume on End Session. We use Windows{' '}
-          <code className="text-accent">Suspend-Process</code> (PS 5.1+ cmdlet, built-in). Anti-cheat
-          processes (vgc.exe etc.) are kept-alive automatically per game profile. The tool does NOT
-          launch the game for you — start Fortnite normally after End Session is shown.
+          An optional focus utility, not a hidden FPS or anti-cheat mode. Pick the user apps you
+          want paused while you play; Windows freezes them in place and the app resumes them when
+          the session ends. Review every checkbox—voice chat, launchers, browsers, and overlays can
+          be useful, and anti-cheat processes are kept alive by the game profile. Start Fortnite
+          normally after the session is ready.
         </p>
       </header>
+
+      <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-snug">
+        Use this when background apps are competing for CPU, memory, disk, or overlays. If your
+        system is already clean, skip it—the session page is not essential and should not be part
+        of a tournament checklist. If the app or PC crashes, reopen this page and use the recovery
+        button below before launching more games.
+      </div>
 
       {err && <div className="surface-card p-3 text-sm text-accent">{err}</div>}
 
@@ -217,8 +224,8 @@ export function Session() {
 
           {grouped && Object.keys(grouped).length === 0 && (
             <div className="surface-card p-6 text-center text-sm text-text-muted italic">
-              Nothing in our curated list is currently running. Either you're already lean, or you
-              need to add custom processes — that feature isn't built yet.
+              Nothing in our curated list is currently running. Your rig may already be lean; you
+              can start the game normally without a focus session.
             </div>
           )}
 

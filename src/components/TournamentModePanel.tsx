@@ -158,11 +158,18 @@ export function TournamentModePanel() {
         <p className="text-[10px] uppercase tracking-widest text-text-subtle">competition</p>
         <h2 className="text-xl font-semibold">Tournament Mode</h2>
         <p className="text-sm text-text-muted leading-snug max-w-3xl">
-          Schedule a match → at T-N minutes we batch-revert every applied tweak the chosen
-          game's anti-cheat would flag → at T+M minutes we re-apply the same set. Removes
-          the 5-minute manual ritual most pros do before every Vanguard / BattlEye scrim.
-          Survives app restarts via localStorage. Polled every 15 s.
+          This is an eligibility safety schedule, not another FPS mode. At T-N minutes we
+          batch-revert applied tweaks explicitly tagged as risky for the chosen game's anti-cheat;
+          at T+M we restore them. It survives app restarts while the app is running and gives you
+          an audit trail instead of asking you to remember a pre-match ritual.
         </p>
+      </div>
+
+      <div className="rounded-md border border-sky-500/40 bg-sky-500/5 px-3 py-2 text-xs text-sky-100 leading-snug">
+        Fortnite tournament requirements are their own gate: Secure Boot, TPM, and IOMMU must be
+        enabled when required by Epic. Tournament Mode cannot enable those BIOS features and does
+        not guarantee anti-cheat approval. If the preview below shows zero flagged tweaks, this
+        schedule is a no-op safety reminder; use Pre-Tournament Audit for a live readiness check.
       </div>
 
       {!isNative && (
@@ -294,9 +301,9 @@ function ScheduleForm({
         </p>
         {previewFlagged.length === 0 ? (
           <p className="text-xs text-text-subtle italic">
-            No applied tweaks are flagged for {game}'s anti-cheat right now. Mode will run
-            but won't have anything to revert. (Either you're already AC-clean, or no
-            applied tweak has anticheatCompatibility tagged for this AC.)
+            No currently applied tweak is explicitly tagged for {game}'s anti-cheat. Mode will
+            run as a no-op safety schedule and cannot infer that unknown tweaks are safe. Use
+            Pre-Tournament Audit and the official tournament requirements before queueing.
           </p>
         ) : (
           <ul className="text-xs text-text-muted space-y-0.5 max-h-32 overflow-y-auto">

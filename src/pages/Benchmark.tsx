@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { AstaBenchHistoryGraph } from '../components/AstaBenchHistoryGraph'
 import { ThirdPartyBenchLogger } from '../components/ThirdPartyBenchLogger'
+import { OsComparisonLab } from '../components/OsComparisonLab'
 import {
   inTauri,
   telemetrySendEvent,
@@ -21,14 +22,16 @@ import {
 } from '../lib/astaBench'
 
 /**
- * Asta Bench — 4-metric synthetic that maps to actual Fortnite click-to-pixel cost.
+ * Asta Bench — four controlled proxies for conditions that can influence a
+ * Fortnite session. It is not a direct click-to-pixel or FPS measurement.
  *
  *   - CPU sha256 single-thread (~5 s) — game-thread tail proxy
  *   - DPC %    sampled over 5 s     — driver misbehavior surfaces here
  *   - Ping jitter to 1.1.1.1, 50 samples (~12 s) — network variance
  *   - Frame pacing 10 s in canvas (rAF) — same compositor Fortnite uses
  *
- * Composite Latency Health Score 0-100. Snapshots persist to
+ * Composite Latency Health Score 0-100. The score is a repeatable local
+ * comparison aid, not a universal ranking. Snapshots persist to
  * localStorage (`optmaxxing-asta-bench-snapshots`) so users can compare
  * before/after they apply Asta Mode.
  */
@@ -167,10 +170,16 @@ export function Benchmark() {
         <p className="text-xs uppercase tracking-widest text-text-subtle">measurement</p>
         <h1 className="text-3xl font-bold">Asta Bench</h1>
         <p className="text-text-muted text-sm max-w-2xl mt-1">
-          4 metrics that map to actual Fortnite click-to-pixel cost. ~30 s total. Composite{' '}
-          <strong>Latency Health Score 0-100</strong>. Save a snapshot before applying Asta Mode,
-          run again after, see the delta.
+          Four controlled proxies for CPU work, driver tail latency, network variance, and frame
+          pacing. ~30 s total. The composite is a <strong>repeatable comparison score</strong>, not
+          Fortnite FPS or a promise of lower input delay. Save a snapshot before applying Asta
+          Mode, run again after, and inspect the direction of the delta.
         </p>
+        <div className="rounded-md border border-sky-500/40 bg-sky-500/5 px-3 py-2 text-xs text-sky-100 leading-snug max-w-3xl mt-3">
+          The useful question is “did this change help on my rig under the same conditions?” Keep
+          the game, driver, power mode, background load, and network route consistent. A score
+          change alone does not prove a competitive advantage.
+        </div>
       </header>
 
       <section className="surface-card p-6 space-y-3">
@@ -202,7 +211,8 @@ export function Benchmark() {
         <p className="text-[11px] text-text-subtle leading-snug max-w-3xl">
           Two consecutive single runs typically vary by ±2-4 composite points — CPU scheduler,
           background processes, network jitter, browser compositor noise. Use <strong className="text-text">Median of 3</strong> when
-          you're measuring before/after a tweak; the noise drops to ~±1 and the delta becomes trustworthy.
+          you're measuring before/after a tweak; the noise usually drops. Treat the result as a
+          stronger signal, not proof, and repeat in the actual game when the change matters.
         </p>
 
         {err && (
@@ -305,6 +315,8 @@ export function Benchmark() {
           </button>
         </section>
       )}
+
+      <OsComparisonLab />
 
       <ThirdPartyBenchLogger />
     </div>

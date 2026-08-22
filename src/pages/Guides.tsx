@@ -60,7 +60,7 @@ export function Guides() {
           <h1 className="text-2xl font-bold">Guides</h1>
           <p className="text-text-muted text-sm max-w-2xl">
             Vetted guides on the things our catalog can't auto-tune — peripherals,
-            BIOS, browsers, OS distros, tournament eligibility. Every claim cited.
+            BIOS, browsers, OS distros, and tournament eligibility. Sources shown where available.
             Pick your game to filter callouts and hide guides that don't apply.
           </p>
         </div>
@@ -71,7 +71,7 @@ export function Guides() {
           <span>🔰 New to PC Optimization? Start Here</span>
         </p>
         <p className="text-text-muted leading-snug">
-          Look for the <span className="text-emerald-300 font-semibold border border-emerald-500/50 px-1 py-0.5 rounded bg-emerald-500/10">beginner safe</span> badge on guides — these are safe, proven tweaks with zero risk to your Windows installation. Every guide includes a 30-second TL;DR, cited empirical evidence, and exact click-by-click instructions. Uncheck "include advanced" below if you want to hide complex BIOS/overclock guides.
+          Look for the <span className="text-emerald-300 font-semibold border border-emerald-500/50 px-1 py-0.5 rounded bg-emerald-500/10">beginner safe</span> badge on guides — these are lower-risk starting points with a clear recovery path, not a promise of zero risk. Every guide includes a 30-second TL;DR, cited evidence where available, and exact click-by-click instructions. Uncheck "include advanced" below if you want to hide complex BIOS/overclock guides.
         </p>
       </div>
 

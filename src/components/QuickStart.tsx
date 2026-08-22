@@ -40,10 +40,10 @@ export function QuickStart() {
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
             <p className="text-xs uppercase tracking-widest text-text-subtle">first run</p>
-            <h2 className="text-2xl font-bold leading-tight">Three taps to faster.</h2>
+            <h2 className="text-2xl font-bold leading-tight">Three steps to a measured start.</h2>
             <p className="text-sm text-text-muted max-w-xl mt-1">
-              Pick the game you actually play. Apply our preset. Roll back any tweak
-              that doesn't feel right. Snapshot-backed — undo isn't a paid tier.
+              Pick the game you actually play. Apply the lower-risk lane. Compare before/after and
+              roll back changes with a recorded inverse that do not feel right. Undo is not a paid tier.
             </p>
           </div>
           <button
@@ -61,7 +61,7 @@ export function QuickStart() {
           <StepCard
             step="1"
             title="Pick your game"
-            body="Filters the 90-tweak catalog down to what matters for your title."
+            body="Filters the 100-tweak catalog down to what matters for your title."
             cta={
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {GAMES.slice(0, 4).map((g) => (
@@ -98,7 +98,7 @@ export function QuickStart() {
           <StepCard
             step="3"
             title="Tune later"
-            body="Anything feels off? Hit Restore Point in Settings — every applied tweak rolls back in one prompt."
+            body="Anything feels off? Hit Restore Point in Settings — recorded reverts batch in one prompt, and failures stay visible."
             cta={
               <Link
                 to="/settings"

@@ -16,7 +16,7 @@ const STEPS = [
   {
     num: '03',
     title: 'Apply, undo, repeat',
-    body: 'Every tweak is recorded with its prior value. One click reverts a tweak; one click reverts the entire session.',
+    body: 'Snapshot-backed changes record their prior value. Revert one change or the full session; script-based lanes show their recovery notes before you apply them.',
   },
 ]
 
@@ -25,7 +25,7 @@ export function HowItWorks() {
     <section className="space-y-4">
       <header>
         <p className="text-xs uppercase tracking-widest text-text-subtle">how it works</p>
-        <h2 className="text-2xl font-bold">From boot to optimized in 60 seconds</h2>
+        <h2 className="text-2xl font-bold">From boot to measured in one guided run</h2>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {STEPS.map((s) => (

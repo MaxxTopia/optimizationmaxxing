@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useIsVip } from '../store/useVipStore'
-import { applyBatch, listApplied, type BatchItem } from '../lib/tauri'
+import { applyBatch, detectSpecs, inTauri, listApplied, type BatchItem, type SpecProfile } from '../lib/tauri'
 import { catalog } from '../lib/catalog'
-import { presetById } from '../lib/presets'
+import { presetById, presetExperimentalTweaks } from '../lib/presets'
 import { AstaShareCard } from '../components/AstaShareCard'
 import { TournamentAudit } from '../components/TournamentAudit'
 import { TournamentModePanel } from '../components/TournamentModePanel'
@@ -30,9 +30,9 @@ That's the model. That's the path.
 This is the mode for the gen running 1660 Ti, 144 Hz IPS, basement
 ping, still planning to make Champion League. Asta Mode pulls every
 software lever this app can reach — the polite Tournament FPS preset,
-but cranked. ~12-22 ms off your click-to-pixel, +25-35 average FPS in
-Fortnite endgames, +12-20 on 1% lows. Closes ~70% of the gap to a $5K
-rig. The other 30% is silicon, refresh, and where your house is.
+but cranked. The core lane is measurable; the experimental lane is
+clearly marked because a BIOS/driver/security trade can beat a stock
+setup on one rig and hurt another. The bench decides what stays.
 
 What's left after Asta Mode lives on /diagnostics (RAM tightening, CO
 undervolt) and /grind (sleep, warmups, session cadence). Those are
@@ -63,6 +63,17 @@ export function Asta() {
       const tweaks = preset.tweakIds
         .map((id) => catalog.tweaks.find((t) => t.id === id))
         .filter((t): t is NonNullable<typeof t> => Boolean(t))
+      const experimental = presetExperimentalTweaks(preset)
+      if (
+        experimental.length > 0 &&
+        !window.confirm(
+          `${experimental.length} Asta experiment${experimental.length === 1 ? '' : 's'} are included:\n\n` +
+            `${experimental.map((t) => `• ${t.title}`).join('\n')}\n\n` +
+            'These can reduce security, raise power, break eligibility, or fail to help this rig. Create a restore point and continue only if you accept that risk.',
+        )
+      ) {
+        return
+      }
       const items: BatchItem[] = []
       for (const t of tweaks) {
         for (const action of t.actions) {
@@ -121,9 +132,11 @@ export function Asta() {
             <p className="text-[10px] uppercase tracking-widest text-text-subtle">apply</p>
             <h3 className="text-xl font-bold mt-1">Activate Asta Mode</h3>
             <p className="text-sm text-text-muted leading-snug mt-1">
-              One UAC prompt. ~30 tweaks applied: Engine.ini + GameUserSettings.ini hand-tunes,
-              HAGS, Reflex registry force, kernel Game DVR off, expanded service kills, expanded
-              hosts blocks. Snapshot-backed — every tweak reverts via Settings → Restore Point.
+              One UAC prompt for the selected Asta set. Core changes are separated from the
+              experimental lane: device interrupts, virtualization/security, power, timer, and
+              realtime HID changes can trade stability or eligibility for a possible local win.
+              Read the warning, then measure before and after. Revert through Settings after
+              testing.
             </p>
 
             {!isVip && (
@@ -182,6 +195,8 @@ export function Asta() {
         </div>
       </section>
 
+      <AstaFitCard />
+
       <TournamentAudit />
 
       <TournamentModePanel />
@@ -192,7 +207,9 @@ export function Asta() {
         <p className="text-[10px] uppercase tracking-widest text-text-subtle">whats next</p>
         <h3 className="text-lg font-semibold">After Asta Mode</h3>
         <p className="text-sm text-text-muted leading-snug max-w-3xl">
-          Software ceiling reached. The remaining 30% is hardware-or-grind. Both have a page.
+          Once the software lane is measured, the next margin is usually your hardware, game
+          settings, network route, or practice. This app points you at the evidence instead of
+          assigning a fixed percentage to the gap.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
           <NextCard
@@ -254,7 +271,7 @@ function Hero() {
           }}
         >
           For the kids on stock rigs born to chase pros they shouldn't be able to catch.
-          70% of the gap is software. We close it.
+          A measured core plus an opt-in lab lane. Your rig, not a slogan, decides what wins.
         </p>
       </div>
 
@@ -287,6 +304,74 @@ function Hero() {
         }
       `}</style>
     </section>
+  )
+}
+
+function AstaFitCard() {
+  const [spec, setSpec] = useState<SpecProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!inTauri()) {
+      setLoading(false)
+      return
+    }
+    detectSpecs(false)
+      .then(setSpec)
+      .catch((e) => setError(typeof e === 'string' ? e : (e as Error).message ?? String(e)))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (!inTauri() && !loading) return null
+
+  const desktop = spec ? !spec.mobo.isLaptop : false
+  const enoughRam = (spec?.ram.totalGb ?? 0) >= 16
+  const enoughThreads = (spec?.cpu.logicalCores ?? 0) >= 8
+  const fit = desktop && enoughRam && enoughThreads
+
+  return (
+    <section className="surface-card p-5 space-y-3 border border-asta-crimson/40">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-text-subtle">rig fit check</p>
+          <h2 className="text-lg font-semibold">Can your rig carry Asta Mode?</h2>
+          <p className="text-xs text-text-muted leading-snug max-w-2xl mt-1">
+            This is a configuration guardrail, not a thermal guarantee. It checks the parts that
+            make aggressive desktop tuning less surprising before you try the experimental lane.
+          </p>
+        </div>
+        {spec && (
+          <span className={`text-xs uppercase tracking-widest px-2 py-1 rounded border ${fit ? 'border-emerald-500/50 text-emerald-300' : 'border-amber-500/50 text-amber-200'}`}>
+            {fit ? 'core lane ready' : 'proceed carefully'}
+          </span>
+        )}
+      </div>
+      {loading && <p className="text-xs text-text-subtle">Reading your rig…</p>}
+      {error && <p className="text-xs text-text-muted">{error}</p>}
+      {spec && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+          <FitItem label="Form factor" value={desktop ? 'desktop' : 'laptop / unknown'} ok={desktop} />
+          <FitItem label="Memory" value={`${spec.ram.totalGb} GB`} ok={enoughRam} />
+          <FitItem label="CPU threads" value={String(spec.cpu.logicalCores)} ok={enoughThreads} />
+          <FitItem label="OS" value={`${spec.os.caption} · ${spec.os.build}`} ok={spec.os.build > 0} />
+        </div>
+      )}
+      <p className="text-[11px] text-text-subtle leading-snug">
+        Laptop users should expect more heat and battery cost from power experiments. If memory,
+        thermals, or stability are uncertain, stay with measured-core tweaks and open{' '}
+        <Link to="/diagnostics" className="underline hover:text-text">Diagnostics</Link> before pushing harder.
+      </p>
+    </section>
+  )
+}
+
+function FitItem({ label, value, ok }: { label: string; value: string; ok: boolean }) {
+  return (
+    <div className="border border-border rounded-md p-2">
+      <p className="text-[10px] uppercase tracking-widest text-text-subtle">{label}</p>
+      <p className={ok ? 'text-emerald-300' : 'text-amber-200'}>{ok ? '✓ ' : '⚠ '}{value}</p>
+    </div>
   )
 }
 

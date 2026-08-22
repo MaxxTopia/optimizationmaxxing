@@ -2,7 +2,7 @@
   "name": "Clean State Gaming",
   "glyph": "🛡",
   "tagline": "Disable everything non-essential · keep only the game + anti-cheat alive",
-  "description": "Bundles 12 service kills + 13 telemetry scheduled tasks + HID priority boost + game-process priority bump. Built around the canonical safe-disable list (BlackViper-era research, Raphire/Win11Debloat, djdallmann GamingPCSetup). Hard-excludes anything anti-cheat needs (CryptSvc, BFE, MpsSvc, AudioSrv, MMCSS, Dnscache, Dhcp, EventLog, RpcSs, DcomLaunch). After applying, run /diagnostics → DPC card → save baseline before, re-measure after, see the actual delta.",
+  "description": "A background-cleanup community pack with service/task changes plus two clearly marked input/process experiments. It does not certify anti-cheat safety or guarantee lower DPC latency. Snapshot first, read each tweak, and use /diagnostics to compare a baseline before keeping anything that changes the way you play.",
   "tweakIds": [
     "service.werservice.disable",
     "service.maps-broker.disable",

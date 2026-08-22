@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   HARDWARE,
   HARDWARE_LAST_VERIFIED,
@@ -6,6 +7,7 @@ import {
   type HardwareItem,
   type HardwareSection,
 } from '../lib/hardware'
+import { detectSpecs, inTauri, type SpecProfile } from '../lib/tauri'
 
 /**
  * /hardware — peripheral + PC-build advisory. Per-category tier ladder
@@ -46,10 +48,17 @@ export function Hardware() {
         </p>
         <p className="text-[11px] text-text-subtle mt-2">
           Last verified <span className="text-accent font-mono">{HARDWARE_LAST_VERIFIED}</span>{' '}
-          — picks bump per release as new flagships drop.
+          — evidence review stamp, not a live price feed. Vendor stock and street prices move.
         </p>
       </header>
 
+      <HardwareFitCard />
+      <section className="rounded-md border border-sky-500/40 bg-sky-500/5 px-3 py-2 text-xs text-sky-100 leading-snug">
+        <strong className="text-text">How to read the ladder:</strong> vendor pages establish hard
+        specifications; linked pro/config pages establish who used a part; independent benchmarks
+        establish performance. A pro part is not automatically the best upgrade for your rig, and
+        the price bands are not live checkout quotes.
+      </section>
       <ProBuildStack />
 
       <nav className="flex flex-wrap gap-2 items-center">
@@ -115,12 +124,12 @@ function ProBuildStack() {
         <p className="text-[10px] uppercase tracking-widest text-accent font-semibold">
           👑 Build like Peterbot
         </p>
-        <h2 className="text-2xl md:text-3xl font-bold mt-1">Pro-tier PC stack — July 2026</h2>
+        <h2 className="text-2xl md:text-3xl font-bold mt-1">Pro-tier PC stack — Aug 2026 review</h2>
         <p className="text-sm text-text-muted mt-1 max-w-3xl leading-snug">
-          The current canonical pro-Fortnite rig — one GOAT pick per category. Every entry is
-          something at least one active FNCS pro currently runs, sourced from /grind + ProSettings.
-          Prices are approximate USD MSRP; check vendors at purchase time. Scroll to the category
-          sections below for budget + alt picks at every tier.
+          A reference stack for chasing the competitive ceiling — one GOAT pick per category, not
+          a claim that one build wins for everyone. Each entry is tied to a cited pro config,
+          manufacturer page, or review; pro gear and prices can age. Check fit, thermals, stock,
+          and warranty before buying. Scroll below for budget + alternate picks.
         </p>
       </header>
 
@@ -156,10 +165,84 @@ function ProBuildStack() {
 
       <p className="text-[11px] text-text-subtle pt-2 border-t border-border leading-snug">
         Total is approximate — we don't track street prices day-to-day. For the gear half (mouse,
-        keyboard, monitor, pad, headset, ergonomics) scroll into the category cards below. Picks
-        bump when a new flagship lands; current revision <span className="font-mono text-accent">{HARDWARE_LAST_VERIFIED}</span>.
+        keyboard, monitor, pad, headset, ergonomics) scroll into the category cards below. Evidence
+        review stamp: <span className="font-mono text-accent">{HARDWARE_LAST_VERIFIED}</span>.
       </p>
     </section>
+  )
+}
+
+function HardwareFitCard() {
+  const native = inTauri()
+  const [spec, setSpec] = useState<SpecProfile | null>(null)
+  const [loading, setLoading] = useState(native)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    if (!native) {
+      setLoading(false)
+      return
+    }
+    detectSpecs(false)
+      .then(setSpec)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
+  }, [native])
+
+  return (
+    <section className="surface-card p-5 space-y-3 border-l-4 border-l-secondary">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-secondary font-semibold">your fit first</p>
+          <h2 className="text-xl font-bold">Does your rig need a new part?</h2>
+          <p className="text-sm text-text-muted max-w-3xl mt-1 leading-snug">
+            The GOAT stack is a ceiling reference. Your best upgrade depends on the bottleneck,
+            laptop limits, memory capacity, and the frame-time evidence from your own machine.
+          </p>
+        </div>
+        <Link to="/asta" className="text-xs underline text-accent hover:text-text shrink-0">
+          measure your ceiling ↗
+        </Link>
+      </div>
+
+      {!native ? (
+        <p className="text-xs text-text-subtle border border-border rounded-md px-3 py-2">
+          Open the desktop app to read your CPU, GPU, memory, and laptop/desktop profile here.
+        </p>
+      ) : loading ? (
+        <p className="text-xs text-text-muted">Reading your rig…</p>
+      ) : error || !spec ? (
+        <p className="text-xs text-amber-200 border border-amber-500/40 bg-amber-500/5 rounded-md px-3 py-2">
+          We could not read the rig snapshot. You can still browse the sourced ladder; run Match
+          Scan or Asta Bench when you want a measured fit call.
+        </p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <FitMetric label="CPU" value={spec.cpu.marketing || spec.cpu.model || 'Unknown'} />
+            <FitMetric label="GPU" value={spec.gpu.model || spec.gpu.vendor || 'Unknown'} />
+            <FitMetric label="Memory" value={`${spec.ram.totalGb.toFixed(0)} GB${spec.ram.speedMts ? ` · ${spec.ram.speedMts} MT/s` : ''}`} />
+            <FitMetric label="Form factor" value={spec.mobo.isLaptop ? 'Laptop' : 'Desktop'} />
+          </div>
+          <div className="rounded-md border border-border bg-bg-raised px-3 py-2 text-xs text-text-muted leading-snug">
+            {spec.mobo.isLaptop
+              ? 'Laptop: prioritize cooling, power mode, memory, and an honest frame-time diagnosis. Desktop GOAT parts may not be upgradeable.'
+              : spec.ram.totalGb < 16
+              ? 'First move: reach 16 GB in a matched configuration before chasing experimental latency tweaks.'
+              : 'Core lane looks viable. Measure CPU/GPU bound time and 1% lows before buying a flagship part.'}
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
+
+function FitMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border p-2 min-w-0">
+      <p className="text-[10px] uppercase tracking-widest text-text-subtle">{label}</p>
+      <p className="text-xs font-semibold text-text truncate" title={value}>{value}</p>
+    </div>
   )
 }
 

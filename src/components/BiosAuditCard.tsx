@@ -202,7 +202,7 @@ const GAME_PROFILES: GameProfile[] = [
     id: 'fortnite',
     label: 'Fortnite',
     blurb:
-      'FNCS rigs need Secure Boot + TPM 2.0 (Easy Anti-Cheat eligibility). VBS off for perf — Fortnite is allowed.',
+      'Fortnite tournament eligibility currently includes Secure Boot, TPM 2.0, and IOMMU. This audit reads Windows-side signals only; it cannot enable firmware settings or guarantee approval.',
     ideal: {
       biosMode: 'UEFI',
       secureBoot: 'required',
@@ -216,7 +216,7 @@ const GAME_PROFILES: GameProfile[] = [
     id: 'valorant',
     label: 'Valorant',
     blurb:
-      'Vanguard requires Secure Boot + TPM 2.0 hard. VBS can be off (Vanguard doesn\'t require Memory Integrity on as of 2026-05).',
+      'Vanguard commonly gates on Secure Boot and TPM 2.0 on Windows 11. Keep Windows, firmware, and Vanguard current; do not treat this card as a guarantee of launch or tournament eligibility.',
     ideal: {
       biosMode: 'UEFI',
       secureBoot: 'required',

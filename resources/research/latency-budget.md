@@ -1,8 +1,9 @@
 # The latency budget — every layer, cited
 
-The total click-to-pixel latency on a stock high-end rig running Fortnite
-at 240 Hz lands around **25–35 ms**. On a stock budget rig (1660 Ti, 144 Hz
-IPS, basic gaming mouse, no tweaks) it's **50–80 ms**.
+Click-to-pixel latency is the sum of device, OS, game, render, display, and
+network layers. The examples below are illustrative measurement ranges from
+the cited hardware and latency research, not a promise that every tuned rig
+will land in one total or that a budget rig has one fixed baseline.
 
 That gap isn't magic. It's the sum of every layer between your mouse click
 and the photon hitting your eye. About 70% of it is software-tunable. The

@@ -112,9 +112,9 @@ export function Settings() {
         <div>
           <h2 className="text-lg font-semibold">Restore Point</h2>
           <p className="text-sm text-text-muted">
-            One-click reversion of every tweak you've applied. Privileged reverts batch into a single
-            UAC prompt; HKCU reverts run silently. Use this if a preset destabilized your rig and
-            you want to baseline back to vanilla Windows.
+            One-click reversion of active tweaks with recorded recovery data. Privileged reverts
+            batch into a single UAC prompt; HKCU reverts run silently. If any action cannot revert,
+            it stays visible in the failure report instead of being marked clean.
           </p>
         </div>
         <div className="surface-card p-6 flex items-start justify-between gap-4">

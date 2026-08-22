@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { detectSpecs, inTauri, type SpecProfile } from '../lib/tauri'
 
 /**
  * SCEWIN read-only workflow panel. Renders above the SCEWIN guide
@@ -58,6 +59,12 @@ const STEPS: Step[] = [
 
 export function ScewinFlowPanel() {
   const [copied, setCopied] = useState<string | null>(null)
+  const [spec, setSpec] = useState<SpecProfile | null>(null)
+
+  useEffect(() => {
+    if (!inTauri()) return
+    detectSpecs(false).then(setSpec).catch(() => undefined)
+  }, [])
 
   function copy(cmd: string) {
     navigator.clipboard
@@ -87,6 +94,8 @@ export function ScewinFlowPanel() {
           All changes happen in the BIOS UI itself.
         </p>
       </div>
+
+      <RigPath spec={spec} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {STEPS.map((s) => (
@@ -141,5 +150,36 @@ export function ScewinFlowPanel() {
         unofficial source).
       </p>
     </section>
+  )
+}
+
+function RigPath({ spec }: { spec: SpecProfile | null }) {
+  if (!spec) {
+    return (
+      <div className="rounded-md border border-border bg-bg-card/50 px-3 py-2 text-xs text-text-muted">
+        Open this guide inside the desktop app to get a rig-specific checklist. In browser preview,
+        start with a read-only dump and never import another board's settings blindly.
+      </div>
+    )
+  }
+
+  const intel = spec.cpu.vendor.toLowerCase().includes('intel')
+  const laptop = spec.mobo.isLaptop
+  const checklist = laptop
+    ? 'OEM / laptop path: use the manufacturer BIOS UI and vendor service package. Do not import a desktop dump.'
+    : intel
+    ? 'Intel path: capture microcode, Intel Default Settings, C-States, power limits, and memory profile before changing anything.'
+    : 'AMD path: capture EXPO/DOCP, PBO, Curve Optimizer, SOC voltage, and memory context settings before changing anything.'
+
+  return (
+    <div className="rounded-md border border-accent/40 bg-accent/5 px-3 py-2 space-y-1 text-xs text-text-muted">
+      <p className="text-[10px] uppercase tracking-widest text-accent">your starting anchor</p>
+      <p className="text-text">{spec.cpu.marketing || spec.cpu.model} · {spec.mobo.manufacturer || 'unknown board'} {spec.mobo.product || ''}</p>
+      <p>{checklist}</p>
+      <p className="text-[11px] text-text-subtle">
+        Current Windows: {spec.os.caption} build {spec.os.build} · RAM: {spec.ram.totalGb} GB{spec.ram.configuredSpeedMts ? ` @ ${spec.ram.configuredSpeedMts} MT/s` : ''}. Copy{' '}
+        <strong className="text-text">Diagnostics → Copy snapshot</strong> before opening BIOS so the post-change result has a known baseline.
+      </p>
+    </div>
   )
 }

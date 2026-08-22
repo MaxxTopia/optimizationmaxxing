@@ -128,8 +128,9 @@ not here.
    For Valorant / Warzone where VBS-off is still allowed, "VBS fully off" is fine.
 3. Boot into the game once for a casual match. If anticheat loads, you're
    fine. If it errors, hit Restore Point in Settings.
-4. Bring the laptop / second rig as backup. We've seen 0% of users get
-   banned for these tweaks; we've seen 100% of "I'll wing it" lose a slot.
+4. Bring the laptop / second rig as backup. There is no honest app-side
+   percentage for bans or lost slots; confirm the current event rules and
+   leave time for a clean boot and a casual anti-cheat launch check.
 
 ## Citations
 

@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { TweakRecord, TweakTargets } from '../lib/catalog'
-import { tweakRequiresAdmin, tweakMatchesSpec } from '../lib/catalog'
+import {
+  experimentalWarningFor,
+  isExperimentalTweak,
+  tweakRequiresAdmin,
+  tweakMatchesSpec,
+} from '../lib/catalog'
 import { detectSpecs, type SpecProfile } from '../lib/tauri'
 import type { TweakAudit } from '../lib/audit'
 import { getImpactFor, type TweakImpactRow } from '../lib/benchImpact'
@@ -71,6 +76,7 @@ export function TweakRow({
 }: TweakRowProps) {
   const adminNeeded = tweakRequiresAdmin(tweak)
   const lockedByVip = tweak.vipGate === 'vip' && !isVip
+  const experimental = isExperimentalTweak(tweak)
   const [expanded, setExpanded] = useState(false)
   const [spec, setSpec] = useState<SpecProfile | null>(cachedSpec)
   const impact: TweakImpactRow | null = getImpactFor(tweak.id)
@@ -101,6 +107,14 @@ export function TweakRow({
               <Badge color="text-accent">AC: {tweak.anticheatRisk}</Badge>
             )}
             {tweak.evidenceTier && <EvidenceBadge tier={tweak.evidenceTier} />}
+            {experimental && (
+              <Badge
+                color="text-amber-200 border-amber-500/60 bg-amber-500/10"
+                title="Requires an explicit opt-in. Read the tradeoff before applying."
+              >
+                ⚠ experimental
+              </Badge>
+            )}
             {adminNeeded && <Badge color="text-accent">admin</Badge>}
             {tweak.vipGate === 'vip' && <VipBadge />}
             <ComplianceBadges tweak={tweak} />
@@ -116,7 +130,10 @@ export function TweakRow({
         <div className="shrink-0 flex items-center gap-2">
           {onMeasureImpact && !applied && !lockedByVip && (
             <button
-              onClick={onMeasureImpact}
+              onClick={() => {
+                if (!confirmExperimental(tweak, 'measure')) return
+                onMeasureImpact()
+              }}
               disabled={busy || measuring}
               title="Bench → apply → bench (~70 s) and persist the measured delta on this row."
               className="px-2 py-1.5 rounded-md border border-border text-[11px] hover:border-border-glow disabled:opacity-40"
@@ -141,7 +158,10 @@ export function TweakRow({
             </button>
           ) : (
             <button
-              onClick={onApply}
+              onClick={() => {
+                if (!confirmExperimental(tweak, 'apply')) return
+                onApply()
+              }}
               disabled={busy || lockedByVip}
               title={
                 lockedByVip
@@ -160,6 +180,17 @@ export function TweakRow({
 
       {expanded && (
         <>
+          {experimental && (
+            <div className="rounded-md border border-amber-500/60 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-snug">
+              <strong className="text-amber-200">⚠ Experimental — use at your own risk.</strong>{' '}
+              {experimentalWarningFor(tweak)}
+              {tweak.expectedImpact && (
+                <span className="block mt-1 text-amber-100/80">
+                  Expected tradeoff: {tweak.expectedImpact}
+                </span>
+              )}
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs pt-2 border-t border-border">
             <Section title="Why it works">{tweak.rationale}</Section>
             <Section title={`Risk ${tweak.riskLevel} — what could go wrong`}>
@@ -198,6 +229,14 @@ export function TweakRow({
         </>
       )}
     </div>
+  )
+}
+
+function confirmExperimental(tweak: TweakRecord, verb: 'apply' | 'measure'): boolean {
+  if (!isExperimentalTweak(tweak)) return true
+  return window.confirm(
+    `Experimental tweak: ${tweak.title}\n\n${experimentalWarningFor(tweak)}\n\n` +
+      `This is an explicit opt-in to ${verb} it. Continue?`,
   )
 }
 
@@ -325,7 +364,7 @@ function explainRisk(t: TweakRecord): string {
     parts.push(
       'Standard tweak — well-trodden, predictable effects. Reverts cleanly via the snapshot store.',
     )
-  else parts.push('Safe. Reverses cleanly. Worst case: no observable change.')
+  else parts.push('Lower-risk. Snapshot-backed changes reverse cleanly; worst case is usually no observable change, but read the action details.')
 
   if (t.anticheatRisk === 'high')
     parts.push('Anti-cheat HIGH: likely to be flagged by Vanguard/EAC/BattlEye — skip on rigs that play those.')

@@ -1,11 +1,12 @@
 {
   "name": "optimizationmaxxing",
-  "version": "0.3.12",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "audit:catalog": "node scripts/audit-catalog.mjs",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",

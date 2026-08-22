@@ -10,14 +10,14 @@ const POINTS = [
     body: 'Tauri build vs Paragon\'s 81 MB and Hone\'s heavier electron bundles.',
   },
   {
-    metric: '4',
+    metric: '8',
     label: 'themes',
-    body: 'Val · Sonic · DMC · BO3. Switch the entire UI in one click. Competitors ship one.',
+    body: 'Val · Sonic · DMC · Zombies · anime · cartoon palettes. Switch the entire UI in one click.',
   },
   {
-    metric: 'every',
+    metric: 'snapshot',
     label: 'tweak undo',
-    body: 'Each apply records its pre-state. Per-tweak revert. Hone offers a single rollback; we go granular.',
+    body: 'Snapshot-backed actions get per-tweak revert. Script-based lanes show their recovery path, and failed reverts stay visible.',
   },
   {
     metric: 'spec-aware',

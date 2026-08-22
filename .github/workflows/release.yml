@@ -41,6 +41,9 @@ jobs:
             - name: Install npm dependencies
               run: npm ci
 
+            - name: Audit tweak catalog before packaging
+              run: npm run audit:catalog
+
             # tauri-action handles: tauri build (npm script wraps), bundle the
             # NSIS installer, optionally sign, create a draft GitHub release
             # for the matching tag, and upload all bundled artifacts to it.
@@ -59,13 +62,14 @@ jobs:
                   tagName: ${{ github.ref_name }}
                   releaseName: "Optimizationmaxxing ${{ github.ref_name }}"
                   releaseBody: |
-                      Auto-built by CI from tag `${{ github.ref_name }}`.
-                      Download `optimizationmaxxing_${{ github.ref_name }}_x64-setup.exe` below.
+                      ## Highlights
 
-                      Windows SmartScreen will warn (unsigned for v0.1) — More info -> Run anyway.
+                      - A measured OS Lab and bounded one-click CPU Health screen now compare supported Windows installs and surface Intel instability signals without pretending to prove degradation or FPS gains.
+                      - Presets and imported community packs now separate the low-risk starting lane from clearly labeled Asta experiments; MSI and NIC script actions preserve exact per-device restore state.
+                      - Asta score cards now earn visible rarity tiers, and a non-VIP user's first Tune Now run can issue one locally persisted Gold, Emerald, or Diamond lifetime-VIP ticket at $99, $77, or $69.
+                      - Tournament, SCEWIN, Hardware, Grind, and first-run theme guidance were refreshed for current support and anti-cheat boundaries.
 
-                      v0.1.49+ supports auto-update — installs after this auto-prompt to install
-                      the next release once the signed `latest.json` is published.
+                      Auto-built by CI from tag `${{ github.ref_name }}`. The signed `latest.json`, installer, and signature are verified before the release is published.
                   releaseDraft: true
                   prerelease: false
                   # Emits a `latest.json` manifest alongside the .exe so the

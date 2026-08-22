@@ -9,52 +9,21 @@ import { PRESETS, presetTweaks, type PresetBundle } from '../lib/presets'
  * recommendation logic stays stable).
  */
 function pickPreset(spec: SpecProfile | null): { preset: PresetBundle; reason: string } {
-  // Default fallback — Esports works for everyone.
+  // Default fallback — Esports is the measured, lower-risk starting lane.
   const esports = PRESETS.find((p) => p.id === 'preset.esports')!
   if (!spec) {
     return {
       preset: esports,
-      reason: 'Detecting your rig… defaulting to the universal low-input-lag preset.',
+      reason: 'Detecting your rig… starting with the lower-risk measured lane. We do not assume a universal winner.',
     }
   }
 
-  const cpuVendor = (spec.cpu.vendor || '').toLowerCase()
-  const isAmd = cpuVendor.includes('amd')
-  const isIntel = cpuVendor.includes('intel')
-  const ramGb = spec.ram.totalGb || 0
-  const stickCount = spec.ram.stickCount || 0
-
-  const framePacing = PRESETS.find((p) => p.id === 'preset.frame-pacing')!
-  const network = PRESETS.find((p) => p.id === 'preset.network-low-latency')!
-
-  // AMD Ryzen / Threadripper benefit most from TSC sync + HPET kill — Frame Pacing.
-  if (isAmd) {
-    return {
-      preset: framePacing,
-      reason: `Your ${truncate(spec.cpu.model, 28)} benefits most from TSC-only timing + Hyper-V off. Frame Pacing is the AMD-tuned bundle.`,
-    }
-  }
-
-  // High-RAM rigs (32GB+) — TCP-stack overhaul has the most headroom.
-  if (ramGb >= 32 && stickCount >= 2) {
-    return {
-      preset: network,
-      reason: `${ramGb} GB and ${stickCount} sticks — your rig has the headroom to benefit from the TCP stack overhaul.`,
-    }
-  }
-
-  // Intel default — Esports preset.
-  if (isIntel) {
-    return {
-      preset: esports,
-      reason: `${truncate(spec.cpu.model, 28)} responds best to scheduler-bias + DWM-bypass tweaks. Esports is the Intel-tuned bundle.`,
-    }
-  }
-
-  // Unknown vendor (rare).
+  // Avoid pretending that CPU vendor, RAM capacity, or a network stack
+  // overhaul proves a preset winner. Those are hypotheses to measure, not
+  // reasons to silently apply timing or TCP changes.
   return {
     preset: esports,
-    reason: 'Universal low-input-lag preset — works on every rig.',
+    reason: `${truncate(spec.cpu.model || spec.cpu.marketing, 28)} detected. Start with the lower-risk measured lane, then compare Asta Bench and real-game 1% lows before testing anything experimental.`,
   }
 }
 

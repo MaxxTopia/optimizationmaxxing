@@ -33,9 +33,9 @@ export function RamAdvisorCard() {
         <h2 className="text-lg font-semibold">RAM tightening advisor</h2>
         <p className="text-sm text-text-muted max-w-2xl leading-snug">
           Reads your installed sticks via WMI + identifies the IC die type from the part number.
-          Closest thing to a free 5-8% FPS that exists — but only if you tune the right way for
-          the right IC. We never auto-flash BIOS; this card surfaces what you have + the tools
-          tuners actually trust.
+          Memory timings can matter in CPU-bound games, but there is no universal FPS number. We
+          identify what is installed and show conservative starting points; you enter BIOS values
+          yourself and validate stability. We never auto-flash BIOS.
         </p>
       </div>
 

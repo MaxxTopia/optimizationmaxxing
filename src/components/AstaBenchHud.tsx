@@ -51,8 +51,8 @@ export function AstaBenchHud() {
           <p className="text-[10px] uppercase tracking-widest text-text-subtle">measure</p>
           <p className="text-sm font-semibold text-text">No bench run yet — run Asta Bench</p>
           <p className="text-[11px] text-text-muted mt-0.5">
-            ~30 s, 4 metrics. Save a "before" snapshot, apply tweaks, save "after" — see the
-            actual delta.
+            ~30 s, 4 controlled proxies. Save a "before" snapshot, apply tweaks, save "after" —
+            see the local comparison delta.
           </p>
         </div>
         <span className="text-text-muted shrink-0 text-2xl">→</span>

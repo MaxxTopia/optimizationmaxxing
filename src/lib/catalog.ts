@@ -101,6 +101,16 @@ export interface TweakRecord {
    *  - 'cosmetic'    privacy/QoL/tidiness — ~0 in-match FPS or latency effect
    * Absent = ungraded. Powers the evidence badge on /tweaks. */
   evidenceTier?: 'measured' | 'mechanism' | 'situational' | 'cosmetic'
+  /**
+   * Explicit opt-in lane for changes with a material security, compatibility,
+   * power, or restore tradeoff. Risk 4 is always experimental even when older
+   * catalog data has not set this flag yet.
+   */
+  experimental?: boolean
+  /** Plain-English banner shown before apply. */
+  experimentalWarning?: string
+  /** Short description of the upside and the tradeoff. */
+  expectedImpact?: string
 }
 
 export interface Catalog {
@@ -111,6 +121,40 @@ export interface Catalog {
 }
 
 export const catalog: Catalog = catalogData as unknown as Catalog
+
+/**
+ * A small compatibility layer for older catalog entries. The catalog was
+ * authored before the explicit experimental lane existed, so these known
+ * high-blast-radius IDs are treated as experimental even if their JSON does
+ * not carry the new metadata yet.
+ */
+const LEGACY_EXPERIMENTAL_IDS = new Set([
+  'process.cpu-mitigations.disable-DANGER',
+  'process.msi-mode.gpu-nic-audio',
+  'bcd.hypervisorlaunchtype.off',
+  'vbs.hvci.disable',
+  'bcd.tscsyncpolicy.enhanced',
+  'process.core-parking.disable',
+  'power.pcie.link-state.off',
+  'hid.mouse.priority-realtime',
+  'process.priority-separation.foreground',
+  'process.hpet.disable',
+  'bcd.useplatformclock.disable',
+  'bcd.disabledynamictick.yes',
+  'privacy.smartscreen.disable',
+  'net.nic.interrupt-moderation.disable',
+])
+
+export function isExperimentalTweak(t: TweakRecord): boolean {
+  return t.experimental === true || t.riskLevel === 4 || LEGACY_EXPERIMENTAL_IDS.has(t.id)
+}
+
+export function experimentalWarningFor(t: TweakRecord): string {
+  return (
+    t.experimentalWarning ||
+    'Experimental: this can trade security, battery life, compatibility, or exact restore behavior for a possible latency change. Create a restore point and test it on a non-tournament session first.'
+  )
+}
 
 export function tweakRequiresAdmin(t: TweakRecord): boolean {
   return t.actions.some((a) => {

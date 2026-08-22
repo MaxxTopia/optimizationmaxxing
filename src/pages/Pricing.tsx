@@ -8,12 +8,12 @@ import { openExternal } from '../lib/tauri'
  * earlier $8/mo subscription model (one-shot value product → sub was
  * structurally wrong, see feedback_optimizationmaxxing_decisions.md).
  *
- * Element 115 launch sale through 2026-05-31. Visual treatment riffs on
- * BO3 Zombies — Element 115 in Treyarch lore is the substance that
- * "creates undead" (great pun: turns dead PCs into living ones). Cyan
- * glow + atomic-symbol box.
+ * The lifetime price is currently $115. Visual treatment riffs on BO3
+ * Zombies — Element 115 in Treyarch lore is the substance that creates
+ * undead (great pun: turns dead PCs into living ones). Cyan glow + atomic
+ * symbol box.
  *
- * VIP unlock paths during launch:
+ * VIP unlock paths:
  *   1. PayPal / BTC / etc via Discord ticket (TicketTool-bot) — Diggy
  *      DMs back a code from `scripts/mint-unbound-codes.py`.
  *   2. Existing dev-unlock for testing.
@@ -33,7 +33,7 @@ const FREE_FEATURES = [
   '/tune one-click apply (free subset)',
   'Per-tweak before/after measurement',
   'Asta Bench composite tracking',
-  'Restore Point — every tweak reversible',
+  'Restore Point + per-tweak revert where a prior state exists',
   'Auto-update + signed installer',
   'Community support (Discord)',
 ]
@@ -42,7 +42,7 @@ const VIP_FEATURES = [
   'Full 100+ tweak catalog (every Engine.ini, GameUserSettings.ini, IFEO, NIC)',
   'Match Scan — deep CPU/GPU thermal + throttle scan (real core temps + voltages via a Microsoft-signed sensor driver) with plain-English fix-it steps',
   'All curated + community presets (Esports / BR / Streamer / Asta Mode / etc.)',
-  '/tune wizard applies VIP tweaks too — close the last 30% latency gap',
+  '/tune wizard unlocks the full measured catalog — no universal latency promise',
   'Asta Mode — the most aggressive bundled preset (~30 tweaks, anti-magic visual)',
   'Tournament Audit + per-game anti-cheat compliance flags',
   'Day-1 game configs as new titles drop',
@@ -57,7 +57,7 @@ export function Pricing() {
   const redeemedCode = useVipStore((s) => s.redeemedCode)
   const isVip = tier === 'vip'
 
-  // Easter egg: 5 clicks on the VIP "$8" price within 3 s reveals the
+  // Easter egg: 5 clicks on the VIP "$115" price within 3 s reveals the
   // hidden HWID-bound code-redemption panel.
   const [showRedemption, setShowRedemption] = useState(false)
   const clicks = useRef<number[]>([])
@@ -76,7 +76,7 @@ export function Pricing() {
   }
 
   function handleUpgrade() {
-    // Discord-ticket flow during launch — TicketTool bot opens a private
+    // Discord-ticket flow — TicketTool bot opens a private
     // thread per buyer; Diggy DMs back a code after PayPal/BTC/Venmo
     // payment. Stripe Checkout wires in at v0.1.58+ once volume is real.
     void openExternal(DISCORD_TICKET_URL)
@@ -85,14 +85,15 @@ export function Pricing() {
   return (
     <div className="space-y-8">
       <header className="space-y-2">
-        <p className="text-xs uppercase tracking-widest text-text-subtle">summer maxximization · 2026</p>
+        <p className="text-xs uppercase tracking-widest text-text-subtle">element 115 · lifetime unlock</p>
         <h1 className="text-3xl font-bold">Pricing</h1>
         <p className="text-sm text-text-muted max-w-2xl">
           Free for life on the safest tweaks — already a real upgrade for any rig. VIP is a{' '}
           <strong className="text-text">one-time lifetime</strong> unlock for everyone ready to
-          maxximize their potential and chase a career this summer. You paid $150 for a
-          Superlight 2 to gain 0.5 ms — pay <strong className="text-text">$115 once</strong> for
-          12-22 ms off your click-to-pixel.
+          maxximize their potential and chase a career. You paid $150 for a Superlight 2 to gain
+          a fraction of a millisecond — pay <strong className="text-text">$115 once</strong> for
+          the full catalog, measured before/after tools, and the Asta ceiling lane. Your actual
+          gain still depends on your rig and game.
         </p>
       </header>
 
@@ -112,7 +113,7 @@ export function Pricing() {
           regularPrice="$180"
           tagline="One-time · lifetime · $180 → $115 locked in forever"
           highlighted
-          highlightLabel={isVip ? 'Active' : 'Element 115 launch'}
+          highlightLabel={isVip ? 'Active' : 'Lifetime unlock'}
           features={VIP_FEATURES}
           ctaLabel={isVip ? 'You are VIP' : 'Open Discord ticket →'}
           ctaDisabled={isVip}
@@ -148,7 +149,7 @@ export function Pricing() {
       </section>
 
       <section className="surface-card p-5">
-        <p className="text-xs uppercase tracking-widest text-text-subtle mb-2">how to buy during launch</p>
+        <p className="text-xs uppercase tracking-widest text-text-subtle mb-2">how to buy</p>
         <h2 className="text-lg font-semibold mb-3">Discord ticket → DM reply with code</h2>
         <ol className="space-y-1.5 text-sm text-text-muted leading-snug">
           <li>
@@ -162,8 +163,7 @@ export function Pricing() {
           </li>
         </ol>
         <p className="text-[11px] text-text-subtle mt-3 leading-snug">
-          Card-checkout (Stripe) wires in at v0.1.58+ — keeps the launch personal-touch through
-          the first round of buyers. Existing dev-unlock still works for testing:{' '}
+          Card-checkout (Stripe) can be added later. Existing dev-unlock still works for testing:{' '}
           <button
             onClick={unlockForDev}
             className="text-accent hover:underline"
@@ -256,7 +256,7 @@ function PriceCard({
             justifyContent: 'space-between',
             padding: '4px 6px',
           }}
-          title="Element 115 (Moscovium) — BO3 Zombies launch tier"
+          title="Element 115 (Moscovium) — BO3 Zombies reference"
         >
           <span
             style={{

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { astaRarityMeta, type AstaRarityMeta } from '../lib/astaRarity'
 
 /**
  * Generates a 1080x1080 PNG share card with the user's Asta Bench
@@ -56,20 +57,29 @@ export function AstaShareCard() {
     if (!snap.latest) return
     const c = canvasRef.current
     if (!c) return
-    drawShareCard(c, snap)
+    drawShareCard(c, snap, astaRarityMeta(snap.latest.composite))
     setPngUrl(c.toDataURL('image/png'))
   }, [snap])
 
   if (!snap.latest) return null
 
   const delta = snap.before && snap.after ? snap.after.composite - snap.before.composite : null
+  const rarity = astaRarityMeta(snap.latest.composite)
 
   return (
     <section className="surface-card p-5 space-y-3">
       <header className="flex items-baseline justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[10px] uppercase tracking-widest text-text-subtle">share</p>
-          <h2 className="text-base font-semibold">"I'm Asta-modded" card</h2>
+          <h2 className="text-base font-semibold flex items-center gap-2 flex-wrap">
+            "I'm Asta-modded" card
+            <span
+              className="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border"
+              style={{ color: rarity.color, borderColor: rarity.color }}
+            >
+              {rarity.label}
+            </span>
+          </h2>
           <p className="text-xs text-text-muted">
             1080×1080 PNG of your latest Asta Bench composite + before/after delta. Post to
             X / Discord. Nothing leaves your machine — generated locally in Canvas.
@@ -78,7 +88,7 @@ export function AstaShareCard() {
         {pngUrl && (
           <a
             href={pngUrl}
-            download={`asta-modded-${snap.latest.composite.toFixed(0)}.png`}
+            download={`asta-modded-${rarity.label.toLowerCase().replaceAll(' ', '-')}-${snap.latest.composite.toFixed(0)}.png`}
             className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold"
           >
             Download
@@ -98,6 +108,7 @@ export function AstaShareCard() {
           before/after delta included · paired by label prefix
         </p>
       )}
+      <p className="text-[11px] text-text-subtle text-center">{rarity.flavor} Rarity is earned from the measured score; it is not a loot box.</p>
     </section>
   )
 }
@@ -105,6 +116,7 @@ export function AstaShareCard() {
 function drawShareCard(
   c: HTMLCanvasElement,
   snap: { latest: BenchSnapshot | null; before: BenchSnapshot | null; after: BenchSnapshot | null },
+  rarity: AstaRarityMeta,
 ) {
   const ctx = c.getContext('2d')
   if (!ctx || !snap.latest) return
@@ -164,10 +176,14 @@ function drawShareCard(
   ctx.fillStyle = '#f0d4d4'
   ctx.fillText('MODDED.', 80, 430)
 
+  ctx.font = 'bold 32px Inter, system-ui, sans-serif'
+  ctx.fillStyle = rarity.color
+  ctx.textAlign = 'center'
+  ctx.fillText(`${rarity.label.toUpperCase()} · MEASURED`, W / 2, 500)
+
   // Composite — the hero number.
   const composite = snap.latest.composite
-  const compositeColor =
-    composite >= 80 ? '#7df0a8' : composite >= 65 ? '#ffe27d' : composite >= 50 ? '#ffba6e' : '#ff7d7d'
+  const compositeColor = rarity.color
   ctx.font = 'bold 320px Inter, system-ui, sans-serif'
   ctx.fillStyle = compositeColor
   ctx.textAlign = 'center'

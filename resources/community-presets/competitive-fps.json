@@ -1,8 +1,8 @@
 {
   "name": "Competitive FPS Pure",
   "glyph": "🏆",
-  "tagline": "Maximum input fidelity · ranked + tournament rigs",
-  "description": "Single-purpose competitive FPS preset. Strips every background latency source: telemetry, indexer, DVR, mouse acceleration, USB selective-suspend, Cortana, widgets. Maxes scheduler bias to focused window. NOT for laptops or daily-driver rigs.",
+  "tagline": "Advanced competitive lab · compare before keeping",
+  "description": "An aggressive community lab pack, not a tournament certification or a universal winner. It mixes low-risk cleanup with power, scheduler, HAGS, and network experiments; import only after reading each catalog warning, create a restore point, and compare a repeatable game run. Do not use this as the first preset on a laptop or daily-driver rig.",
   "tweakIds": [
     "ui.gamedvr.disable",
     "ui.gamedvr.appcapture.disable",

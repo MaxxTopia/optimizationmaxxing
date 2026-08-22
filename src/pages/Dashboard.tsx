@@ -50,11 +50,11 @@ export function Dashboard() {
             optimizationmaxxing · v0.1
           </p>
           <h1 className="text-4xl md:text-5xl font-bold mb-3 leading-tight">
-            Max FPS. <span className="text-accent">Zero input lag.</span>
+            Max FPS. <span className="text-accent">Chase every millisecond.</span>
           </h1>
           <p className="text-text-muted max-w-2xl text-base md:text-lg">
-            Spec-aware Windows tweaks for competitive gamers. Every change is undo-safe,
-            curated to your exact rig, and ships in a 5 MB installer.
+            Spec-aware Windows tweaks for competitive gamers. Snapshot-backed undo, clear recovery
+            notes, and rig-aware recommendations in a compact desktop app.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
@@ -125,31 +125,32 @@ export function Dashboard() {
       <section className="space-y-4">
         <header>
           <p className="text-xs uppercase tracking-widest text-text-subtle">benchmarks</p>
-          <h2 className="text-2xl font-bold">Real gains on the games that matter</h2>
+          <h2 className="text-2xl font-bold">Measure the games that matter</h2>
           <p className="text-sm text-text-muted">
-            Targets sourced from creator-tested presets. Your mileage scales with your spec.
+            Creator-tested targets are directional, not promises. Prove the change with your rig,
+            the same game scene, and the same settings.
           </p>
         </header>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <GameBenchmark
             game="Fortnite"
-            gain="+36% FPS"
-            description="Faster builds, instant edits, smoother endgame storms."
+            gain="test your 1% lows"
+            description="Use in-game FPS and frame-time capture to see whether the change survives an endgame scene."
           />
           <GameBenchmark
             game="Valorant"
-            gain="+42% stability"
-            description="Crisper input, tighter flicks, fewer dropped duels."
+            gain="test consistency"
+            description="Compare frametime variance and input feel; a Windows score is not a duel win."
           />
           <GameBenchmark
             game="Apex Legends"
-            gain="+27% FPS"
-            description="Higher floor on dense maps like Kings Canyon and Olympus."
+            gain="test the floor"
+            description="Measure dense-scene lows on your own map and driver stack before buying a part."
           />
           <GameBenchmark
             game="CS2 / Marvel Rivals / WZ"
-            gain="lower 1% lows"
-            description="Frame-pacing wins translate directly to peeker's-advantage wins."
+            gain="watch frametimes"
+            description="Lower variance can help, but route, game patch, and server conditions still matter."
           />
         </div>
       </section>

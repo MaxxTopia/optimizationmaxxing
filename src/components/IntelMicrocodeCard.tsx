@@ -3,8 +3,8 @@ import { inTauri, microcodeReport, type MicrocodeReport } from '../lib/tauri'
 
 /**
  * Intel 13/14gen Vmin Shift Instability advisor. Reads the running CPU
- * microcode revision and compares against the 0x12B mitigation floor that
- * Intel announced as the "final mitigation" in Sep 2024. Affected models:
+ * microcode revision and compares against Intel's current 0x12F-or-later
+ * guidance. Affected models:
  * i9/i7/i5 13xxx + 14xxx K/KF/KS plus 65W non-K. T-series excluded.
  *
  * Already-degraded chips are not repairable by microcode — RMA is the only
@@ -45,7 +45,7 @@ export function IntelMicrocodeCard() {
   const outdated = report?.status === 'outdated'
   const ok = report?.status === 'ok'
   const wheaCount = report?.wheaEvents30d ?? null
-  const wheaHot = wheaCount !== null && wheaCount > 5
+  const wheaHot = wheaCount !== null && wheaCount > 0
 
   return (
     <section
@@ -58,7 +58,7 @@ export function IntelMicrocodeCard() {
         <div>
           <p className="text-xs uppercase tracking-widest text-text-subtle">cpu degradation probe (intel 13/14gen)</p>
           <h2 className="text-lg font-semibold">
-            {active ? '🚨 Active Vmin Shift degradation — RMA path' :
+            {active ? '⚠ Instability signal — investigate before tuning' :
              outdated ? '⚠ Microcode below mitigation floor' :
              ok ? '✓ Microcode at floor · WHEA quiet' :
              'Microcode + WHEA status'}
@@ -95,7 +95,7 @@ export function IntelMicrocodeCard() {
             </div>
             <div className="border border-border rounded p-2">
               <div className="text-[10px] uppercase tracking-widest text-text-subtle">
-                Min safe (0x12B)
+                Intel guidance (0x12F+)
               </div>
               <div className="text-lg font-bold tabular-nums text-text">
                 {report.minSafeRevision ?? '—'}
@@ -112,8 +112,8 @@ export function IntelMicrocodeCard() {
                 title={wheaCount === null
                   ? 'Could not read System event log (PowerShell unavailable or access denied)'
                   : wheaHot
-                  ? '>5 events in 30 days on a Raptor Lake K-class chip = active clock-tree degradation'
-                  : 'Quiet — no Vmin Shift instability fingerprint'}
+                  ? 'WHEA events are a follow-up signal, not proof of degraded silicon'
+                  : 'No WHEA events were reported in the last 30 days'}
               >
                 {wheaCount === null ? '—' : wheaCount}
               </div>
@@ -122,17 +122,17 @@ export function IntelMicrocodeCard() {
           <p className="text-xs text-text-muted leading-snug">{report.note}</p>
           {active && (
             <p className="text-[11px] text-red-300 leading-snug">
-              Action: <strong className="text-red-200">file an Intel RMA</strong>. Intel extended
-              13/14gen warranties to 5 years (announced Aug 2024) specifically for this issue.
-              Microcode updates HALT further degradation but can't reverse damage. Document the
-              WHEA events from Event Viewer → System log → filter Source = WHEA-Logger before
-              submitting. <strong>Don't delay</strong> — degradation gets worse, not better.
+              Action: verify Intel Default Settings and the latest motherboard BIOS, then run the
+              CPU Health screen below or a longer vendor diagnostic. If instability continues at
+              stock settings, document WHEA events from Event Viewer → System → WHEA-Logger and
+              contact Intel about the affected-processor warranty path. This card is a screening
+              signal, not an RMA verdict.
             </p>
           )}
           {outdated && !active && (
             <p className="text-[11px] text-accent leading-snug">
               Action: visit your motherboard vendor's support page (ASUS / Gigabyte / MSI / ASRock),
-              download the latest BIOS, flash, then enter BIOS and select 'Intel Default Settings'
+              download a BIOS containing Intel's current 0x12F-or-later guidance, flash, then enter BIOS and select 'Intel Default Settings'
               / 'Intel Baseline Profile'. We don't auto-flash — that's a one-way trip.
             </p>
           )}

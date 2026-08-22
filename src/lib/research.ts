@@ -75,9 +75,9 @@ export const RESEARCH: ResearchArticle[] = [
   },
   {
     id: 'nvidia-profile-inspector',
-    title: 'NVIDIA Profile Inspector — gatekept .nip files (10-50ms)',
+    title: 'NVIDIA Profile Inspector — advanced per-game driver profiles',
     blurb:
-      'NVCP exposes ~15% of driver knobs. The rest live in .nip profiles pros pass around (Calypto, Threaded Optimization OFF for Fortnite, FRL v3 mode). Real wins, articleware-only.',
+      'NVCP exposes only part of the driver surface. The rest lives in .nip profiles shared by advanced users (for example, per-game threading or limiter settings). Possible gains are workload- and driver-dependent; articleware only.',
     badge: 'NVIDIA',
     body: nvidiaProfileInspector,
     advanced: true,
@@ -101,7 +101,7 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'ram-bios-recipes',
     title: 'RAM tightening — copy-paste BIOS recipes per IC',
     blurb:
-      'SAFE Buildzoid/DRAM-Calculator timings for Samsung B-die / Hynix A-die / M-die / DJR / CJR / Micron Rev.E. DDR4 + DDR5 tables. Type these into BIOS, validate with TestMem5. The 5-8% FPS win the catalog can\'t auto-apply.',
+      'Conservative Buildzoid/DRAM-Calculator starting points for common DDR4 and DDR5 ICs. Enter them manually, then validate with TestMem5 or another memory test; the result depends on the kit, board, controller, and game.',
     badge: 'BIOS',
     body: ramBiosRecipes,
     advanced: true,
@@ -122,8 +122,8 @@ export const RESEARCH: ResearchArticle[] = [
     badge: 'TOURNAMENT',
     body: biosTournamentCompliance,
     perGameCallouts: {
-      fortnite: 'FNCS rules require TPM 2.0 + a non-tampered HWID. Most BIOS perf tweaks are safe.',
-      valorant: 'VCT requires Secure Boot + TPM 2.0 + Vanguard. Disabling VBS is allowed; disabling Hyper-V is borderline.',
+      fortnite: 'Epic\'s current tournament floor includes Secure Boot, TPM 2.0, and IOMMU. Treat BIOS and security changes as eligibility-sensitive.',
+      valorant: 'Riot requirements can change by Windows build and event. Keep Secure Boot, TPM 2.0, and Vanguard healthy; do not disable security features for a tournament without checking the current rules.',
       cs2: 'VAC checks for known cheats only — perf BIOS tweaks pass. ESL/FACEIT add their own anticheat clients.',
       warzone: 'Ricochet kernel-mode AC plus BattlEye on some modes — leave Secure Boot + TPM on.',
     },
@@ -141,7 +141,7 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'latency-budget',
     title: 'The latency budget — every layer, cited',
     blurb:
-      "Total click-to-pixel: 25-35 ms tuned vs 50-80 ms stock. Per-layer breakdown with Battle(non)sense + Reflex whitepaper + Blur Busters citations. What's tunable, what's hardware-fixed.",
+      "Click-to-pixel is a stack, not a universal score. Per-layer examples with Battle(non)sense + Reflex whitepaper + Blur Busters citations show what's tunable and what's hardware-fixed.",
     badge: 'LATENCY',
     body: latencyBudget,
     applicableGames: ['fortnite', 'valorant', 'cs2', 'apex', 'warzone', 'overwatch'],
@@ -173,7 +173,7 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'intel-arc-setup',
     title: 'Intel Arc — competitive setup (ReBAR + drivers + XeLL)',
     blurb:
-      'Arc is driver-bound and ReBAR-dependent: enabling Resizable BAR is worth ~20-40%, staying on current drivers matters more than on any other GPU, and XeLL is the low-latency piece to use (skip frame-gen for competitive).',
+      'Arc is driver-bound and ReBAR-dependent: Resizable BAR is a compatibility baseline, current drivers matter, and XeLL is the low-latency piece to evaluate. Treat any percentage as game- and driver-specific; skip frame generation for competitive play.',
     badge: 'ARC',
     body: intelArcSetup,
   },
@@ -181,7 +181,7 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'nvidia-reflex',
     title: 'NVIDIA Reflex — does it add input delay?',
     blurb:
-      'No. Reflex reduces input lag by 5–30 ms depending on workload. Use ON+BOOST.',
+      'No blanket latency promise: Reflex changes the render queue based on workload. Measure it with the in-game indicator and use ON+BOOST when the game supports it.',
     badge: 'NVIDIA',
     body: nvidiaReflex,
   },
@@ -189,7 +189,7 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'amd-intel',
     title: 'AMD + Intel CPU features — keep / disable',
     blurb:
-      'HT/SMT mostly stay on. Intel APO on Core Ultra. AMD PBO + Curve Optimizer. VBS off for gaming.',
+      'HT/SMT usually stay on. Intel APO on supported titles. AMD PBO + Curve Optimizer. VBS is an eligibility and security trade-off, not an automatic gaming-off switch.',
     badge: 'CPU',
     body: amdIntel,
   },
@@ -197,12 +197,12 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'per-game-windows',
     title: 'Best Windows version per game',
     blurb:
-      'Win11 22H2 / 23H2 for stability. 24H2 has DPC + HID quirks for some titles. LTSC if you have the license.',
+      'Use a supported Windows 11 branch (24H2 or 25H2 where offered), then compare your own clean installs in OS Lab. Custom and stripped builds trade background load for support, update, and anti-cheat risk.',
     badge: 'OS',
     body: perGameWindows,
     perGameCallouts: {
-      fortnite: 'Win11 23H2 is the safest for FNCS. 24H2 introduced HID input-stack quirks that Bugha + others moved away from.',
-      valorant: 'Vanguard runs cleanly on 22H2 / 23H2 / 24H2. LTSC complicates Vanguard updates — not recommended.',
+      fortnite: 'For tournament eligibility, start with a fully patched supported Windows 11 install and verify Secure Boot, TPM 2.0, and IOMMU; do not rank builds from creator anecdotes alone.',
+      valorant: 'Keep Windows and Vanguard current. LTSC or stripped builds can change driver and anti-cheat behavior, so validate before using them for ranked play.',
       cs2: 'CS2 is GPU-bound; OS version barely moves the needle. Pick whichever updates you tolerate best.',
     },
   },
@@ -328,8 +328,8 @@ export const RESEARCH: ResearchArticle[] = [
     badge: 'OS',
     body: osComparison,
     perGameCallouts: {
-      fortnite: 'EAC tolerates most distros; tournament rigs should still run vanilla 24H2 + tweaks.',
-      valorant: 'Vanguard requires Secure Boot + TPM. Atlas, X-Lite (default), and Tiny11 keep them; Ghost Spectre may strip them — verify before you main Val.',
+      fortnite: 'EAC behavior varies by build; tournament rigs should start from a supported, fully patched Windows 11 install and verify Epic\'s current requirements.',
+      valorant: 'Vanguard commonly requires Secure Boot + TPM on Windows 11. Stripped builds may remove them or alter updates — verify the actual install before ranked play.',
       cs2: 'VAC is permissive — any distro works. CS2 is GPU-bound; lightweight OS gain is small.',
     },
   },

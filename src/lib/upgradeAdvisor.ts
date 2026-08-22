@@ -262,8 +262,8 @@ function gpuOpportunity(spec: SpecProfile): UpgradeOpportunity | null {
     part: 'NVIDIA RTX 5070 Ti (or 5080)',
     note:
       score < 60
-        ? "Your card is struggling to hold competitive frame rates. Either of these locks 240+ FPS in Performance mode. A GPU is a universal drop-in — no platform change."
-        : "Only worth it if you also play GPU-heavy titles or want 1440p+ — for Fortnite at competitive settings your current card isn't the limiter. A GPU is always a drop-in.",
+        ? "Your card may be the limiter at the selected settings. Check case clearance, power supply, connector, and platform support before buying; a faster GPU is not a guaranteed 240+ FPS result."
+        : "Only worth it if you also play GPU-heavy titles or want 1440p+ — for Fortnite at competitive settings your current card may not be the limiter. Check power, thermals, clearance, and connector support before treating it as a drop-in.",
     link: LINK_RTX5070TI,
   }
   return {

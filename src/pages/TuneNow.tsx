@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { catalog, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
+import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
 import { runBench, score } from '../lib/astaBench'
 import { loadImpactStore } from '../lib/benchImpact'
 import { useIsVip } from '../store/useVipStore'
@@ -13,6 +13,8 @@ import {
   type BatchItem,
   type SpecProfile,
 } from '../lib/tauri'
+import { issueTuneTicket, readTuneTicket, type TuneTicket } from '../lib/tuneTicket'
+import { TuneTicketModal } from '../components/TuneTicketModal'
 
 /**
  * /tune — the lazy-user one-click conversion page.
@@ -23,21 +25,21 @@ import {
  *   3. ONE Apply button → all matching free tweaks under one UAC
  *   4. Auto re-bench → show before/after delta
  *   5. VIP-gap CTA in context: "You missed Y composite by not being VIP"
- *   6. Restore-Point reassurance — every tweak is one-click reversible
+ *   6. Restore-Point reassurance — snapshot-backed changes expose a clear revert path
  *
  * Game-agnostic by design — works for any game (even ones we don't have
  * dedicated tweaks for) because the core ~70 rig-level + Windows-level
  * tweaks compound regardless of title.
  *
- * Excludes risk-4 tweaks + tournament-breaking tweaks from the auto-apply
- * set. The user explicitly opts into DANGER tier from /tweaks.
+ * Excludes the experimental lane + tournament-breaking tweaks from the
+ * auto-apply set. The user explicitly opts into those from /tweaks or Asta.
  */
 
 type Phase = 'idle' | 'scanning' | 'ready' | 'applying' | 'measuring' | 'done' | 'error'
 
 interface PlanBuckets {
-  /** Free tweaks matching this rig that aren't already applied + are
-   *  safe-by-default (risk ≤ 3, anti-cheat-safe). */
+  /** Lower-risk, non-experimental tweaks matching this rig that aren't already
+   * applied and have passed the Tune Now eligibility filters. */
   applyFree: TweakRecord[]
   /** VIP tweaks matching this rig — projected composite if user upgrades. */
   vipLocked: TweakRecord[]
@@ -57,6 +59,8 @@ export function TuneNow() {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<string>('')
+  const [ticket, setTicket] = useState<TuneTicket | null>(() => readTuneTicket())
+  const [showTicket, setShowTicket] = useState(false)
 
   useEffect(() => {
     if (!isNative) return
@@ -76,6 +80,14 @@ export function TuneNow() {
    * to a heuristic (0.6 per low-risk, 1.1 per mid-risk) for tweaks with
    * no recorded measurement on this rig. */
   const projection = useMemo(() => projectGain(plan.vipLocked), [plan.vipLocked])
+
+  async function ensureFirstTuneTicket(show: boolean) {
+    if (isVip || !isNative) return
+    const existing = readTuneTicket()
+    const issued = await issueTuneTicket()
+    setTicket(issued)
+    if (show && !existing) setShowTicket(true)
+  }
 
   async function startScan() {
     if (!isNative) {
@@ -104,6 +116,7 @@ export function TuneNow() {
     if (plan.applyFree.length === 0) {
       // Nothing to apply — jump straight to the gap CTA so the user sees value.
       setAfterComposite(beforeComposite)
+      await ensureFirstTuneTicket(true)
       setPhase('done')
       return
     }
@@ -126,6 +139,7 @@ export function TuneNow() {
       setAfterComposite(after.composite)
       setPhase('done')
       setProgress('')
+      await ensureFirstTuneTicket(true)
       const delta = beforeComposite != null ? after.composite - beforeComposite : null
       telemetrySendEvent('preset.applied', {
         presetId: '__tune_now__',
@@ -150,8 +164,8 @@ export function TuneNow() {
         <p className="text-sm text-text-muted max-w-2xl">
           Don't want to wipe Windows or read 90 tweak descriptions? Hit scan. We'll detect your
           rig, measure where you are, apply every safe tweak that matches your hardware, and
-          show you exactly what changed. <span className="text-text">Works for any game</span>{' '}
-          — the ~70 rig + Windows tweaks compound no matter what title is in the foreground.
+          show you what changed. <span className="text-text">Works for any game</span>{' '}
+          — the rig + Windows levers are measured on your machine instead of sold as a universal FPS promise.
         </p>
       </header>
 
@@ -181,6 +195,8 @@ export function TuneNow() {
           plan={plan}
           projection={projection}
           isVip={isVip}
+          ticket={ticket}
+          onShowTicket={() => setShowTicket(true)}
           onRescan={startScan}
         />
       )}
@@ -198,6 +214,7 @@ export function TuneNow() {
       )}
 
       <RestorePointStrip />
+      <TuneTicketModal ticket={ticket} open={showTicket} onClose={() => setShowTicket(false)} />
     </div>
   )
 }
@@ -216,7 +233,7 @@ function IdleState({ onStart, isNative }: { onStart: () => void; isNative: boole
             <span className="text-accent font-semibold">1.</span> Scan + initial Asta Bench (≈30 s)
           </li>
           <li>
-            <span className="text-accent font-semibold">2.</span> Apply every safe tweak that matches your rig — one UAC prompt
+            <span className="text-accent font-semibold">2.</span> Apply every lower-risk, non-experimental tweak that matches your rig — one UAC prompt
           </li>
           <li>
             <span className="text-accent font-semibold">3.</span> Re-bench + see exactly how many composite points you gained, and how many you'd unlock with VIP
@@ -234,7 +251,7 @@ function IdleState({ onStart, isNative }: { onStart: () => void; isNative: boole
         Skipped: risk-4 tweaks (CPU mitigations off, etc.) and tournament-breaking tweaks. You
         opt into those individually from{' '}
         <Link to="/tweaks" className="underline hover:text-text">/tweaks</Link>. Every applied
-        tweak is one-click reversible from{' '}
+        changes with a recorded inverse are one-click reversible from{' '}
         <Link to="/settings" className="underline hover:text-text">Settings</Link>.
       </p>
     </section>
@@ -284,12 +301,12 @@ function ReadyState({
         <header>
           <p className="text-xs uppercase tracking-widest text-text-subtle">the plan</p>
           <h2 className="text-xl font-bold">
-            {plan.applyFree.length} safe tweaks ready to apply
+            {plan.applyFree.length} lower-risk tweaks ready to apply
           </h2>
         </header>
         <ul className="space-y-1.5 text-sm text-text-muted">
           <li>
-            <span className="text-emerald-300 font-semibold">{plan.applyFree.length}</span> free tweaks match your rig + are safe-by-default
+            <span className="text-emerald-300 font-semibold">{plan.applyFree.length}</span> free, non-experimental tweaks match your rig
           </li>
           {plan.alreadyApplied.length > 0 && (
             <li>
@@ -297,7 +314,7 @@ function ReadyState({
             </li>
           )}
           <li>
-            <span className="text-amber-300 font-semibold">{plan.skippedDanger.length}</span> risk-4 / tournament-breaking (you opt-in from /tweaks)
+            <span className="text-amber-300 font-semibold">{plan.skippedDanger.length}</span> experimental / tournament-flagged (you opt in from /tweaks)
           </li>
           {!isVip && (
             <li>
@@ -331,6 +348,8 @@ function DoneState({
   plan,
   projection,
   isVip,
+  ticket,
+  onShowTicket,
   onRescan,
 }: {
   beforeComposite: number
@@ -338,6 +357,8 @@ function DoneState({
   plan: PlanBuckets
   projection: { vipGainEstimate: number; vipGainRange: [number, number] }
   isVip: boolean
+  ticket: TuneTicket | null
+  onShowTicket: () => void
   onRescan: () => void
 }) {
   const delta = afterComposite - beforeComposite
@@ -357,8 +378,8 @@ function DoneState({
         <p className="text-sm text-text-muted leading-snug">
           We applied <strong className="text-text">{plan.applyFree.length}</strong> tweaks. Composite
           went from {beforeComposite.toFixed(0)} → {afterComposite.toFixed(0)} ({sign}
-          {delta.toFixed(1)}). Every change is reversible — see the strip at the bottom of this
-          page.
+          {delta.toFixed(1)}). Snapshot-backed changes can be reverted from the strip below; the
+          experimental lane stays opt-in and is never silently applied here.
         </p>
       </section>
 
@@ -378,22 +399,47 @@ function DoneState({
           </h3>
           <p className="text-sm text-text-muted leading-snug">
             <strong className="text-text">{plan.vipLocked.length} VIP-only tweaks</strong> match
-            your rig and are safe-by-default. They're in Asta Mode + the curated VIP presets —
-            the ones that close the last 30% of the latency gap to a $5K rig. Projection range
+            your rig and are in the lower-risk VIP lane. They're in Asta Mode + the curated VIP presets.
+            Projection range
             uses your previously-measured per-tweak deltas where available; otherwise the
             community baseline.
           </p>
           <div className="flex items-center gap-3 flex-wrap">
+            {ticket && (
+              <button
+                onClick={onShowTicket}
+                className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-200 hover:border-amber-400"
+              >
+                Open your {ticket.rarity} Maxx Ticket · ${ticket.price}
+              </button>
+            )}
             <Link
               to="/pricing"
               className="btn-chrome px-5 py-2.5 rounded-md bg-accent text-bg-base font-semibold"
             >
-              Unlock VIP — $8/mo →
+              See lifetime VIP — $115 →
             </Link>
             <Link to="/asta" className="text-xs underline text-text-muted hover:text-text">
               See what Asta Mode does ↗
             </Link>
           </div>
+        </section>
+      )}
+
+      {!isVip && ticket && plan.vipLocked.length === 0 && (
+        <section className="surface-card p-5 flex items-center justify-between gap-3 flex-wrap border-amber-500/40">
+          <div>
+            <p className="text-[11px] uppercase tracking-widest text-text-subtle">your one-time ticket</p>
+            <p className="text-sm text-text-muted">
+              Your {ticket.rarity} Maxx Ticket is saved to this installation at ${ticket.price} lifetime VIP.
+            </p>
+          </div>
+          <button
+            onClick={onShowTicket}
+            className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-200 hover:border-amber-400"
+          >
+            Open ticket
+          </button>
         </section>
       )}
 
@@ -452,7 +498,8 @@ function RestorePointStrip() {
       <div>
         <p className="text-[11px] uppercase tracking-widest text-text-subtle">safety</p>
         <p className="text-sm text-text-muted">
-          Every applied tweak is reversible. One click → back to vanilla.
+          Snapshot-backed changes can be reverted. If a script has a special recovery path, the
+          catalog names it before you apply it.
         </p>
       </div>
       <Link
@@ -521,9 +568,9 @@ function buildPlan(
       continue
     }
     if (!tweakMatchesSpec(t, spec)) continue
-    // Skip the dangerous + tournament-breaking by default — user opts in
+    // Skip experimental + tournament-breaking by default — user opts in
     // explicitly from /tweaks.
-    if (t.riskLevel >= 4) {
+    if (isExperimentalTweak(t)) {
       skippedDanger.push(t)
       continue
     }

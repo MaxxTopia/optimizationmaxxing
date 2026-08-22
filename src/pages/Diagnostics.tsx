@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BiosAuditCard } from '../components/BiosAuditCard'
+import { CpuHealthCard } from '../components/CpuHealthCard'
 import { DpcLatencyCard } from '../components/DpcLatencyCard'
 import { DriverHealthCard } from '../components/DriverHealthCard'
 import { HudFrame } from '../components/HudFrame'
@@ -258,6 +259,8 @@ export function Diagnostics() {
           </section>
 
           <HudFrame><IntelMicrocodeCard /></HudFrame>
+
+          <HudFrame><CpuHealthCard /></HudFrame>
 
           <HudFrame><DriverHealthCard /></HudFrame>
 

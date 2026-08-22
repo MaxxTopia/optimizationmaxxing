@@ -108,7 +108,7 @@ export function AstaCard() {
           <span className="text-xs text-asta-bone-soft">
             {isVip
               ? 'Open for the path + apply'
-              : 'Tap the $115 price 5x within 3s on Pricing to redeem a code'}
+              : 'Open the path, measure your rig, and unlock the experimental lane only when you mean it'}
           </span>
         </div>
       </div>

@@ -80,6 +80,10 @@ export interface GrindEntry {
   tier?: 'goat' | 'top' | 'standard'
 }
 
+/** Content review stamp. It dates the evidence pass; it does not promise that
+ * every pro placement, roster, or routine is still current forever. */
+export const GRIND_LAST_REVIEWED = '2026-08-21'
+
 export const GRIND_ENTRIES: GrindEntry[] = [
   {
     id: 'peterbot',

@@ -673,6 +673,21 @@ async fn bench_cpu() -> Result<toolkit::CpuLatencySample, String> {
         .map_err(|e| format!("cpu bench failed: {e}"))
 }
 
+/// Bounded CPU stability screen. It is intentionally separate from the short
+/// Asta Bench CPU proxy so the UI can explain that this is a health signal,
+/// not a performance score or a degradation diagnosis.
+#[tauri::command]
+async fn cpu_health_test(duration_seconds: u32) -> Result<toolkit::CpuHealthResult, String> {
+    tokio::task::spawn_blocking(move || toolkit::run_cpu_health_test(duration_seconds))
+        .await
+        .map_err(|e| format!("cpu health task failed: {e}"))
+}
+
+#[tauri::command]
+fn cpu_health_cancel() {
+    toolkit::cancel_cpu_health_test();
+}
+
 /// Asta Bench — fires N pings to the given host, returns p50 + stddev.
 /// ~10-15 s for default 50 samples.
 #[tauri::command]
@@ -1014,6 +1029,8 @@ pub fn run() {
             vip_verify,
             vip_claim_online,
             bench_cpu,
+            cpu_health_test,
+            cpu_health_cancel,
             bench_ping,
             audit_state,
             ram_modules,

@@ -615,6 +615,34 @@ export async function benchCpu(): Promise<CpuLatencySample> {
   return invoke<CpuLatencySample>('bench_cpu')
 }
 
+export interface CpuHealthResult {
+  cpuBrand: string
+  vendor: string
+  durationSeconds: number
+  workers: number
+  iterations: number
+  internalErrors: number
+  threadPanics: number
+  wheaBefore: number | null
+  wheaAfter: number | null
+  wheaDelta: number | null
+  cancelled: boolean
+  /** pass = no failure observed; warning = new WHEA; fail = workload failure. */
+  status: 'pass' | 'warning' | 'fail' | 'cancelled' | string
+  headline: string
+  note: string
+}
+
+/** Bounded Windows CPU stability screen. This is not a silicon-health
+ * diagnosis; it is a simple stop/continue signal before users tune further. */
+export async function cpuHealthTest(durationSeconds = 60): Promise<CpuHealthResult> {
+  return invoke<CpuHealthResult>('cpu_health_test', { durationSeconds })
+}
+
+export async function cpuHealthCancel(): Promise<void> {
+  await invoke('cpu_health_cancel')
+}
+
 export async function benchPing(host: string, count: number): Promise<PingJitterSample> {
   return invoke<PingJitterSample>('bench_ping', { host, count })
 }
