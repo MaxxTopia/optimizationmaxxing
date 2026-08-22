@@ -1,4 +1,4 @@
-# OptimizationMaxxing relight checkpoint — 2026-08-21
+# OptimizationMaxxing relight checkpoint — 2026-08-22 (started 2026-08-21)
 
 ## Scope
 
@@ -17,7 +17,7 @@ This checkpoint covers the relight / reliability pass requested for Optimization
 
 - Repository: `C:\Users\Diggy\projects\optimizationmaxxing`
 - Branch: `main`
-- HEAD: `447f85f` / v0.3.12, aligned with `origin/main` and `origin/HEAD`
+- HEAD: `c2c78d7` / v0.4.0, aligned with `origin/main` and tag `v0.4.0`
 - Initial worktree: clean tracked state; preserved untracked WIP:
   - `_CONTENT-FRESHNESS-AUDIT-2026-06-27.md`
   - `_IF-YOU-LOSE-CLAUDE.txt`
@@ -25,7 +25,7 @@ This checkpoint covers the relight / reliability pass requested for Optimization
   - `_demo_work/`
 - Existing safety architecture: Tauri 2, SQLite apply snapshots, one-UAC batching, restore-point support, no BIOS/SPD/kernel-driver writes.
 - Existing public release: v0.3.12 OAuth / registry / UAC fixes are live; VIP redemption still has a human retry gate from the prior continuity notes.
-- No publish, deployment, push, credential rotation, or deletion has been performed in this pass yet. The working tree now contains the intended relight changes plus the pre-existing WIP listed above.
+- The relight commit, tag, release, MaxxTopia source edits, site deployments, and live-route checks are complete. No credentials were rotated and no material files were deleted. The working tree still contains the pre-existing WIP listed above.
 
 ## Evidence decisions locked for this pass
 
@@ -49,7 +49,7 @@ This checkpoint covers the relight / reliability pass requested for Optimization
 - Hone restore-point / optimizer UX reference: <https://support.hone.gg/hc/en-gb/articles/4902940834079-Setting-Up-a-Restore-Point>
 - Creator hypothesis reference reviewed: Lecctron’s Fortnite optimization guide (December 2024): <https://www.youtube.com/watch?v=IFypHfmUVUE>
 
-## Planned implementation order
+## Implementation order completed
 
 1. Add catalog metadata / validation and repair preset descriptions, duplicate IDs, experimental visibility, and Tune Now eligibility.
 2. Add the CPU health screening command and UI; soften the existing Intel microcode copy.
@@ -57,7 +57,7 @@ This checkpoint covers the relight / reliability pass requested for Optimization
 4. Add ticket modal, Asta score-based rarity, first-run theme selection, and plain-English Tournament / Session / SCEWIN flows.
 5. Refresh Grind / Hardware with dated evidence and a rig-fit summary.
 6. Inspect MaxxTopia / Spritecannon and make only focused, authorized cross-project edits.
-7. Add `RESILIENCE.md`, update changelog / continuity, verify, then present the exact release package before publishing.
+7. Add `RESILIENCE.md`, update changelog / continuity, verify, publish, sync MaxxTopia, and verify the live package.
 
 ## Still unresolved / human gates
 
@@ -65,21 +65,21 @@ This checkpoint covers the relight / reliability pass requested for Optimization
 - CPU screening cannot replace long-duration stability testing or vendor diagnosis.
 - OS comparisons need the user to run the same workload after each OS install with the same BIOS, driver, game mode, and scene.
 - SCEWIN remains read-only guidance; AMI tool provenance and BIOS changes remain user-owned.
-- The ticket redemption is manual until a secure, server-side claim flow is approved.
 - The real Tauri CPU Health screen, thermal behavior, and native OS Lab run still need desktop validation.
-- MaxxTopia’s Fastboi/Sonic banner is locally built and visually inspected; its live route and the release-synced Optimizationmaxxing version/update card must be verified after the app release is actually live.
-- The requested completion DM still needs a safe, available Maxx bot send path; no ticket-winner identity is collected by the local app.
+- No ticket-winner identity is collected by the local app; ticket redemption remains manual until a secure server-side claim flow is approved.
 
-## Implementation and verification checkpoint — 2026-08-21
+## Implementation, release, and verification checkpoint — 2026-08-22
 
 - Catalog: 100 entries pass `scripts/audit-catalog.mjs` with 0 errors / 0 warnings; 14 entries are explicitly experimental or risk-4. Risk, evidence tier, expected impact, warning text, ID references, and ASCII-safe apply/revert scripts are structurally checked.
 - App additions: CPU Health screening with bounded workload + WHEA context; OS Lab median-of-three snapshots; Asta Fit guardrail; score-based Asta rarity; one-time local Tune Ticket; first-run bottom-four theme default; clearer Tournament, Session, SCEWIN, Hardware, and Grind surfaces.
 - Safety edits: Tune Now excludes experimental / tournament-flagged entries; Esports is free and excludes device / boot / security experiments; MSI and NIC interrupt scripts save exact restore values; experimental confirmation/warnings are visible in tweak rows and preset apply flows.
 - Content edits: current Windows 11 / Intel 0x12F+ / Epic Secure Boot + TPM + IOMMU boundaries are reflected in visible app copy; fixed FPS, latency, “universal drop-in,” and old Windows-version claims were softened or removed.
 - Version/release notes: package, lockfile, Cargo, Tauri config, and app changelog are aligned to v0.4.0; `.github/workflows/release.yml` now emits a `## Highlights` block so MaxxTopia’s existing release-sync workflow can update `/updates`.
-- Cross-project: MaxxTopia local build passes; its homepage now uses the real `fastboi__super.png` in an animated cannon launch under a Sonic-theme banner. Existing dirty/untracked MaxxTopia work was preserved.
-- Checks passed: `node scripts/audit-catalog.mjs`; `npx tsc --noEmit`; `cargo test --manifest-path src-tauri/Cargo.toml` (84 passed); `npm run build` in both repositories; `git diff --check`; local browser inspection of app routes and MaxxTopia `/` + `/optimizationmaxxing/` with no fresh console errors.
+- Cross-project: MaxxTopia commits `5fc5b5a` (Sonic/Fastboi launch and product copy) and `29dc11e` (source-wall fixed-gain cleanup) are pushed; existing dirty/untracked MaxxTopia work was preserved. Both focused site deployments succeeded.
+- Checks passed: `npm run audit:catalog` (100 tweaks, 0 errors / 0 warnings); `npx tsc --noEmit`; `cargo test --manifest-path src-tauri/Cargo.toml` (84 passed); `npm run build` in both repositories; `git diff --check`; local browser inspection of app routes and MaxxTopia routes with no fresh console errors.
+- Release: GitHub Actions run `32558461152` succeeded. Public release `v0.4.0` is non-draft/non-prerelease with `optimizationmaxxing_0.4.0_x64-setup.exe`, its `.sig`, and `latest.json`; installer SHA-256 is `1f1d28ad2b4df1ed3b2b4df3d20c79585e224f9760736a4925d2e28ac310bcf4`.
+- Live MaxxTopia: repository-dispatch sync `32558861963` and deploy `32558869962` succeeded. `/optimizationmaxxing` shows `v0.4.0` and the direct installer URL; `/updates` contains the dated v0.4.0 highlights; homepage serves the real `fastboi__super.png` launch asset; public `latest.json` reports `0.4.0` for both Windows channels.
 
 ## Exact next action
 
-Stage only the intended OptimizationMaxxing files and the two focused MaxxTopia source files, review the staged diff, then run the documented tag/release flow. After the release workflow and MaxxTopia sync complete, verify the GitHub assets, `/updates`, `/optimizationmaxxing`, homepage launch scene, and live route headers before sending the completion DM.
+Send the completion summary through the existing `C:\Users\Diggy\projects\adblockmaxxer\tools\notify-diggy.ps1` Maxx bot helper. Then Diggy should perform the native CPU Health / OS Lab run, a real Fortnite same-scene before/after comparison, and the physical tournament/SCEWIN gates. Keep an off-machine copy of this checkpoint and the project continuity snapshot for disaster recovery.
