@@ -109,14 +109,16 @@ The completion DM was sent through `C:\Users\Diggy\projects\adblockmaxxer\tools\
   `cb8d106f-7b31-4747-8071-9efa5f8402a4`. A real prepare/status round-trip
   passed with a 259200000 ms window, then the exact test KV record was removed
   and verified as 404.
-- Release gate: the native v0.4.2 executable and NSIS installer were built
-  locally, but `tauri:build` exited at updater signing because the private
-  signing key is intentionally not stored on this machine. CI must provide the
-  existing signing secrets before v0.4.2 can be called published.
+- Release: local `tauri:build` produced the executable and NSIS installer but
+  stopped at local updater signing because the private signing key is
+  intentionally not stored on this machine. GitHub Actions run `32609056540`
+  supplied the existing secrets, built and signed the artifacts, verified
+  `latest.json`, auto-published v0.4.2, and dispatched MaxxTopia sync. Public
+  release assets are the installer, `.sig`, and `latest.json`.
 - Known boundary: KV account uniqueness is strong for normal low-volume use but
   not a strict transaction during simultaneous callbacks. If concurrent abuse
   becomes material, move the account lock to a Durable Object.
-- Next action: stage only the intended v0.4.2 app/Worker/docs changes, then use
-  the documented main + tag release sequence if Diggy's publish approval still
-  applies; verify CI artifacts, public release, updater manifest, and the
-  existing MaxxTopia sync separately.
+- Next action: Diggy should run one real Tune Now flow with a Discord account,
+  confirm the Maxx Bot DM, and manually verify the support-side discount/redeem
+  path. Keep an off-machine copy of this checkpoint and the project continuity
+  snapshot for disaster recovery.
