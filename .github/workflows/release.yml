@@ -64,8 +64,9 @@ jobs:
                   releaseBody: |
                       ## Highlights
 
-                      - A chance at a rare ticket can appear after a first Tune Now.
-                      - Fastboi now launches inside the Sonic theme.
+                      - First-time Tuners now have a chance at something rare, with a clear three-day decision window.
+                      - Offer details stay consistent across the app, Discord, and support flow if the user decides to use them.
+                      - Light theme improvements round out the pass.
 
                       Auto-built by CI from tag `${{ github.ref_name }}`. The signed `latest.json`, installer, and signature are verified before the release is published.
                   releaseDraft: true

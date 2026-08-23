@@ -14,9 +14,10 @@ depending on chat history.
   A CPU screen is a bounded stability screen, not an RMA diagnosis.
 - Tournament Mode is an eligibility and preflight surface. It never claims that
   a tweak is invisible to anti-cheat or guarantees tournament eligibility.
-- Tickets are one-per-local-installation proof until a server-side redemption
-  service exists. The app must not imply that a screenshot is automatically
-  validated.
+- First-time Tune Now offers are server-backed discount invitations. Discord
+  OAuth identifies the account, the offer expires after three days, and VIP is
+  never granted automatically. A screenshot is only a visual reminder; the
+  server-side offer record is what Diggy verifies.
 
 ## Risk register
 
@@ -27,7 +28,9 @@ depending on chat history.
 | P1 | CPU screening creates unsafe heat or gives false confidence. | Temperature/noise warning, thread failure, WHEA delta, user reports instability. | Bounded 60s default, optional 3m run, explicit Stop screen control, WHEA described as a signal, follow-up tools named. | Add a live temperature cutoff before making the long run a default. |
 | P1 | OS comparisons mistake a driver, BIOS, game patch, or background process for an OS advantage. | Same rig produces different results across repeated control runs. | Median-of-3, saved OS build and hardware, fair-test checklist, local-only storage. | Add a control run label and reject comparisons without matching driver/game metadata. |
 | P1 | A tournament user changes a setting that conflicts with a current Epic requirement. | Pre-Tournament Audit flags Secure Boot, TPM, IOMMU, VBS, or unknown state. | Tournament copy is eligibility-first; no anti-cheat safety claims; audit remains separate from Tune Now. | Re-check the official rules link and cache a dated requirement snapshot during every content review. |
-| P1 | A ticket screenshot is shared or redeemed twice. | Repeated ticket number, rig proof mismatch, manual redemption report. | One localStorage issuance, unique ticket number, rig-bound suffix, manual Diggy review. | Move issuance and redemption to a server-side signed claim endpoint with expiry and Discord logging. |
+| P1 | A first-time offer is copied, duplicated, or honored after its deadline. | `/admin/offers` shows repeated Discord IDs, expired timestamps, or a used ticket presented again. | Server offer ledger, Discord OAuth binding, one offer record per Discord account, three-day expiry, admin-only redeem/revoke actions, no automatic VIP grant. | Move the per-account uniqueness lock to a Durable Object if offer volume or concurrent abuse makes KV eventual consistency material. |
+| P1 | Maxx Bot cannot DM a linked offer holder. | Offer row has a linked Discord ID but no `dmSentAt`; Worker logs a Discord API failure. | Best-effort guild join, `dmSent` status, admin `DM again` action, and the app still shows the offer after OAuth. | Add a daily alert for linked offers with an unsent DM older than 15 minutes. |
+| P1 | The offer worker is unavailable during Tune Now. | App shows a local fallback / status check instead of a server-backed offer. | Worker calls fail open for tuning; local copy is explicitly marked not account-secured and can be retried later. | Add a health check and a small in-app service-status banner if failures become common. |
 | P2 | Upstream hardware, pro, or Fortnite guidance goes stale. | Review date ages; vendor or official rules page changes. | Evidence review stamps, source links, language that separates historic from current claims. | Add a freshness report that lists citations older than the review window. |
 | P2 | A MaxxTopia update or release artifact is missing even though the app shipped. | Version mismatch, missing rendered Updates card, failed Pages/custom-domain check. | Changelog entry and release checklist; preview plus cache-busted custom route verification. | Add a release check that compares the app version, public update entry, and latest artifact manifest. |
 

@@ -84,3 +84,39 @@ This checkpoint covers the relight / reliability pass requested for Optimization
 ## Exact next action
 
 The completion DM was sent through `C:\Users\Diggy\projects\adblockmaxxer\tools\notify-diggy.ps1`. Diggy should perform the native CPU Health / OS Lab run, a real Fortnite same-scene before/after comparison, and the physical tournament/SCEWIN gates. Keep an off-machine copy of this checkpoint and the project continuity snapshot for disaster recovery.
+
+## First-time offer checkpoint — 2026-08-22
+
+- Scope: replace the local screenshot-oriented Tune Ticket with a server-backed,
+  account-linked discount offer. It is not a contest, does not grant VIP
+  automatically, and the user can ignore it.
+- Offer lifecycle: the first Tune Now creates one server session, assigns the
+  final Gold / Emerald / Diamond tier and price, starts a three-day countdown,
+  and stores the session for seven days. Discord OAuth captures the user ID;
+  the permanent account record prevents normal repeat offers. Maxx Bot sends
+  the linked offer by DM. Admin can list, DM again, redeem after payment, or
+  revoke it.
+- UX: the app shows the countdown, offer number, account-link status, Maxx Bot
+  delivery status, copy-details action, Connect Discord, Check status, and
+  Decide later. Offline fallback is visibly local and not account-secured.
+- Source: app version files and changelog are aligned to v0.4.2. Existing
+  untracked WIP remains untouched. No homepage or MaxxTopia source was changed.
+- Verification: catalog audit passed with 100 tweaks / 0 errors / 0 warnings;
+  frontend build passed; 84 Rust tests passed; Worker syntax and diff checks
+  passed; local mocked Discord callback confirmed account binding, one DM, and
+  consistent terms across app/session/DM/admin records.
+- Live: `optmaxxing-vip.maxxtopia.workers.dev` deployed Worker version
+  `cb8d106f-7b31-4747-8071-9efa5f8402a4`. A real prepare/status round-trip
+  passed with a 259200000 ms window, then the exact test KV record was removed
+  and verified as 404.
+- Release gate: the native v0.4.2 executable and NSIS installer were built
+  locally, but `tauri:build` exited at updater signing because the private
+  signing key is intentionally not stored on this machine. CI must provide the
+  existing signing secrets before v0.4.2 can be called published.
+- Known boundary: KV account uniqueness is strong for normal low-volume use but
+  not a strict transaction during simultaneous callbacks. If concurrent abuse
+  becomes material, move the account lock to a Durable Object.
+- Next action: stage only the intended v0.4.2 app/Worker/docs changes, then use
+  the documented main + tag release sequence if Diggy's publish approval still
+  applies; verify CI artifacts, public release, updater manifest, and the
+  existing MaxxTopia sync separately.

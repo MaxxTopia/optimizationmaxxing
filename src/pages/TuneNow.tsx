@@ -89,6 +89,10 @@ export function TuneNow() {
     if (show && !existing) setShowTicket(true)
   }
 
+  function updateTicket(next: TuneTicket) {
+    setTicket(next)
+  }
+
   async function startScan() {
     if (!isNative) {
       setError('Tune Now requires the optimizationmaxxing.exe shell.')
@@ -214,7 +218,12 @@ export function TuneNow() {
       )}
 
       <RestorePointStrip />
-      <TuneTicketModal ticket={ticket} open={showTicket} onClose={() => setShowTicket(false)} />
+      <TuneTicketModal
+        ticket={ticket}
+        open={showTicket}
+        onClose={() => setShowTicket(false)}
+        onTicketChange={updateTicket}
+      />
     </div>
   )
 }
@@ -410,7 +419,7 @@ function DoneState({
                 onClick={onShowTicket}
                 className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-200 hover:border-amber-400"
               >
-                Open your {ticket.rarity} Maxx Ticket · ${ticket.price}
+                Open your {ticket.rarity} VIP offer · ${ticket.price}
               </button>
             )}
             <Link
@@ -429,16 +438,17 @@ function DoneState({
       {!isVip && ticket && plan.vipLocked.length === 0 && (
         <section className="surface-card p-5 flex items-center justify-between gap-3 flex-wrap border-amber-500/40">
           <div>
-            <p className="text-[11px] uppercase tracking-widest text-text-subtle">your one-time ticket</p>
+            <p className="text-[11px] uppercase tracking-widest text-text-subtle">your first-time offer</p>
             <p className="text-sm text-text-muted">
-              Your {ticket.rarity} Maxx Ticket is saved to this installation at ${ticket.price} lifetime VIP.
+              Your {ticket.rarity} VIP offer is available at ${ticket.price} for three days. Decide later
+              or link Discord if you want to use it.
             </p>
           </div>
           <button
             onClick={onShowTicket}
             className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-200 hover:border-amber-400"
           >
-            Open ticket
+            Open offer
           </button>
         </section>
       )}

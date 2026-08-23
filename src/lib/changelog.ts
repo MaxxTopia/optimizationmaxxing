@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.2',
+    date: '2026-08-22',
+    highlights: [
+      'NEW **First-time Tuners now have a chance at something rare.** A clear three-day timer, offer status, and easier next step keep the tuning flow simple.',
+      'IMPROVE **Offer tracking.** The offer details stay consistent across the app, Discord, and support flow if you decide to use it later.',
+    ],
+  },
+  {
     version: '0.4.1',
     date: '2026-08-22',
     highlights: [

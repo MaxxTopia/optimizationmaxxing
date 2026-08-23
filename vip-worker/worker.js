@@ -72,6 +72,23 @@ const WAITLIST_KV_PREFIX = 'waitlist:';
 const PRODUCT_SLUG_RE = /^[a-z0-9-]{2,32}$/;
 const MAX_DM_PER_CALL = 20; // free-tier subrequest budget — ~2 subrequests per DM
 
+// First-time Tune Now offer flow. The app creates one short-lived pending
+// session, then Discord OAuth binds the offer to the Discord account. The
+// offer is a discount invitation, not a contest prize and it never grants
+// VIP by itself.
+const OFFER_SESSION_PREFIX = 'offer-session:';
+const OFFER_TICKET_PREFIX = 'offer-ticket:';
+const OFFER_USER_PREFIX = 'offer-user:';
+const OFFER_SESSION_RE = /^[A-Za-z0-9_-]{32,96}$/;
+const OFFER_TICKET_RE = /^OMAX-[0-9A-HJKMNP-Z]{16}$/;
+const OFFER_TTL_SEC = 7 * 24 * 60 * 60;
+const OFFER_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
+const OFFER_TIERS = [
+  { rarity: 'gold', chance: 70, price: 99 },
+  { rarity: 'emerald', chance: 24, price: 77 },
+  { rarity: 'diamond', chance: 6, price: 69 },
+];
+
 // Profile-flair validation. URLs must be https:// and ≤256 chars; viewer
 // plugin HEAD-checks Content-Length at render time to enforce file-size caps.
 // Colors must be lowercase #RRGGBB.
@@ -130,7 +147,7 @@ export default {
     // bounces back here with `code=...&state=...`, and we trade code →
     // user identify → role grant.
     if (url.pathname === '/discord-link' && request.method === 'GET') {
-      return handleDiscordLink(url, env, corsHeaders);
+      return handleDiscordLink(url, env, corsHeaders, ctx);
     }
 
     // Waitlist: start (redirect into Discord OAuth), public count, admin notify.
@@ -142,6 +159,30 @@ export default {
     }
     if (url.pathname === '/waitlist/notify' && request.method === 'POST') {
       return handleWaitlistNotify(request, env, corsHeaders);
+    }
+
+    // First-time Tune Now discount offer flow. Prepare/status are safe to
+    // call from the desktop app; Discord OAuth is the identity boundary.
+    if (url.pathname === '/offer/prepare' && request.method === 'POST') {
+      if (await rateLimited(request, 'offer-prepare', 8, 60)) {
+        return json({ ok: false, error: 'rate limited, slow down' }, 429, corsHeaders);
+      }
+      let body;
+      try {
+        body = await request.json();
+      } catch (e) {
+        return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+      }
+      return handleOfferPrepare(body, request, env, corsHeaders);
+    }
+    if (url.pathname === '/offer/start' && request.method === 'GET') {
+      return handleOfferStart(url, env);
+    }
+    if (url.pathname === '/offer/status' && request.method === 'GET') {
+      if (await rateLimited(request, 'offer-status', 30, 60)) {
+        return json({ ok: false, error: 'rate limited, slow down' }, 429, corsHeaders);
+      }
+      return handleOfferStatus(url, env, corsHeaders);
     }
 
     if (url.pathname === '/profile' && request.method === 'POST') {
@@ -393,6 +434,320 @@ async function handleClaim(body, env, ctx, corsHeaders) {
     200,
     corsHeaders,
   );
+}
+
+// ─── First-time Tune Now offers ────────────────────────────────────────
+
+async function handleOfferPrepare(body, request, env, corsHeaders) {
+  const session = typeof body.session === 'string' ? body.session : '';
+  if (!OFFER_SESSION_RE.test(session)) {
+    return json({ ok: false, error: 'malformed offer session' }, 400, corsHeaders);
+  }
+
+  const key = OFFER_SESSION_PREFIX + session;
+  const existingRaw = await env.VIP_CLAIMS.get(key);
+  if (existingRaw) {
+    const existing = parseJsonRecord(existingRaw);
+    if (existing) return offerJson(existing, request, corsHeaders);
+  }
+
+  const issuedAt = Date.now();
+  const tier = pickOfferTier();
+  const record = {
+    version: 1,
+    session,
+    status: 'pending',
+    ticketId: `OMAX-${genCode()}`,
+    rarity: tier.rarity,
+    chanceLabel: `${tier.chance}% pull`,
+    price: tier.price,
+    issuedAt,
+    expiresAt: issuedAt + OFFER_WINDOW_MS,
+    createdAt: issuedAt,
+    dmSentAt: null,
+  };
+  await env.VIP_CLAIMS.put(key, JSON.stringify(record), { expirationTtl: OFFER_TTL_SEC });
+  return offerJson(record, request, corsHeaders);
+}
+
+async function handleOfferStart(url, env) {
+  const session = url.searchParams.get('session') || '';
+  if (!OFFER_SESSION_RE.test(session)) {
+    return htmlPage('<h1>Bad offer link</h1><p>This offer link is malformed.</p>', 400);
+  }
+  const raw = await env.VIP_CLAIMS.get(OFFER_SESSION_PREFIX + session);
+  const record = parseJsonRecord(raw);
+  if (!record) {
+    return htmlPage('<h1>Offer not found</h1><p>Run Tune Now again to request a current offer.</p>', 404);
+  }
+  if (Date.now() > record.expiresAt) {
+    await expireOfferSession(env, record);
+    return htmlPage('<h1>Offer expired</h1><p>This first-time VIP offer was available for three days.</p>', 410);
+  }
+  if (record.status !== 'pending') {
+    return offerHtml(record, record.dmSentAt ? 'Maxx Bot has already sent the offer to your Discord account.' : 'Your offer is linked to your Discord account.', 200);
+  }
+  if (!env.DISCORD_OAUTH_CLIENT_ID || !env.DISCORD_OAUTH_REDIRECT_URI) {
+    return htmlPage('<h1>Discord linking is not configured</h1><p>Tell Diggy that the offer worker needs its OAuth settings.</p>', 500);
+  }
+  const authUrl =
+    'https://discord.com/api/oauth2/authorize?' +
+    new URLSearchParams({
+      client_id: env.DISCORD_OAUTH_CLIENT_ID,
+      redirect_uri: env.DISCORD_OAUTH_REDIRECT_URI,
+      response_type: 'code',
+      scope: 'identify guilds.join',
+      state: `offer_${session}`,
+      prompt: 'consent',
+    }).toString();
+  return Response.redirect(authUrl, 302);
+}
+
+async function handleOfferStatus(url, env, corsHeaders) {
+  const session = url.searchParams.get('session') || '';
+  if (!OFFER_SESSION_RE.test(session)) {
+    return json({ ok: false, error: 'malformed offer session' }, 400, corsHeaders);
+  }
+  const raw = await env.VIP_CLAIMS.get(OFFER_SESSION_PREFIX + session);
+  const record = parseJsonRecord(raw);
+  if (!record) return json({ ok: false, error: 'offer not found' }, 404, corsHeaders);
+  if (Date.now() > record.expiresAt && record.status !== 'redeemed' && record.status !== 'revoked') {
+    await expireOfferSession(env, record);
+  }
+  return offerJson(record, url, corsHeaders);
+}
+
+async function handleOfferJoin(code, session, env, ctx) {
+  if (!OFFER_SESSION_RE.test(session)) {
+    return htmlPage('<h1>Bad offer link</h1><p>This offer link is malformed.</p>', 400);
+  }
+  const sessionKey = OFFER_SESSION_PREFIX + session;
+  const sessionRecord = parseJsonRecord(await env.VIP_CLAIMS.get(sessionKey));
+  if (!sessionRecord) {
+    return htmlPage('<h1>Offer not found</h1><p>Run Tune Now again to request a current offer.</p>', 404);
+  }
+  if (Date.now() > sessionRecord.expiresAt) {
+    await expireOfferSession(env, sessionRecord);
+    return htmlPage('<h1>Offer expired</h1><p>This first-time VIP offer was available for three days.</p>', 410);
+  }
+  if (!env.DISCORD_OAUTH_CLIENT_ID || !env.DISCORD_OAUTH_CLIENT_SECRET || !env.DISCORD_OAUTH_REDIRECT_URI) {
+    return htmlPage('<h1>OAuth not configured</h1><p>The offer worker is missing its Discord OAuth settings.</p>', 500);
+  }
+
+  let accessToken;
+  try {
+    const tokenRes = await fetch('https://discord.com/api/v10/oauth2/token', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: env.DISCORD_OAUTH_CLIENT_ID,
+        client_secret: env.DISCORD_OAUTH_CLIENT_SECRET,
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: env.DISCORD_OAUTH_REDIRECT_URI,
+      }),
+    });
+    if (!tokenRes.ok) {
+      const text = await tokenRes.text().catch(() => '');
+      return htmlPage(`<h1>Discord rejected the sign-in</h1><p>${tokenRes.status}: ${escapeHtml(text.slice(0, 240))}</p>`, 400);
+    }
+    accessToken = (await tokenRes.json()).access_token;
+  } catch (e) {
+    return htmlPage(`<h1>Sign-in failed</h1><p>${escapeHtml(String(e))}</p>`, 502);
+  }
+  if (!accessToken) return htmlPage('<h1>No access token from Discord</h1>', 502);
+
+  let userJson;
+  try {
+    const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    if (!userRes.ok) return htmlPage(`<h1>Could not read your Discord account</h1><p>${userRes.status}</p>`, 502);
+    userJson = await userRes.json();
+  } catch (e) {
+    return htmlPage('<h1>Discord identity lookup failed</h1>', 502);
+  }
+  const userId = userJson.id;
+  if (!userId || !ALLOWED_USER_ID_RE.test(String(userId))) {
+    return htmlPage('<h1>Discord returned a bad user id</h1>', 502);
+  }
+  const username = typeof userJson.username === 'string' ? userJson.username : '';
+
+  // Best-effort guild join means the bot can DM the user even if they had not
+  // joined the server yet. The offer remains valid if Discord declines it.
+  await joinDiscordGuild(env, userId, accessToken);
+
+  const userKey = OFFER_USER_PREFIX + userId;
+  const existing = parseJsonRecord(await env.VIP_CLAIMS.get(userKey));
+  let offer = existing;
+  if (!offer) {
+    // Keep the server-issued session offer as the final offer so the app,
+    // callback page, DM, and admin ledger never show different terms. The
+    // permanent account key prevents a later session from issuing another
+    // offer for the same Discord account.
+    offer = deriveAccountOffer(sessionRecord, userId, username);
+    await env.VIP_CLAIMS.put(userKey, JSON.stringify(offer));
+    await env.VIP_CLAIMS.put(OFFER_TICKET_PREFIX + offer.ticketId, JSON.stringify(offer));
+  }
+
+  if (offer.expiresAt && Date.now() > offer.expiresAt) {
+    offer.status = 'expired';
+    await env.VIP_CLAIMS.put(userKey, JSON.stringify(offer));
+    await env.VIP_CLAIMS.put(OFFER_TICKET_PREFIX + offer.ticketId, JSON.stringify(offer));
+    sessionRecord.status = 'expired';
+    sessionRecord.ticketId = offer.ticketId;
+    await env.VIP_CLAIMS.put(sessionKey, JSON.stringify(sessionRecord), { expirationTtl: OFFER_TTL_SEC });
+    return offerHtml(offer, 'This offer expired before it was linked.', 410);
+  }
+
+  offer.username = username || offer.username || '';
+  offer.status = offer.status === 'redeemed' || offer.status === 'revoked' ? offer.status : 'offered';
+  offer.linkedAt ??= Date.now();
+  await env.VIP_CLAIMS.put(userKey, JSON.stringify(offer));
+  await env.VIP_CLAIMS.put(OFFER_TICKET_PREFIX + offer.ticketId, JSON.stringify(offer));
+
+  sessionRecord.status = offer.status;
+  sessionRecord.ticketId = offer.ticketId;
+  sessionRecord.rarity = offer.rarity;
+  sessionRecord.chanceLabel = offer.chanceLabel;
+  sessionRecord.price = offer.price;
+  sessionRecord.expiresAt = offer.expiresAt;
+  sessionRecord.discordLinked = true;
+  if (offer.dmSentAt) sessionRecord.dmSentAt = offer.dmSentAt;
+  await env.VIP_CLAIMS.put(sessionKey, JSON.stringify(sessionRecord), { expirationTtl: OFFER_TTL_SEC });
+
+  if (!offer.dmSentAt && offer.status === 'offered') {
+    ctx.waitUntil(sendOfferDmAndMark(env, offer));
+  }
+  const message = offer.dmSentAt
+    ? 'Maxx Bot already sent this offer to your Discord account.'
+    : 'Maxx Bot is sending the offer to your Discord account now.';
+  return offerHtml(offer, message, 200);
+}
+
+function deriveAccountOffer(sessionRecord, userId, username) {
+  return {
+    version: 1,
+    status: 'offered',
+    ticketId: sessionRecord.ticketId,
+    rarity: sessionRecord.rarity,
+    chanceLabel: sessionRecord.chanceLabel,
+    price: sessionRecord.price,
+    issuedAt: sessionRecord.issuedAt,
+    expiresAt: sessionRecord.expiresAt,
+    session: sessionRecord.session,
+    userId,
+    username,
+    linkedAt: Date.now(),
+    dmSentAt: null,
+    redeemedAt: null,
+  };
+}
+
+function pickOfferTier() {
+  const n = new Uint32Array(1);
+  crypto.getRandomValues(n);
+  const roll = n[0] % 100;
+  return roll < 70 ? OFFER_TIERS[0] : roll < 94 ? OFFER_TIERS[1] : OFFER_TIERS[2];
+}
+
+function parseJsonRecord(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  try {
+    const value = JSON.parse(raw);
+    return value && typeof value === 'object' ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function offerJson(record, requestOrUrl, corsHeaders) {
+  const origin = requestOrUrl instanceof URL
+    ? requestOrUrl.origin
+    : new URL(requestOrUrl.url).origin;
+  const status = Date.now() > record.expiresAt && record.status === 'pending' ? 'expired' : record.status;
+  return json({
+    ok: true,
+    status,
+    ticketId: record.ticketId,
+    rarity: record.rarity,
+    chanceLabel: record.chanceLabel,
+    price: record.price,
+    issuedAt: new Date(record.issuedAt).toISOString(),
+    expiresAt: new Date(record.expiresAt).toISOString(),
+    discordLinked: record.discordLinked === true || status === 'offered' || status === 'redeemed',
+    dmSent: Boolean(record.dmSentAt),
+    connectUrl: status === 'pending' ? `${origin}/offer/start?session=${encodeURIComponent(record.session)}` : null,
+  }, 200, corsHeaders);
+}
+
+async function expireOfferSession(env, record) {
+  if (record.status === 'pending') record.status = 'expired';
+  await env.VIP_CLAIMS.put(OFFER_SESSION_PREFIX + record.session, JSON.stringify(record), { expirationTtl: OFFER_TTL_SEC });
+}
+
+function offerHtml(offer, message, status = 200) {
+  const expiry = new Date(offer.expiresAt).toUTCString();
+  const state = offer.status === 'redeemed' ? 'already used' : offer.status === 'revoked' ? 'cancelled' : offer.status === 'expired' ? 'expired' : 'available';
+  return htmlPage(
+    `<h1>MAXX VIP offer</h1>` +
+      `<p><b>${escapeHtml(offer.rarity.toUpperCase())}</b> · lifetime VIP for <b>$${escapeHtml(String(offer.price))}</b> instead of $115.</p>` +
+      `<p>Offer status: <b>${escapeHtml(state)}</b>. It expires <b>${escapeHtml(expiry)}</b>.</p>` +
+      `<p>${escapeHtml(message)}</p>` +
+      `<p>Ticket ID: <code>${escapeHtml(offer.ticketId)}</code></p>` +
+      `<p style="opacity:.7">This is a limited-time discount offer, not a contest. Use it only if you want it. It does not unlock VIP until Diggy confirms the purchase.</p>`,
+    status,
+  );
+}
+
+async function joinDiscordGuild(env, userId, accessToken) {
+  if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_GUILD_ID) return false;
+  try {
+    const response = await fetch(
+      `https://discord.com/api/v10/guilds/${env.DISCORD_GUILD_ID}/members/${userId}`,
+      {
+        method: 'PUT',
+        headers: { authorization: `Bot ${env.DISCORD_BOT_TOKEN}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ access_token: accessToken }),
+      },
+    );
+    return response.status === 201 || response.status === 204;
+  } catch {
+    return false;
+  }
+}
+
+function offerDmText(offer) {
+  return (
+    '**MAXXTOPIA — your first-time VIP offer**\n\n' +
+    `You have a **${offer.rarity.toUpperCase()}** limited-time offer: lifetime VIP for **$${offer.price}** instead of $115.\n` +
+    `Ticket: **${offer.ticketId}**\n` +
+    `Valid until: **${new Date(offer.expiresAt).toUTCString()}**\n\n` +
+    'This is a limited-time discount, not a contest. You can ignore it if you do not want VIP. ' +
+    'If you want to use it, open a Maxxtopia ticket and give Diggy the ticket ID before it expires. ' +
+    'The offer is tied to your Discord account.'
+  );
+}
+
+async function sendOfferDmAndMark(env, offer) {
+  const ok = await dmUser(env, offer.userId, offerDmText(offer));
+  if (!ok) return false;
+  const key = OFFER_TICKET_PREFIX + offer.ticketId;
+  const current = parseJsonRecord(await env.VIP_CLAIMS.get(key));
+  if (current && !current.dmSentAt) {
+    current.dmSentAt = Date.now();
+    await env.VIP_CLAIMS.put(key, JSON.stringify(current));
+    await env.VIP_CLAIMS.put(OFFER_USER_PREFIX + current.userId, JSON.stringify(current));
+    if (current.session) {
+      const sessionKey = OFFER_SESSION_PREFIX + current.session;
+      const sessionRecord = parseJsonRecord(await env.VIP_CLAIMS.get(sessionKey));
+      if (sessionRecord) {
+        sessionRecord.dmSentAt = current.dmSentAt;
+        await env.VIP_CLAIMS.put(sessionKey, JSON.stringify(sessionRecord), { expirationTtl: OFFER_TTL_SEC });
+      }
+    }
+  }
+  return true;
 }
 
 /**
@@ -790,7 +1145,7 @@ async function grantDiscordRoles(env, userId, tier) {
 // then grant the matching roles. State carries the hwid so we don't need
 // session storage; the hwid → claim lookup is the only join key.
 
-async function handleDiscordLink(url, env, corsHeaders) {
+async function handleDiscordLink(url, env, corsHeaders, ctx) {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const errParam = url.searchParams.get('error');
@@ -808,11 +1163,14 @@ async function handleDiscordLink(url, env, corsHeaders) {
       400,
     );
   }
-  // Waitlist signups share this redirect URI, tagged `wl_<product>`. Route them
-  // out BEFORE the HWID-claim logic so the VIP path is never touched.
-  if (state.startsWith('wl_')) {
-    return handleWaitlistJoin(code, state, env);
-  }
+    // Waitlist signups share this redirect URI, tagged `wl_<product>`. Route them
+    // out BEFORE the HWID-claim logic so the VIP path is never touched.
+    if (state.startsWith('offer_')) {
+      return handleOfferJoin(code, state.slice('offer_'.length), env, ctx);
+    }
+    if (state.startsWith('wl_')) {
+      return handleWaitlistJoin(code, state, env);
+    }
   if (!ALLOWED_HWID_RE.test(state.toLowerCase())) {
     return htmlPage(`<h1>Bad state</h1><p>HWID format invalid.</p>`, 400);
   }
@@ -1264,6 +1622,97 @@ async function handleAdmin(url, request, env, corsHeaders) {
     return json({ ok: true, rows, count: rows.length }, 200, corsHeaders);
   }
 
+  // GET /admin/offers — first-time Tune Now offers, kept separate from paid
+  // activation codes. This is the source Diggy checks before honoring a
+  // discount; an offer never grants VIP automatically.
+  if (path === '/admin/offers' && request.method === 'GET') {
+    const rows = [];
+    let cursor;
+    do {
+      const page = await env.VIP_CLAIMS.list({ prefix: OFFER_TICKET_PREFIX, cursor, limit: 1000 });
+      for (const key of page.keys) {
+        const offer = parseJsonRecord(await env.VIP_CLAIMS.get(key.name));
+        if (!offer) continue;
+        rows.push({
+          ticketId: offer.ticketId,
+          rarity: offer.rarity,
+          price: offer.price,
+          chanceLabel: offer.chanceLabel,
+          status: offer.status,
+          userId: offer.userId || null,
+          username: offer.username || null,
+          issuedAt: offer.issuedAt || null,
+          expiresAt: offer.expiresAt || null,
+          dmSentAt: offer.dmSentAt || null,
+          redeemedAt: offer.redeemedAt || null,
+        });
+      }
+      cursor = page.list_complete ? null : page.cursor;
+    } while (cursor);
+    rows.sort((a, b) => (b.issuedAt || 0) - (a.issuedAt || 0));
+    return json({ ok: true, rows, count: rows.length }, 200, corsHeaders);
+  }
+
+  // Mark an offer used only after the discount has actually been honored.
+  // Viewing or DMing an offer does not consume it.
+  if (path === '/admin/offers/redeem' && request.method === 'POST') {
+    let b;
+    try { b = await request.json(); } catch (e) {
+      return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+    }
+    const ticketId = typeof b.ticketId === 'string' ? b.ticketId.toUpperCase().trim() : '';
+    if (!OFFER_TICKET_RE.test(ticketId)) return json({ ok: false, error: 'malformed ticket id' }, 400, corsHeaders);
+    const key = OFFER_TICKET_PREFIX + ticketId;
+    const offer = parseJsonRecord(await env.VIP_CLAIMS.get(key));
+    if (!offer) return json({ ok: false, error: 'offer not found' }, 404, corsHeaders);
+    if (offer.status === 'redeemed') return json({ ok: true, status: 'redeemed', ticketId }, 200, corsHeaders);
+    if (offer.status === 'revoked') return json({ ok: false, error: 'offer revoked' }, 410, corsHeaders);
+    if (Date.now() > offer.expiresAt) {
+      offer.status = 'expired';
+      await env.VIP_CLAIMS.put(key, JSON.stringify(offer));
+      if (offer.userId) await env.VIP_CLAIMS.put(OFFER_USER_PREFIX + offer.userId, JSON.stringify(offer));
+      return json({ ok: false, error: 'offer expired', expiresAt: offer.expiresAt }, 410, corsHeaders);
+    }
+    offer.status = 'redeemed';
+    offer.redeemedAt = Date.now();
+    offer.redeemedBy = 'admin';
+    await env.VIP_CLAIMS.put(key, JSON.stringify(offer));
+    if (offer.userId) await env.VIP_CLAIMS.put(OFFER_USER_PREFIX + offer.userId, JSON.stringify(offer));
+    return json({ ok: true, status: 'redeemed', ticketId, userId: offer.userId || null }, 200, corsHeaders);
+  }
+
+  if (path === '/admin/offers/revoke' && request.method === 'POST') {
+    let b;
+    try { b = await request.json(); } catch (e) {
+      return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+    }
+    const ticketId = typeof b.ticketId === 'string' ? b.ticketId.toUpperCase().trim() : '';
+    if (!OFFER_TICKET_RE.test(ticketId)) return json({ ok: false, error: 'malformed ticket id' }, 400, corsHeaders);
+    const key = OFFER_TICKET_PREFIX + ticketId;
+    const offer = parseJsonRecord(await env.VIP_CLAIMS.get(key));
+    if (!offer) return json({ ok: false, error: 'offer not found' }, 404, corsHeaders);
+    offer.status = b.revoked === false ? 'offered' : 'revoked';
+    offer.revokedAt = b.revoked === false ? null : Date.now();
+    await env.VIP_CLAIMS.put(key, JSON.stringify(offer));
+    if (offer.userId) await env.VIP_CLAIMS.put(OFFER_USER_PREFIX + offer.userId, JSON.stringify(offer));
+    return json({ ok: true, ticketId, status: offer.status }, 200, corsHeaders);
+  }
+
+  if (path === '/admin/offers/dm' && request.method === 'POST') {
+    let b;
+    try { b = await request.json(); } catch (e) {
+      return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+    }
+    const ticketId = typeof b.ticketId === 'string' ? b.ticketId.toUpperCase().trim() : '';
+    if (!OFFER_TICKET_RE.test(ticketId)) return json({ ok: false, error: 'malformed ticket id' }, 400, corsHeaders);
+    const key = OFFER_TICKET_PREFIX + ticketId;
+    const offer = parseJsonRecord(await env.VIP_CLAIMS.get(key));
+    if (!offer) return json({ ok: false, error: 'offer not found' }, 404, corsHeaders);
+    if (!offer.userId) return json({ ok: false, error: 'offer is not linked to Discord' }, 409, corsHeaders);
+    const sent = await sendOfferDmAndMark(env, offer);
+    return json({ ok: sent, sent, ticketId }, sent ? 200 : 502, corsHeaders);
+  }
+
   // POST /admin/revoke {code, revoked?}  -> toggle meta.revoked
   if (path === '/admin/revoke' && request.method === 'POST') {
     let b;
@@ -1338,6 +1787,15 @@ const ADMIN_HTML = `<!doctype html><html><head><meta charset="utf-8">
  </div>
  <div id="app" style="display:none">
    <div class="card">
+     <div class="rowf" style="justify-content:space-between">
+       <div><h2 style="margin:0;font-size:16px">First-time Tune Now offers</h2><div class="muted" style="font-size:12px">Discount offers are account-linked; mark them used only after payment.</div></div>
+       <div><button class="ghost" onclick="loadOffers()">Refresh offers</button> <span id="offerStat" class="muted"></span></div>
+     </div>
+     <div style="overflow:auto;margin-top:12px"><table><thead><tr>
+       <th>Ticket</th><th>Offer</th><th>Status</th><th>Discord</th><th>Expires</th><th>Bot DM</th><th></th>
+     </tr></thead><tbody id="offerRows"></tbody></table></div>
+   </div>
+   <div class="card">
      <div class="rowf">
        <div><label>Product</label><select id="scope"><option value="aim">aimmaxxer</option><option value="om">optimizationmaxxing</option><option value="dm">discordmaxxer</option><option value="both">any (both)</option></select></div>
        <div><label>Tier</label><select id="tier"><option value="3">MAXXER++ (3)</option><option value="2">MAXXER+ (2)</option><option value="1">MAXXER (1)</option></select></div>
@@ -1350,7 +1808,7 @@ const ADMIN_HTML = `<!doctype html><html><head><meta charset="utf-8">
    </div>
    <div class="card">
      <div class="rowf" style="justify-content:space-between">
-       <div style="flex:1;min-width:200px"><input id="filter" oninput="render()" placeholder="filter by code / label / hwid / product" style="width:100%"></div>
+       <div style="flex:1;min-width:200px"><input id="filter" oninput="render();renderOffers()" placeholder="filter codes / offers / Discord user" style="width:100%"></div>
        <div><button class="ghost" onclick="load()">Refresh</button> <span id="stat" class="muted"></span> <button class="ghost" onclick="logout()">Lock</button></div>
      </div>
      <div style="overflow:auto;margin-top:12px"><table><thead><tr>
@@ -1361,6 +1819,7 @@ const ADMIN_HTML = `<!doctype html><html><head><meta charset="utf-8">
 </div>
 <script>
 var DATA=[];
+var OFFERS=[];
 function tok(){return localStorage.getItem('vipAdminToken')||'';}
 function saveTok(){var v=document.getElementById('tokIn').value.trim();if(v){localStorage.setItem('vipAdminToken',v);boot();}}
 function logout(){localStorage.removeItem('vipAdminToken');location.reload();}
@@ -1389,6 +1848,40 @@ function load(){
     DATA=j.rows;document.getElementById('stat').textContent=j.count+' codes';render();
   });
 }
+function loadOffers(){
+  document.getElementById('offerStat').textContent='loading...';
+  api('/admin/offers').then(function(j){
+    if(!j.ok){document.getElementById('offerStat').textContent=j.error||'error';if(j._status===401)logout();return;}
+    OFFERS=j.rows;document.getElementById('offerStat').textContent=j.count+' offers';renderOffers();
+  });
+}
+function offerAction(ticketId,action){
+  var path=action==='redeem'?'/admin/offers/redeem':action==='revoke'?'/admin/offers/revoke':'/admin/offers/dm';
+  if(action==='redeem'&&!confirm('Mark this discount used after payment?'))return;
+  api(path,'POST',{ticketId:ticketId}).then(function(j){if(j.ok){loadOffers();}else alert(j.error||'failed');});
+}
+function renderOffers(){
+  var f=(document.getElementById('filter').value||'').toLowerCase();
+  var body='';
+  OFFERS.forEach(function(r){
+    var hay=(r.ticketId+' '+(r.username||'')+' '+(r.userId||'')+' '+r.rarity+' '+r.status).toLowerCase();
+    if(f&&hay.indexOf(f)<0)return;
+    var status=r.status==='redeemed'?'<span class="pill cl">used</span>':r.status==='revoked'?'<span class="pill rv">revoked</span>':r.status==='expired'?'<span class="pill rv">expired</span>':'<span class="pill un">available</span>';
+    var actions='';
+    if(r.status==='offered'&&!r.redeemedAt){actions+='<button class="ghost" onclick="offerAction(\\''+r.ticketId+'\\',\\'redeem\\')">mark used</button> ';}
+    if(r.userId&&r.status==='offered'){actions+='<button class="ghost" onclick="offerAction(\\''+r.ticketId+'\\',\\'dm\\')">DM again</button> ';}
+    if(r.status==='offered'){actions+='<button class="bad" onclick="offerAction(\\''+r.ticketId+'\\',\\'revoke\\')">revoke</button>';}
+    body+='<tr>'+
+      '<td class="mono">'+esc(r.ticketId)+'</td>'+
+      '<td>'+esc((r.rarity||'').toUpperCase())+' · $'+esc(r.price)+' <span class="muted">('+esc(r.chanceLabel||'')+')</span></td>'+
+      '<td>'+status+'</td>'+
+      '<td title="'+esc(r.userId||'')+'">'+esc(r.username||r.userId||'pending')+'</td>'+
+      '<td class="muted">'+esc(fmtDate(r.expiresAt))+'</td>'+
+      '<td class="muted">'+(r.dmSentAt?esc(fmtDate(r.dmSentAt)):'not sent')+'</td>'+
+      '<td>'+actions+'</td></tr>';
+  });
+  document.getElementById('offerRows').innerHTML=body||'<tr><td colspan="7" class="muted" style="padding:18px">no offers match</td></tr>';
+}
 function render(){
   var f=(document.getElementById('filter').value||'').toLowerCase();
   var body='';
@@ -1413,7 +1906,7 @@ function render(){
   });
   document.getElementById('rows').innerHTML=body||'<tr><td colspan="9" class="muted" style="padding:18px">no codes match</td></tr>';
 }
-function boot(){document.getElementById('gate').style.display='none';document.getElementById('app').style.display='block';load();}
+function boot(){document.getElementById('gate').style.display='none';document.getElementById('app').style.display='block';load();loadOffers();}
 if(tok())boot();else document.getElementById('gate').style.display='block';
 </script>
 </body></html>`;

@@ -66,6 +66,26 @@ curl -X POST https://optmaxxing-vip.<your-account>.workers.dev/claim \
 First call returns `{"ok":true,"status":"claimed",...}`. Same call with a
 different hwid returns `409 already claimed by another rig`.
 
+## First-time Tune Now offers
+
+The desktop app uses the same Worker for a separate discount-offer ledger:
+
+- `POST /offer/prepare` creates one pending offer session and starts its
+  three-day countdown.
+- `GET /offer/start?session=...` sends the user through Discord OAuth.
+- The OAuth callback binds the offer to one Discord account and Maxx Bot sends
+  the offer details by DM. The user can ignore the offer; it does not grant VIP.
+- `GET /offer/status?session=...` lets the app refresh the countdown and link
+  status after the browser flow returns.
+- `/admin/offers` lists linked offers. `POST /admin/offers/redeem` marks one
+  used after payment; `revoke` and `dm` are available for support recovery.
+
+The ticket number is an identifier, not proof by itself. Screenshots are only a
+visual reminder. The Discord account binding, expiry, and admin ledger are the
+authoritative checks. KV is adequate for the current low-volume campaign; the
+resilience register names Durable Objects as the stronger uniqueness lock if
+concurrent abuse becomes material.
+
 ## Inspecting + invalidating claims
 
 List all current claims:
