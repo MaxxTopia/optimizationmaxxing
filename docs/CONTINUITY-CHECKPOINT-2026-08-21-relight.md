@@ -157,11 +157,19 @@ The completion DM was sent through `C:\Users\Diggy\projects\adblockmaxxer\tools\
   `optimizationmaxxing-ticket-tiers.png`, with individual Gold, Emerald, and
   Diamond previews. The app Pricing page was also checked after dismissing the
   What's New overlay.
-- Release state before publish: source edits are uncommitted; pre-existing
-  untracked WIP remains untouched. Worker deploy, app commit/tag push, CI
-  signing, public release, and live post-push checks are still pending.
-- Exact next action: commit only the intended v0.4.3 files, push main and tag,
-  deploy the Worker, verify one new `/offer/prepare` response contains the new
-  ladder math, then wait for CI before claiming the desktop release is live.
-  Keep an off-machine copy of this checkpoint and the project continuity
-  snapshot for disaster recovery.
+- Release state: source commit `c442f1b` (`feat: refresh lifetime offer tiers`)
+  is pushed to `main` with tag `v0.4.3`; the pre-existing untracked WIP remains
+  untouched. The offer Worker is deployed at
+  `https://optmaxxing-vip.maxxtopia.workers.dev` as version
+  `5643c23f-f843-4981-a78a-0f6ded3ac188`.
+- Live Worker check: a fresh prepare response returned Gold at $69 with
+  `normalPrice: 115`, `savings: 46`, and `discountPercent: 40`. The exact test
+  session was deleted and its status endpoint returned 404 afterward. CI run
+  `32819106121` is still building/signing the desktop release; do not call the
+  public installer live until its release and updater checks finish.
+- Exact next action: wait for CI run `32819106121`, verify the v0.4.3 GitHub
+  release assets and `latest.json`, then check the MaxxTopia sync and one
+  cache-busted public release surface. Diggy still owes the real Discord
+  Tune Now/DM/redeem test and a same-scene Fortnite before/after test. Keep an
+  off-machine copy of this checkpoint and the project continuity snapshot for
+  disaster recovery.
