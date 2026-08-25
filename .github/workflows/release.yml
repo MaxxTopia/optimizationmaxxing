@@ -64,9 +64,9 @@ jobs:
                   releaseBody: |
                       ## Highlights
 
-                      - First-time Tuners now have a chance at something rare, with a clear three-day decision window.
-                      - Offer details stay consistent across the app, Discord, and support flow if the user decides to use them.
-                      - Light theme improvements round out the pass.
+                      - First-time Tune Now tickets now show the exact savings against the regular $115 lifetime price: Gold $69 (40% off), Emerald $55 (52% off), and Diamond $33 (71% off).
+                      - The free path remains useful with 70 of 100 catalog tweaks, measured before/after tools, restore support, and the free Tune Now lane; VIP adds the deeper catalog, Match Scan, Asta Mode, full presets, and future packs.
+                      - The Fortnite NVIDIA profile and guide now use the conservative four-setting baseline, current driver checks, and Chapter 7 Season 4: Override freshness notes.
 
                       Auto-built by CI from tag `${{ github.ref_name }}`. The signed `latest.json`, installer, and signature are verified before the release is published.
                   releaseDraft: true
