@@ -122,3 +122,46 @@ The completion DM was sent through `C:\Users\Diggy\projects\adblockmaxxer\tools\
   confirm the Maxx Bot DM, and manually verify the support-side discount/redeem
   path. Keep an off-machine copy of this checkpoint and the project continuity
   snapshot for disaster recovery.
+
+## Lifetime offer ladder and current-season checkpoint — 2026-08-24
+
+- Scope: keep the regular lifetime price at $115; change new first-time Tune
+  Now offers to Gold $69 (40% off / save $46), Emerald $55 (52% off / save
+  $60), and Diamond $33 (71% off / save $82). The 70% / 24% / 6% pull weights
+  remain unchanged.
+- Compatibility: older v0.4.2 sessions remain parseable and keep their issued
+  price. New Worker sessions include normalPrice, savings, and
+  discountPercent; app storage derives those fields when reading older records.
+- UX: TuneTicketModal now has tier-specific foil, cut-emerald, and prism-blue
+  treatments; each surface shows the exact percentage and dollar savings. The
+  Pricing page states the regular $115 baseline, the 70-free / 30-VIP split,
+  and the three first-time ticket prices without implying automatic VIP access.
+- NVIDIA / Fortnite freshness: the shipped Fortnite .nip now matches the
+  conservative four-setting catalog baseline (power management, texture
+  filtering quality, VSync force-off, and pre-rendered frames deferred to the
+  3D app). The guide now records the driver's current oracle value 610.88 as
+  checked 2026-08-24 and Fortnite Chapter 7 Season 4: Override, launched
+  2026-08-20. Real in-game same-scene validation remains a human gate.
+- Free/VIP boundary: catalog audit still reports 100 tweaks, with 70 free and
+  30 VIP. Free includes the lower-risk measured lane, Tune Now free subset,
+  Asta Bench, per-tweak measurement, restore, and diagnostics; VIP adds the
+  deeper catalog, Match Scan, Asta Mode, full presets, day-one configs, and
+  priority support.
+- Verification: `node --check vip-worker/worker.js`, JSON parsing,
+  `npm run audit:catalog` (100 tweaks / 0 errors / 0 warnings), `npx tsc
+  --noEmit`, `npm run build`, and `cargo test --manifest-path
+  src-tauri/Cargo.toml` (84 passed) passed. `npm run tauri:build` produced the
+  v0.4.3 executable and NSIS installer but stopped at the expected local
+  updater-signing gate because the private signing key is not stored here.
+- Visual QA: local browser preview saved to the task outputs as
+  `optimizationmaxxing-ticket-tiers.png`, with individual Gold, Emerald, and
+  Diamond previews. The app Pricing page was also checked after dismissing the
+  What's New overlay.
+- Release state before publish: source edits are uncommitted; pre-existing
+  untracked WIP remains untouched. Worker deploy, app commit/tag push, CI
+  signing, public release, and live post-push checks are still pending.
+- Exact next action: commit only the intended v0.4.3 files, push main and tag,
+  deploy the Worker, verify one new `/offer/prepare` response contains the new
+  ladder math, then wait for CI before claiming the desktop release is live.
+  Keep an off-machine copy of this checkpoint and the project continuity
+  snapshot for disaster recovery.

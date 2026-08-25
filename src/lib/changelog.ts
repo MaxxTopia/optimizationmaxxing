@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.3',
+    date: '2026-08-24',
+    highlights: [
+      'NEW **Clearer first-time lifetime tickets.** Gold is $69 (40% off), Emerald is $55 (52% off), and Diamond is $33 (71% off) against the regular $115 price; every surface now shows the exact savings.',
+      'IMPROVE **Free users still get a real tuning path.** Pricing now makes the 70-free / 30-VIP split and the measured free subset explicit instead of presenting VIP as the only useful route.',
+      'FIX **Fortnite driver guidance is season-aware.** The shipped NVIDIA profile now matches the conservative four-setting app baseline and the guide is refreshed for Chapter 7 Season 4: Override and current driver checks.',
+    ],
+  },
+  {
     version: '0.4.2',
     date: '2026-08-22',
     highlights: [

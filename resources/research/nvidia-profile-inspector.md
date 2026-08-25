@@ -4,11 +4,13 @@ NVIDIA Control Panel exposes maybe 15% of the actual driver knobs. The rest live
 
 Requires a GeForce 900-series or newer (Reflex hardware floor). 1000/2000/3000/4000/5000 all work.
 
-> **2026 orientation:** NVIDIA discontinued GeForce Experience in late 2024 — install the **NVIDIA App** (the only official driver software now), not GFE. As of GeForce driver **610.47 WHQL** (late May 2026) the classic **NVIDIA Control Panel is retired** for Game Ready / Studio (GeForce) drivers; its actively supported features moved into the NVIDIA App, with the old 3D options now under **NVIDIA App → Graphics → Global/Program Settings → "Show Legacy Settings."** On a clean 610.47+ install the standalone panel is gone by default (preserved only for RTX PRO users and on in-place upgrades). **NVPI itself is unaffected** — it talks straight to the driver profile DB and is still the only way to reach the undocumented flags below, regardless of the Control Panel's retirement. ([TechPowerUp](https://www.techpowerup.com/349359/nvidia-geforce-graphics-drivers-610-47-whql-drops-control-panel-support))
+> **2026 orientation:** NVIDIA discontinued GeForce Experience in late 2024 — install the **NVIDIA App** (the only official driver software now), not GFE. The app's driver oracle currently reports **GeForce Game Ready 610.88** (last checked 2026-08-24); re-check the live driver card before applying a profile. NVIDIA's classic Control Panel retirement and the move of supported settings into the NVIDIA App do not change NVPI's import path. **NVPI itself is unaffected** — it talks straight to the driver profile DB and is still the only way to reach the documented profile flags below. ([NVIDIA drivers](https://www.nvidia.com/en-us/geforce/drivers/), [TechPowerUp](https://www.techpowerup.com/349359/nvidia-geforce-graphics-drivers-610-47-whql-drops-control-panel-support))
+
+> **Fortnite season check:** Epic's current season is **Chapter 7 Season 4: Override**, launched August 20, 2026. Season content can change maps, weapons, and rendering behavior, but it does not automatically invalidate a driver-level profile. Re-test the in-game Performance (DirectX 12), Reflex, frame cap, and VSync/G-Sync stack after a major season or driver update. ([Epic Games — Fortnite Override](https://www.fortnite.com/news/fortnite-override-break-the-rules-change-the-game))
 
 ## TL;DR — 60-second setup
 
-1. Download NVPI: **[github.com/Orbmu2k/nvidiaProfileInspector/releases](https://github.com/Orbmu2k/nvidiaProfileInspector/releases)** — grab the latest `nvidiaProfileInspector.zip`, extract, run the `.exe`. No install. Verified working May 2026.
+1. Download NVPI: **[github.com/Orbmu2k/nvidiaProfileInspector/releases](https://github.com/Orbmu2k/nvidiaProfileInspector/releases)** — grab the latest `nvidiaProfileInspector.zip`, extract, run the `.exe`. No install. Check the release date and driver compatibility before importing.
 2. **Pick your shortcut:**
    - **Want the import-and-go path?** Grab one of our pre-built `.nip` profiles below → NVPI → **File → Import Profile(s)** → select the file → **Apply changes** (top-right green checkmark). Done.
    - **Want full transparency?** Use the global-baseline + per-game tables further down. Type the values into NVPI yourself.
@@ -20,12 +22,12 @@ We hand-crafted these against [Orbmu2k's `NvApiDriverSettings.h`](https://github
 
 | Game | Download | What's included |
 |---|---|---|
-| **Fortnite — pinnacle** | [fortnite-pinnacle.nip](/nvpi-profiles/fortnite-pinnacle.nip) | 14 settings: Power Mgmt = Prefer Max, **Threaded Optimization = OFF** (the UE5 stutter fix pros gatekeep), VSync force off, Texture filtering High Performance, Negative LOD bias Clamp, Aniso sample + filter + Trilinear opts ON, FXAA + MFAA off, Pre-rendered frames = 1, Ansel disabled, Smooth AFR off |
+| **Fortnite — competitive baseline** | [fortnite-pinnacle.nip](/nvpi-profiles/fortnite-pinnacle.nip) | 4 conservative settings: Power Mgmt = Prefer Max, Texture filtering High Performance, VSync force off, Max Pre-Rendered Frames = defer to the 3D app so in-game Reflex owns the queue |
 | **Valorant** | [valorant.nip](/nvpi-profiles/valorant.nip) | 6 settings: Power Mgmt Prefer Max, VSync off, Texture filtering High Perf, Negative LOD Clamp, FXAA off, Pre-rendered frames = 1. Threaded Optimization left at AUTO (Vanguard-cautious). Binds to `VALORANT-Win64-Shipping.exe` + `vgc.exe`. |
 | **Counter-Strike 2** | [cs2.nip](/nvpi-profiles/cs2.nip) | Same 6-setting baseline as Valorant. Binds to `cs2.exe`. |
 | **Apex Legends** | [apex-legends.nip](/nvpi-profiles/apex-legends.nip) | Same 6-setting baseline. Binds to `r5apex.exe` + `r5apex_dx12.exe`. |
 
-The Fortnite pinnacle is the only profile that flips **Threaded Optimization = OFF** — that's the one setting that genuinely gatekeeps Fortnite perf at the top bracket (UE5 main-thread stutter). The other 3 games leave it at AUTO since they handle threading correctly and aggressive driver-side toggles risk anti-cheat false positives.
+The Fortnite profile deliberately does **not** force Threaded Optimization, pre-rendered frames, undocumented texture flags, or Ansel switches. Those values have changed meaning across driver versions and can fight Fortnite's native Reflex path. The shipped baseline keeps the high-confidence clock, texture, sync, and queue ownership settings visible, reversible, and aligned with the app-generated profile.
 
 **To import:** NVPI → File → Import Profile(s) → select the `.nip` → Apply changes. Verify by opening the game's profile in NVPI again — the values should reflect what's in the table.
 
@@ -33,10 +35,10 @@ The Fortnite pinnacle is the only profile that flips **Threaded Optimization = O
 
 NVPI's "import successful" message only confirms the XML parsed. The green Apply button is what writes to the driver profile DB. To confirm the changes stuck:
 
-1. **In NVPI, immediately after Apply** — keep the same game profile selected in the top dropdown. Scroll the settings list. Each setting from the import should now show its new value (e.g. **Power management mode** should read `Prefer maximum performance`, **Threaded optimization** = `Off` on Fortnite, **Vertical Sync** = `Force off`, etc).
+1. **In NVPI, immediately after Apply** — keep the same game profile selected in the top dropdown. Scroll the settings list. Each of the four imported settings should now show its new value: **Power management mode** = `Prefer maximum performance`, **Texture filtering - Quality** = `High performance`, **Vertical Sync** = `Force off`, and **Maximum pre-rendered frames** = the 3D-app default.
 2. **Close NVPI, re-open it, switch back to the game profile.** Values should still be there. If they revert, the Apply step didn't commit — try again as admin.
 3. **Reboot, re-open NVPI** — values must persist. The driver profile DB is on disk, so a reboot is the strongest "did it actually save" test.
-4. **In-game test (Fortnite specifically):** launch a Lobby Bot match or Creative practice map → enter a 4v4 build-fight → if **Threaded Optimization = Off** took effect, the render-thread stutters during the build-spam moments should noticeably reduce. CPU-bound 1% lows tighten 2-5 FPS.
+4. **In-game test (Fortnite specifically):** launch the same Creative or replay scenario before and after the import. Compare frametime consistency, 1% lows, and input feel with Reflex and the frame cap held constant. Do not treat a single match or a promised FPS number as proof.
 5. **Driver version sanity** — if you update GeForce drivers after this, re-verify in NVPI. Some setting IDs get re-mapped across driver versions and the imported value may not survive.
 
 ## Global lowest-latency baseline (set on every game profile)
@@ -58,7 +60,7 @@ NVPI's "import successful" message only confirms the XML parsed. The green Apply
 | **Antialiasing** | Antialiasing - Transparency Multisampling | **Off** | Costs FPS; competitive titles don't need it. |
 | **Antialiasing** | Antialiasing - Transparency Supersampling | **Off** | Same. |
 | **Common** | Shader Cache Size | **Unlimited** (or 100 GB) | Bigger cache = fewer first-encounter stutters. ~3 GB typical usage. |
-| **Common** | Threaded optimization | **Auto** (Valorant/CS2/Apex), **Off** (Fortnite) | UE5 Fortnite specifically deadlocks the main thread with this On. Other games are fine on Auto. |
+| **Common** | Threaded optimization | **Auto** | Leave engine threading to Fortnite and the current driver; this profile does not force a driver-side override. |
 | **Other** | Background Application Max Frame Rate | **0** (disabled) | Lets your game keep rendering full-speed when alt-tabbed. |
 
 The top-right **Apply changes** button is the green checkmark — `Ctrl+S` works too. PCGamingWiki confirms the import path is **File → Import Profile(s)** if you do later pick up a community `.nip`.
@@ -68,7 +70,7 @@ The top-right **Apply changes** button is the green checkmark — `Ctrl+S` works
 ### Fortnite (UE5, CPU-bound)
 | Setting | Value | Why |
 |---|---|---|
-| **Threaded optimization** | **Off** | UE5 main-thread stutter — single biggest NVPI win for Fortnite. |
+| **Threaded optimization** | **Auto** | Leave engine threading to Fortnite and the current driver; re-test after driver or season updates. |
 | **Low Latency Mode** | **Off** | In-game Reflex is canonical. Ultra fights Reflex. Off in NVPI = leave it to in-game. |
 | **In-game** Reflex Low Latency | **On + Boost** | Peterbot/Bugha/Clix all run this. |
 | **In-game** Frame Rate Limit | **Match monitor refresh - 3** (e.g. 237 on 240Hz) | Keeps G-Sync active; below GPU max. |

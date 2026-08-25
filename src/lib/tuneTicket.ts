@@ -7,14 +7,19 @@ const LEGACY_ENGINE_STORAGE_KEY = 'first_tune_ticket_v1'
 const OFFER_WORKER_BASE = 'https://optmaxxing-vip.maxxtopia.workers.dev'
 const OFFER_WINDOW_MS = 3 * 24 * 60 * 60 * 1000
 
+export const OFFER_NORMAL_PRICE = 115
 export type TuneTicketRarity = 'gold' | 'emerald' | 'diamond'
 export type TuneTicketStatus = 'pending' | 'offered' | 'expired' | 'redeemed' | 'revoked' | 'local'
+export type TuneTicketPrice = 33 | 55 | 69 | 77 | 99
 
 export interface TuneTicket {
   id: string
   rarity: TuneTicketRarity
   chanceLabel: string
-  price: 99 | 77 | 69
+  price: TuneTicketPrice
+  normalPrice: number
+  savings: number
+  discountPercent: number
   issuedAt: string
   expiresAt: string
   status: TuneTicketStatus
@@ -30,12 +35,15 @@ export interface TuneTicket {
 const TIERS: Array<{
   rarity: TuneTicketRarity
   chance: number
-  price: TuneTicket['price']
+  price: TuneTicketPrice
   color: string
+  normalPrice: number
+  savings: number
+  discountPercent: number
 }> = [
-  { rarity: 'gold', chance: 70, price: 99, color: 'gold' },
-  { rarity: 'emerald', chance: 24, price: 77, color: 'emerald' },
-  { rarity: 'diamond', chance: 6, price: 69, color: 'diamond' },
+  { rarity: 'gold', chance: 70, price: 69, color: 'gold', ...offerDiscount(69) },
+  { rarity: 'emerald', chance: 24, price: 55, color: 'emerald', ...offerDiscount(55) },
+  { rarity: 'diamond', chance: 6, price: 33, color: 'diamond', ...offerDiscount(33) },
 ]
 
 interface OfferPayload {
@@ -44,7 +52,10 @@ interface OfferPayload {
   ticketId: string
   rarity: TuneTicketRarity
   chanceLabel: string
-  price: TuneTicket['price']
+  price: TuneTicketPrice
+  normalPrice?: number
+  savings?: number
+  discountPercent?: number
   issuedAt: string
   expiresAt: string
   discordLinked: boolean
@@ -114,6 +125,15 @@ export function tuneTicketMeta(rarity: TuneTicketRarity) {
   return TIERS.find((tier) => tier.rarity === rarity) ?? TIERS[0]
 }
 
+export function offerDiscount(price: number) {
+  const savings = Math.max(0, OFFER_NORMAL_PRICE - price)
+  return {
+    normalPrice: OFFER_NORMAL_PRICE,
+    savings,
+    discountPercent: Math.round((savings / OFFER_NORMAL_PRICE) * 100),
+  }
+}
+
 async function prepareOffer(session: string): Promise<OfferPayload> {
   return requestOffer('/offer/prepare', {
     method: 'POST',
@@ -142,11 +162,15 @@ async function requestOffer(path: string, init: RequestInit = {}): Promise<Offer
 }
 
 function ticketFromPayload(payload: OfferPayload, session: string, rigProof: string | null): TuneTicket {
+  const fallback = offerDiscount(payload.price)
   return {
     id: payload.ticketId,
     rarity: payload.rarity,
     chanceLabel: payload.chanceLabel,
     price: payload.price,
+    normalPrice: typeof payload.normalPrice === 'number' ? payload.normalPrice : fallback.normalPrice,
+    savings: typeof payload.savings === 'number' ? payload.savings : fallback.savings,
+    discountPercent: typeof payload.discountPercent === 'number' ? payload.discountPercent : fallback.discountPercent,
     issuedAt: payload.issuedAt,
     expiresAt: payload.expiresAt,
     status: payload.status,
@@ -168,6 +192,9 @@ function localFallback(session: string): TuneTicket {
     rarity: tier.rarity,
     chanceLabel: `${tier.chance}% pull`,
     price: tier.price,
+    normalPrice: tier.normalPrice,
+    savings: tier.savings,
+    discountPercent: tier.discountPercent,
     issuedAt,
     expiresAt: new Date(Date.parse(issuedAt) + OFFER_WINDOW_MS).toISOString(),
     status: 'local',
@@ -195,20 +222,25 @@ function parseTicket(raw: string | null): TuneTicket | null {
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw) as Partial<TuneTicket>
+    const price = parsed.price
     if (
       !parsed.id ||
       (parsed.rarity !== 'gold' && parsed.rarity !== 'emerald' && parsed.rarity !== 'diamond') ||
-      (parsed.price !== 99 && parsed.price !== 77 && parsed.price !== 69) ||
+      (price !== 33 && price !== 55 && price !== 69 && price !== 77 && price !== 99) ||
       !parsed.chanceLabel ||
       !parsed.issuedAt
     ) return null
     const issuedMs = Date.parse(parsed.issuedAt)
     const legacy = !parsed.status || !parsed.expiresAt
+    const fallback = offerDiscount(price)
     return {
       id: parsed.id,
       rarity: parsed.rarity,
       chanceLabel: parsed.chanceLabel,
-      price: parsed.price,
+      price,
+      normalPrice: typeof parsed.normalPrice === 'number' ? parsed.normalPrice : fallback.normalPrice,
+      savings: typeof parsed.savings === 'number' ? parsed.savings : fallback.savings,
+      discountPercent: typeof parsed.discountPercent === 'number' ? parsed.discountPercent : fallback.discountPercent,
       issuedAt: parsed.issuedAt,
       expiresAt: parsed.expiresAt || new Date(issuedMs + OFFER_WINDOW_MS).toISOString(),
       status: parsed.status || 'local',

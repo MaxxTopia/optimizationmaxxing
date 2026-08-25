@@ -29,20 +29,32 @@ export function TuneTicketModal({ ticket, open, onClose, onTicketChange }: Props
       bg: 'linear-gradient(135deg, rgba(255, 215, 0, 0.22), rgba(105, 60, 0, 0.6))',
       text: '#ffe27d',
       glyph: '✦',
+      subtitle: 'Warm foil · the everyday pull',
+      badge: 'rgba(255, 199, 63, 0.2)',
+      ornament: 'radial-gradient(circle, rgba(255, 226, 125, 0.28), transparent 68%)',
     },
     emerald: {
       border: 'rgba(52, 211, 153, 0.75)',
       bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.24), rgba(2, 57, 44, 0.72))',
       text: '#7df0c0',
       glyph: '◆',
+      subtitle: 'Cut emerald · the sharper pull',
+      badge: 'rgba(52, 211, 153, 0.2)',
+      ornament: 'repeating-linear-gradient(135deg, rgba(125, 240, 192, 0.16) 0 2px, transparent 2px 12px)',
     },
     diamond: {
       border: 'rgba(125, 211, 252, 0.9)',
       bg: 'linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(12, 34, 76, 0.78))',
       text: '#b9eaff',
       glyph: '◇',
+      subtitle: 'Prism blue · the rare pull',
+      badge: 'rgba(125, 211, 252, 0.2)',
+      ornament: 'linear-gradient(135deg, transparent 28%, rgba(185, 234, 255, 0.28) 29% 34%, transparent 35% 62%, rgba(185, 234, 255, 0.16) 63% 68%, transparent 69%)',
     },
   }[activeTicket.rarity]
+
+  const savings = activeTicket.savings
+  const discountPercent = activeTicket.discountPercent
 
   const expiresAt = Date.parse(activeTicket.expiresAt)
   const expired = Number.isFinite(expiresAt) && expiresAt <= now
@@ -51,7 +63,7 @@ export function TuneTicketModal({ ticket, open, onClose, onTicketChange }: Props
   async function copyTicket() {
     try {
       await navigator.clipboard.writeText(
-        `MaxxTopia VIP offer\nTicket: ${activeTicket.id}\nOffer: ${activeTicket.rarity.toUpperCase()} · $${activeTicket.price}\nExpires: ${new Date(activeTicket.expiresAt).toISOString()}`,
+        `MaxxTopia VIP offer\nTicket: ${activeTicket.id}\nOffer: ${activeTicket.rarity.toUpperCase()} · $${activeTicket.price} (${discountPercent}% off; save $${savings})\nExpires: ${new Date(activeTicket.expiresAt).toISOString()}`,
       )
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1800)
@@ -98,19 +110,30 @@ export function TuneTicketModal({ ticket, open, onClose, onTicketChange }: Props
           className="relative overflow-hidden rounded-2xl border-2 p-1 shadow-2xl"
           style={{ borderColor: palette.border, background: palette.bg, boxShadow: `0 0 45px ${palette.border}` }}
         >
+          <div
+            className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-80"
+            style={{ background: palette.ornament, transform: activeTicket.rarity === 'diamond' ? 'rotate(18deg)' : undefined }}
+          />
           <div className="absolute inset-y-0 left-0 w-3 border-r-2 border-dashed" style={{ borderColor: palette.border }} />
           <div className="absolute inset-y-0 right-0 w-3 border-l-2 border-dashed" style={{ borderColor: palette.border }} />
-          <div className="m-2 rounded-xl border border-white/15 bg-black/35 px-7 py-6 sm:px-10 space-y-5">
+          <div className="relative z-10 m-2 rounded-xl border border-white/15 bg-black/35 px-7 py-6 sm:px-10 space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.35em] text-white/60">first-time VIP offer</p>
+                <p className="text-[10px] uppercase tracking-[0.35em] text-white/60">first-time VIP offer · lifetime access</p>
                 <h2 id="tune-ticket-title" className="text-3xl font-black tracking-tight" style={{ color: palette.text }}>
-                  MAXX OFFER
+                  {activeTicket.rarity.toUpperCase()} TICKET
                 </h2>
+                <p className="mt-1 text-xs text-white/70">{palette.subtitle}</p>
               </div>
-              <button onClick={onClose} className="text-white/60 hover:text-white text-xl" aria-label="Close offer">
-                ×
-              </button>
+              <div className="flex items-start gap-3">
+                <div className="rounded-md border px-2 py-1 text-right" style={{ borderColor: palette.border, background: palette.badge }}>
+                  <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: palette.text }}>{discountPercent}% off</p>
+                  <p className="text-[10px] uppercase tracking-widest text-white/70">save ${savings}</p>
+                </div>
+                <button onClick={onClose} className="text-white/60 hover:text-white text-xl" aria-label="Close offer">
+                  ×
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between gap-4 border-y border-white/15 py-4">
@@ -124,8 +147,13 @@ export function TuneTicketModal({ ticket, open, onClose, onTicketChange }: Props
               <div className="text-right">
                 <p className="text-[11px] uppercase tracking-widest text-white/60">lifetime VIP</p>
                 <p className="text-5xl font-black text-white">${activeTicket.price}</p>
-                <p className="text-xs text-white/70 line-through">$115 normal</p>
+                <p className="text-xs text-white/70"><span className="line-through">$115 normal</span> · {discountPercent}% off</p>
               </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border px-3 py-2 text-xs" style={{ borderColor: palette.border, background: palette.badge }}>
+              <span className="uppercase tracking-widest text-white/70">your lifetime price</span>
+              <strong style={{ color: palette.text }}>${activeTicket.price} · save ${savings}</strong>
             </div>
 
             <div className="flex items-center justify-between gap-3 rounded-md border border-white/15 bg-black/25 px-3 py-2 text-xs">

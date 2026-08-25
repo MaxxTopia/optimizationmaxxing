@@ -2,7 +2,7 @@
 
 **No. Reflex *reduces* input delay.** Common myth driven by old Pre-Render Limit confusion. The real gotcha is that **NVCP and in-game settings can fight each other** — see "common confusion" at the bottom.
 
-> **2026 note:** As of GeForce driver **610.47 WHQL** (released late May 2026), the classic **NVIDIA Control Panel** is officially retired for Game Ready / Studio (GeForce) drivers — all actively supported Control Panel features have moved into the **NVIDIA App**. The NVCP settings below now live under **NVIDIA App → Graphics → Global/Program Settings → "Show Legacy Settings."** On a clean 610.47+ install the old panel (and the "right-click desktop → NVIDIA Control Panel" entry) is gone by default; it's preserved only for NVIDIA RTX PRO users and on in-place driver upgrades. GeForce Experience was already discontinued in late 2024 — install the **NVIDIA App** (not GFE). ([TechPowerUp](https://www.techpowerup.com/349359/nvidia-geforce-graphics-drivers-610-47-whql-drops-control-panel-support))
+> **2026 note:** The app's driver oracle currently reports **GeForce Game Ready 610.88** (last checked 2026-08-24). NVIDIA's classic Control Panel retirement and the move of supported settings into the **NVIDIA App** do not change the in-game Reflex guidance below. Re-check the live driver card after every driver or major Fortnite season update. GeForce Experience was already discontinued in late 2024 — install the **NVIDIA App** (not GFE). ([NVIDIA drivers](https://www.nvidia.com/en-us/geforce/drivers/), [TechPowerUp](https://www.techpowerup.com/349359/nvidia-geforce-graphics-drivers-610-47-whql-drops-control-panel-support))
 
 ## What it actually does
 

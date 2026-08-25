@@ -83,10 +83,11 @@ const OFFER_SESSION_RE = /^[A-Za-z0-9_-]{32,96}$/;
 const OFFER_TICKET_RE = /^OMAX-[0-9A-HJKMNP-Z]{16}$/;
 const OFFER_TTL_SEC = 7 * 24 * 60 * 60;
 const OFFER_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
+const OFFER_NORMAL_PRICE = 115;
 const OFFER_TIERS = [
-  { rarity: 'gold', chance: 70, price: 99 },
-  { rarity: 'emerald', chance: 24, price: 77 },
-  { rarity: 'diamond', chance: 6, price: 69 },
+  { rarity: 'gold', chance: 70, price: 69 },
+  { rarity: 'emerald', chance: 24, price: 55 },
+  { rarity: 'diamond', chance: 6, price: 33 },
 ];
 
 // Profile-flair validation. URLs must be https:// and ≤256 chars; viewer
@@ -453,6 +454,7 @@ async function handleOfferPrepare(body, request, env, corsHeaders) {
 
   const issuedAt = Date.now();
   const tier = pickOfferTier();
+  const discount = offerDiscount(tier.price);
   const record = {
     version: 1,
     session,
@@ -461,6 +463,7 @@ async function handleOfferPrepare(body, request, env, corsHeaders) {
     rarity: tier.rarity,
     chanceLabel: `${tier.chance}% pull`,
     price: tier.price,
+    ...discount,
     issuedAt,
     expiresAt: issuedAt + OFFER_WINDOW_MS,
     createdAt: issuedAt,
@@ -626,6 +629,7 @@ async function handleOfferJoin(code, session, env, ctx) {
 }
 
 function deriveAccountOffer(sessionRecord, userId, username) {
+  const discount = offerDiscount(sessionRecord.price);
   return {
     version: 1,
     status: 'offered',
@@ -633,6 +637,7 @@ function deriveAccountOffer(sessionRecord, userId, username) {
     rarity: sessionRecord.rarity,
     chanceLabel: sessionRecord.chanceLabel,
     price: sessionRecord.price,
+    ...discount,
     issuedAt: sessionRecord.issuedAt,
     expiresAt: sessionRecord.expiresAt,
     session: sessionRecord.session,
@@ -651,6 +656,15 @@ function pickOfferTier() {
   return roll < 70 ? OFFER_TIERS[0] : roll < 94 ? OFFER_TIERS[1] : OFFER_TIERS[2];
 }
 
+function offerDiscount(price) {
+  const savings = Math.max(0, OFFER_NORMAL_PRICE - Number(price));
+  return {
+    normalPrice: OFFER_NORMAL_PRICE,
+    savings,
+    discountPercent: Math.round((savings / OFFER_NORMAL_PRICE) * 100),
+  };
+}
+
 function parseJsonRecord(raw) {
   if (!raw || typeof raw !== 'string') return null;
   try {
@@ -666,6 +680,7 @@ function offerJson(record, requestOrUrl, corsHeaders) {
     ? requestOrUrl.origin
     : new URL(requestOrUrl.url).origin;
   const status = Date.now() > record.expiresAt && record.status === 'pending' ? 'expired' : record.status;
+  const discount = offerDiscount(record.price);
   return json({
     ok: true,
     status,
@@ -673,6 +688,9 @@ function offerJson(record, requestOrUrl, corsHeaders) {
     rarity: record.rarity,
     chanceLabel: record.chanceLabel,
     price: record.price,
+    normalPrice: Number.isFinite(record.normalPrice) ? record.normalPrice : discount.normalPrice,
+    savings: Number.isFinite(record.savings) ? record.savings : discount.savings,
+    discountPercent: Number.isFinite(record.discountPercent) ? record.discountPercent : discount.discountPercent,
     issuedAt: new Date(record.issuedAt).toISOString(),
     expiresAt: new Date(record.expiresAt).toISOString(),
     discordLinked: record.discordLinked === true || status === 'offered' || status === 'redeemed',
@@ -689,9 +707,12 @@ async function expireOfferSession(env, record) {
 function offerHtml(offer, message, status = 200) {
   const expiry = new Date(offer.expiresAt).toUTCString();
   const state = offer.status === 'redeemed' ? 'already used' : offer.status === 'revoked' ? 'cancelled' : offer.status === 'expired' ? 'expired' : 'available';
+  const discount = offerDiscount(offer.price);
+  const savings = Number.isFinite(offer.savings) ? offer.savings : discount.savings;
+  const discountPercent = Number.isFinite(offer.discountPercent) ? offer.discountPercent : discount.discountPercent;
   return htmlPage(
     `<h1>MAXX VIP offer</h1>` +
-      `<p><b>${escapeHtml(offer.rarity.toUpperCase())}</b> · lifetime VIP for <b>$${escapeHtml(String(offer.price))}</b> instead of $115.</p>` +
+      `<p><b>${escapeHtml(offer.rarity.toUpperCase())} TICKET</b> · lifetime VIP for <b>$${escapeHtml(String(offer.price))}</b> instead of $115 — <b>${discountPercent}% off</b> (save $${savings}).</p>` +
       `<p>Offer status: <b>${escapeHtml(state)}</b>. It expires <b>${escapeHtml(expiry)}</b>.</p>` +
       `<p>${escapeHtml(message)}</p>` +
       `<p>Ticket ID: <code>${escapeHtml(offer.ticketId)}</code></p>` +
@@ -718,9 +739,12 @@ async function joinDiscordGuild(env, userId, accessToken) {
 }
 
 function offerDmText(offer) {
+  const discount = offerDiscount(offer.price);
+  const savings = Number.isFinite(offer.savings) ? offer.savings : discount.savings;
+  const discountPercent = Number.isFinite(offer.discountPercent) ? offer.discountPercent : discount.discountPercent;
   return (
     '**MAXXTOPIA — your first-time VIP offer**\n\n' +
-    `You have a **${offer.rarity.toUpperCase()}** limited-time offer: lifetime VIP for **$${offer.price}** instead of $115.\n` +
+    `You have a **${offer.rarity.toUpperCase()} TICKET**: lifetime VIP for **$${offer.price}** instead of $115 — **${discountPercent}% off** (save **$${savings}**).\n` +
     `Ticket: **${offer.ticketId}**\n` +
     `Valid until: **${new Date(offer.expiresAt).toUTCString()}**\n\n` +
     'This is a limited-time discount, not a contest. You can ignore it if you do not want VIP. ' +
@@ -1637,6 +1661,9 @@ async function handleAdmin(url, request, env, corsHeaders) {
           ticketId: offer.ticketId,
           rarity: offer.rarity,
           price: offer.price,
+          normalPrice: OFFER_NORMAL_PRICE,
+          savings: Number.isFinite(offer.savings) ? offer.savings : offerDiscount(offer.price).savings,
+          discountPercent: Number.isFinite(offer.discountPercent) ? offer.discountPercent : offerDiscount(offer.price).discountPercent,
           chanceLabel: offer.chanceLabel,
           status: offer.status,
           userId: offer.userId || null,
@@ -1873,7 +1900,7 @@ function renderOffers(){
     if(r.status==='offered'){actions+='<button class="bad" onclick="offerAction(\\''+r.ticketId+'\\',\\'revoke\\')">revoke</button>';}
     body+='<tr>'+
       '<td class="mono">'+esc(r.ticketId)+'</td>'+
-      '<td>'+esc((r.rarity||'').toUpperCase())+' · $'+esc(r.price)+' <span class="muted">('+esc(r.chanceLabel||'')+')</span></td>'+
+      '<td>'+esc((r.rarity||'').toUpperCase())+' · $'+esc(r.price)+' <span class="muted">('+esc(r.discountPercent)+'% off · save $'+esc(r.savings)+ ' · '+esc(r.chanceLabel||'')+')</span></td>'+
       '<td>'+status+'</td>'+
       '<td title="'+esc(r.userId||'')+'">'+esc(r.username||r.userId||'pending')+'</td>'+
       '<td class="muted">'+esc(fmtDate(r.expiresAt))+'</td>'+

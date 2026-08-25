@@ -70,6 +70,17 @@ different hwid returns `409 already claimed by another rig`.
 
 The desktop app uses the same Worker for a separate discount-offer ledger:
 
+The current first-time ladder is measured against the regular $115 lifetime
+price:
+
+- Gold (70% pull): $69, **40% off**, save $46
+- Emerald (24% pull): $55, **52% off**, save $60
+- Diamond (6% pull): $33, **71% off**, save $82
+
+Previously issued offers keep their original price and expiry. New sessions use
+the ladder above, and the Worker returns the normal price, savings, and rounded
+discount percentage with every offer response.
+
 - `POST /offer/prepare` creates one pending offer session and starts its
   three-day countdown.
 - `GET /offer/start?session=...` sends the user through Discord OAuth.
