@@ -164,12 +164,17 @@ The completion DM was sent through `C:\Users\Diggy\projects\adblockmaxxer\tools\
   `5643c23f-f843-4981-a78a-0f6ded3ac188`.
 - Live Worker check: a fresh prepare response returned Gold at $69 with
   `normalPrice: 115`, `savings: 46`, and `discountPercent: 40`. The exact test
-  session was deleted and its status endpoint returned 404 afterward. CI run
-  `32819106121` is still building/signing the desktop release; do not call the
-  public installer live until its release and updater checks finish.
-- Exact next action: wait for CI run `32819106121`, verify the v0.4.3 GitHub
-  release assets and `latest.json`, then check the MaxxTopia sync and one
-  cache-busted public release surface. Diggy still owes the real Discord
-  Tune Now/DM/redeem test and a same-scene Fortnite before/after test. Keep an
-  off-machine copy of this checkpoint and the project continuity snapshot for
-  disaster recovery.
+  session was deleted and its status endpoint returned 404 afterward.
+- Release: CI run `32819106121` completed successfully in 7m59s. Public v0.4.3
+  is non-draft/non-prerelease with the installer, `.sig`, and `latest.json`;
+  the served updater manifest reports version 0.4.3. The release page notes
+  were corrected after publication, and the release workflow template now
+  carries the current ticket/free-path/NVIDIA highlights for future tags.
+- Cross-project live state: MaxxTopia sync run `32819706432` succeeded, and
+  Pages deploy `32819730172` succeeded. Cache-busted checks of
+  `https://maxxtopia.com/optimizationmaxxing/` and `/updates/` returned 200
+  and contained v0.4.3 markers. This verifies the public source/deploy route,
+  not a real Discord, phone, or Fortnite hardware test.
+- Exact next action: Diggy still owes the real Discord Tune Now/DM/redeem test
+  and a same-scene Fortnite before/after test. Keep an off-machine copy of
+  this checkpoint and the project continuity snapshot for disaster recovery.
