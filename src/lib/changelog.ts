@@ -12,10 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.4',
+    date: '2026-08-27',
+    highlights: [
+      'FIX **Pricing is more focused.** The public page now keeps the Free vs VIP comparison clear without extra promotional panels; the regular lifetime path remains $115.',
+    ],
+  },
+  {
     version: '0.4.3',
     date: '2026-08-24',
     highlights: [
-      'NEW **Clearer first-time lifetime tickets.** Gold is $69 (40% off), Emerald is $55 (52% off), and Diamond is $33 (71% off) against the regular $115 price; every surface now shows the exact savings.',
       'IMPROVE **Free users still get a real tuning path.** Pricing now makes the 70-free / 30-VIP split and the measured free subset explicit instead of presenting VIP as the only useful route.',
       'FIX **Fortnite driver guidance is season-aware.** The shipped NVIDIA profile now matches the conservative four-setting app baseline and the guide is refreshed for Chapter 7 Season 4: Override and current driver checks.',
     ],
@@ -24,15 +30,15 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '0.4.2',
     date: '2026-08-22',
     highlights: [
-      'NEW **First-time Tuners now have a chance at something rare.** A clear three-day timer, offer status, and easier next step keep the tuning flow simple.',
-      'IMPROVE **Offer tracking.** The offer details stay consistent across the app, Discord, and support flow if you decide to use it later.',
+      'NEW **Tune Now is easier to follow.** Clear status feedback and an easier next step keep the tuning flow simple.',
+      'IMPROVE **Tune Now state handling.** The app keeps the flow consistent if you leave and return later.',
     ],
   },
   {
     version: '0.4.1',
     date: '2026-08-22',
     highlights: [
-      'NEW **Tuning is easier to trust.** Better presets, clearer experimental warnings, and new CPU Health / OS Comparison checks put the useful signal first. First-time Tuners also have a chance at something rare; light theme improvements round out the pass.',
+      'NEW **Tuning is easier to trust.** Better presets, clearer experimental warnings, and new CPU Health / OS Comparison checks put the useful signal first. Light theme improvements round out the pass.',
     ],
   },
   {

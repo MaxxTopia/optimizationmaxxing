@@ -178,3 +178,28 @@ The completion DM was sent through `C:\Users\Diggy\projects\adblockmaxxer\tools\
 - Exact next action: Diggy still owes the real Discord Tune Now/DM/redeem test
   and a same-scene Fortnite before/after test. Keep an off-machine copy of
   this checkpoint and the project continuity snapshot for disaster recovery.
+
+## Secret offer surface checkpoint — 2026-08-27
+
+- Scope: keep the account-bound Gold / Emerald / Diamond discount flow and its
+  tier-specific TuneTicketModal designs, while removing the public first-time
+  ticket ladder from Pricing.
+- UX: Pricing now exposes only the free path and the regular $115 lifetime VIP
+  path. Supporting copy no longer hints that a lower first-time price exists;
+  the discount remains discoverable only after a Tune Now result.
+- Updates: the v0.4.3, v0.4.2, and v0.4.1 in-app changelog wording no longer
+  advertises tickets, offers, or rare discounted pricing. The public Updates
+  route therefore matches the secret-offer decision, including for users who
+  are shown multiple entries after a long gap.
+- Verification: `npm run build` passed (200 modules transformed),
+  `git diff --check` passed, the rendered local Pricing page showed no offer
+  ladder, and the rendered Updates page showed no discount/ticket disclosure.
+- Release boundary: this copy fix is local and uncommitted. The already
+  published v0.4.3 build cannot change retroactively; a future patch release is
+  required before installed users receive the scrubbed changelog. Existing
+  untracked WIP remains untouched.
+- Unchanged: Worker pricing, account binding, ticket redemption, and
+  TuneTicketModal tier visuals remain in place. Real Discord redemption is
+  still a human-only gate.
+- Next action: if approved, prepare a patch release with a new version and
+  scrubbed release copy, then push and verify the signed update path.

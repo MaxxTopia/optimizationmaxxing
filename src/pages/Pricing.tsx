@@ -50,12 +50,6 @@ const VIP_FEATURES = [
   'Lifetime — pay once, every future tweak pack + new feature included',
 ]
 
-const FIRST_TUNE_OFFERS = [
-  { name: 'Gold', price: 69, discount: 40, savings: 46, color: '#ffe27d', border: 'rgba(255, 215, 0, 0.55)', background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(105, 60, 0, 0.28))' },
-  { name: 'Emerald', price: 55, discount: 52, savings: 60, color: '#7df0c0', border: 'rgba(52, 211, 153, 0.55)', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.13), rgba(2, 57, 44, 0.34))' },
-  { name: 'Diamond', price: 33, discount: 71, savings: 82, color: '#b9eaff', border: 'rgba(125, 211, 252, 0.62)', background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(12, 34, 76, 0.38))' },
-]
-
 export function Pricing() {
   const tier = useVipStore((s) => s.tier)
   const unlockForDev = useVipStore((s) => s.unlockForDev)
@@ -97,8 +91,7 @@ export function Pricing() {
           Free for life on the safest tweaks — enough to make a real, measured improvement on any
           rig. VIP is normally a <strong className="text-text">$115 one-time lifetime</strong>{' '}
           unlock for the full catalog, measured before/after tools, and the Asta ceiling lane.
-          First-time Tune Now users may also receive an account-bound ticket below that price. Your
-          actual gain still depends on your rig and game.
+          Your actual gain still depends on your rig and game.
         </p>
       </header>
 
@@ -127,43 +120,6 @@ export function Pricing() {
         />
       </div>
 
-      <section className="surface-card p-5 space-y-3">
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <p className="text-[10px] uppercase tracking-widest text-text-subtle">first-time Tune Now tickets</p>
-            <h2 className="text-lg font-semibold">The exact discount is shown before you decide</h2>
-          </div>
-          <p className="text-xs text-text-muted">Compared with the regular $115 lifetime price</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {FIRST_TUNE_OFFERS.map((offer) => (
-            <div
-              key={offer.name}
-              className="rounded-lg border p-4"
-              style={{ borderColor: offer.border, background: offer.background }}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-black uppercase tracking-widest" style={{ color: offer.color }}>
-                  {offer.name} ticket
-                </p>
-                <span className="rounded border px-1.5 py-0.5 text-[10px] font-bold" style={{ color: offer.color, borderColor: offer.border }}>
-                  {offer.discount}% off
-                </span>
-              </div>
-              <p className="mt-3 text-3xl font-black text-text">
-                ${offer.price}{' '}
-                <span className="text-sm font-normal text-text-subtle line-through">$115</span>
-              </p>
-              <p className="mt-1 text-xs text-text-muted">Save ${offer.savings} · one offer per Discord account</p>
-            </div>
-          ))}
-        </div>
-        <p className="text-[11px] text-text-subtle">
-          Tickets are limited-time invitations from the first Tune Now flow. They never unlock VIP
-          automatically; payment and support still happen through the normal Discord ticket.
-        </p>
-      </section>
-
       {(showRedemption || (isVip && redeemedCode)) && (
         <VipRedemptionPanel onClose={() => setShowRedemption(false)} />
       )}
@@ -184,8 +140,7 @@ export function Pricing() {
           BO3 Zombies fans know. <strong className="text-text">Element 115 (Mc · Moscovium)</strong>{' '}
           is what turns dead things into living ones in Treyarch's lore — the perfect price
           point for the substance that turns dead PCs into living ones. The number isn't an
-          accident: $115 is the regular lifetime price, locked in forever. If a first-time ticket
-          appears, it shows the exact percentage and dollar savings against that same $115 baseline.
+          accident: $115 is the regular lifetime price, locked in forever.
         </p>
       </section>
 
@@ -200,7 +155,7 @@ export function Pricing() {
             <span className="text-accent font-semibold">2.</span> Tell Diggy your preferred payment — PayPal, BTC, Venmo, Cash App, whatever works for you.
           </li>
           <li>
-            <span className="text-accent font-semibold">3.</span> Pay → Diggy DMs you a 16-char activation code → tap the <span className="text-accent">$115</span> price 5x on this page → paste code → first-claim-wins on your rig forever. If Tune Now gave you a ticket, include its offer number so the discounted price can be honored.
+            <span className="text-accent font-semibold">3.</span> Pay → Diggy DMs you a 16-char activation code → tap the <span className="text-accent">$115</span> price 5x on this page → paste code → first-claim-wins on your rig forever.
           </li>
         </ol>
         <p className="text-[11px] text-text-subtle mt-3 leading-snug">
