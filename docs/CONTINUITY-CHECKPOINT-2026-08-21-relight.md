@@ -203,3 +203,26 @@ The completion DM was sent through `C:\Users\Diggy\projects\adblockmaxxer\tools\
   still a human-only gate.
 - Next action: if approved, prepare a patch release with a new version and
   scrubbed release copy, then push and verify the signed update path.
+
+## v0.4.4 live checkpoint — 2026-08-27
+
+- Release: commit `cdba565` (`fix: keep lifetime offer private`) and tag
+  `v0.4.4` are pushed to `main` / `origin`. GitHub Actions run `33050041592`
+  passed in 9m59s and published a non-draft, non-prerelease release.
+- Artifacts: v0.4.4 has `latest.json`, the signed NSIS installer, and the
+  installer signature. The updater manifest reports version `0.4.4` for both
+  Windows platform keys and contains no ticket or discount ladder.
+- Public surfaces: the old v0.4.3 GitHub release note was scrubbed of the
+  ticket prices. MaxxTopia sync run `33050715120` and Pages deploy
+  `33050730804` both passed. Cache-busted `/optimizationmaxxing/` and
+  `/updates/` returned 200, contained v0.4.4, and contained no old offer text.
+- Product behavior: Pricing shows only Free and regular $115 VIP; the
+  account-bound offer Worker and TuneTicketModal remain unchanged. The new
+  v0.4.4 in-app update note is intentionally generic.
+- Verification boundary: local `tauri:build` produced the v0.4.4 executable
+  and installer but cannot sign without the intentionally absent local private
+  updater key; CI signing and updater artifact verification passed. Real UAC,
+  Discord redemption, and same-scene Fortnite testing remain human gates.
+- Next action: Diggy can install the signed v0.4.4 NSIS artifact and confirm
+  the normal auto-update/relaunch path on the primary rig. Keep an off-machine
+  copy of this checkpoint and the project continuity snapshot.
