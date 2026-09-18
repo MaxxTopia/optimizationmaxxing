@@ -7,7 +7,7 @@ import {
   type HardwareItem,
   type HardwareSection,
 } from '../lib/hardware'
-import { detectSpecs, inTauri, type SpecProfile } from '../lib/tauri'
+import { useRigStore } from '../store/useRigStore'
 
 /**
  * /hardware — peripheral + PC-build advisory. Per-category tier ladder
@@ -173,21 +173,16 @@ function ProBuildStack() {
 }
 
 function HardwareFitCard() {
-  const native = inTauri()
-  const [spec, setSpec] = useState<SpecProfile | null>(null)
-  const [loading, setLoading] = useState(native)
-  const [error, setError] = useState(false)
+  const spec = useRigStore((s) => s.spec)
+  const status = useRigStore((s) => s.status)
+  const error = useRigStore((s) => s.error)
+  const ensureLoaded = useRigStore((s) => s.ensureLoaded)
+  const refresh = useRigStore((s) => s.refresh)
+  const loading = status === 'idle' || status === 'loading'
 
   useEffect(() => {
-    if (!native) {
-      setLoading(false)
-      return
-    }
-    detectSpecs(false)
-      .then(setSpec)
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
-  }, [native])
+    void ensureLoaded()
+  }, [ensureLoaded])
 
   return (
     <section className="surface-card p-5 space-y-3 border-l-4 border-l-secondary">
@@ -200,12 +195,22 @@ function HardwareFitCard() {
             laptop limits, memory capacity, and the frame-time evidence from your own machine.
           </p>
         </div>
-        <Link to="/asta" className="text-xs underline text-accent hover:text-text shrink-0">
-          measure your ceiling ↗
-        </Link>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            disabled={loading}
+            className="text-xs underline text-accent hover:text-text disabled:opacity-40"
+          >
+            {loading ? 'reading…' : 're-scan rig'}
+          </button>
+          <Link to="/asta" className="text-xs underline text-accent hover:text-text">
+            measure your ceiling ↗
+          </Link>
+        </div>
       </div>
 
-      {!native ? (
+      {status === 'unavailable' ? (
         <p className="text-xs text-text-subtle border border-border rounded-md px-3 py-2">
           Open the desktop app to read your CPU, GPU, memory, and laptop/desktop profile here.
         </p>
@@ -213,8 +218,8 @@ function HardwareFitCard() {
         <p className="text-xs text-text-muted">Reading your rig…</p>
       ) : error || !spec ? (
         <p className="text-xs text-amber-200 border border-amber-500/40 bg-amber-500/5 rounded-md px-3 py-2">
-          We could not read the rig snapshot. You can still browse the sourced ladder; run Match
-          Scan or Asta Bench when you want a measured fit call.
+          We could not read the rig snapshot{error ? `: ${error}` : ''}. You can still browse the
+          sourced ladder; run Match Scan or Asta Bench when you want a measured fit call.
         </p>
       ) : (
         <>

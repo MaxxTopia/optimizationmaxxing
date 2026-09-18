@@ -5,7 +5,7 @@ import { catalog, type TweakRecord } from '../lib/catalog'
 import {
   applyBatch,
   inTauri,
-  listApplied,
+  verifyApplied,
   type AppliedTweak,
   type BatchItem,
 } from '../lib/tauri'
@@ -13,7 +13,7 @@ import {
 /**
  * /diff — every active mod from a vanilla Windows in one table.
  *
- * Reads listApplied() from the snapshot store + audits each applied
+ * Re-reads active receipts through the native verifier + audits each applied
  * tweak's actions against current registry/BCD state. Each row shows:
  *   - the tweak title + category + risk
  *   - applied-at timestamp
@@ -30,6 +30,23 @@ interface DiffRow {
   tweak: TweakRecord
   applied: AppliedTweak
   audit: TweakAudit | null
+}
+
+function aggregateApplied(rows: AppliedTweak[]): AppliedTweak {
+  if (rows.length === 0) {
+    throw new Error('Cannot aggregate an empty applied-tweak group')
+  }
+  const latest = [...rows].sort((a, b) => b.appliedAt.localeCompare(a.appliedAt))[0]
+  const mismatch = rows.filter((row) => row.verificationStatus === 'mismatch').length
+  const unknown = rows.filter((row) => row.verificationStatus === 'unknown').length
+  const status = mismatch > 0 ? 'mismatch' : unknown > 0 ? 'unknown' : 'verified'
+  const detail =
+    status === 'mismatch'
+      ? `${mismatch} of ${rows.length} action${rows.length === 1 ? '' : 's'} do not match the target.`
+      : status === 'unknown'
+      ? `${rows.length - unknown} of ${rows.length} actions verified; ${unknown} have no declared read-back contract.`
+      : `${rows.length} of ${rows.length} actions verified against live state.`
+  return { ...latest, verificationStatus: status, verificationDetail: detail }
 }
 
 export function Diff() {
@@ -49,13 +66,23 @@ export function Diff() {
     setLoading(true)
     setErr(null)
     try {
-      const list = await listApplied()
-      const activeIds = new Set(list.filter((a) => a.status === 'applied').map((a) => a.tweakId))
+      // The persisted receipt is history; verifyApplied() is the live truth.
+      // Group action receipts so a multi-action tweak is not represented by
+      // whichever action happened to be returned first.
+      const list = await verifyApplied()
+      const active = list.filter((a) => a.status === 'applied')
+      const byTweakId = new Map<string, AppliedTweak[]>()
+      for (const row of active) {
+        const group = byTweakId.get(row.tweakId) ?? []
+        group.push(row)
+        byTweakId.set(row.tweakId, group)
+      }
+      const activeIds = new Set(byTweakId.keys())
       const tweaks = catalog.tweaks.filter((t) => activeIds.has(t.id))
       const auditByTweakId = await auditMany(tweaks)
       const composed: DiffRow[] = tweaks.map((t) => ({
         tweak: t,
-        applied: list.find((a) => a.tweakId === t.id && a.status === 'applied')!,
+        applied: aggregateApplied(byTweakId.get(t.id) ?? []),
         audit: auditByTweakId[t.id] ?? null,
       }))
       setRows(composed)
@@ -106,7 +133,7 @@ export function Diff() {
 
   async function reapplyAllDrifted() {
     if (!rows || reapplyAllBusy) return
-    const drifted = rows.filter((r) => r.audit && (r.audit.status === 'differs' || r.audit.status === 'partial'))
+    const drifted = rows.filter((r) => r.applied.verificationStatus === 'mismatch')
     if (drifted.length === 0) return
     setReapplyAllBusy(true)
     setErr(null)
@@ -133,15 +160,12 @@ export function Diff() {
     lines.push(`# ${rows.length} tweaks applied`)
     lines.push('')
     for (const r of rows) {
-      const stateLabel = r.audit
-        ? r.audit.status === 'matches'
+      const stateLabel =
+        r.applied.verificationStatus === 'verified'
           ? 'on-target'
-          : r.audit.status === 'differs'
+          : r.applied.verificationStatus === 'mismatch'
           ? 'drift'
-          : r.audit.status === 'partial'
-          ? `partial (${r.audit.matchCount}/${r.audit.total})`
           : 'unknown'
-        : '—'
       lines.push(`- [${r.tweak.category}] ${r.tweak.title}  (risk ${r.tweak.riskLevel}, ${stateLabel})`)
     }
     navigator.clipboard.writeText(lines.join('\n')).catch(() => {})
@@ -157,10 +181,11 @@ export function Diff() {
             Every tweak you've applied, in one list. Each row tells you whether the change is{' '}
             <strong className="text-emerald-300">still in place</strong> or whether something
             <strong className="text-amber-300"> reverted it</strong> (Windows Update, another
-            tuner, or you yourself flipped it back). Registry + file writes can be re-read directly;
-            script + BCD edits show <span className="text-text-muted">◇ applied (no re-read)</span>{' '}
-            because they ran imperatively or need admin to query. Click any row for the per-action
-            detail. "Copy as text" pastes the full setup into a Discord DM.
+            tuner, or you yourself flipped it back). Native read-back is persisted for registry,
+            BCD, file, and display actions; PowerShell actions remain{' '}
+            <span className="text-text-muted">◇ unknown</span> unless the catalog declares a
+            safe read-back contract. Click any row for the per-action detail. "Copy as text" pastes
+            the full setup into a Discord DM.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -239,29 +264,10 @@ function SummaryStrip({
 }) {
   let onTarget = 0
   let drift = 0
-  let partial = 0
   let trustOnly = 0
-  let errored = 0
   for (const r of rows) {
-    if (!r.audit || r.audit.status === 'error') {
-      errored++
-      continue
-    }
-    if (r.audit.status === 'matches') {
-      // Did the match come from a verifiable source (registry/file) or a
-      // trust-only source (PS script / BCD-without-admin)? Count those
-      // separately so the user knows what fraction of "still in place"
-      // they can actually see proof of.
-      const hasTrustOnly = r.audit.actions.some(
-        (a) => a.status === 'matches' && /^(Script ran on apply|BCD .* applied via admin)/.test(a.detail),
-      )
-      if (hasTrustOnly && r.audit.actions.every((a) => /^(Script ran on apply|BCD .* applied via admin)/.test(a.detail))) {
-        trustOnly++
-      } else {
-        onTarget++
-      }
-    } else if (r.audit.status === 'differs') drift++
-    else if (r.audit.status === 'partial') partial++
+    if (r.applied.verificationStatus === 'verified') onTarget++
+    else if (r.applied.verificationStatus === 'mismatch') drift++
     else trustOnly++
   }
   return (
@@ -277,31 +283,28 @@ function SummaryStrip({
             ✗ {drift} got reverted externally
           </span>
         )}
-        {partial > 0 && <span className="text-amber-300">◐ {partial} partly in place</span>}
         {trustOnly > 0 && (
           <span
             className="text-text-muted"
-            title="Script / BCD actions — the apply succeeded but the change can't be re-read without admin or doesn't leave a persistent value to check."
+            title="The catalog has no safe native read-back contract for at least one action in these tweaks."
           >
             ◇ {trustOnly} applied (no re-read)
           </span>
         )}
-        {errored > 0 && <span className="text-text-subtle">! {errored} check failed</span>}
       </div>
-      {drift + partial > 0 && (
+      {drift > 0 && (
         <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
           <p className="text-[11px] text-text-muted leading-snug max-w-2xl">
-            {drift + partial} tweak{drift + partial > 1 ? 's are' : ' is'} no longer in the state
-            we wrote. The app didn't undo {drift + partial > 1 ? 'them' : 'it'} — something else
-            did (Windows Update / vendor app / Settings toggle). Re-apply restores the value(s)
-            without changing anything else.
+            {drift} tweak{drift > 1 ? 's are' : ' is'} no longer in the state we wrote. The app
+            didn't undo {drift > 1 ? 'them' : 'it'} — something else did (Windows Update / vendor
+            app / Settings toggle). Re-apply restores the value(s) without changing anything else.
           </p>
           <button
             onClick={onReapplyAll}
             disabled={reapplyAllBusy}
             className="shrink-0 px-3 py-1.5 rounded-md text-xs font-semibold btn-chrome bg-accent text-bg-base disabled:opacity-50"
           >
-            {reapplyAllBusy ? 'Re-applying…' : `Re-apply ${drift + partial}`}
+            {reapplyAllBusy ? 'Re-applying…' : `Re-apply ${drift}`}
           </button>
         </div>
       )}
@@ -321,38 +324,22 @@ function DiffRowCard({
   const a = row.audit
   // Drifted rows auto-expand so the per-action "Currently X / target Y"
   // breakdown is visible without an extra click — that's the actionable
-  // detail the user actually wants when something\'s reverted.
-  const isDrifted = !!a && (a.status === 'differs' || a.status === 'partial')
+  // detail the user actually wants when something's reverted.
+  const isDrifted = row.applied.verificationStatus === 'mismatch'
   const [expanded, setExpanded] = useState(isDrifted)
-  const trustOnlyActions = a?.actions.filter((x) =>
-    /^(Script ran on apply|BCD .* applied via admin)/.test(x.detail),
-  ).length ?? 0
-  const allTrustOnly = !!(a && trustOnlyActions > 0 && trustOnlyActions === a.actions.length)
-  const verdictColor = !a
-    ? 'text-text-subtle'
-    : a.status === 'matches'
-    ? allTrustOnly
-      ? 'text-text-muted'
-      : 'text-emerald-300'
-    : a.status === 'differs'
-    ? 'text-red-400'
-    : a.status === 'partial'
-    ? 'text-amber-300'
-    : 'text-text-subtle'
-  const verdictLabel = !a
-    ? '! check failed'
-    : a.status === 'matches'
-    ? allTrustOnly
-      ? '◇ applied (no re-read)'
-      : '✓ verified in place'
-    : a.status === 'differs'
-    ? '✗ got reverted externally'
-    : a.status === 'partial'
-    ? `◐ ${a.matchCount}/${a.total} in place`
-    : a.status === 'error'
-    ? '! check failed'
-    : '◇ applied (no re-read)'
-  const canReapply = a && (a.status === 'differs' || a.status === 'partial')
+  const verdictColor =
+    row.applied.verificationStatus === 'verified'
+      ? 'text-emerald-300'
+      : row.applied.verificationStatus === 'mismatch'
+      ? 'text-red-400'
+      : 'text-text-muted'
+  const verdictLabel =
+    row.applied.verificationStatus === 'verified'
+      ? '✓ verified in place'
+      : row.applied.verificationStatus === 'mismatch'
+      ? '✗ got reverted externally'
+      : '◇ unknown (no read-back)'
+  const canReapply = row.applied.verificationStatus === 'mismatch'
 
   return (
     <article className="surface-card p-4">
@@ -385,6 +372,11 @@ function DiffRowCard({
           )}
         </div>
       </div>
+      {expanded && (
+        <p className="mt-3 pt-3 border-t border-border text-xs text-text-muted leading-snug">
+          {row.applied.verificationDetail}
+        </p>
+      )}
       {expanded && a && a.actions.length > 0 && (
         <ul className="mt-3 pt-3 border-t border-border space-y-1 text-xs">
           {a.actions.map((act) => (

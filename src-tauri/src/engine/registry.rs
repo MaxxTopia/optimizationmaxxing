@@ -87,6 +87,59 @@ pub fn capture_pre_state(action: &TweakAction) -> anyhow::Result<serde_json::Val
     }
 }
 
+/// Verify a registry mutation by comparing the raw value/type currently in
+/// Windows with the catalog's requested value. Delete actions verify that the
+/// target value/key is absent. This is intentionally a live read, not a
+/// replay of the snapshot.
+pub fn verify(action: &TweakAction) -> anyhow::Result<bool> {
+    match action {
+        TweakAction::RegistrySet {
+            hive,
+            path,
+            name,
+            value_type,
+            value,
+        } => {
+            let root = predefined_key(*hive);
+            let key = match root.open_subkey(path) {
+                Ok(k) => k,
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+                Err(e) => return Err(e).context("open_subkey for registry verification"),
+            };
+            let current = match key.get_raw_value(name) {
+                Ok(v) => v,
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+                Err(e) => return Err(e).context("get_raw_value for registry verification"),
+            };
+            let expected = encode_reg_value(*value_type, value)?;
+            Ok(current.vtype == expected.vtype && current.bytes == expected.bytes)
+        }
+        TweakAction::RegistryDelete { hive, path, name } => {
+            let root = predefined_key(*hive);
+            match name {
+                Some(value_name) => {
+                    let key = match root.open_subkey(path) {
+                        Ok(k) => k,
+                        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(true),
+                        Err(e) => return Err(e).context("open_subkey for delete verification"),
+                    };
+                    match key.get_raw_value(value_name) {
+                        Ok(_) => Ok(false),
+                        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(true),
+                        Err(e) => Err(e).context("get_raw_value for delete verification"),
+                    }
+                }
+                None => match root.open_subkey(path) {
+                    Ok(_) => Ok(false),
+                    Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(true),
+                    Err(e) => Err(e).context("open_subkey for subkey-delete verification"),
+                },
+            }
+        }
+        _ => Err(anyhow!("registry::verify called on non-registry action")),
+    }
+}
+
 // --- RegistrySet ---
 
 fn apply_registry_set(

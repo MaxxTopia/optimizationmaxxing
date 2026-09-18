@@ -1,57 +1,91 @@
-# Best Windows version per game (as of 2026)
+# Windows version guidance for competitive games
 
-**TL;DR: Win11 24H2 or 25H2 for stability + game compatibility — both are the only supported consumer branches in 2026. Don't run 22H2 or 23H2: they're end-of-life (no security updates). 24H2 is now the mainstream gaming base; most launch-era bugs were patched through 2025-2026. Win11 IoT LTSC 2024 (24H2 base) is the lean alternative. Win10 hit EOL Oct 14, 2025 — security risk for new builds.**
+**Last reviewed: 2026-09-17.** There is no Microsoft-certified “best Fortnite
+Winver” that guarantees lower input delay. The useful question is whether the
+branch is supported, fully patched, compatible with the hardware and anti-cheat
+stack, and measurably stable on the player's own machine.
 
-## Win11 24H2 / 25H2 — the current base (as of patch Tuesday Feb 2026)
-24H2 is now the mainstream supported gaming base. The big launch-era problems (the Vanguard incompatibility gap, EAC drift, BSODs) were resolved through 2025-2026 cumulative updates. Residual cautions worth knowing:
-- Some DPC latency reports on Intel 13th/14th gen rigs (scheduler/E-core interaction) — mostly mitigated by recent updates + BIOS microcode
-- Occasional HID polling hiccups on 8000 Hz mice
-- Recall + Copilot+ daemons add background CPU even when "off" — strip via our preset
-- Auto HDR regressions on a few monitors
+## Current answer
 
-**25H2** (rolled out from Sept 30, 2025) is the current latest release. It ships as a small enablement package on the shared 24H2 servicing branch — same build family (10.0.26200), same drivers/behavior — so the per-game notes for 24H2 apply equally to 25H2. There's no compatibility reason to stay below it.
+For a new primary Fortnite install, choose **stock Windows 11 25H2** when the
+system already has a known-good 25H2 driver and capture stack. Test **Windows 11
+26H1** on a separate image when the motherboard, GPU, capture card, and game
+stack are confirmed. Keep the image fully patched and retain the ability to
+roll back. Windows 11 24H2 is still supported for Home/Pro until 2026-10-13,
+but it is not the branch I would select for a fresh long-lived install now.
 
-If you're already on 24H2/25H2 and stable: leave it. Do **not** fall back to 22H2/23H2 — they're EOL and get no security patches; the only "older + supported" path is LTSC (below).
+Microsoft's current supported-client table lists 26H1 as build 28000, 25H2 as
+build 26200, and 24H2 as build 26100. Home/Pro end-of-service is 2028-03-14,
+2027-10-12, and 2026-10-13 respectively. Windows 10 22H2 ended normal support
+on 2025-10-14. These are lifecycle facts, not FPS benchmarks. [Microsoft supported
+Windows client versions](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client)
 
-## Per-game recommendations
+## Per-game baseline
 
-| Game | Recommended Windows | Why |
+| Game | Baseline to test first | What the app should avoid claiming |
 |---|---|---|
-| **Valorant** | 11 24H2 / 25H2 | Vanguard fully compatible since the 2024 patch; early random kicks resolved |
-| **Fortnite** | 11 24H2 / 25H2 | UE5.5 in Chapter 6+ runs clean on the current branch |
-| **CS2** | 11 24H2 / 25H2 | Early-24H2 DPC latency reports largely mitigated by 2025-2026 updates |
-| **Apex Legends** | 11 24H2 / 25H2 | EAC drift from early-2025 is fixed; stable on the current branch |
-| **Overwatch 2** | 11 24H2 / 25H2 | No known issues |
-| **COD: Warzone / MW3** | 11 24H2 / 25H2 | Ricochet AC works clean; early launcher hangs resolved |
-| **Marvel Rivals** | 11 24H2 / 25H2 | Newest engine; Lumen pipelines optimized for current schedulers |
-| **R6 Siege** | 11 24H2 / 25H2 | BattlEye fully compatible; LTSC 2024 if you want minimal surface |
-| **Rocket League** | Any | Engine is ancient + super stable |
-| **Minecraft (Java)** | Any | Java overhead dominates anything OS-level |
+| **Fortnite / Unreal Engine** | Fully patched stock Windows 11 25H2 or a validated 26H1 image; keep current Epic security requirements enabled. | That a stripped image, a specific build number, or a registry tweak guarantees lower input delay or tournament eligibility. |
+| **VALORANT** | Fully patched supported Windows 11 with the security features Riot currently requires. | That disabling VBS, HVCI, Secure Boot, TPM, or services is safe for ranked/tournament play. |
+| **CS2 / Apex / Overwatch / R6** | The current supported Windows 11 branch with the game's current launcher and anti-cheat updates. | That one game's scheduler result transfers to every other engine or anti-cheat. |
+| **Rocket League / older DX titles** | Any supported Windows version that passes the game's current requirements, with the same-rig benchmark as the deciding evidence. | That an older, unsupported Windows release is a sound security or tournament baseline. |
 
-## LTSC option
-- **Win11 IoT Enterprise LTSC 2024** (24H2 base) — minimal app surface, no Recall/Copilot daemons, and a **10-year lifecycle (supported through Oct 10, 2034)**. Note: this long support window is specific to the *IoT* Enterprise SKU; the non-IoT Enterprise LTSC 2024 is only 5 years (ends Oct 9, 2029).
-- Closest thing to "Windows you'd actually want for gaming" if you're willing to do the LTSC dance (license source, in-place upgrade or fresh install).
-- Tradeoff: HDR + auto-HDR + Auto SDR colorpipe support is reduced.
+The app can make a hardware-aware recommendation, but the recommendation should
+be phrased as “best next test” rather than “universally fastest.” A/B testing
+must hold GPU driver, BIOS settings, game build, display mode, input polling,
+background apps, map, and benchmark route constant. Compare frametime percentiles,
+input-to-photon measurements when available, DPC/ISR distributions, and real
+match behavior—not only average FPS.
 
-## Win10 22H2 (legacy choice)
-- Still works fine for any title that supports DX11/DX12.
-- **Reached end-of-life Oct 14, 2025.** Security patches now come only via Extended Security Updates (ESU). Consumer ESU has a **free path** — enroll through Windows Backup / Microsoft account sync, or redeem 1,000 Microsoft Rewards points (the one-time $30 is the paid fallback). Microsoft extended free consumer ESU into a second year, now ending **Oct 14, 2027**. (0patch is a third-party alternative.)
-- Avoid for new builds; don't downgrade from Win11 if you're already there.
+## LTSC and custom images
 
-## What to do on a fresh build
-1. Install Win11 24H2 or 25H2 (or Win11 IoT LTSC 2024 if you have the license). Do **not** install 22H2/23H2 — they're EOL and unpatched.
-2. Run our Streamer / BR / Esports preset.
-3. Disable Auto HDR / Auto SDR if your monitor doesn't support it cleanly.
-4. **Don't** install Recall. **Don't** sign in with a Microsoft account; use a local account. Note: the old `oobe\BypassNRO` one-liner was removed in 24H2 (~March 2025), and the follow-up `start ms-cxh:localonly` trick was also blocked from late 2025. The reliable local-account paths now are an **unattended `autounattend.xml` answer file** (generate one via Rufus or schneegans.de) or a re-implementation like the Stensel8 BypassNRO script.
-5. Disable telemetry via the catalog tweaks.
+Windows 11 IoT Enterprise LTSC may be appropriate for a controlled organization
+with a legitimate license and a fixed software image. Its servicing model does
+not prove lower latency, and game launchers, HDR, capture, drivers, and anti-cheat
+still need a clean-room test. It is not a magic “gaming edition.”
 
-## Citations
-- Microsoft Windows release notes (learn.microsoft.com)
-- Microsoft Lifecycle — Win11 Home & Pro (24H2/25H2 supported; 23H2 ended Nov 11, 2025; 22H2 ended Oct 8, 2024): learn.microsoft.com/en-us/lifecycle/products/windows-11-home-and-pro
-- Microsoft Lifecycle — Win11 Enterprise & Education (22H2 all editions EOL Oct 14, 2025): learn.microsoft.com/en-us/lifecycle/products/windows-11-enterprise-and-education
-- Microsoft IT Pro Blog — Win11 25H2 (build 26200, enablement package on 24H2 branch): techcommunity.microsoft.com/blog/windows-itpro-blog/get-ready-for-windows-11-version-25h2/4426437
-- Microsoft Lifecycle — Win11 IoT Enterprise LTSC 2024 (end of support Oct 10, 2034): learn.microsoft.com/en-us/lifecycle/products/windows-11-iot-enterprise-ltsc-2024
-- Microsoft — Win10 Extended Security Updates (free consumer paths; extended to Oct 14, 2027): microsoft.com/en-us/windows/extended-security-updates
-- Local-account OOBE: BypassNRO removed ~Mar 2025, ms-cxh:localonly blocked late 2025 — windowslatest.com + github.com/Stensel8/BypassNRO
-- Riot Games Vanguard release log
-- HardwareUnboxed Win10 vs Win11 vs LTSC 2024 benchmark series
+Third-party images such as X-Lite, Atlas OS, ReviOS, Tiny11, and Ghost Spectre
+must be evaluated as exact image/configuration combinations. Do not reuse a
+community compatibility claim after a new cumulative update. X-Lite's official
+UltraLite documentation says Windows Update, Defender, BitLocker, Backup/Restore,
+and several optional components may be missing or unsupported, and recommends a
+full-featured updatable build for most users. [X-Lite UltraLite documentation](https://windowsxlite.com/ultralight)
+
+## Intel 14900KF note
+
+For a Core i9-14900KF, first install the latest motherboard BIOS and use Intel
+Default Settings. Intel's current Vmin Shift guidance specifically recommends a
+BIOS containing microcode **0x12F or later**. Do not trade hardware lifespan for
+a benchmark by using unlimited board presets, voltage overrides, or thermal-limit
+changes. [Intel Vmin Shift guidance](https://www.intel.com/content/www/us/en/support/articles/000102331/processors.html)
+
+Intel Application Optimization is a separate, optional scheduler feature. Intel
+lists the i9-14900KF among verified processors, requires current BIOS/DTT support,
+and recommends Windows 11 25H2 or later. The visible game list varies by system;
+Fortnite is not a promise merely because the CPU is supported. If a title is not
+shown for that exact configuration, treat Advanced Mode as an experiment with
+possible degradation and a clear off switch. [Intel APO overview](https://www.intel.com/content/www/us/en/support/articles/000095419/processors.html),
+[Intel APO game list](https://www.intel.com/content/www/us/en/support/articles/000098266/processors.html)
+
+## What to do in a fresh-install checklist
+
+1. Record the current OS build, BIOS version, GPU driver, display refresh mode,
+   input polling rate, and a repeatable Fortnite benchmark route.
+2. Install a supported stock Windows 11 image and current OEM/chipset/GPU
+   drivers. Keep Secure Boot and TPM 2.0 enabled; check Epic's current IOMMU
+   guidance before tournaments.
+3. Run the optimizationmaxxing scan. Select Light or Competitive first; use
+   Aggressive/Extreme only after a restore point and a clean before/after test.
+4. Re-scan after Windows Update, GPU-driver changes, and major game updates.
+   “Applied” is history; “verified” requires a live read-back.
+5. If a change produces a real regression, revert the receipt and preserve the
+   before/after evidence instead of layering another tweak on top.
+
+### Sources
+
+- [Microsoft supported Windows client versions](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client)
+- [Intel Vmin Shift guidance](https://www.intel.com/content/www/us/en/support/articles/000102331/processors.html)
+- [Intel APO overview](https://www.intel.com/content/www/us/en/support/articles/000095419/processors.html)
+- [Intel APO game list](https://www.intel.com/content/www/us/en/support/articles/000098266/processors.html)
+- [Windows X-Lite UltraLite documentation](https://windowsxlite.com/ultralight)
+- [Epic Secure Boot and TPM guidance](https://www.epicgames.com/help/c-34254770/c-Trending_0/a17911497?lang=en-US)
+- [Epic IOMMU guidance](https://www.epicgames.com/help/c-34254770/c-45529661/a17757744)

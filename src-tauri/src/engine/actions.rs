@@ -76,6 +76,12 @@ pub enum TweakAction {
         apply: String,
         /// Revert script body. None => non-revertible (catalog warns user).
         revert: Option<String>,
+        /// Optional read-only verifier. The catalog owns this script and the
+        /// engine executes it unelevated after apply/drift scans. Exit code 0
+        /// means the requested state is present; any other exit code is a
+        /// mismatch. Scripts without this contract remain explicit-only.
+        #[serde(default)]
+        verify: Option<String>,
     },
     /// Write a file at the given path. The path supports the env-var
     /// substitutions %USERPROFILE%, %APPDATA%, %LOCALAPPDATA%, %TEMP%,
@@ -106,13 +112,13 @@ pub enum TweakAction {
         /// "aver|gc573|live gamer" matches the GC573 capture card.
         /// Use ".*" or "" to match every attached display.
         device_match: String,
-        /// Desired refresh rate in Hz at 1920x1080. Falls back through
-        /// `fallback_chain` if not supported by the matched display +
-        /// cable + EDID combo.
+        /// Desired refresh rate in Hz at the display's current resolution.
+        /// Zero means the highest supported mode. Otherwise falls back
+        /// through `fallback_chain` if not supported by the matched display
+        /// + cable + EDID combo.
         target_hz: u32,
-        /// Ordered fallback list, tried after `target_hz`. Default
-        /// [240, 165, 144, 120]. Apply picks the first available in
-        /// the chain.
+        /// Ordered fallback list, tried after `target_hz`. Apply picks the
+        /// first available in the chain.
         #[serde(default = "default_refresh_fallback")]
         fallback_chain: Vec<u32>,
     },
@@ -203,6 +209,26 @@ pub struct ApplyReceipt {
     pub tweak_id: String,
     pub applied_at: String,
     pub kind: String,
+    pub verification_status: VerificationStatus,
+    pub verification_detail: String,
+}
+
+/// Result of reading the live OS state back after an apply or drift scan.
+/// `unknown` is deliberately distinct from `verified`: PowerShell actions
+/// without a declared read-back contract must never be presented as proven.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerificationResult {
+    pub status: VerificationStatus,
+    pub detail: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum VerificationStatus {
+    Verified,
+    Mismatch,
+    Unknown,
 }
 
 /// What `list_applied` returns per row.
@@ -214,6 +240,8 @@ pub struct AppliedTweak {
     pub applied_at: String,
     pub status: String,
     pub kind: String,
+    pub verification_status: VerificationStatus,
+    pub verification_detail: String,
 }
 
 #[cfg(test)]

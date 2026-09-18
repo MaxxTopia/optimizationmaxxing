@@ -5,9 +5,10 @@ network layers. The examples below are illustrative measurement ranges from
 the cited hardware and latency research, not a promise that every tuned rig
 will land in one total or that a budget rig has one fixed baseline.
 
-That gap isn't magic. It's the sum of every layer between your mouse click
-and the photon hitting your eye. About 70% of it is software-tunable. The
-remaining 30% is silicon lottery + monitor refresh + ISP geography.
+That gap isn't magic. It is the sum of every layer between your mouse click
+and the photon hitting your eye. The split between software, hardware, and
+network is rig-dependent, so this guide does not promise a fixed percentage or
+a fixed total for a tuned system.
 
 Here's where every millisecond hides, with citations.
 
@@ -24,7 +25,8 @@ mouse click
 photon hits eye
 ```
 
-Total: **22.5–156 ms** depending on every choice in the stack.
+Those ranges are illustrative component ranges, not a valid promise for a
+specific rig or a sum that the app can infer automatically.
 
 ## Per layer — what costs what + how to fix
 
@@ -46,69 +48,74 @@ $130 better.
 
 ### 2. Windows + driver (1–10 ms)
 
-- **HID priority + queue size.** Windows' kernel HID class threads run at
-  default priority and process events in batches. Pinning them to realtime
-  + capping the event queue at 20 cuts median latency by ~1–3 ms under
-  load. ([Microsoft — Real-Time Priority docs](https://learn.microsoft.com/en-us/windows/win32/procthread/scheduling-priorities))
-  We ship `hid.mouse.priority-realtime` + `hid.keyboard.priority-realtime`
-  + queue size tweaks for both.
-- **DPC %.** Driver work that can't yield. Healthy idle = < 2%. Above 5%
-  on a quiet rig means a misbehaving driver — usually a NIC, audio, or
-  USB-C controller. Asta Bench surfaces this. Our `monitor.windowed-game-opt.disable`
-  + `vbs.hvci.disable` (VIP) move it on most rigs.
+- **HID priority + queue size.** Generic registry “queue” and realtime-priority
+  recipes are not a universal input-latency fix and can drop events or harm
+  system responsiveness. The catalog does not auto-apply that folklore as a
+  default; measure the real device, DPC, and frametime path first.
+  ([Microsoft — scheduling priorities](https://learn.microsoft.com/en-us/windows/win32/procthread/scheduling-priorities))
+- **DPC %.** Driver work that cannot yield. Asta Bench surfaces spikes so the
+  offending driver or device can be isolated. A windowed-optimizations or
+  VBS/HVCI change may affect a particular system, but neither is a universal
+  DPC cure and security/eligibility trade-offs must remain visible.
 - **Mouse acceleration.** Windows' EPP (Enhance Pointer Precision) adds
   nonlinear gain → unpredictable cm/360 → wasted aim corrections. Off,
   always. Our `ui.mouse.disable-acceleration` flips the registry trio.
-- **Power throttling.** Modern Windows aggressively idles cores between
-  frames. `process.power-throttling.disable` keeps your game.exe at full
-  boost.
+- **Power throttling.** Modern Windows balances responsiveness and power.
+  The catalog can evaluate a reversible per-process policy, but a permanent
+  “full boost” promise is not valid without measuring clocks, thermals, power,
+  and frame time on the target rig.
 
-**Tunable.** Most of it. The Asta Mode preset hits every lever here.
+**Tunable.** Some of it. The app should apply only catalog actions whose
+preconditions and read-back checks pass; it cannot guarantee a DPC or input
+delta from a label alone.
 
 ### 3. Game thread → render thread → driver queue (5–25 ms)
 
 This is the biggest single latency sink, and where NVIDIA Reflex earned its
 reputation.
 
-- **Reflex Low Latency (NVIDIA).** Caps the driver's pre-render queue +
-  syncs the game thread's frame-start to the GPU's actual readiness, not
-  the V-sync clock. Real measured impact: **5–30 ms** depending on rig +
-  game. Use ON+BOOST. ([NVIDIA Reflex platform overview](https://www.nvidia.com/en-us/geforce/news/reflex-low-latency-platform/) · [Reflex 2 + Frame Warp announcement](https://www.nvidia.com/en-us/geforce/news/reflex-2-even-lower-latency-gameplay-with-frame-warp/))
-- **Cap your FPS at refresh − 3.** On a 240 Hz monitor, cap at 237. The
-  -3 prevents the driver queue from building up at 100% V-sync, which
-  introduces 3–8 ms of queueing delay. ([Battle(non)sense FPS cap research](https://www.youtube.com/watch?v=tEa78ZmxmI8))
-  Fortnite has a built-in cap. Use it.
-- **Fullscreen exclusive.** Borderless windowed runs through DWM
-  compositor → +1 frame of latency. Fullscreen-exclusive bypasses DWM.
-  Fortnite supports it, just toggle in settings. Our `ui.fse.disable-global`
-  catalog tweak forces the OS-level FSO override off.
-- **Hardware-Accelerated GPU Scheduling (HAGS).** Lets the GPU schedule
-  its own frames instead of the CPU brokering. Net positive on Pascal /
-  Turing / Ampere, mixed on Ada. Test both for your rig; Asta Mode's
-  `process.hags.enable` toggles it on.
-- **Game DVR / Xbox Game Bar.** Background recorder running every match.
-  Costs 2–5 ms latency + 1–2% framerate. Off via `ui.gamedvr.disable`.
+- **Reflex Low Latency (NVIDIA).** It changes the render-queue relationship
+  when a supported game exposes it. The result is title-, GPU-, cap-, and
+  workload-dependent; use the in-game option and measure rather than claiming
+  a fixed millisecond gain. ([NVIDIA Reflex platform overview](https://www.nvidia.com/en-us/geforce/news/reflex-low-latency-platform/) · [Reflex 2 + Frame Warp announcement](https://www.nvidia.com/en-us/geforce/news/reflex-2-even-lower-latency-gameplay-with-frame-warp/))
+- **Cap your FPS deliberately.** A cap below refresh can help a VRR setup
+  avoid saturation, while uncapped V-Sync-off can be the lower-latency choice
+  for a stable high-FPS competitive setup. Compare both with the same scene;
+  there is no universal “refresh minus three” result. ([Battle(non)sense FPS cap research](https://www.youtube.com/watch?v=tEa78ZmxmI8))
+- **Display mode.** Borderless and fullscreen paths can differ by Windows build,
+  presentation mode, driver, and game. Compare the game's supported modes on
+  the target build; do not assume a fixed extra frame or that an OS override
+  is beneficial.
+- **Hardware-Accelerated GPU Scheduling (HAGS).** It changes where scheduling
+  work is coordinated. Results vary with the GPU, driver, game, and Windows
+  build; test both states with a repeatable capture.
+- **Game DVR / Xbox Game Bar.** Background capture and overlays can compete
+  for resources on some systems. If disabled, verify that recording or
+  tournament workflows still work; do not attach a fixed latency or FPS cost.
 
-**Tunable.** ~80% of the sink lives here. Reflex alone closes more of the
-gap than any other single change in the stack.
+**Tunable.** This layer is often important, but the contribution must be
+measured per title and workload. Reflex alone is not a guaranteed winner on
+every supported configuration.
 
 ### 4. GPU render (4–16 ms = your frame time)
 
 You can't really cheat physics here. Frame time = 1/FPS. 240 fps = 4.17 ms.
 The leverage is making sure nothing stretches it:
 
-- **Stripped drivers via NVCleanstall.** Removes telemetry, Discord chat
-  detector, USB-C audio, HD audio bundle. Net ~1–3% framerate on dense
-  scenes. We point at NVCleanstall in the Driver Advisor.
+- **Driver package selection.** Removing optional components can reduce
+  background software, but it can also remove display, audio, capture, or
+  update functionality. Use the vendor package unless a specific component
+  is measured as a problem on the target rig.
 - **NVIDIA Profile Inspector.** Force "Maximum Performance" power state
   + "Threaded Optimization Off" for Fortnite specifically. Saves
   occasional frametime spikes.
-- **Engine.ini hand-tune.** The Asta Mode `fortnite.engine-ini.optimize`
-  tweak nukes post-processing / motion blur / mesh LOD biasing, which
-  costs you nothing visible but gives the GPU back 8–15% headroom in
-  endgame storms.
+- **Game configuration.** Only use settings documented for the current game
+  build and preserve a rollback copy. A setting that lowers visual cost can
+  change visibility, streaming, or anti-cheat behavior; no fixed FPS or
+  “nothing visible” claim is valid across Fortnite updates.
 
-**Tunable.** Maybe 20% of the layer. Hardware ceiling is hardware.
+**Tunable.** Some driver and render choices are measurable; the hardware
+ceiling remains hardware.
 
 ### 5. Display scanout (2–17 ms)
 
@@ -156,36 +163,28 @@ the game server.
 **Tunable.** Bufferbloat is software (router config). Geography isn't.
 Wifi → wired is hardware ($30 cable).
 
-## Realistic deltas you can actually move
+## How to measure the margin
 
-What Asta Mode + Reflex + tightened RAM + a wired flagship mouse on a
-240 Hz IPS gets you, vs the same person on stock everything:
+Capture the same game build, map or training scene, resolution, frame cap,
+display mode, driver, and peripheral polling state before and after one
+change. Record frametime percentiles, refresh mode, DPC/ISR spikes, and any
+input-latency measurement available to the hardware. A prettier control or a
+successful command is not proof of a lower click-to-photon result.
 
-| Layer | Stock | Tuned | Delta |
-|---|---|---|---|
-| Input | 8 ms | 1.5 ms | -6.5 |
-| Windows + driver | 6 ms | 2 ms | -4 |
-| Game / render queue | 22 ms | 6 ms (Reflex+FSE+cap) | -16 |
-| GPU frame | 8 ms (120 fps) | 4.5 ms (220 fps) | -3.5 |
-| Display | 7 ms (60 Hz IPS) | 2.5 ms (240 Hz IPS) | -4.5 |
-| Network | 25 ms | 15 ms (wired + cake QoS) | -10 |
-| **Total** | **76 ms** | **31.5 ms** | **-44.5** |
+## What's left after software changes
 
-44 ms is the difference between "I get edited around" and "I'm in the
-late game." That's what closing the gap looks like.
+The remaining margin varies by rig. Hardware, firmware, game workload, display
+mode, and network route can each dominate:
 
-## What's left after every software lever pulled
-
-Roughly 30%. All hardware:
-
-- **Silicon lottery on CPU + RAM.** A great B-die kit at 3800 CL14 is
-  measurably faster than a worse kit at 3600 CL16. RAM advisor on
-  /diagnostics names what you have.
+- **CPU + RAM behavior.** Memory profiles and CPU topology can change
+  frametime, but the RAM advisor reports configuration and stability signals;
+  it does not prescribe manual timing or voltage values.
 - **Monitor refresh ceiling.** 240 Hz vs 480 Hz is ~2 ms of scanout.
   Real but small.
 - **Monitor panel quality.** OLED vs cheap IPS is ~3–5 ms in dark
   transitions. Only matters for VA/IPS tier panels in dim scenes.
-- **ISP route quality.** No software fix.
+- **ISP route quality.** No local Windows tweak can rewrite geography or the
+  provider's route.
 
 ## Citations
 
@@ -200,8 +199,9 @@ Roughly 30%. All hardware:
 
 - **Asta Bench at /benchmark** — measures CPU latency + DPC % + ping
   jitter + frame-pacing stddev. Save before/after snapshots.
-- **Asta Mode at /asta** — bundle of every layer-2 / 3 / 4 software lever
-  in one button (VIP-only).
+- **Asta Mode at /asta** — profile-gated catalog actions with confirmation,
+  rollback snapshots, and native read-back where an action has a declared
+  verifier (VIP-only for the higher-risk profiles).
 - **Bufferbloat probe at /toolkit** — measures layer-6 idle vs loaded ping.
 - **Live thermals at /toolkit** — confirms layer-4 GPU isn't thermally
   throttling (which silently caps your fps).

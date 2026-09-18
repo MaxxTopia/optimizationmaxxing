@@ -11,7 +11,7 @@ const STEPS = [
   {
     num: '02',
     title: 'Pick a preset',
-    body: 'Esports preset for lowest input lag · BR preset for max FPS · Streamer preset for stutter-free recording.',
+    body: 'Choose a latency-focused, performance-focused, or recording-focused profile; the result is still validated against your scanned rig.',
   },
   {
     num: '03',

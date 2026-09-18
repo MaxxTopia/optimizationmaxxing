@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { detectSpecs, inTauri, type SpecProfile } from '../lib/tauri'
+import type { SpecProfile } from '../lib/tauri'
+import { useRigStore } from '../store/useRigStore'
 
 /**
  * SCEWIN read-only workflow panel. Renders above the SCEWIN guide
@@ -10,7 +11,7 @@ import { detectSpecs, inTauri, type SpecProfile } from '../lib/tauri'
  * Workflow surfaced:
  *   1. Backup dump (read-only) — `SCEWIN_64.exe /o /s pre-tune.txt`
  *   2. Diff against a clean rig (any text-diff tool)
- *   3. Apply settings in BIOS UI (NOT via SCEWIN — brick risk)
+ *   3. Interpret settings in the vendor BIOS UI (never import a dump)
  *   4. Verify by re-dumping after reboot — diff vs pre-tune.txt
  */
 
@@ -42,9 +43,9 @@ const STEPS: Step[] = [
   },
   {
     num: '3',
-    title: 'Change settings in BIOS UI — never via SCEWIN',
+    title: 'Interpret in BIOS UI — never import a dump',
     blurb:
-      'SCEWIN can write back, but a malformed write can leave the board unable to POST (recovery = SPI flasher + BIOS chip reflash). Take your diff list into the BIOS itself. Change ONE setting at a time, reboot, validate (TestMem5 / OCCT). Hit Save & Exit, not Discard.',
+      'Use the vendor BIOS UI only for settings you understand and can recover. Never import another board\'s dump and do not copy voltage, thermal-limit, power-limit, PBO, Curve Optimizer, or fixed-frequency values as latency recipes. This app does not write firmware.',
     warning: true,
   },
   {
@@ -59,12 +60,12 @@ const STEPS: Step[] = [
 
 export function ScewinFlowPanel() {
   const [copied, setCopied] = useState<string | null>(null)
-  const [spec, setSpec] = useState<SpecProfile | null>(null)
+  const spec = useRigStore((state) => state.spec)
+  const ensureLoaded = useRigStore((state) => state.ensureLoaded)
 
   useEffect(() => {
-    if (!inTauri()) return
-    detectSpecs(false).then(setSpec).catch(() => undefined)
-  }, [])
+    void ensureLoaded()
+  }, [ensureLoaded])
 
   function copy(cmd: string) {
     navigator.clipboard
@@ -88,10 +89,9 @@ export function ScewinFlowPanel() {
         <p className="text-[10px] uppercase tracking-widest text-accent">advanced — read-only workflow</p>
         <h3 className="text-base font-semibold">SCEWIN — full BIOS audit, in 4 steps</h3>
         <p className="text-xs text-text-muted leading-snug mt-1 max-w-2xl">
-          Dump → diff → change in BIOS → verify. SCEWIN gives you a plain-text snapshot of every
-          UEFI variable on your board — the audit tool nothing else gives you. <strong className="text-text">Use it to
-          read only.</strong> Writes via SCEWIN can brick the board (no recovery without an SPI flasher).
-          All changes happen in the BIOS UI itself.
+          Dump → diff → interpret → verify. SCEWIN gives you a plain-text snapshot of many
+          UEFI variables on your board. <strong className="text-text">Use it as read-only evidence.</strong>
+          Never import a dump or use it to write NVRAM; this app does not apply firmware changes.
         </p>
       </div>
 
@@ -168,8 +168,8 @@ function RigPath({ spec }: { spec: SpecProfile | null }) {
   const checklist = laptop
     ? 'OEM / laptop path: use the manufacturer BIOS UI and vendor service package. Do not import a desktop dump.'
     : intel
-    ? 'Intel path: capture microcode, Intel Default Settings, C-States, power limits, and memory profile before changing anything.'
-    : 'AMD path: capture EXPO/DOCP, PBO, Curve Optimizer, SOC voltage, and memory context settings before changing anything.'
+    ? 'Intel path: capture microcode, Intel Default Settings, security state, and memory context for review. Keep voltage, thermal, and power controls at vendor defaults.'
+    : 'AMD path: capture memory context, CPPC/SMT state, and firmware version for review. Keep PBO, Curve Optimizer, SOC voltage, and power controls at vendor defaults.'
 
   return (
     <div className="rounded-md border border-accent/40 bg-accent/5 px-3 py-2 space-y-1 text-xs text-text-muted">

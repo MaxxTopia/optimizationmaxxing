@@ -1,13 +1,13 @@
 /**
- * "Why optimizationmaxxing" differentiator strip. Lean into wins
- * vs paragontweaks (manual service, 81MB) and hone.gg (one-size-fits-all,
- * single theme, 2.4M users but shallow per-tweak control).
+ * Keep this strip grounded in capabilities we can verify in our own build.
+ * Competitor packaging and feature claims change; the comparison research
+ * page is the right place for time-stamped external comparisons.
  */
 const POINTS = [
   {
-    metric: '5 MB',
-    label: 'installer',
-    body: 'Tauri build vs Paragon\'s 81 MB and Hone\'s heavier electron bundles.',
+    metric: '100',
+    label: 'curated tweaks',
+    body: 'Risk-graded catalog actions with explicit evidence tiers and per-action recovery data.',
   },
   {
     metric: '8',
@@ -20,9 +20,9 @@ const POINTS = [
     body: 'Snapshot-backed actions get per-tweak revert. Script-based lanes show their recovery path, and failed reverts stay visible.',
   },
   {
-    metric: 'spec-aware',
+    metric: 'scan-gated',
     label: 'curation',
-    body: 'Tweaks gate on your CPU gen, GPU arch, OS build. No more "this might brick your laptop".',
+    body: 'Eligibility checks use your CPU, GPU, RAM, board, and Windows build before a lane is offered.',
   },
 ]
 
@@ -31,7 +31,7 @@ export function WhyUs() {
     <section className="space-y-4">
       <header>
         <p className="text-xs uppercase tracking-widest text-text-subtle">edge</p>
-        <h2 className="text-2xl font-bold">Why we beat the rest</h2>
+        <h2 className="text-2xl font-bold">What we do differently</h2>
       </header>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {POINTS.map((p) => (

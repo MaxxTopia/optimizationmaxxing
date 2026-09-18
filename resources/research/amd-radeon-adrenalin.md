@@ -31,6 +31,6 @@ Run **native resolution** for competitive clarity. If you need headroom, prefer 
 ## Display + driver basics
 
 - Keep the **latest Adrenalin** driver; if a release regresses your title, roll back one.
-- Run the **standard VRR stack** for fluctuating FPS (FreeSync ON + V-Sync ON in the driver + an FPS cap a few below refresh), or — at 240 Hz+ with FPS consistently above refresh — **FreeSync/V-Sync OFF + accept tearing** for the lowest latency, the same logic competitive players use on G-Sync.
+- Run the **standard VRR stack** for fluctuating FPS (FreeSync ON + V-Sync ON in the driver + an FPS cap a few below refresh), or — at 240 Hz+ with FPS consistently above refresh — compare **FreeSync/V-Sync OFF + accepted tearing** in a controlled test when a low-latency result is the priority. The best choice depends on the display, cap stability, and the player's tolerance for tearing.
 
 *Uncertain / verify on your rig: whether Anti-Lag 2 strictly requires HAGS (Hardware-Accelerated GPU Scheduling) is not clearly documented by AMD — HAGS is generally fine to leave on in Windows 11 either way. No Anti-Lag feature is RDNA4-exclusive; Anti-Lag 2 supports RDNA1+.*

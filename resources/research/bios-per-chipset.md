@@ -1,59 +1,50 @@
-# BIOS settings per chipset (curated 2026)
+# BIOS readiness per chipset (reviewed 2026-09-17)
 
-**Refuse to write BIOS in software. We tell you what to flip; you flip it manually after a backup.**
+optimizationmaxxing treats firmware as a read-only, user-controlled boundary. It can report signals that affect stability, security, tournament eligibility, and scheduler behavior, but it does not write BIOS variables, flash firmware, change voltages, change thermal or power limits, or apply overclock presets.
 
-## Always: backup BIOS first
-Boot into BIOS → look for "Save Profile" / "Backup CMOS" / "Export to USB". Save before *any* change. Re-flashing or fix-CMOS-via-clear-jumper costs you all your tuning.
+## Establish a recovery baseline
 
-## Universal toggles (any chipset)
-- **Re-Size BAR / Smart Access Memory:** ON. Free 1-5% GPU gains on RTX 30/40-series + RX 6000/7000.
-- **Above 4G Decoding:** ON (required for ReBAR on most boards).
-- **CSM (Compatibility Support Module):** OFF (UEFI-only).
-- **Secure Boot:** ON for Vanguard/EAC/BattlEye-using games.
-- **TPM 2.0 / fTPM:** ON (Win11 requirement; some games gate on it now).
-- **Fan curves:** custom — flat to 60°C, ramp 60-80°C, max above 80°C.
-- **Spread Spectrum:** OFF (CPU + PCIe). Marginal stability gain at higher OCs.
-- **Energy-Saving USB:** OFF for gaming peripherals (some boards label as "USB Power Save").
+Before changing anything in firmware, save the board's profile if the vendor supports it and photograph the current pages. Keep the exact board model, BIOS version, CPU, memory kit, and recovery instructions with the backup. Change one setting at a time and be prepared to clear CMOS or restore the vendor profile.
 
-## Intel Z-series (Z690 / Z790 / Z890)
-- **MultiCore Enhancement / Force Intel Specs:** OFF for safety on 13th/14th gen post-degradation drama. Use Intel's official Default Settings on i9 K-SKUs (13900K/KF, 14900K/KF): **Performance** = PL1 125W / PL2 253W, or **Extreme** = PL1 253W / PL2 253W (both PL4 380W, ICCMAX 400A). There is no 200W PL1 tier — pick Performance unless you have the cooling for sustained 253W ([hardwaretimes](https://hardwaretimes.com/intel-cpu-baseline-settings-core-i9-13900k-14900k/)).
-- **CPU SVID / Voltage Mode:** Adaptive + offset (small negative). Avoid override unless you've validated thermals.
-- **LLC (Load Line Calibration):** Mode 3-4 typical for 13/14th gen. Don't go aggressive (mode 5+) without thermal headroom.
-- **C-States:** ON (cycles back is faster than waking from full power state on Intel Hybrid).
-- **Memory training fast boot:** ON once stable.
-- **Resizable BAR:** ON.
-- **DMI / PEG link speed:** auto.
-- **Z890 (Core Ultra 200):** Enable Application Optimization (APO) at OS level after install.
+## Cross-platform readiness checks
 
-## Intel non-Z (B760 / H770)
-- Most B/H boards lock multipliers — can't OC. Memory tuning still works (XMP).
-- Same universal toggles + ReBAR.
+- Use UEFI/GPT and keep CSM disabled only when the installed OS, GPU, and recovery path support it.
+- Keep Secure Boot and TPM 2.0 enabled for competitive environments that require them. Epic's current Fortnite guidance also calls out IOMMU for relevant tournament/security checks; confirm the event's current rules before entering.
+- Enable Above 4G Decoding and Re-Size BAR when the board, GPU, firmware, and driver support them. Verify the result in the OS; do not promise a fixed FPS gain.
+- Use a stable vendor BIOS with current CPU microcode and release notes. A newer BIOS is not automatically faster if it introduces instability.
+- Leave fan control and CPU behavior at vendor defaults while establishing a baseline. A stable temperature and clock trace is more useful than a copied preset.
 
-## AMD X670E / X870E
-- **EXPO** (or DOCP equivalent): ON. Loads XMP-equivalent profile.
-- **Curve Optimizer:** -10 to -30 negative offset per core. Validate via [Cinebench R23](https://www.maxon.net/en/downloads/cinebench-r23-downloads) 30-min + [OCCT](https://www.ocbase.com/) 1-hour.
-- **PBO:** Enabled, motherboard or scalar 10x.
-- **PBO Limits:** Custom — PPT 230W, TDC 160A, EDC 225A is a healthy 7950X target.
-- **FCLK / UCLK:** Lock 1:1 with memory speed up to 6000 MT/s. Above that drops to 2:1 — Intel territory.
-- **PSS Support / Cool & Quiet:** ON (rare exception: Zen 3 esports tuners disable).
-- **AMD CBS settings:** Mostly leave default; advanced tuners adjust SOC voltage in CBS section directly.
+## Intel desktop platforms
 
-## AMD B650 / B650E
-- Same as X670E. B650 can OC — voltage delivery is the only meaningful difference.
+For affected 13th/14th-generation desktop CPUs, use Intel Default Settings and a board BIOS containing current microcode. Intel's current guidance identifies microcode 0x12F or later as the baseline to check. Investigate WHEA errors, crashes, clock instability, and degraded benchmark results before blaming Windows tweaks.
 
-## Universal "DON'T" list
-- **Don't disable XMP/EXPO** to "stabilize" — instead lower frequency or loosen primaries. Running JEDEC is leaving 25% of memory perf on the table.
-- **Don't disable C-states unless you've measured DPC latency improvement** in LatencyMon. C-states off = always-warm CPU = ~10W more idle. Only worth it for CS2 / OW2-tier latency obsessives.
-- **Don't enable "Auto OC" or "Game Boost" presets** unless you understand what they're flipping. Most just over-volt at stock clocks.
-- **Don't manually undervolt Intel 13/14th gen below -50mV without validation.** The degradation issue is real for chips run too hot too long; aggressive UV can mask early symptoms.
+Keep XMP as an optional manufacturer-rated memory profile, not a promise that every CPU and board will train it. Do not use this guide to set SVID offsets, Load-Line Calibration, manual Vcore, fixed ratios, PL1/PL2, ICCMAX, or MultiCore Enhancement. The app never writes those controls.
 
-## Vanguard / Anti-cheat caveat
-- Riot Vanguard requires Secure Boot + TPM 2.0 + (sometimes) Memory Integrity ON (HVCI).
-- Memory Integrity / VBS conflict: disable VBS for gaming via our catalog tweak — but Vanguard sometimes flags this. Test in non-ranked first.
-- Some COD AC versions have demanded "Hyper-V off" — incompatible with Hyper-V virtualization on the same machine.
+Intel Application Optimization (APO) is a supported-feature path for specific processors, BIOS/DTT combinations, and games. Intel currently lists the 14900KF as supported and recommends Windows 11 25H2 or later for the feature, but Fortnite is not a current official advanced-game-list guarantee. Leave APO in its supported default path and measure; Advanced Mode can regress a title.
 
-## Citations
-- der8auer + Roman "Hartung" Hartung Z790 BIOS deep-dives
-- Buildzoid Actually Hardcore Overclocking AM5 series
-- Wendell @ Level1Techs
-- AMD CBS reference + Intel BIOS reference
+## AMD AM5 platforms
+
+Keep the board on a current stable BIOS/AGESA and use the vendor's default CPPC/3D V-Cache scheduling path. Do not use a copied PBO, Curve Optimizer, SoC-voltage, PPT/TDC/EDC, scalar, or fixed-frequency recipe as a latency tweak. Those are stability and lifespan experiments outside this app's scope.
+
+If you enable a manufacturer-rated EXPO profile, validate it on the actual CPU and board. Do not assume that DDR5-6000, a particular UCLK ratio, or a logical-core range is universal. Dual-CCD X3D routing varies with firmware, driver, and processor topology; optimizationmaxxing does not guess a cache CCD from core numbers.
+
+## What the app can report
+
+The diagnostics and BIOS audit can surface UEFI mode, Secure Boot, TPM, IOMMU, Re-Size BAR, memory speed/profile signals, firmware version, and CPU-specific warnings where Windows exposes them. A value marked unknown is not treated as a pass. A SCEWIN dump is an optional read-only evidence source, not an app-controlled write path.
+
+## Safe competitive baseline
+
+1. Stock, fully patched Windows 11 on a supported branch.
+2. Current stable motherboard BIOS and vendor-default CPU settings.
+3. Secure Boot, TPM 2.0, and IOMMU verified when required by the game or event.
+4. Re-Size BAR verified when supported.
+5. Memory at JEDEC or its manufacturer-rated profile, followed by a real stability test.
+6. A repeatable Fortnite capture before and after one change; record FPS/1% lows, frametime, DPC/ISR behavior, WHEA, crashes, and eligibility.
+
+## Official references
+
+- [Intel 13th/14th-gen desktop stability guidance](https://www.intel.com/content/www/us/en/support/articles/000102331/processors.html)
+- [Intel Application Optimization supported processors](https://www.intel.com/content/www/us/en/support/articles/000095419/processors.html)
+- [Intel APO game-support guidance](https://www.intel.com/content/www/us/en/support/articles/000098266/processors.html)
+- [Epic Secure Boot and TPM guidance](https://www.epicgames.com/help/c-34254770/c-Trending_0/a17911497?lang=en-US)
+- [Epic IOMMU guidance](https://www.epicgames.com/help/c-34254770/c-45529661/a17757744)

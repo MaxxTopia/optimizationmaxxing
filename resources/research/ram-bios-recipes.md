@@ -1,107 +1,57 @@
-# RAM tightening — copy-paste BIOS recipes per IC
+# RAM stability and profile audit (reviewed 2026-09-17)
 
-The RAM Advisor card on `/diagnostics` identifies your IC die from the part number. **Match the IC below to the BIOS recipe**. Type these values into your motherboard's DRAM timing menu, then run [TestMem5](https://github.com/CoolCmd/TestMem5) (anta777 extreme config) for 1–2 hours to validate before tournament use. Never auto-flash; never copy a recipe blindly into XMP/EXPO+ overrides without verifying the IC first.
+There is no universal "safe" timing or voltage recipe. The same kit can train differently across CPUs, boards, BIOS releases, DIMM layouts, temperatures, and memory-controller margin. optimizationmaxxing therefore reports the installed memory and, for VIP users, exposes an explicitly manual timing/voltage worksheet. It never writes timings, memory voltage, SoC voltage, or BIOS variables.
 
-The numbers below are the **SAFE** Buildzoid/DRAM-Calculator consensus. FAST/EXTREME tiers exist for daily-driver overclockers; they're not appropriate here.
+## What the app can observe
 
-## DDR4 (AM4 Ryzen 3000/5000, Intel 10/11/12-gen)
+The RAM Advisor uses the data Windows exposes to show capacity, type, current speed, reported timings/profile information, and whether the current state looks like JEDEC, a manufacturer profile, or a custom state. Unknown fields stay unknown. Part-number heuristics are hints, not proof of the DRAM die or of stable overclocking headroom.
 
-### Samsung B-die — the GOAT
+## A safe order of operations
 
-Voltages run hotter than other ICs but the timings scale further.
+1. Capture a baseline: current BIOS version, memory kit part number, capacity, speed, timings, idle temperature, WHEA count, Fortnite frametime, and a repeatable benchmark route.
+2. Start at JEDEC defaults if you are isolating crashes, WHEA errors, boot loops, or unexplained frametime spikes.
+3. If desired, enable only the memory kit's manufacturer-rated XMP/EXPO profile. Verify the exact kit and board support list first; rated does not mean guaranteed on every CPU memory controller.
+4. Reboot and check that the operating system reports the expected capacity and speed. Then run a real memory test and the game workload long enough to expose errors.
+5. Keep the profile only when repeated tests are clean and Fortnite frametime is no worse. A higher memory number without stable frame pacing is not a win.
 
-| Frequency | tCL | tRCD | tRP | tRAS | tRC | tRFC | VDIMM | VSOC (AMD) |
-|---|---|---|---|---|---|---|---|---|
-| 3600 | 14 | 15 | 15 | 30 | 48 | 256 | 1.45 V | 1.10 V |
-| 3800 | 14 | 16 | 16 | 32 | 50 | 280 | 1.50 V | 1.10 V |
-| 4000 | 15 | 16 | 16 | 34 | 52 | 280 | 1.55 V | 1.15 V |
+## Validation signals
 
-Secondary: tRRDS 4 / tRRDL 6 / tWR 12 / tWTRS 4 / tWTRL 12 / tFAW 16 / tRDRDSCL 2 / tWRWRSCL 2.
+Use a bootable memory test or a current in-OS memory test for the first pass, then a longer mixed CPU/GPU/game session. Watch for WHEA-Logger events, corrected hardware errors, application crashes, anti-cheat failures, shader compilation errors, and frametime spikes. One error is enough to return to the last known-good profile; do not hide it with a larger voltage.
 
-### Hynix DJR — modern Hynix, good headroom
+For tournament use, validate after a cold boot, a warm reboot, sleep/resume if you use it, and several hours of the actual game. Keep a known-good JEDEC or vendor-default profile available for recovery.
 
-| Frequency | tCL | tRCD | tRP | tRAS | tRC | tRFC | VDIMM |
-|---|---|---|---|---|---|---|---|
-| 3600 | 16 | 17 | 17 | 34 | 52 | 312 | 1.40 V |
-| 3800 | 16 | 18 | 18 | 36 | 56 | 320 | 1.42 V |
-| 4000 | 17 | 19 | 19 | 38 | 58 | 336 | 1.45 V |
+## VIP manual tuning lab
 
-### Hynix CJR — older Hynix, more conservative
+The app now keeps the enthusiast controls available without pretending that a
+copy-paste table is a universal truth. The worksheet is die-gated: it can show
+secondary timing starting points when the DRAM die is identified, and it always
+shows the actual voltage rails that must be checked against the exact kit, board,
+CPU, and BIOS documentation. The voltage column starts from the kit's rated
+XMP/EXPO value; it is not an automatic over-voltage recipe.
 
-| Frequency | tCL | tRCD | tRP | tRAS | tRC | tRFC | VDIMM |
-|---|---|---|---|---|---|---|---|
-| 3200 | 16 | 17 | 17 | 34 | 52 | 312 | 1.35 V |
-| 3600 | 17 | 19 | 19 | 36 | 56 | 336 | 1.40 V |
+Use it like a real experiment: save the known-good BIOS profile, change one
+setting, record the result, cold-boot and warm-boot, run memory validation, then
+run the same Fortnite route. A value is not "applied" because it was typed into
+the BIOS; it is only retained if the board trains it, Windows reports the
+expected state, the memory test is clean, and the game frametime does not regress.
 
-### Micron Rev.E — common in budget kits
+Tune Now will never import this worksheet. That separation is deliberate: an
+extreme automatic OS/driver tune can be receipt-backed and reverted, while a
+firmware experiment needs the board's own recovery path and a human at the BIOS.
 
-| Frequency | tCL | tRCD | tRP | tRAS | tRC | tRFC | VDIMM |
-|---|---|---|---|---|---|---|---|
-| 3200 | 16 | 18 | 18 | 36 | 56 | 416 | 1.38 V |
-| 3600 | 16 | 19 | 19 | 38 | 58 | 480 | 1.40 V |
+## What this app deliberately does not recommend
 
-Micron is the **least responsive to tightening** — gains here are 2–4% FPS, not the 5–8% of B-die. Set your expectations.
+- Copy-pasting per-IC primary or secondary timing tables.
+- Blind DRAM, SoC, VDDIO, or memory-controller voltage values copied across platforms.
+- PBO, Curve Optimizer, fixed clocks, Load-Line Calibration, or power-limit changes presented as memory tuning.
+- Assuming DDR5-6000, a 1:1 fabric ratio, a specific tRFC, or a logical-core mapping is optimal on every platform.
+- Treating a part-number lookup as a stability guarantee.
 
-## DDR5 (AM5 Ryzen 7000/9000, Intel 12+ gen)
+If you want a manual overclocking experiment, open the VIP Manual Tuning Lab,
+keep it separate from Tune Now, change one variable, retain the old profile, and
+use the motherboard vendor's recovery procedure. That experiment is not part of
+optimizationmaxxing's applied-tweak contract.
 
-### Hynix A-die — the modern GOAT
+## Useful evidence to retain
 
-A-die ships in most premium DDR5 kits (G.Skill Trident Z5 RGB DDR5-6000 CL30, Corsair Dominator Titanium DDR5-6000, Kingston Fury Renegade DDR5-6400).
-
-| Frequency | tCL | tRCD | tRP | tRAS | tRC | tRFC1 | VDIMM | VSOC |
-|---|---|---|---|---|---|---|---|---|
-| 6000 | 28 | 36 | 36 | 72 | 108 | 560 | 1.40 V | 1.20 V |
-| 6200 | 30 | 36 | 36 | 76 | 112 | 580 | 1.42 V | 1.25 V |
-| 6400 | 30 | 38 | 38 | 80 | 118 | 600 | 1.45 V | 1.25 V |
-
-**FCLK target on AM5**: 2000 MHz (UCLK 1:1 with MEMCLK at 6000 MT/s). Anything past 6200 MT/s breaks the 1:1 ratio and INCREASES latency — don't push frequency past where the 1:1 holds.
-
-### Hynix M-die — the budget DDR5 standard
-
-| Frequency | tCL | tRCD | tRP | tRAS | tRC | tRFC1 | VDIMM |
-|---|---|---|---|---|---|---|---|
-| 6000 | 30 | 38 | 38 | 76 | 114 | 580 | 1.40 V |
-| 6200 | 32 | 40 | 40 | 80 | 120 | 600 | 1.42 V |
-
-### Samsung B-die DDR5 — limited availability
-
-Samsung's DDR5 B-die equivalent is in some Crucial Pro kits + select G.Skill Royal Neo. Treat conservatively until you've verified yours specifically:
-
-| Frequency | tCL | tRCD | tRP | tRAS | VDIMM |
-|---|---|---|---|---|---|
-| 6000 | 30 | 38 | 38 | 76 | 1.40 V |
-
-### Micron DDR5 — rare in the wild for OC
-
-Crucial DDR5 typically; lower binning, treat at JEDEC + small tighten:
-
-| Frequency | tCL | tRCD | tRP | tRAS | VDIMM |
-|---|---|---|---|---|---|
-| 5600 | 36 | 40 | 40 | 80 | 1.35 V |
-
-## What to actually do (5-step recipe)
-
-1. **Detect your IC** via the RAM Advisor card on `/diagnostics`. If "unknown", run [Thaiphoon Burner](https://www.softnology.biz/files.html) → Read → it dumps the SPD with the actual IC name.
-2. **Pick your frequency** based on your CPU's IMC tolerance (Ryzen 5000 → 3600 MT/s 1:1; Ryzen 7000/9000 → 6000 MT/s 1:1; Intel 13/14-gen → 6400-7200 MT/s common ceilings).
-3. **Type the SAFE values** for your IC + frequency into the BIOS DRAM timing screen. Leave anything not listed at AUTO — those subtimings are derived from primaries.
-4. **Set VDIMM** to the table value. AMD users: set VSOC manually too (don't trust AUTO — boards over-volt it).
-5. **Validate with [TestMem5](https://github.com/CoolCmd/TestMem5) at the anta777 extreme config** for 1–2 hours minimum. ZERO errors. If you see one error, raise tCL by 1 step, re-test. Don't ship to scrim until two clean hours.
-
-## Why we don't auto-apply this
-
-Three reasons:
-
-1. **Wrong-IC application = boot loop**. Samsung B-die voltages on Hynix DJR will crash boot. Recovery: clear CMOS + reflash BIOS. Bad day.
-2. **No standard BIOS API** for timing writes. Every vendor (ASUS / MSI / Gigabyte / ASRock) has a different SCEWIN dump format. We'd ship 4 ASCII-fragile recipe-typers.
-3. **DRAM tuning is your responsibility**. The bricks-your-stick risk is real. We surface what you have + which knobs to turn. You turn them.
-
-The RAM Advisor card on `/diagnostics` will keep us honest: it tells you the IC, links you here, and lists the exact tools. The tightening is yours.
-
-## Citations
-
-- [DRAM Calculator for Ryzen (techpowerup)](https://www.techpowerup.com/download/ryzen-dram-calculator/) — SAFE/FAST/EXTREME recipes per IC. AM4 still excellent; AM5 use Buildzoid's manual approach.
-- [Buildzoid — Hynix DDR5 M-die tuning guide](https://www.youtube.com/@ActuallyHardcoreOverclocking)
-- [r/overclocking RAM wiki](https://www.reddit.com/r/overclocking/wiki/index/ramoc/) — community per-IC tables, regularly updated
-- [Die Finder — DDR4/DDR5 part-number to IC lookup](https://fpsheaven.com/die-finder/) — paste your kit's part number, it returns the IC (B-die / A-die / M-die / etc.)
-- [TestMem5 (CoolCmd)](https://github.com/CoolCmd/TestMem5) — validation tool of record for tightened timings
-- [Thaiphoon Burner (Softnology)](https://www.softnology.biz/files.html) — SPD read tool when our heuristic can't ID your kit
+Save the kit label or part number, BIOS screenshots, test logs, WHEA export, and before/after frametime captures. This makes a regression diagnosable and lets the app's restore path return Windows-side changes without pretending it can restore BIOS state.

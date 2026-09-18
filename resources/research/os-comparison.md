@@ -1,79 +1,121 @@
-# Lightweight Windows distros — should you switch?
+# Custom Windows builds for Fortnite — current decision guide
 
-**Short answer.** For most gamers: no. Vanilla Win11 24H2 + the optimizationmaxxing
-"Tournament FPS" preset gets you within 1–3% of any custom distro on FPS, with
-zero anticheat headaches. The frame-time floor on a debloated stock Win11 is high
-enough that the next gain comes from BIOS tuning, not from the OS rebuild.
+**Last reviewed: 2026-09-17.** There is no honest universal “lowest-input-delay
+OS.” A custom image can lower idle process count, but it can also remove update,
+security, recovery, driver, or anti-cheat prerequisites. A benchmark from another
+rig is not proof of a latency win on yours.
 
-**When to switch.** You're on a low-RAM rig (8–16 GB), you stream while you play,
-or you actually run a non-gaming workload that pegs Windows Update +
-Defender + Search at the same time. Then a custom distro buys you headroom.
+## The recommendation
 
-Below is the full comparison. Anticheat verdicts validated against the
-maintainer's docs + the ranked-and-banned megathreads — not vibes.
+For a primary competitive Fortnite machine, use a **stock, fully patched Windows
+11 install on a Microsoft-supported branch**. Keep Secure Boot, TPM 2.0, and any
+current Epic tournament prerequisites enabled. Then use optimizationmaxxing to
+measure and apply reversible, cataloged changes. This gives the app a known
+baseline, preserves Windows Update and recovery, and makes a drift check possible.
 
-## The matrix
+As of this review, Microsoft lists Windows 11 26H1 (build 28000) as generally
+available from 2026-02-10, Windows 11 25H2 (build 26200) from 2025-09-30, and
+Windows 11 24H2 (build 26100) from 2024-10-01. Home/Pro end-of-service dates are
+2028-03-14 for 26H1, 2027-10-12 for 25H2, and 2026-10-13 for 24H2. “Newest” is
+not automatically “fastest”: choose the newest branch that is supported by the
+motherboard, GPU, capture card, drivers, and the games you actually play, then
+measure it on the same rig. [Microsoft supported Windows client versions](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client)
 
-| Distro | Anticheat compat | Update story | Idle RAM | Install effort | Best for |
-|---|---|---|---|---|---|
-| **Vanilla Win11 24H2** | ✅ Everything (FNCS / VCT / VAC / EAC / BattlEye) — **needs Secure Boot + TPM 2.0 + IOMMU enabled in BIOS for tournament eligibility** † | Microsoft cadence | ~3.0 GB | Default | Tournament rigs. Period. |
-| **Win10 IoT Enterprise LTSC 2021** | ✅ Everything (Vanguard requires recent enough cumulative update — check 2025+) | Security only, no feature updates — serviced to Jan 13 2032 (note: LTSC 2021 is 21H2-based; there is no "22H2 LTSC") | ~1.8 GB | Volume-license ISO + activation | Long-running esports rigs that hate change. ⚠ Consumer Win10 (Home/Pro 22H2) hit end-of-support Oct 14 2025 — only the LTSC SKUs still get security updates, and the 2026 competitive security stack is trending Win11-only. |
-| **Atlas OS** | ⚠ EAC + Vanguard partial — known issues on big patches | Manual; Atlas ships its own playbook | ~1.3 GB | Apply Atlas playbook to a clean Win install | Single-purpose grinding rig. NOT for tournament streams. |
-| **Windows X-Lite** | ⚠ Mostly works — Vanguard + BattlEye occasionally re-enable services Atlas-style strips | Apply per-build patches | ~1.4 GB | ISO download, fresh install | Power user who'll babysit it. |
-| **Tiny11** | ✅ Vanguard + EAC report clean on 24H2 / 25H2 builds (the Sept 2025 builder rewrite added 25H2 and works on any Win11 build — 23H2 is now trailing-edge) | Microsoft cadence (it's just Win11 with components removed) | ~1.6 GB | Tiny11 builder script + clean install | Low-RAM rigs that still want full Windows. |
-| **Ghost Spectre** | ⚠ Strips Defender — some anticheats flag a missing security baseline. **Also markets "zero TPM" — a TPM/Secure-Boot-off install is a hard block** ‡ | Maintained by one person; cadence varies | ~1.2 GB | ISO download, fresh install | Aware-of-tradeoffs single-user box. |
-| **ReviOS** | ⚠ Removes telemetry / Cortana / Edge; Vanguard mostly OK | Manual; ReviOS posts new ISOs irregularly | ~1.5 GB | Stable than Ghost but younger than Atlas | Privacy-first build that still plays competitive. |
+**Practical answer for an existing esports rig:** Windows 11 25H2 is the
+conservative starting point if its driver stack is already known-good. Test 26H1
+as a separate image when OEM and game support are confirmed. Do not choose 24H2
+for a fresh install merely because an old optimization guide says it is the
+“best” Winver, and do not use Windows 10 22H2 as a new competitive baseline:
+Microsoft ended normal support on 2025-10-14.
 
-> **† Tournament eligibility (Fortnite):** As of **Feb 19 2026**, Epic requires **Secure Boot + TPM 2.0 + IOMMU** enabled in BIOS for **all** Fortnite tournaments (a Feb 27 2025 rule had already mandated Secure Boot + TPM for higher-tier events; the 2026 update broadens it to every tournament and adds IOMMU). A rig on "vanilla Win11 24H2 + Tournament FPS preset" with those firmware features **off** cannot play FNCS regardless of the preset. ([videocardz](https://videocardz.com/newz/fortnite-expands-pc-anti-cheat-requirements-to-all-tournaments-secure-boot-tpm-and-now-also-iommu), [dsogaming](https://www.dsogaming.com/news/fortnite-will-require-secure-boot-tpm-and-iommu-for-tournaments/))
->
-> **‡ Stripped-distro caveat:** Any distro install with **TPM / Secure Boot disabled** is ineligible for Fortnite tournaments (Feb 2026) and **cannot launch Valorant on Win11** (VAN-9001 — Valorant has required Secure Boot + TPM 2.0 on Win11 since 2022, so this is not new). The block is tournament/ranked-eligibility-specific, not "can't launch casual Fortnite." [Vanguard On-Demand](https://www.tomshardware.com/video-games/pc-gaming/riot-vanguard-adds-an-on-demand-mode-that-stops-anti-cheat-loading-at-boot-on-secured-windows-11-pcs) (announced June 2026, requires the Win11 25H2 + Secure Boot + TPM 2.0 + VBS + HVCI + IOMMU stack) is **optional** — non-qualifying players keep always-on Vanguard, so it does not "lock out" 24H2 players. ([Valorant VAN-9001](https://support-valorant.riotgames.com/hc/en-us/articles/10088435639571-Troubleshooting-the-VAN-9001-VAN-9003-or-VAN-9090-Error-on-Windows-11-VALORANT))
+## What the custom-build labels really mean
 
-## The "should we make our own?" question
+| Option | What can be said safely | Recommendation |
+|---|---|---|
+| **Stock Windows 11** | Supported update, driver, recovery, and security path. Exact latency depends on the rig and settings. | **Best default for tournament and primary machines.** |
+| **Windows 11 IoT Enterprise LTSC** | A separately licensed enterprise channel with a different servicing model. Feature, launcher, HDR, capture, and anti-cheat behavior must be tested; a long support window is not a latency guarantee. | Consider only for a controlled lab or organization with a legitimate license and a complete compatibility test. |
+| **Windows X-Lite** | Third-party images vary by edition. The official UltraLite page says components such as Windows Update, Defender, BitLocker, Backup/Restore, OneDrive, speech/diagnostics, Hyper-V, WSL2, and WSA may be absent or unsupported; the author recommends full-featured updatable builds for most users. | **Not the primary Fortnite recommendation.** If retained, use an updatable edition as a secondary test image and keep stock recovery media. |
+| **Atlas OS / ReviOS / Tiny11 / Ghost Spectre** | These are playbooks or modified images, not a single stable compatibility target. Their behavior changes with the underlying Windows build and the options selected. Do not infer anti-cheat or tournament support from a community post. | Lab-only unless the owner validates every game, driver, update, recovery, and tournament requirement on that exact image. |
+| **A custom optimizationmaxxing OS** | Owning the image would make us responsible for servicing, signing, recovery, driver packaging, privacy/security decisions, and anti-cheat regressions. A stripped image cannot be “set and forget.” | **Do not build one yet.** Keep the app as a reversible policy/tuning layer. Revisit only with an update pipeline, signed releases, rollback media, and a dedicated compatibility lab. |
 
-You asked. We thought about it. The honest answer:
+## X-Lite 24H2: should you switch?
 
-**Not now.** Here's the reasoning:
+It is not possible to conclude that X-Lite is “bad for Fortnite” from the name
+alone. The risk is the removed contract around the game, not a guaranteed FPS
+penalty. If your current install launches Fortnite, passes the relevant Epic
+checks, and has stable frametimes, the image may be usable for casual testing.
 
-- The space is crowded. Atlas and X-Lite are well-trodden. Ghost Spectre and
-  Tiny11 cover the "low RAM" and "privacy" niches respectively.
-- Maintaining a distro is *real* engineering — anticheat partners patch
-  weekly, Windows ships cumulative updates monthly, and a distro that lags 3
-  weeks gets users banned in tournaments.
-- The optimizationmaxxing app already gives you 80% of the per-distro
-  win, with full undo, and zero anticheat risk.
+For a competitive primary install, I would move to stock Windows 11 25H2 (or a
+validated 26H1 image) because it keeps Windows Update, Defender, recovery, and
+the optional Windows components that launchers, capture software, drivers, and
+anti-cheat can depend on. X-Lite's own documentation says its UltraLite builds
+do not support several of those components and recommends a full-featured,
+updatable build for most users. [Windows X-Lite UltraLite](https://windowsxlite.com/ultralight)
 
-**What would change our mind:**
+Atlas's own security FAQ makes the same important distinction: unmodified
+Microsoft Windows is the most trusted baseline, while a stripped system trades
+security and update behavior for a smaller surface. [Atlas security FAQ](https://docs.atlasos.net/faq/general-faq/atlas-and-security/)
 
-1. A clean recipe that keeps Vanguard + Secure Boot + TPM 2.0 alive while
-   stripping every other phone-home — and stays patched against Microsoft's
-   cumulative-update cadence.
-2. A user base that explicitly wants the maxxer aesthetic + branding on the
-   OS, not just "any debloat."
-3. A funded slot to do it. Distros pull focus from the apps for months.
+Do not delete the X-Lite install until the stock image has passed your real
+workflow: Fortnite launch and update, Epic login, anti-cheat checks, GPU/capture
+drivers, OBS or dual-PC capture, controller/HID devices, audio, sleep/restart,
+and a repeatable Asta Bench run. optimizationmaxxing can compare the two images,
+but it cannot certify a tournament or another anti-cheat provider from registry
+state alone.
 
-If those line up, "maxxer-os" gets its own slot in the suite. Until then:
-**vanilla Win11 24H2 + our preset is the answer for most people.**
+### X-Lite Competitive Lab
 
-## Recommendations by gamer profile
+If you want to keep X-Lite because you like its minimal surface, treat it as a
+measured second image rather than assuming that removed Defender or services are
+an input-lag win. The app's Extreme profile can still expose the eligible
+OS/driver/game changes on that image, but it will not disable security,
+anti-cheat, Windows Update, Secure Boot, TPM, IOMMU, or hardware identity
+controls to chase a theoretical microsecond. Those are compatibility and
+eligibility boundaries, not a performance nerf.
 
-- **FNCS / VCT / Major-tournament eligibility:** Vanilla Win11 24H2 + apply
-  the Tournament FPS preset. **Enable Secure Boot + TPM 2.0 + IOMMU in BIOS** —
-  Fortnite requires all three for every tournament as of Feb 19 2026, and no
-  FPS preset substitutes for them. Don't get banned for a 2% FPS gain.
-- **Ranked grinder, single-purpose rig:** Atlas OS or Windows X-Lite. Verify
-  Vanguard / EAC behaviour on every cumulative update.
-- **Low-RAM laptop (8–16 GB):** Tiny11 — keeps full Windows ergonomics, drops
-  ~1 GB idle without anticheat fallout.
-- **Streamer / OBS rig:** Vanilla 24H2. Stripped distros break NDI / OBS
-  plugins more often than they save you fps.
-- **Privacy-first, casual gamer:** ReviOS — closer to "Win11 minus Microsoft"
-  than to "competitive shave."
+Run the comparison with the same BIOS, GPU driver, Fortnite build, display mode,
+input polling, capture path, map/route, and background workload. Record:
 
-## Sources / further reading
+1. OS edition, build, servicing state, and what X-Lite removed.
+2. Fortnite launch/update, Epic login, anti-cheat, OBS/dual-PC capture, audio,
+   HID, sleep/resume, and restart checks.
+3. Asta Bench frametime percentiles, PresentMon capture, DPC/ISR distribution,
+   and input-to-photon evidence where the hardware supports it.
 
-- Atlas OS [docs](https://atlasos.net/) + Discord — for current anticheat
-  status. Patches change verdicts.
-- Tiny11 maintainer [GitHub](https://github.com/ntdevlabs/tiny11builder).
-- ProSettings.net pro-rig spec sheets — they overwhelmingly run vanilla Win11.
-- The optimizationmaxxing tweak catalog — most "lightweight distro" gains
-  come from the same registry / service / scheduled-task strips we ship.
+Keep the image only when it wins the complete workload without breaking recovery
+or competitive eligibility. If a component is already removed, the app can flag
+the missing contract and recommend a stock-image A/B test; it cannot safely
+reconstruct the removed Windows component from inside the optimizer.
+
+## Tournament and anti-cheat boundary
+
+Epic's current guidance makes Secure Boot, TPM 2.0, and IOMMU relevant to
+Fortnite competitive security. Requirements can change, so the app must link to
+Epic's current help and tournament notices rather than promise that a particular
+custom image is eligible. [Epic Secure Boot and TPM guidance](https://www.epicgames.com/help/c-34254770/c-Trending_0/a17911497?lang=en-US),
+[Epic IOMMU guidance](https://www.epicgames.com/help/c-34254770/c-45529661/a17757744),
+[Epic anti-cheat update](https://www.fortnite.com/news/fortnite-anti-cheat-update-february-27-2025)
+
+Never use a kernel hack, hardware-ID spoofer, anti-cheat bypass, or a tweak that
+disables required security simply because it might reduce a microsecond of
+overhead. Epic warns that tools hiding or altering hardware IDs can lead to a
+ban. [Epic hardware-ID warning](https://www.epicgames.com/help/en-US/c-Category_Fortnite/c-Fortnite_PlayerBehavior/a000085508)
+
+## What optimizationmaxxing should do
+
+The app should scan the actual OS build, firmware/security state, drivers,
+display mode, power plan, memory, and input devices; recommend a profile; apply
+only catalog entries allowed by that profile; and re-read each native action.
+Unknown is not the same as verified: imperative PowerShell actions need a
+declared read-back contract before the app can claim that they remain applied.
+That is why Extreme can be aggressive while still excluding tournament-breaking
+or high anti-cheat-risk entries.
+
+### Sources
+
+- [Microsoft supported Windows client versions](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client)
+- [Windows X-Lite UltraLite](https://windowsxlite.com/ultralight)
+- [Atlas security FAQ](https://docs.atlasos.net/faq/general-faq/atlas-and-security/)
+- [Epic Secure Boot and TPM guidance](https://www.epicgames.com/help/c-34254770/c-Trending_0/a17911497?lang=en-US)
+- [Epic IOMMU guidance](https://www.epicgames.com/help/c-34254770/c-45529661/a17757744)
+- [Epic hardware-ID warning](https://www.epicgames.com/help/en-US/c-Category_Fortnite/c-Fortnite_PlayerBehavior/a000085508)

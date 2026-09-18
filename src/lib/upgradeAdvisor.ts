@@ -4,8 +4,9 @@
  * Philosophy:
  *  - ALWAYS surface the best real upgrade available for each part — never a
  *    dead-end "you're set." A strong rig still has a ceiling (a 14900K is great,
- *    but AMD's X3D wins Fortnite 1% lows; 32 GB DDR5-6000 is fine, but a tuned
- *    kit shaves a little more). We show those, honestly tiered.
+ *    but current AMD X3D parts may improve CPU-bound 1% lows; 32 GB DDR5-6000
+ *    is fine, but a tuned kit shaves a little more). We show those, honestly
+ *    tiered and without treating a cross-platform benchmark as a guarantee.
  *  - Rank by IMPACT for competitive Fortnite, not generic AAA:
  *      high   = a real bottleneck holding your frames/1% lows back.
  *      medium = a worthwhile gain (e.g. Intel -> X3D for 1% lows).
@@ -61,8 +62,8 @@ export interface UpgradePlan {
   scores: { cpu: number; gpu: number; ram: number }
 }
 
-const LINK_9800X3D =
-  'https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9800x3d.html'
+const LINK_9950X3D2 =
+  'https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-9-9950x3d2-dual-edition.html'
 const LINK_5800X3D =
   'https://www.amd.com/en/products/processors/desktops/ryzen/5000-series/amd-ryzen-7-5800x3d.html'
 const LINK_14700K =
@@ -74,7 +75,7 @@ function hasX3D(cpu: SpecProfile['cpu']): boolean {
   return /x3d/i.test(`${cpu.model} ${cpu.marketing}`)
 }
 function isTopX3D(cpu: SpecProfile['cpu']): boolean {
-  return /9[89]50?x3d|9800x3d|9850x3d/i.test(`${cpu.model} ${cpu.marketing}`)
+  return /9950x3d2|9850x3d/i.test(`${cpu.model} ${cpu.marketing}`)
 }
 
 function inferPlatform(spec: SpecProfile): Platform {
@@ -174,9 +175,10 @@ function cpuPicks(platform: Platform): {
   replatformCost?: string
 } {
   const overall: UpgradePick = {
-    part: 'AMD Ryzen 7 9800X3D',
-    note: 'The outright fastest gaming CPU for Fortnite — 3D V-cache delivers the biggest 1%-low jump you can buy.',
-    link: LINK_9800X3D,
+    part: 'AMD Ryzen 9 9950X3D2 Dual Edition',
+    note:
+      "AMD's current top-end AM5/X3D platform option. Dual 3D V-Cache is not a Fortnite-specific guarantee, so compare CPU-bound 1% lows, frametime tail, cooling, and total platform cost before swapping a stable 14900KF or another recent X3D chip.",
+    link: LINK_9950X3D2,
   }
   if (platform === 'AM5') return { dropIn: overall, overall, overallReplatform: false }
   if (platform === 'AM4') {
@@ -195,7 +197,7 @@ function cpuPicks(platform: Platform): {
     return {
       dropIn: {
         part: 'Intel Core i7-14700K',
-        note: "The best gaming chip your LGA1700 board takes without replacing it (BIOS + latest microcode). Still trails AMD X3D in Fortnite 1% lows.",
+        note: "The best gaming chip your LGA1700 board takes without replacing it (BIOS + latest microcode). AMD X3D parts often lead Fortnite-focused test suites, but the real gap depends on the exact patch, settings, GPU limit, and 1% low measurement.",
         link: LINK_14700K,
       },
       overall,
@@ -207,7 +209,7 @@ function cpuPicks(platform: Platform): {
     return {
       dropIn: {
         part: 'Intel Core Ultra 9 285K',
-        note: 'The top chip your LGA1851 board takes. Great all-rounder, but AMD X3D still wins Fortnite 1% lows.',
+        note: 'The top chip your LGA1851 board takes. Great all-rounder; AMD X3D parts often lead Fortnite-focused test suites, but compare the exact patch, settings, GPU limit, and 1% low measurement.',
       },
       overall,
       overallReplatform: true,
@@ -224,7 +226,7 @@ function cpuPicks(platform: Platform): {
 }
 
 function cpuOpportunity(spec: SpecProfile, platform: Platform): UpgradeOpportunity | null {
-  if (isTopX3D(spec.cpu)) return null // already the Fortnite king
+  if (isTopX3D(spec.cpu)) return null // already on a current top-end X3D option
   const v = spec.cpu.vendor.toLowerCase()
   const g = spec.cpu.genOrZen ?? 0
   const x3d = hasX3D(spec.cpu)
@@ -300,8 +302,8 @@ function ramOpportunity(spec: SpecProfile, platform: Platform): UpgradeOpportuni
     impact = 'low'
     if (fastEnough) {
       pick = ddr5
-        ? { part: 'Tuned DDR5 (6400+ CL30 or hand-tuned subtimings)', note: 'Your capacity + speed are already in the sweet spot. Faster/tighter-timing kits give only marginal Fortnite 1%-low gains — a polish upgrade, not a fix.' }
-        : { part: 'Tuned DDR4 (3600 CL14 / tightened subtimings)', note: 'Your 32 GB is already good. Tighter timings give only marginal Fortnite 1%-low gains — a polish upgrade, not a fix.' }
+        ? { part: 'Manufacturer-rated DDR5 profile at or above your current speed', note: 'Your capacity + speed are already adequate. A faster rated kit may offer only marginal Fortnite 1%-low gains; validate platform support and stability rather than hand-tuning timings.' }
+        : { part: 'Manufacturer-rated DDR4 profile at or above your current speed', note: 'Your capacity + speed are already adequate. A faster rated kit may offer only marginal Fortnite 1%-low gains; validate platform support and stability rather than hand-tuning timings.' }
     } else {
       pick = ddr5
         ? { part: '32 GB DDR5-6000 CL30 (2×16)', note: 'Capacity is set; bumping to 6000 CL30 (or enabling EXPO) is the one real RAM gain left on your platform.' }

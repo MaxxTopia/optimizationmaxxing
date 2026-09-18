@@ -170,25 +170,26 @@ export function AutoPinSection() {
             <li>
               <strong className="text-text">Pick the right cores</strong> based on your CPU:
               <ul className="mt-1 ml-2 list-disc pl-4 space-y-0.5">
-                <li><strong className="text-text">Intel hybrid (12th-15th gen / Core Ultra):</strong> pin to <strong>P-cores only</strong> (usually cores 0–N/2; check Task Manager → Performance → CPU graph to see which cores are P-cores). E-cores hurt UE5 by bouncing the render thread between heterogeneous cache topologies.</li>
-                <li><strong className="text-text">AMD single-CCD X3D (5800X3D / 7800X3D / 9800X3D):</strong> <strong>do not use CCD pinning</strong> — there is only one CCD and it carries the V-Cache, so there is no second CCD to route away from. Extra affinity or SMT rules are separate experiments; start with EXPO + Curve Optimizer and measure before changing them.</li>
-                <li><strong className="text-text">AMD dual-CCD X3D (7950X3D / 9950X3D):</strong> routing matters here. Prefer the native path — <strong>CPPC Preferred Cores = Driver</strong> in BIOS + the <strong>AMD 3D V-Cache Optimizer</strong> driver + keep <strong>Xbox Game Bar ON</strong> (it flags the foreground game to the V-Cache CCD). Use pinning to <strong>cores 0–7 (the cache CCD)</strong> only as a fallback if that routing misbehaves.</li>
-                <li><strong className="text-text">AMD non-X3D (7700X / 9700X / etc.):</strong> just check all cores; single CCD = no penalty.</li>
-                <li><strong className="text-text">Intel non-hybrid (10th-11th gen):</strong> all cores; optionally exclude HT siblings (1, 3, 5, 7…) but minor.</li>
+                <li><strong className="text-text">Intel hybrid (12th gen and newer):</strong> start with all cores and the native Windows scheduler. A P-core-only rule is a measured fallback, not a universal UE5 rule; the correct logical IDs come from the scan and cannot be inferred from a simple 0–N/2 range.</li>
+                <li><strong className="text-text">AMD single-CCD X3D:</strong> leave all cores available. There is no second CCD to route away from, and this tool does not change EXPO, Curve Optimizer, voltage, or thermal controls.</li>
+                <li><strong className="text-text">AMD dual-CCD X3D:</strong> prefer the vendor scheduler/driver path first. CCD and cache mappings vary by firmware and logical-processor numbering, so this app does not guess that cores 0–7 or 0–15 are the cache CCD; use a manual rule only after measuring the real topology and game frametimes.</li>
+                <li><strong className="text-text">AMD non-X3D and Intel non-hybrid:</strong> start with all logical processors. Excluding SMT siblings is an optional experiment only if a before/after capture shows a repeatable benefit.</li>
               </ul>
             </li>
             <li>
               Flip the daemon to <strong className="text-text">ON</strong>.
             </li>
             <li>
-              Launch Fortnite normally. Within ~5s of process spawn, you'll see it appear in
-              the "currently pinned" list below. Done. Set + forget.
+              Launch Fortnite normally. After the next poll, the process should appear in the
+              "currently pinned" list below. The daemon re-applies the CPU Set when the process
+              is seen; it cannot guarantee a game or anti-cheat process will retain that state.
             </li>
           </ol>
           <p className="mt-2 text-text-muted">
-            <strong className="text-text">Verify it's working:</strong> Task Manager → Details
-            tab → right-click <code>FortniteClient-Win64-Shipping.exe</code> → "Set affinity" —
-            the cores you reserved should be the only ones checked.
+            <strong className="text-text">Verify it's working:</strong> use the app's
+            "currently pinned" status and a before/after frametime capture. Task Manager's
+            "Set affinity" dialog shows process affinity, which is not the same Windows API as
+            CPU Sets and therefore is not conclusive proof of this daemon's rule.
           </p>
         </div>
 
@@ -201,16 +202,12 @@ export function AutoPinSection() {
         >
           <p className="font-semibold text-text mb-1.5">⚠️ Honest note on Fortnite + anti-cheat</p>
           <p className="text-text-muted">
-            Easy Anti-Cheat watches for runtime manipulation of the <em>game</em> process. Pinning
-            is a normal OS scheduler operation and we've had no reports of issues — but the
-            community-safe convention is to pin the <strong className="text-text">launcher</strong>{' '}
-            (Epic Games Launcher / Steam) and let the game inherit, rather than targeting{' '}
-            <code>FortniteClient-Win64-Shipping.exe</code> directly. EAC can also occasionally
-            re-assert its own affinity at launch, fighting a pin. <strong className="text-text">Two
-            realities worth knowing:</strong> on a single-CCD X3D this whole feature is placebo
-            (see above), and on every CPU the native scheduler (Intel APO / AMD V-Cache driver +
-            Game Bar) is the lower-risk path. Treat auto-pin as a power-user fallback, not a
-            must-have — it's here if you want it, off by default.
+            Easy Anti-Cheat and other anti-cheat systems can change or reject runtime process
+            behavior. CPU Sets are an OS scheduling feature, but that is not a guarantee of
+            compatibility or tournament eligibility; stop the daemon if the title, launcher, or
+            event rules object. On a single-CCD X3D, pinning usually has no separate cache CCD to
+            target. Treat auto-pin as a measured power-user fallback; the native scheduler and
+            officially supported vendor features remain the default path.
           </p>
         </div>
       </div>
@@ -354,9 +351,7 @@ function RuleRow({
   onRemove: () => void
   onAutoPick: () => void
 }) {
-  const autoPickLabel = info?.isHybrid && info.pCoreIds.length > 0
-    ? `Auto-pick (${info.pCoreIds.length} P-cores)`
-    : 'Auto-pick for this rig'
+  const autoPickLabel = 'Auto-pick (native baseline)'
   return (
     <div className="border border-border rounded-md p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-3">
@@ -439,8 +434,9 @@ function CoreGrid({
               onClick={() => setCores(info.pCoreIds)}
               disabled={busy}
               className="px-2 py-0.5 rounded border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
+              title="Measured fallback only: compare against the all-core baseline before keeping this rule."
             >
-              All P
+              P-only fallback
             </button>
           )}
           {info.isHybrid && info.eCoreIds.length > 0 && (
@@ -536,27 +532,15 @@ function CoreGrid({
   )
 }
 
-function defaultCores(n: number): number[] {
-  if (n <= 4) return Array.from({ length: n }, (_, i) => i)
-  return Array.from({ length: Math.ceil(n / 2) }, (_, i) => i)
-}
-
 /**
- * Recommend a core list for the given .exe on this rig.
+ * Recommend a conservative core list for the given .exe on this rig.
  *
- * - **Intel hybrid (12th+):** P-core IDs only. UE5 games (Fortnite, Marvel
- *   Rivals) hate the render thread bouncing between P/E cache topologies,
- *   so the strongest setup is pinning to just the P-cores.
- * - **AMD dual-CCD heuristic:** if logical_count > 16 AND not hybrid, the
- *   first 16 logical IDs are CCD0 (Windows numbers CCDs in order). On 7950X3D
- *   / 9950X3D the X3D cache CCD is CCD0 — we recommend cores 0-15. For
- *   single-CCD parts (7800X3D, 9800X3D, 7700X, etc.) we pick all cores.
- * - **Everything else:** all cores; manual edit if the user wants finer control.
+ * The native Windows/vendor scheduler is the baseline. The scan can expose
+ * P-core IDs for a manually measured fallback, but this helper deliberately
+ * does not guess AMD CCD/cache mappings from logical numbering.
  */
 function recommendCoresForRig(info: CpuSetInfo, _exe: string): number[] {
-  if (info.isHybrid && info.pCoreIds.length > 0) return [...info.pCoreIds]
-  if (info.logicalProcessorCount > 16) return Array.from({ length: 16 }, (_, i) => i)
-  return defaultCores(info.logicalProcessorCount)
+  return Array.from({ length: Math.max(0, info.logicalProcessorCount) }, (_, i) => i)
 }
 
 function fmtTs(iso: string): string {

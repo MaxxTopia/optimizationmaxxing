@@ -138,11 +138,11 @@ Three questions every endgame loss should answer:
 
 ## Why this matters more than most people admit
 
-Software tuning gives you 70% of the rig gap. The grind layer gives you
-the *consistency* to actually use those 70%. A 25 ms latency budget on a
-sleep-deprived day is no better than a 75 ms budget on a fresh day —
-your reaction time + decision-making degrades faster than your latency
-gain compensates.
+Software tuning can remove avoidable variance, but there is no honest fixed
+percentage for the software share of a rig or player gap. The grind layer
+gives you the consistency to use whatever margin the measured setup actually
+has. A nominal latency number also cannot compensate for sleep-deprived
+reaction time and decision-making.
 
 The kids who actually catch the pros aren't doing one of these well.
 They're doing all of them, repetitively, when no one's watching.

@@ -1,8 +1,10 @@
 //! DisplayRefresh TweakAction — native Win32 path.
 //!
-//! Bumps the refresh rate of attached displays matching a name pattern
-//! to the highest supported Hz in (target + fallback) at the display's
-//! current width/height. Calls ChangeDisplaySettingsExW directly via
+//! Sets the refresh rate of attached displays matching a name pattern
+//! to the first supported Hz in (target + fallback) at the display's
+//! current width/height. A target of 0 means "highest supported" so the
+//! same catalog action works for 144/240/360/500+ Hz displays. Calls
+//! ChangeDisplaySettingsExW directly via
 //! the `windows` crate — no PowerShell, no UAC. Per-user setting.
 //!
 //! Pre-state per matched display is captured before the change so revert
@@ -173,10 +175,13 @@ fn matches_pattern(display: &EnumeratedDisplay, pattern: &str) -> bool {
     false
 }
 
-/// Pick the highest Hz from `candidates` that's actually in
-/// `available_hz`. None if no candidate is supported.
+/// Pick the first supported candidate. A zero candidate is a sentinel for
+/// the highest mode the display exposes at its current resolution.
 fn pick_best_hz(candidates: &[u32], available_hz: &[u32]) -> Option<u32> {
     for c in candidates {
+        if *c == 0 {
+            return available_hz.first().copied();
+        }
         if available_hz.contains(c) {
             return Some(*c);
         }
@@ -334,6 +339,39 @@ pub fn apply(action: &TweakAction) -> anyhow::Result<Value> {
     Ok(pre)
 }
 
+/// Verify every display matched by the action is currently using the same
+/// first-supported refresh rate the apply path would have selected. A missing
+/// match is a mismatch, not a successful no-op.
+pub fn verify(action: &TweakAction) -> anyhow::Result<bool> {
+    let (device_match, target_hz, fallback_chain) = match action {
+        TweakAction::DisplayRefresh {
+            device_match,
+            target_hz,
+            fallback_chain,
+        } => (device_match, *target_hz, fallback_chain),
+        _ => return Err(anyhow!("display::verify called on wrong action variant")),
+    };
+    let mut candidates: Vec<u32> = vec![target_hz];
+    for hz in fallback_chain {
+        if !candidates.contains(hz) {
+            candidates.push(*hz);
+        }
+    }
+    let displays = enumerate_displays();
+    let matched: Vec<&EnumeratedDisplay> = displays
+        .iter()
+        .filter(|d| matches_pattern(d, device_match))
+        .collect();
+    if matched.is_empty() {
+        return Ok(false);
+    }
+    Ok(matched.iter().all(|d| {
+        pick_best_hz(&candidates, &d.available_hz)
+            .map(|expected| expected == d.cur_hz)
+            .unwrap_or(false)
+    }))
+}
+
 /// Revert: replay captured pre-state per matched display.
 pub fn revert(action: &TweakAction, pre_state: &Value) -> anyhow::Result<()> {
     if !matches!(action, TweakAction::DisplayRefresh { .. }) {
@@ -424,5 +462,9 @@ mod tests {
         // 144Hz monitor — 240 skipped, 165 skipped, lands on 144.
         let lower = vec![144, 120, 60];
         assert_eq!(pick_best_hz(&[240, 165, 144, 120], &lower), Some(144));
+        // Zero means the highest mode exposed by the current EDID/resolution,
+        // so this does not cap a 360/500 Hz panel at an old hard-coded value.
+        assert_eq!(pick_best_hz(&[0], &avail), Some(240));
+        assert_eq!(pick_best_hz(&[0], &[]), None);
     }
 }

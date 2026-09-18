@@ -43,7 +43,6 @@ export function auditAction(
   const pre = preview.preState as unknown
   switch (action.kind) {
     case 'registry_set': {
-      // pre is null if value didn't exist, else { type, value }.
       if (pre == null) {
         return {
           index,
@@ -53,11 +52,7 @@ export function auditAction(
       }
       const obj = pre as { type?: string; value?: unknown }
       if (scalarEquals(obj.value, action.value)) {
-        return {
-          index,
-          status: 'matches',
-          detail: `Already ${formatScalar(action.value)}`,
-        }
+        return { index, status: 'matches', detail: `Already ${formatScalar(action.value)}` }
       }
       return {
         index,
@@ -66,13 +61,7 @@ export function auditAction(
       }
     }
     case 'registry_delete': {
-      if (pre == null) {
-        return {
-          index,
-          status: 'matches',
-          detail: 'Already deleted',
-        }
-      }
+      if (pre == null) return { index, status: 'matches', detail: 'Already deleted' }
       const obj = pre as { type?: string; value?: unknown }
       return {
         index,
@@ -81,30 +70,21 @@ export function auditAction(
       }
     }
     case 'bcdedit_set': {
-      // pre shape from elevation pre-state capture: { found: 'unknown' } or
-      // { value: '<bcd value>' } — engine returns best-effort.
       const target = String(action.value)
       if (
         pre &&
         typeof pre === 'object' &&
         (pre as { found?: string }).found === 'unknown'
       ) {
-        // For ALREADY-APPLIED rows: we know the apply succeeded (the
-        // engine threw on failure). Re-reading BCD needs admin, which
-        // we don't have right now — call it written-but-unverified.
         return {
           index,
-          status: 'matches',
-          detail: `BCD ${(action as { name: string }).name} = ${target} — applied via admin (re-check on a re-launch as admin)`,
+          status: 'unknown',
+          detail: `BCD ${(action as { name: string }).name} = ${target} — preflight could not read it; needs an admin re-check`,
         }
       }
       const obj = pre as { value?: unknown }
       if (obj && scalarEquals(obj.value, action.value)) {
-        return {
-          index,
-          status: 'matches',
-          detail: `BCD already ${target}`,
-        }
+        return { index, status: 'matches', detail: `BCD already ${target}` }
       }
       return {
         index,
@@ -113,18 +93,12 @@ export function auditAction(
       }
     }
     case 'powershell_script':
-      // Script tweaks are imperative — they fire once and their effect
-      // either persists in a way we'd need a separate probe to verify
-      // (a service state, a file deleted) or is fire-and-forget (a cache
-      // cleared). For now, treat an "applied" snapshot as the receipt and
-      // surface what the script did rather than calling it can't-tell.
       return {
         index,
-        status: 'matches',
-        detail: 'Script ran on apply — clears cache / kills service / etc. No persistent value to re-read; revert script is the inverse.',
+        status: 'unknown',
+        detail: 'Script ran on apply, but this catalog action has no generic read-back contract; execution is not proof of lasting state.',
       }
     case 'file_write': {
-      // pre_state shape: { existed: bool, contents_b64?: string, sha256?: string, size_bytes?: number }
       if (
         pre &&
         typeof pre === 'object' &&
@@ -132,24 +106,18 @@ export function auditAction(
       ) {
         const obj = pre as { contents_b64?: string }
         if (obj.contents_b64 === action.contents_b64) {
-          return {
-            index,
-            status: 'matches',
-            detail: 'File already byte-identical to target',
-          }
+          return { index, status: 'matches', detail: 'File already byte-identical to target' }
         }
-        return {
-          index,
-          status: 'differs',
-          detail: 'File exists with different contents',
-        }
+        return { index, status: 'differs', detail: 'File exists with different contents' }
       }
+      return { index, status: 'differs', detail: 'File does not exist (target: write)' }
+    }
+    case 'display_refresh':
       return {
         index,
-        status: 'differs',
-        detail: 'File does not exist (target: write)',
+        status: 'unknown',
+        detail: 'Display mode needs the native EDID/read-back verifier after apply.',
       }
-    }
   }
 }
 
@@ -217,10 +185,7 @@ function aggregate(actions: ActionAudit[]): TweakAudit {
 function scalarEquals(a: unknown, b: unknown): boolean {
   if (a === b) return true
   if (a == null || b == null) return false
-  // dword/qword vs JSON number: normalize via String()
-  if (typeof a === 'number' || typeof b === 'number') {
-    return String(a) === String(b)
-  }
+  if (typeof a === 'number' || typeof b === 'number') return String(a) === String(b)
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false
     return a.every((v, i) => scalarEquals(v, b[i]))

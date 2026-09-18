@@ -1,30 +1,44 @@
 # NVIDIA Reflex — does it add input delay?
 
-**No. Reflex *reduces* input delay.** Common myth driven by old Pre-Render Limit confusion. The real gotcha is that **NVCP and in-game settings can fight each other** — see "common confusion" at the bottom.
+**Not inherently. Reflex changes the render queue and can reduce latency when
+the title and workload benefit from it; some configurations see little change
+or a trade-off.** The real gotcha is that NVCP and in-game settings can fight
+each other — see "common confusion" at the bottom.
 
-> **2026 note:** The app's driver oracle currently reports **GeForce Game Ready 610.88** (last checked 2026-08-24). NVIDIA's classic Control Panel retirement and the move of supported settings into the **NVIDIA App** do not change the in-game Reflex guidance below. Re-check the live driver card after every driver or major Fortnite season update. GeForce Experience was already discontinued in late 2024 — install the **NVIDIA App** (not GFE). ([NVIDIA drivers](https://www.nvidia.com/en-us/geforce/drivers/), [TechPowerUp](https://www.techpowerup.com/349359/nvidia-geforce-graphics-drivers-610-47-whql-drops-control-panel-support))
+> **Driver note:** Driver versions, NVIDIA App behavior, and Fortnite support
+> are volatile. Use the app's live driver card and NVIDIA's official driver
+> page after every driver or major Fortnite update; this guide does not freeze
+> a version number or promise that an optional control-panel setting is still
+> present. ([NVIDIA drivers](https://www.nvidia.com/en-us/geforce/drivers/))
 
 ## What it actually does
 
 - **Reflex Low Latency mode** pulls the CPU's render-queue submission timing forward so the GPU is never idle waiting for the next frame *and* the render queue never balloons. Result: lower end-to-end input-to-photon latency.
-- **Reflex Boost** forces the GPU clock to stay at max (no power-saving idle) when the title is GPU-bound, shaving an additional 1-3 ms.
+- **Reflex Boost** changes GPU power-state behavior in supported workloads. It
+  can trade extra power and heat for responsiveness; keep it only if a
+  repeatable capture on the target rig improves the result.
 - **Reflex Latency Marker** (the on-screen overlay) just measures; it's not part of the latency reduction.
 
-## Reflex 2 / Frame Warp (announced — not yet usable)
+## Reflex 2 / Frame Warp
 
-NVIDIA's current Reflex page leads with **"Reflex 2 — Frame Warp,"** which warps the rendered frame using the very latest mouse input just before scanout to cut latency further. As of 2026-06-27 it is still labeled **"coming soon"** — slated to debut first in **VALORANT** and **THE FINALS** on **RTX 50-series**, so it is announced but **not yet enableable** by competitive players. Everything below is **Reflex 1** (Low Latency mode + Boost + Latency Marker), which is what you can actually turn on today; ignore Frame Warp until it ships in your title. ([NVIDIA Reflex](https://www.nvidia.com/en-us/geforce/technologies/reflex/), [NVIDIA — Reflex 2 / Frame Warp](https://www.nvidia.com/en-us/geforce/news/reflex-2-even-lower-latency-gameplay-with-frame-warp/))
+Availability and supported titles are changing. Treat Frame Warp as an
+official-title-and-driver feature, not a universal setting: enable it only
+when NVIDIA and the game's current documentation list the exact GPU, driver,
+and title combination. Everything else in this guide refers to the ordinary
+in-game Reflex controls. ([NVIDIA Reflex](https://www.nvidia.com/en-us/geforce/technologies/reflex/))
 
-## Verified gains (NVIDIA + Battle(non)sense + Hardware Unboxed, RTX 30/40-series)
+## What can be verified
 
-- **GPU-bound** (high settings, 1440p+): **20-30 ms reduction** vs OFF.
-- **CPU-bound** (low settings, 1080p): **5-10 ms reduction**.
-- **At hard frame caps below GPU's max:** 0-5 ms (already low; smaller delta).
+The direction and size of the change depend on GPU load, frame cap, driver,
+game integration, and display path. Use an in-game latency indicator or a
+hardware measurement tool with the same repeatable scene; do not publish a
+fixed millisecond gain from the switch alone.
 
 ## Per-game settings
 
 | Game | In-game setting | Notes |
 |---|---|---|
-| **Fortnite** | `NVIDIA Reflex Low Latency = On + Boost` | CPU-bound title — expect 5-10 ms gain, not 20-30 ms. Smaller but still positive. Peterbot, Bugha, Clix all run On + Boost per public configs. |
+| **Fortnite** | `NVIDIA Reflex Low Latency = On + Boost` | A reasonable test baseline on supported GeForce systems. Measure the current Fortnite build; do not assume a fixed gain or copy a creator's result. |
 | Valorant | `NVIDIA Reflex Low Latency = On + Boost` | GPU-bound at competitive settings — bigger delta. |
 | Apex Legends | `NVIDIA Reflex Low Latency = On + Boost` | Engine-integrated since 2021. |
 | CS2 | `NVIDIA Reflex Low Latency = Enabled + Boost` | Source 2 integration shipped 2023. |
@@ -32,14 +46,18 @@ NVIDIA's current Reflex page leads with **"Reflex 2 — Frame Warp,"** which war
 | COD MW3 / Warzone | `NVIDIA Reflex Low Latency = Enabled + Boost` | Native. |
 | Marvel Rivals · R6 Siege | `NVIDIA Reflex = On + Boost` | Native. |
 
-Reflex requires a GeForce 900-series or newer + a game that integrates the SDK. AMD has Anti-Lag+ as a partial parallel.
+Reflex requires a supported GeForce system and a game that integrates the SDK.
+AMD users should use the current official Anti-Lag feature supported by their
+driver and title; do not enable obsolete or anti-cheat-risk variants.
 
 ## NVCP settings — they can fight in-game Reflex
 
 This is the kernel of truth behind "Reflex doesn't work in-game, you have to set it elsewhere":
 
 - **NVIDIA Control Panel → Manage 3D settings → Low Latency Mode**: set to **On** or **Off** for any title that has in-game Reflex. **Do NOT set it to "Ultra"** — Ultra fights the in-game Reflex implementation and can produce neutral or worse results.
-- **NVCP → Power management mode**: `Prefer maximum performance` (so the GPU doesn't downclock independently of Reflex Boost).
+- **NVCP → Power management mode**: compare the default and per-game options;
+  `Prefer maximum performance` trades power and heat for fewer clock-state
+  transitions and is not automatically better.
 - **NVCP → Vertical sync**: `Off` (in-game vsync also off — vsync re-introduces queue latency Reflex spent ms removing).
 
 In-game Reflex is the canonical path and works correctly when NVCP isn't actively undermining it.
@@ -48,7 +66,9 @@ In-game Reflex is the canonical path and works correctly when NVCP isn't activel
 
 - **"Reflex adds latency" pre-render myth**: came from `Maximum Pre-Rendered Frames` in old NVCP. That setting (now `Low Latency Mode`) at value 1 vs OFF can hurt frame pacing on CPU-bound titles. Reflex's in-game integration sidesteps this entirely.
 - **"Boost makes it worse" myth**: Boost only affects GPU clocks during GPU-bound segments. Power draw goes up; latency goes down. No frame-pacing penalty.
-- **"It doesn't work in Fortnite because Fortnite is CPU-bound"**: it works, the delta is just smaller (5-10 ms vs 20-30 ms in GPU-bound titles). Still worth turning on — there's no scenario where it hurts a properly-configured rig.
+- **"It doesn't work in Fortnite because Fortnite is CPU-bound"**: CPU-bound
+  and capped workloads can leave less queue to remove. Test the current build
+  instead of assuming a positive or negative result.
 
 ## Citations
 

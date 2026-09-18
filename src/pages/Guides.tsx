@@ -71,7 +71,7 @@ export function Guides() {
           <span>🔰 New to PC Optimization? Start Here</span>
         </p>
         <p className="text-text-muted leading-snug">
-          Look for the <span className="text-emerald-300 font-semibold border border-emerald-500/50 px-1 py-0.5 rounded bg-emerald-500/10">beginner safe</span> badge on guides — these are lower-risk starting points with a clear recovery path, not a promise of zero risk. Every guide includes a 30-second TL;DR, cited evidence where available, and exact click-by-click instructions. Uncheck "include advanced" below if you want to hide complex BIOS/overclock guides.
+          Look for the <span className="text-emerald-300 font-semibold border border-emerald-500/50 px-1 py-0.5 rounded bg-emerald-500/10">beginner safe</span> badge on guides — these are lower-risk starting points with a clear recovery path, not a promise of zero risk. Every guide includes a 30-second TL;DR, cited evidence where available, and exact click-by-click instructions. Uncheck "include advanced" below if you want to hide firmware-audit and experimental guides.
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export function Guides() {
               onChange={(e) => setShowAdvanced(e.target.checked)}
               className="accent-accent"
             />
-            include advanced (SCEWIN / overclocks)
+            include advanced (SCEWIN / firmware audits)
           </label>
           {(search || activeGame !== 'any' || !showAdvanced) && (
             <button

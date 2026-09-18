@@ -745,7 +745,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     severity: "critical".into(),
                     title: format!("CPU is at {max_temp:.0}C — at or past its thermal limit"),
                     cause: "At TjMax the CPU cuts its own clocks and voltage to protect itself — you lose 1% lows and consistency exactly when a fight loads it up. Usually a cooler that's undersized, badly mounted, or has dried paste.".into(),
-                    fix: "Improve cooling: reseat/repaste the cooler, raise the fan curve, or set a conservative undervolt / PBO offset (Curve Optimizer / PL adjustment) to drop temps without losing real performance.".into(),
+                    fix: "Improve cooling: reseat/repaste the cooler, improve case airflow, or use the manufacturer's vendor-default fan and firmware path. Do not change voltage or thermal/power limits from this diagnostic.".into(),
                     evidence: Some(format!("hottest core {max_temp:.0}C")),
                     tweak_id: None,
                     guide_id: None,
@@ -756,7 +756,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     severity: "warn".into(),
                     title: format!("CPU is running warm ({max_temp:.0}C)"),
                     cause: "You've got some headroom left, but a long session or a hot room would push this into throttling.".into(),
-                    fix: "Tidy cooling / airflow now (or a light undervolt) so a long ranked set doesn't tip into throttling.".into(),
+                    fix: "Tidy cooling / airflow now and confirm the system is using vendor-default firmware settings so a long ranked set doesn't tip into throttling.".into(),
                     evidence: Some(format!("hottest core {max_temp:.0}C")),
                     tweak_id: None,
                     guide_id: None,
@@ -770,7 +770,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
                     severity: "warn".into(),
                     title: format!("CPU core voltage is high ({v:.3} V)"),
                     cause: "Sustained high Vcore runs hotter and, over time, accelerates silicon degradation (the Intel 13/14th-gen issue). If you didn't set this, the board's 'auto' is over-volting.".into(),
-                    fix: "In BIOS, set a sensible Load-Line Calibration and a modest undervolt / Curve Optimizer negative offset — you keep the clocks at lower voltage and temps.".into(),
+                    fix: "Restore vendor-default BIOS voltage behavior, update the board firmware, and investigate cooling or board configuration. This app does not prescribe an undervolt, LLC, or Curve Optimizer value.".into(),
                     evidence: Some(format!("Vcore {v:.3} V")),
                     tweak_id: None,
                     guide_id: None,
@@ -1556,7 +1556,7 @@ pub fn session_stop() -> MatchScanReport {
             severity: sev.into(),
             title: format!("Throttle flags tripped: {}", flags.join("; ")),
             cause: "A throttle flag means the CPU or GPU cut its own clocks mid-match to stay inside a thermal or power limit — you lose frames and 1% lows exactly when a fight loads the rig.".into(),
-            fix: "Thermal flag: improve airflow / fan curve, repaste (run the GPU or CPU deep scan for the temp behind it). Power flag: check the GPU power limit in Afterburner and the CPU power limits (PL1/PL2) in BIOS.".into(),
+            fix: "Thermal flag: improve airflow / fan curve and repaste if appropriate (run the GPU or CPU deep scan for the temperature behind it). Power flag: restore vendor-default GPU/CPU firmware settings and investigate the exact throttle reason; this app does not change power limits.".into(),
             evidence: Some(if throttle_samples > 0 {
                 format!("GPU throttling in {throttle_samples} of {n} samples; reasons 0x{gpu_or_mask:X}")
             } else {
@@ -1601,7 +1601,7 @@ pub fn session_stop() -> MatchScanReport {
                 "The busiest core held at or above its base clock the whole match — the CPU wasn't clock-throttling.".into()
             },
             fix: if cpu_throttled {
-                "Chase CPU cooling (reseat/repaste, fan curve) or set a modest undervolt / Curve Optimizer offset, and check BIOS power limits aren't set low. Run the CPU deep scan for the temperature behind it.".into()
+                "Chase CPU cooling (reseat/repaste, fan curve), restore vendor-default firmware settings, and run the CPU deep scan for the temperature behind it. Do not change voltage or power limits from this diagnostic.".into()
             } else {
                 "No action — the CPU clock held. If FPS still feels low you're likely CPU-bound at full clock (a faster CPU helps) or the bottleneck is elsewhere.".into()
             },
@@ -1666,8 +1666,8 @@ pub fn session_stop() -> MatchScanReport {
                 id: "session.whea".into(),
                 severity: "critical".into(),
                 title: format!("{} new hardware error(s) logged during this match", now - start),
-                cause: "Fresh WHEA errors while playing mean your CPU/RAM (EXPO/XMP) or undervolt isn't stable under load — random crashes/stutters, not steady FPS loss.".into(),
-                fix: "Back your most recent overclock/undervolt or RAM EXPO/XMP off one step and re-test. On Intel 13/14th-gen, update BIOS/microcode.".into(),
+                cause: "Fresh WHEA errors while playing mean the CPU, memory profile, firmware, or another hardware path is not stable under load — random crashes/stutters, not steady FPS loss.".into(),
+                fix: "Restore vendor defaults for manual tuning, disable a recently enabled memory profile for isolation if needed, and re-test. On Intel 13/14th-gen, update BIOS/microcode and follow Intel Default Settings guidance.".into(),
                 evidence: Some(format!("WHEA {start} -> {now}")),
                 tweak_id: None,
                 guide_id: None,
@@ -1761,7 +1761,7 @@ pub fn session_stop() -> MatchScanReport {
                     (
                         format!("You were CPU-bound {:.0}% of the match", fs.cpu_bound_pct),
                         "The GPU sat idle waiting on the CPU most of the time — your CPU is the bottleneck, not the graphics card.".to_string(),
-                        "A faster GPU will NOT raise your FPS here. The levers are CPU cooling/clocks, faster + tighter RAM (XMP/EXPO), and the CPU-bound tweaks. See the 'where your next margin is' guide.".to_string(),
+                        "A faster GPU will NOT raise your FPS here. The levers are stable vendor-default CPU operation, cooling, a validated manufacturer memory profile if you choose one, and measured CPU-bound tweaks. See the 'where your next margin is' guide.".to_string(),
                     )
                 } else if fs.gpu_bound_pct >= 60.0 {
                     (

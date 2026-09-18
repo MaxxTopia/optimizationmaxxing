@@ -29,4 +29,4 @@ XeSS 2 bundles three parts:
 
 ## Display basics
 
-Same VRR logic as everyone else: for fluctuating FPS run FreeSync/G-Sync-compatible ON + V-Sync ON in the driver + a cap below refresh; at high refresh with FPS above the panel, V-Sync OFF + accept tearing for the lowest latency.
+Same VRR logic as everyone else: for fluctuating FPS run FreeSync/G-Sync-compatible ON + V-Sync ON in the driver + a cap below refresh; at high refresh with FPS above the panel, compare V-Sync OFF with accepted tearing if the measured low-latency path is worth the tradeoff. The display, cap stability, and tolerance for tearing decide the result.

@@ -94,9 +94,9 @@ const VENDOR_TIPS: VendorTips[] = [
   {
     vendor: 'Netgate (pfSense)',
     tips: [
-      'Firewall → Traffic Shaper → enable FQ-CoDel on the WAN at 95% of measured upload. Cuts bufferbloat to <30ms loaded.',
-      'System → Tunables → set net.inet.tcp.tso=0 if you see micro-stutters on stream upload while gaming.',
-      'Don\'t enable Suricata / Snort IDS on the gaming WAN — even in inline mode it adds 2–5ms per packet.',
+      'Firewall → Traffic Shaper → enable FQ-CoDel on the WAN at roughly 95% of measured upload. Verify that loaded RTT stays close to baseline instead of assuming a fixed millisecond result.',
+      'System → Tunables → set net.inet.tcp.tso=0 only if a controlled upload test reproduces micro-stutters while gaming; otherwise leave the default.',
+      'Measure Suricata / Snort in the actual path before enabling inline inspection on the gaming WAN; packet-processing overhead depends on hardware, rules, and traffic.',
     ],
     sources: [
       { label: 'pfSense Traffic Shaper docs', url: 'https://docs.netgate.com/pfsense/en/latest/trafficshaper/index.html' },
@@ -126,7 +126,7 @@ const VENDOR_TIPS: VendorTips[] = [
   {
     vendor: 'AT&T BGW320',
     tips: [
-      '**You are still routing through the AT&T gateway.** Bypass it via the WAS-110 SFP+ stick to drop 5-15ms of variable NAT latency. See /hardware → Networking for the canonical setup.',
+      '**You are still routing through the AT&T gateway.** A WAS-110 SFP+ bypass can change gateway processing and queue behavior, but the size of any latency change is line-, firmware-, and topology-dependent; measure bufferbloat and in-match RTT before and after. See /hardware → Networking for the setup notes.',
       'If you must stay on the BGW320: enable IP Passthrough to a real router behind it. Disable the BGW320\'s Wi-Fi radios + firewall.',
       'BGW320 has no usable QoS — the device-priority dropdown does almost nothing measurable.',
     ],
@@ -506,8 +506,8 @@ export function NetworkAuditCard() {
 
       <p className="text-[10px] text-text-subtle leading-snug pt-2 border-t border-border">
         This is the network-side audit — for bufferbloat run the dedicated{' '}
-        <span className="text-text">/toolkit → Bufferbloat probe</span> (loaded RTT measurement,
-        ~30s). For driver-side optimization see <span className="text-text">/diagnostics → Driver
+        <span className="text-text">/toolkit → Bufferbloat probe</span> (a short loaded-RTT
+        measurement). For driver-side optimization see <span className="text-text">/diagnostics → Driver
         health</span>.
       </p>
     </section>

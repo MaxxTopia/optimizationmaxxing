@@ -5,11 +5,10 @@ import type { SpecProfile } from '../lib/tauri'
  * the actual UCLK ratio at runtime requires MSR access (kernel driver) or a
  * vendor SDK; instead we infer from the configured RAM speed + CPU vendor:
  *
- *   - Ryzen 7000 (AM5, DDR5) above ~6400 MT/s usually falls into UCLK 1:2,
- *     halving Infinity Fabric bandwidth. The tradeoff is brutal — game
- *     latency goes UP despite higher RAM throughput.
- *   - Ryzen 5000 (AM4, DDR4) above ~3733 MT/s usually loses 1:1 FCLK lock,
- *     similar story.
+ *   - Ryzen 7000 (AM5, DDR5) above ~6400 MT/s often needs a different UCLK
+ *     ratio, but the actual result depends on the CPU, board, BIOS, and kit.
+ *   - Ryzen 5000 (AM4, DDR4) above ~3733 MT/s often needs a different FCLK
+ *     relationship, but the actual result must be read in firmware.
  *
  * Honest framing: we can't read the ratio from userspace, only flag the
  * speed window where it's likely. The fix lives in BIOS — verify
@@ -38,18 +37,18 @@ export function UclkWarningCard({ spec }: Props) {
   if (isDdr5) {
     if (speed > 6400) {
       warning = 'Likely UCLK 1:2 mode'
-      detail = `RAM running ${speed} MT/s. On Ryzen 7000+, anything above ~6400 MT/s usually drops UCLK to 1:2 — Infinity Fabric bandwidth halves. Game latency typically gets WORSE despite the higher throughput. Verify in BIOS that UCLK == MEMCLK (1:1). If unstable, drop RAM speed to 6000-6400 MT/s for a guaranteed 1:1 lock.`
+      detail = `RAM running ${speed} MT/s. On Ryzen 7000+, this speed range often changes the UCLK relationship. Verify the actual UCLK/MCLK state in BIOS or a trusted hardware monitor; do not assume a ratio or a latency result from speed alone. If unstable, return to the board's rated/default profile and validate.`
     } else if (speed >= 6000 && speed <= 6400) {
       warning = null
-      detail = `RAM at ${speed} MT/s — sweet spot for Ryzen 7000 1:1 UCLK. No action needed.`
+      detail = `RAM at ${speed} MT/s — commonly compatible with Ryzen 7000 1:1 operation, but the actual ratio still depends on the CPU, board, BIOS, and profile. No action is needed if stability and measured frametime are good.`
     }
   } else {
     // DDR4 → AM4 / Ryzen 5000.
     if (speed > 3800) {
       warning = 'Likely FCLK desync'
-      detail = `RAM running ${speed} MT/s on a DDR4 platform. Ryzen 5000 stops 1:1 FCLK lock above ~3800 MT/s — most chips can hold FCLK 1900 only with hand-tuning. Verify FCLK == MEMCLK/2 in BIOS; if not, drop RAM to 3600-3733 MT/s.`
+      detail = `RAM running ${speed} MT/s on a DDR4 platform. Ryzen 5000 often needs a different FCLK relationship above this range. Verify the actual FCLK/MCLK state in BIOS or a trusted hardware monitor; if unstable, return to the board's rated/default profile and validate.`
     } else if (speed >= 3600 && speed <= 3800) {
-      detail = `RAM at ${speed} MT/s — Ryzen 5000 1:1 FCLK sweet spot. No action needed.`
+      detail = `RAM at ${speed} MT/s — commonly compatible with Ryzen 5000 1:1 operation, but the actual ratio still depends on the CPU, board, BIOS, and profile. No action is needed if stability and measured frametime are good.`
     }
   }
 

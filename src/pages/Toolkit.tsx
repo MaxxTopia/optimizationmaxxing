@@ -69,8 +69,8 @@ export function Toolkit() {
         <p className="text-xs uppercase tracking-widest text-text-subtle">utilities</p>
         <h1 className="text-2xl font-bold">Toolkit</h1>
         <p className="text-sm text-text-muted max-w-2xl">
-          Live monitors, one-click utilities, and curated research. Beats both Paragon's "book a
-          tech" and Hone's "trust us" with intel you can verify yourself.
+          Live monitors, one-click utilities, and curated research. Inspect the evidence, run the
+          measurement, and keep only the change that improves your own rig.
         </p>
       </header>
 
@@ -139,9 +139,9 @@ export function Toolkit() {
           </p>
         </div>
 
-        {/* NVIDIA — full step-by-step. NVCleanstall is the biggest single
-            driver-side win for an NVIDIA gaming rig: stripped install, no
-            telemetry, no GFE background services. */}
+        {/* NVIDIA — full step-by-step. A stripped install can reduce optional
+            components, but the performance and compatibility tradeoff is
+            driver-, feature-, and capture-workflow dependent. */}
         <div className="rounded-md border border-border p-4 space-y-3">
           <p className="font-semibold text-text">
             NVIDIA — install with{' '}
@@ -187,11 +187,11 @@ export function Toolkit() {
               Click <span className="text-text font-medium">Install</span> — downloads + strips + installs. ~3-5 min total.
             </li>
             <li>
-              Reboot. Then open <a href="/guides/nvidia-profile-inspector" className="text-accent hover:underline">NVIDIA Profile Inspector</a> and apply the .nip profile for your game (Calypto for Fortnite). NVCleanstall handles the install hygiene; NVPI handles the per-game knobs NVCP never exposed.
+              Reboot. Then open <a href="/guides/nvidia-profile-inspector" className="text-accent hover:underline">NVIDIA Profile Inspector</a> and import the bundled profile for your game. NVCleanstall handles optional component selection; NVPI handles the per-game knobs the Control Panel does not expose.
             </li>
           </ol>
           <p className="text-[11px] text-text-subtle italic pt-1 border-t border-border">
-            <strong className="text-text-muted not-italic">Why this beats the official installer:</strong> stock NVIDIA install ships ~700 MB of stuff a competitive rig never uses — Container service, ShadowPlay, GFE login, telemetry pings every boot. Stripped install is ~250 MB, zero background services. RAM idle drops 80-150 MB, plus you stop fighting GFE for the keybinds you actually want.
+            <strong className="text-text-muted not-italic">Measure the tradeoff:</strong> optional NVIDIA components, package size, services, capture/audio support, and idle memory vary by driver branch and selected features. Keep the official installer path when you need GeForce features, HDMI/DP audio, capture, or the simplest rollback; compare frametime and DPC results on the same driver before keeping a stripped install.
           </p>
         </div>
 
@@ -217,7 +217,7 @@ export function Toolkit() {
           <p className="text-xs uppercase tracking-widest text-text-subtle">stability</p>
           <h2 className="text-lg font-semibold">Stability tests</h2>
           <p className="text-sm text-text-muted">
-            Validate after RAM/BIOS changes. Don't skip — overclocks that look stable in 5
+            Validate after RAM/BIOS changes. Don't skip — tuning experiments that look stable in 5
             minutes crash in hour-3 boss fights.
           </p>
         </div>

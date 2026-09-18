@@ -10,10 +10,10 @@ import { MonitorFirmwareCard } from '../components/MonitorFirmwareCard'
 import { NetworkAuditCard } from '../components/NetworkAuditCard'
 import { PcieLinkCard } from '../components/PcieLinkCard'
 import { RamAdvisorCard } from '../components/RamAdvisorCard'
+import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
 import { UclkWarningCard } from '../components/UclkWarningCard'
 import { VbsStatusCard } from '../components/VbsStatusCard'
 import {
-  detectSpecs,
   diskFree,
   inTauri,
   readTemps,
@@ -23,6 +23,7 @@ import {
   type SpecProfile,
   type ThermalSnapshot,
 } from '../lib/tauri'
+import { useRigStore } from '../store/useRigStore'
 
 interface Snapshot {
   spec: SpecProfile | null
@@ -38,8 +39,10 @@ export function Diagnostics() {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const isNative = inTauri()
+  const ensureLoaded = useRigStore((state) => state.ensureLoaded)
+  const refreshRig = useRigStore((state) => state.refresh)
 
-  async function refreshAll() {
+  async function refreshAll(forceRig = false) {
     if (!isNative) {
       setErr('Diagnostics requires the optimizationmaxxing.exe shell — open the desktop app.')
       return
@@ -47,8 +50,9 @@ export function Diagnostics() {
     setLoading(true)
     setErr(null)
     try {
+      const readRig = forceRig ? refreshRig : ensureLoaded
       const [spec, perf, temps, disks] = await Promise.all([
-        detectSpecs(false).catch(() => null),
+        readRig().catch(() => null),
         systemMetrics().catch(() => null),
         readTemps().catch(() => null),
         diskFree().catch(() => null),
@@ -62,7 +66,7 @@ export function Diagnostics() {
   }
 
   useEffect(() => {
-    refreshAll()
+    void refreshAll()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -90,7 +94,7 @@ export function Diagnostics() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={refreshAll}
+            onClick={() => void refreshAll(true)}
             disabled={loading || !isNative}
             className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-text text-xs font-semibold disabled:opacity-40"
           >
@@ -109,6 +113,8 @@ export function Diagnostics() {
       {err && (
         <div className="surface-card p-4 text-sm text-text-muted italic">{err}</div>
       )}
+
+      <HudFrame><RebootPersistenceCard /></HudFrame>
 
       {snap && (
         <>

@@ -27,7 +27,7 @@ export const PRESETS: PresetBundle[] = [
     name: 'Esports',
     archetype: 'Esports',
     glyph: '⚡',
-    tagline: 'Lowest input lag · ranked matches',
+    tagline: 'Latency-focused · ranked matches',
     description:
       'A measured-core bundle for ranked play: max refresh rate, mouse acceleration off, Game DVR off, and sticky-keys protection. Device interrupts, boot flags, security changes, and other experiments stay out of this default lane.',
     tweakIds: [

@@ -11,6 +11,7 @@
 //! runner via `Set-Content` PowerShell line. One UAC for the whole batch.
 
 use anyhow::{anyhow, Context, Result};
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::Path;
 
@@ -203,6 +204,22 @@ pub fn capture_pre_state(action: &TweakAction) -> Result<serde_json::Value> {
     }
 }
 
+/// Verify the exact bytes requested by a FileWrite action. This catches
+/// Windows Update, another optimizer, or a failed elevated write changing the
+/// target after the receipt was created.
+pub fn verify(action: &TweakAction) -> Result<bool> {
+    let TweakAction::FileWrite { path, contents_b64 } = action else {
+        return Err(anyhow!("file_write::verify called on non-FileWrite action"));
+    };
+    let resolved = expand_env(path)?;
+    let expected = base64_decode(contents_b64).context("decoding contents_b64 for verification")?;
+    match fs::read(&resolved) {
+        Ok(actual) => Ok(actual == expected),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(e) => Err(e).with_context(|| format!("reading {resolved} for verification")),
+    }
+}
+
 /// Build the cmd.exe-line for an elevated apply. Embeds the new contents as
 /// base64 inside a PowerShell `[IO.File]::WriteAllBytes` call.
 pub fn apply_cmd_line(action: &TweakAction) -> Result<String> {
@@ -325,21 +342,10 @@ fn base64_decode(input: &str) -> Result<Vec<u8>> {
     Ok(decoded)
 }
 
-fn sha256_hex(_bytes: &[u8]) -> String {
-    // Lightweight non-crypto digest — we only use it for change-detection
-    // visibility in the snapshot, never for security. Avoids pulling sha2.
-    // 64-bit FNV-1a doubled = 128 bits of fingerprint, hex-printed.
-    fn fnv1a(seed: u64, data: &[u8]) -> u64 {
-        let mut h = seed;
-        for &b in data {
-            h ^= b as u64;
-            h = h.wrapping_mul(0x100000001b3);
-        }
-        h
-    }
-    let h1 = fnv1a(0xcbf29ce484222325, _bytes);
-    let h2 = fnv1a(h1.wrapping_add(0x9e3779b97f4a7c15), _bytes);
-    format!("{:016x}{:016x}", h1, h2)
+fn sha256_hex(bytes: &[u8]) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(bytes);
+    format!("{:x}", hasher.finalize())
 }
 
 #[cfg(test)]

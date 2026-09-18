@@ -6,9 +6,10 @@ import {
   tweakRequiresAdmin,
   tweakMatchesSpec,
 } from '../lib/catalog'
-import { detectSpecs, type SpecProfile } from '../lib/tauri'
+import type { SpecProfile } from '../lib/tauri'
 import type { TweakAudit } from '../lib/audit'
 import { getImpactFor, type TweakImpactRow } from '../lib/benchImpact'
+import { useRigStore } from '../store/useRigStore'
 
 /**
  * Single tweak row in the catalog list. Click the title to expand and
@@ -45,23 +46,6 @@ const RISK_COLOR: Record<number, string> = {
   4: 'text-accent font-semibold',
 }
 
-// Module-level cache so we don't refetch specs for every TweakRow mount.
-let cachedSpec: SpecProfile | null = null
-let specPromise: Promise<SpecProfile | null> | null = null
-
-function loadSpec(): Promise<SpecProfile | null> {
-  if (cachedSpec) return Promise.resolve(cachedSpec)
-  if (!specPromise) {
-    specPromise = detectSpecs()
-      .then((s) => {
-        cachedSpec = s
-        return s
-      })
-      .catch(() => null)
-  }
-  return specPromise
-}
-
 export function TweakRow({
   tweak,
   applied,
@@ -78,13 +62,14 @@ export function TweakRow({
   const lockedByVip = tweak.vipGate === 'vip' && !isVip
   const experimental = isExperimentalTweak(tweak)
   const [expanded, setExpanded] = useState(false)
-  const [spec, setSpec] = useState<SpecProfile | null>(cachedSpec)
+  const spec = useRigStore((state) => state.spec)
+  const ensureLoaded = useRigStore((state) => state.ensureLoaded)
   const impact: TweakImpactRow | null = getImpactFor(tweak.id)
 
   useEffect(() => {
     if (!expanded || spec) return
-    loadSpec().then(setSpec)
-  }, [expanded, spec])
+    void ensureLoaded()
+  }, [expanded, spec, ensureLoaded])
 
   return (
     <div className="surface-card p-4 flex flex-col gap-3">

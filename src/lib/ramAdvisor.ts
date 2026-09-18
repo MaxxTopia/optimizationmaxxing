@@ -1,5 +1,5 @@
 /**
- * RAM Advisor — substring match against curated kit DB.
+ * RAM Advisor — substring match against a conservative, read-only kit DB.
  *
  * Win32_PhysicalMemory.PartNumber is the canonical key. Real-world part
  * numbers vary in trailing digits (color/SKU) so we match by prefix, not
@@ -7,26 +7,16 @@
  */
 import kitData from '../../resources/ram-kits.json'
 
-export interface TunableTarget {
-  speed_mts: number
-  timings: string
-  voltage_v: number
-  platform: string
-  difficulty: 'Easy' | 'Medium' | 'Hard'
-  notes: string
-}
-
 export interface RamKitProfile {
   match: string
   brand: string
   model: string
   family: 'DDR4' | 'DDR5'
-  die_inferred: string
+  profile_signal: string
   rated_speed_mts: number
   rated_timings: string
   rated_voltage_v: number
-  tunable_targets: TunableTarget[]
-  tm5_config: string
+  stability_reference: string
   notes: string
 }
 

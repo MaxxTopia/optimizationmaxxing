@@ -1,19 +1,10 @@
 /**
- * Secondary RAM timing suggestions — the biggest latency win after XMP/EXPO,
- * and the part most kits leave loose. This is READ-ONLY guidance: the app
- * suggests a conservative SAFE STARTING POINT keyed to the detected die + speed,
- * the user types it into BIOS and stability-tests it. The app never writes SPD.
+ * Manual RAM tuning worksheet.
  *
- * Hard rules baked in from the research (buildzoid / integralfx DDR4 OC guide /
- * Ryzen DRAM Calculator / Hynix DDR5 guides):
- *  - tRFC is the #1 secondary and is DIE-GATED — never apply Hynix numbers to
- *    Samsung/Micron. If we can't identify the die, we refuse to suggest and tell
- *    the user to confirm it first.
- *  - We NEVER suggest voltages or ProcODT/RTT/CAD/VCCSA/VSOC — those are what
- *    kill IMCs. Voltage stays at XMP/EXPO.
- *  - Every value is a conservative starting point (safe > fast), explicitly not
- *    guaranteed stable, gated behind mandatory stability testing.
- *  - tRFC is temperature-sensitive: the safe values carry headroom, test warm.
+ * This module intentionally contains BIOS-facing timing and voltage guidance
+ * as articleware only. It is never converted into a native action and never
+ * appears in Tune Now's apply batch. The user must enter each value in the
+ * motherboard UI, keep a known-good profile, and validate the result.
  */
 
 export interface TimingRow {
@@ -22,23 +13,30 @@ export interface TimingRow {
   note?: string
 }
 
+export interface VoltageRow {
+  rail: string
+  baseline: string
+  experiment: string
+  stop: string
+}
+
 export interface SecondarySuggestion {
   ddr: 'DDR4' | 'DDR5'
   dieLabel: string
-  /** False when the die is unknown/unsupported — we then refuse specific values. */
+  /** False when the die is unknown/unsupported; no specific timing is shown. */
   known: boolean
   speedMts: number
-  /** The headline timing. clocks is what you enter in BIOS. */
   trfc: { clocks: number; ns: number; tightenToward: string } | null
   rows: TimingRow[]
+  voltageRows: VoltageRow[]
   platformNote: string
   caveats: string[]
   guide: { label: string; url: string }
 }
 
 const DDR4_TFRC_NS: Array<{ re: RegExp; die: string; ns: number }> = [
-  { re: /micron.*rev\.?\s?e|micron.*e-?die|\bm8e\b/i, die: 'Micron Rev.E', ns: 311 },
-  { re: /micron.*rev\.?\s?b|\bm16b\b/i, die: 'Micron Rev.B', ns: 311 },
+  { re: /micron.*rev.?\s?e|micron.*e-?die|\bm8e\b/i, die: 'Micron Rev.E', ns: 311 },
+  { re: /micron.*rev.?\s?b|\bm16b\b/i, die: 'Micron Rev.B', ns: 311 },
   { re: /\bcjr\b|hynix.*cjr/i, die: 'Hynix CJR', ns: 292 },
   { re: /\bdjr\b|hynix.*djr/i, die: 'Hynix DJR', ns: 280 },
   { re: /\bmjr\b|hynix.*(mjr|afr|a-?die|c-?die)/i, die: 'Hynix MJR/AFR', ns: 280 },
@@ -52,11 +50,11 @@ const DDR5_TFRC_NS: Array<{ re: RegExp; die: string; ns: number }> = [
 ]
 
 const DDR5_SECONDARIES = (speed: number): TimingRow[] => {
-  const scaled = speed >= 6300 // 6400-class vs 6000-class
+  const scaled = speed >= 6300
   return [
     { timing: 'tRAS', value: scaled ? '34' : '32' },
     { timing: 'tRC', value: scaled ? '72' : '68', note: 'raise until it boots if needed (tRAS + tRP)' },
-    { timing: 'tRTP', value: '12', note: 'floor — do NOT go below 12 on DDR5' },
+    { timing: 'tRTP', value: '12', note: 'floor — do not go below 12 on DDR5' },
     { timing: 'tWR', value: '48', note: 'keep a multiple of 6' },
     { timing: 'tRRD_S / tRRD_L', value: '4 / 8' },
     { timing: 'tFAW', value: '20', note: 'low payoff — leave loose' },
@@ -67,7 +65,7 @@ const DDR5_SECONDARIES = (speed: number): TimingRow[] => {
 
 const DDR4_SECONDARIES: TimingRow[] = [
   { timing: 'tRRD_S / tRRD_L', value: '6 / 6' },
-  { timing: 'tFAW', value: '24', note: 'no gain below tRRD_S×4' },
+  { timing: 'tFAW', value: '24', note: 'no gain below tRRD_S × 4' },
   { timing: 'tWR', value: '20' },
   { timing: 'tRTP', value: '10', note: 'keep tRAS ≥ tRCD + tRTP' },
   { timing: 'tWTR_S / tWTR_L', value: '4 / 12' },
@@ -77,20 +75,52 @@ const DDR4_SECONDARIES: TimingRow[] = [
 ]
 
 function findDie(dieInferred: string, table: Array<{ re: RegExp; die: string; ns: number }>) {
-  return table.find((e) => e.re.test(dieInferred)) ?? null
+  return table.find((entry) => entry.re.test(dieInferred)) ?? null
+}
+
+function voltageWorksheet(ratedVoltage: number | null | undefined, ddr: 'DDR4' | 'DDR5'): VoltageRow[] {
+  const rated = ratedVoltage && ratedVoltage > 0
+    ? ratedVoltage.toFixed(2) + ' V manufacturer profile'
+    : 'read the exact XMP/EXPO profile'
+  return [
+    {
+      rail: ddr === 'DDR5' ? 'DRAM VDD / VDDQ' : 'DRAM voltage',
+      baseline: rated,
+      experiment: 'Manual only: if the exact kit + board guide permits it, change one small step at a time and record the value.',
+      stop: 'Stop at the kit/board manufacturer limit. There is no universal safe ceiling in this app.',
+    },
+    {
+      rail: ddr === 'DDR5' ? 'CPU VDDQ / IMC rail' : 'VCCSA / IMC rail',
+      baseline: 'Auto / Intel Default Settings or AMD Auto',
+      experiment: 'No generic target. Tune only from an exact CPU, board, BIOS, and memory-controller guide.',
+      stop: 'Any WHEA, training loop, data error, crash, or temperature regression means revert.',
+    },
+    {
+      rail: ddr === 'DDR5' ? 'PMIC / VPP' : 'SoC / VDDIO',
+      baseline: 'Auto / board default',
+      experiment: 'Do not copy a community number across platforms; leave automatic unless the platform guide is exact.',
+      stop: 'Never use voltage to conceal instability. Return to the last known-good profile.',
+    },
+  ]
 }
 
 const TEST_CAVEATS = [
-  'This is a conservative STARTING POINT, not a guaranteed-stable setting — your exact silicon may do better or need looser. It is only "applied" once it PASSES testing.',
-  'Mandatory before you trust it: TestMem5 with the anta777 Extreme config (3+ cycles), then y-cruncher or Karhu / OCCT. A single error, freeze, or BSOD means REVERT the last change and retest — unstable RAM silently corrupts data.',
-  'tRFC is temperature-sensitive: a value that passes in a cool room can error under a hot summer gaming load. Test warm, and keep the headroom above.',
-  'We never touch or suggest voltages (VDDQ / VCCSA / VSOC / ProcODT / RTT / CAD). Leave XMP/EXPO voltage as-is — raising those is what permanently damages memory controllers. For those, use Ryzen DRAM Calculator with your exact die + board.',
-  'Suggestions assume single-rank 2-stick kits. Dual-rank (many 2×32 GB or 32 GB sticks) stresses the controller harder — loosen tRFC + turnarounds beyond these.',
+  'This is a manual starting worksheet, not a guaranteed-stable profile. It is only a win after it passes testing and improves the same-game frametime route.',
+  'Change one setting at a time. Keep the previous BIOS profile and a CMOS/recovery path before entering the BIOS.',
+  'Run a current memory test, then a warm Fortnite session. Watch WHEA-Logger, crashes, anti-cheat failures, shader errors, and frametime spikes.',
+  'Voltage rows are intentionally bounded by the exact kit and board documentation. The app does not invent a universal voltage ceiling and never writes voltage.',
+  'Dual-rank or four-DIMM layouts can need looser values than this worksheet. Unknown die means unknown timing targets.',
 ]
 
+/**
+ * Return a die-gated manual worksheet. Unknown dies deliberately return no
+ * numeric timing targets, but still return the voltage audit table so the user
+ * can see the exact rails that must remain board-specific.
+ */
 export function suggestSecondaries(
   dieInferred: string | null | undefined,
   speedMts: number,
+  ratedVoltage?: number | null,
 ): SecondarySuggestion {
   const speed = speedMts > 0 ? speedMts : 0
   const isDdr5 = speed >= 4800
@@ -98,16 +128,14 @@ export function suggestSecondaries(
   const die = dieInferred ?? ''
   const guide = isDdr5
     ? { label: "buildzoid's Hynix DDR5 low-effort guide", url: 'https://www.youtube.com/results?search_query=buildzoid+hynix+ddr5+low+effort+timings' }
-    : { label: 'Ryzen DRAM Calculator (Safe preset)', url: 'https://www.techpowerup.com/download/ryzen-dram-calculator/' }
+    : { label: 'Ryzen DRAM Calculator (reference only)', url: 'https://www.techpowerup.com/download/ryzen-dram-calculator/' }
 
   const platformNote = isDdr5
-    ? 'Secondary timings are the same on Intel and AMD. On AMD, keep DDR5-6000 at 1:1 (UCLK=MCLK) — going higher usually drops to 1:2 and adds latency. On Intel this runs in Gear 2 by default; that\'s normal, leave it.'
-    : 'On AMD, the sweet spot is DDR4-3600 with FCLK 1800 (1:1) — going faster breaks 1:1 and erases the gain. Tighten timings instead of chasing MHz.'
+    ? 'On AMD, validate whether UCLK=MCLK remains stable at the chosen speed; on Intel, validate the board training result. The ratio and game frametime matter more than the headline MT/s number.'
+    : 'On AMD, compare the fabric ratio and frametime rather than chasing frequency. On Intel, validate the board training result and gear mode after every change.'
 
   const match = findDie(die, isDdr5 ? DDR5_TFRC_NS : DDR4_TFRC_NS)
-
   if (!match) {
-    // Unknown / unsupported die (incl. Samsung/Micron DDR5) — refuse specifics.
     return {
       ddr,
       dieLabel: die || 'unidentified',
@@ -115,35 +143,34 @@ export function suggestSecondaries(
       speedMts: speed,
       trfc: null,
       rows: [],
+      voltageRows: voltageWorksheet(ratedVoltage, ddr),
       platformNote,
       caveats: [
-        'We can only suggest safe secondaries once your die is confirmed — tRFC especially is die-specific and applying the wrong die\'s value corrupts data.',
-        isDdr5
-          ? 'Samsung/Micron DDR5 need much looser tRFC than Hynix — keep your XMP/EXPO profile and verify your die first.'
-          : 'Confirm your die (Thaiphoon Burner / the Die Finder link), then re-scan and we\'ll suggest targets.',
+        'No numeric timing table is shown until the DRAM die is confirmed. tRFC is die-specific; guessing is how an apparently fast profile becomes unstable.',
+        'Use the kit manufacturer profile as the baseline and retain the board recovery profile before opening a manual experiment.',
+        ...TEST_CAVEATS,
       ],
       guide,
     }
   }
 
   const clocks = Math.round((match.ns * speed) / 2000)
-  const trfc = {
-    clocks,
-    ns: match.ns,
-    tightenToward: isDdr5
-      ? (match.die.includes('A-die')
-          ? `try ~${Math.round((120 * speed) / 2000)} (~120 ns) if it stays stable and cool`
-          : `try ~${Math.round((150 * speed) / 2000)} (~150 ns) cautiously`)
-      : `DRAM Calculator "Fast" preset goes tighter for ${match.die} — only with airflow + testing`,
-  }
-
   return {
     ddr,
     dieLabel: match.die,
     known: true,
     speedMts: speed,
-    trfc,
+    trfc: {
+      clocks,
+      ns: match.ns,
+      tightenToward: isDdr5
+        ? (match.die.includes('A-die')
+          ? 'try ~' + Math.round((120 * speed) / 2000) + ' clocks (~120 ns) only if it stays stable and cool'
+          : 'try ~' + Math.round((150 * speed) / 2000) + ' clocks (~150 ns) cautiously')
+        : 'the reference fast preset may go tighter for ' + match.die + '; use one step + one test at a time',
+    },
     rows: isDdr5 ? DDR5_SECONDARIES(speed) : DDR4_SECONDARIES,
+    voltageRows: voltageWorksheet(ratedVoltage, ddr),
     platformNote,
     caveats: TEST_CAVEATS,
     guide,

@@ -1,13 +1,11 @@
 /**
- * Turn an SPD read (real DRAM vendor, straight off the chip) into a die label
- * the secondary-timings advisor understands. This replaces guessing the die
- * from the marketing part number.
+ * Turn an SPD read into a conservative vendor/profile signal for the read-only
+ * RAM audit. SPD fields and density can suggest a family, but they do not prove
+ * the exact die revision or a stable manual timing profile.
  *
  * Honest confidence tiers:
- *  - 'confident'   : die follows directly (e.g. Nanya, or a DDR5 vendor+stepping).
- *  - 'likely'      : real SPD vendor + density → best-guess die letter (DDR4 die
- *                    revisions aren't stored in SPD, so this is inference — but
- *                    seeded by the true vendor, not a name-guess).
+ *  - 'confident'   : the SPD vendor field is clear, not that a timing recipe is safe.
+ *  - 'likely'      : vendor + density suggest a family; this remains an inference.
  *  - 'vendor-only' : we know the maker from SPD but not enough to name a die.
  */
 import type { SpdDimm } from './tauri'
@@ -17,7 +15,7 @@ export type DieConfidence = 'confident' | 'likely' | 'vendor-only'
 export interface DieResult {
   /** Real DRAM manufacturer read from SPD (e.g. "Nanya Technology", "SK Hynix"). */
   vendor: string
-  /** Die label that feeds the timings advisor, or '' when vendor-only. */
+  /** Suggested family label for display, or '' when SPD is inconclusive. */
   die: string
   confidence: DieConfidence
   note: string
@@ -35,32 +33,32 @@ export function decodeDie(d: SpdDimm): DieResult {
         vendor,
         die: 'SK Hynix A-die',
         confidence: 'likely',
-        note: "SK Hynix DDR5 is most often A-die. If the timings won't hold, it may be M-die — bump tRFC up a notch.",
+        note: 'SPD identifies SK Hynix, but it cannot prove A-die/M-die or a stable manual timing. Treat this as a display-only family hint.',
       }
     }
     if (v.includes('samsung')) {
-      return { vendor, die: 'Samsung B-die', confidence: 'likely', note: 'Samsung DDR5 is typically B-die. Samsung tunes looser than Hynix.' }
+      return { vendor, die: 'Samsung DDR5 family', confidence: 'likely', note: 'SPD identifies Samsung DDR5. The exact die revision and safe timings remain unverified.' }
     }
     if (v.includes('micron')) {
-      return { vendor, die: '', confidence: 'vendor-only', note: 'Micron DDR5 needs looser tuning than Hynix — keep XMP/EXPO and tighten cautiously.' }
+      return { vendor, die: '', confidence: 'vendor-only', note: 'SPD identifies Micron DDR5, but it does not establish a manual timing target. Keep the manufacturer profile or vendor defaults.' }
     }
-    return { vendor: vendor || 'unknown', die: '', confidence: 'vendor-only', note: 'DDR5 tRFC tuning is Hynix-specific — verify your die before tightening.' }
+    return { vendor: vendor || 'unknown', die: '', confidence: 'vendor-only', note: 'SPD does not identify enough information for a manual timing recommendation. Keep the manufacturer profile or vendor defaults.' }
   }
 
-  // DDR4 — the die letter isn't in SPD, but the vendor now is (real, not guessed).
+  // DDR4 — density can suggest a family, but the die revision is not proven by SPD.
   if (v.includes('nanya')) {
-    return { vendor, die: 'Nanya', confidence: 'confident', note: 'Nanya DRAM read directly from SPD.' }
+    return { vendor, die: 'Nanya family', confidence: 'confident', note: 'Nanya vendor field read from SPD; exact die revision and stability remain unverified.' }
   }
   if (v.includes('micron')) {
     const die = capGb >= 16 ? 'Micron Rev.B' : 'Micron Rev.E'
-    return { vendor, die, confidence: 'likely', note: `Micron DDR4 — ${die} by density (Rev.E on 8 Gb, Rev.B on 16 Gb sticks).` }
+    return { vendor, die: `${die} family (inferred)`, confidence: 'likely', note: `Micron DDR4 family inferred from vendor and density (${die}); SPD does not prove the revision or a stable manual timing.` }
   }
   if (v.includes('hynix')) {
     const die = capGb >= 16 ? 'Hynix DJR' : 'Hynix CJR'
-    return { vendor, die, confidence: 'likely', note: `SK Hynix DDR4 — likely ${die} by density.` }
+    return { vendor, die: `${die} family (inferred)`, confidence: 'likely', note: `SK Hynix DDR4 family inferred from vendor and density; SPD does not prove the revision or a stable manual timing.` }
   }
   if (v.includes('samsung')) {
-    return { vendor, die: 'Samsung B-die', confidence: 'likely', note: 'Samsung DDR4 on a fast kit is usually B-die; low-speed kits can be C/D/E-die.' }
+    return { vendor, die: 'Samsung DDR4 family (inferred)', confidence: 'likely', note: 'Samsung DDR4 family inferred from vendor and kit context; exact die revision and stable timings remain unverified.' }
   }
-  return { vendor: vendor || 'unknown', die: '', confidence: 'vendor-only', note: 'DRAM vendor read from SPD; the exact die needs Thaiphoon Burner to confirm.' }
+  return { vendor: vendor || 'unknown', die: '', confidence: 'vendor-only', note: 'DRAM vendor read from SPD; exact die and stable timing behavior are not established by this read.' }
 }

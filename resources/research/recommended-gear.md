@@ -1,58 +1,89 @@
-# Recommended gear — what to look for, not which to buy
+# Competitive gear — a current buying framework
 
-Hardware tier lists rot fast (a "best mouse 2026" article is wrong by Q3). What follows is the **framework** you use to vet a piece of gear, plus the specs that genuinely matter for tournament play. When a specific product is mentioned it's because the spec it represents is canonical.
+**Last reviewed: 2026-09-17.** There is no universal “best” mouse, keyboard, monitor, or
+network package. Shape, firmware quality, stable frame time, and the player's fit matter more
+than a headline polling number. Use Match Scan first: buy hardware only after the session data
+shows a repeatable CPU, GPU, display, or network bottleneck.
 
-## Mouse — what to demand
+## Best-value buying order
 
-- **Sensor:** PixArt PMW3950 / PAW3395 / Razer Focus Pro 35K / 50K. Anything older = pass. Track DPI deviation, lift-off distance < 1 mm, no smoothing. (Razer's named flagship has moved on: the Viper V3 Pro ships the [Focus Pro 35K Gen-2](https://www.razer.com/gaming-mice/razer-viper-v3-pro) and the current top sensor is the [Focus Pro 50K Gen-3](https://www.razer.com/technology/razer-focus-pro-sensor) — the older 30K is still tournament-viable, the spec is illustrative of the "recent sensor, no smoothing, <1 mm LOD" principle.)
-- **Polling rate:** 1000 Hz minimum. **8000 Hz on flagship** is not placebo — the latency distribution tightens visibly under our polling-rate stability test (deferred feature). 4000 Hz is a sweet spot for most rigs (8000 Hz can DPC-spike on weaker USB hosts).
-- **Wireless:** the right wireless mouse beats a wired one because it's lighter, not because the radio is faster. If you're not on a 4K-receiver-with-paracord-style donglehub, wired is honest.
-- **Weight:** under 65 g. Modern flagships hit 50 g without sacrificing battery. A heavy mouse trains slower flicks — period.
-- **Shape:** matters more than spec. Buy in person if possible; specs only tell you which mice DESERVE consideration.
+1. A mouse shape you can control consistently and a large, unworn pad.
+2. Wired Ethernet and a router path with measured low bufferbloat.
+3. A monitor whose refresh rate is comfortably above the FPS you can hold in the real game.
+4. A keyboard that feels right; Hall-effect/Rapid Trigger is an optional movement feature, not a
+   prerequisite for Fortnite aim or a guarantee of lower end-to-end input latency.
+5. A lighter or newer peripheral only after a controlled A/B test shows that it helps your aim or
+   consistency.
 
-## Keyboard — what to demand
+## Mouse
 
-- **Hall-effect / magnetic switches** if you're competing seriously. Adjustable actuation point + Rapid Trigger is not optional in 2026 for tac-shooters.
-- **Polling rate:** 1000 Hz minimum. Some hall-effect keyboards now expose **8000 Hz** — same caveat as mouse polling (USB host has to handle it cleanly).
-- **N-key rollover:** non-negotiable.
-- **Form factor:** 60% / 65% / TKL. Anything bigger eats mouse-arm space. Numpad-on-the-right is a competitive disadvantage for low-sens players.
-- **Software:** if the configurator is web-only or requires a constant-running service, skip — you don't want vendor-bloat eating CPU mid-match.
+- Prioritize shape, sensor tracking, click consistency, wireless stability, and a receiver that
+  can stay close to the mouse. Current flagship sensors are already more than accurate enough;
+  “higher DPI” is not automatically faster.
+- 1,000 Hz is a sensible baseline. 2,000–8,000 Hz can reduce report spacing, but it can also
+  increase USB/CPU work or frametime variance. Test the rate in the actual game and keep the
+  highest setting that does not create DPC spikes, FPS loss, or battery/receiver problems.
+- Modern 2.4 GHz wireless can be excellent. Wired is a valid control condition, not a guarantee
+  of lower click-to-photon latency. Avoid hubs and vendor software that must run during a match.
+- Weight and shape are personal. Do not reject a reliable mouse solely because it is above a
+  round-number weight target.
+
+## Keyboard
+
+- Hall-effect switches and Rapid Trigger can help a player who benefits from adjustable actuation
+  or rapid movement reset. They do not improve every player's mechanics and do not replace a
+  stable USB path or good game settings.
+- 1,000 Hz is a reasonable baseline. Higher keyboard polling is optional and should be validated
+  the same way as mouse polling.
+- Prefer onboard profiles, reliable firmware, and a configurator that does not need a permanent
+  background service. Keep firmware and game profiles recoverable.
 
 ## Mousepad
 
-- **Size:** XL minimum (450 × 400 mm). Tournament players don't change pad size between games.
-- **Surface:** "control" pads (Artisan Zero / Hayate Otsu / X-raypad pads) for low-sens, "speed" pads for high-sens. Which one you prefer is a personal-feel test, not a spec.
-- **Stitched edges:** keeps the cloth from peeling at year 2.
-- **Replace yearly.** Pads compress + the surface texture wears flat. A worn pad is invisible micro-input-jitter. Budget for it.
+Choose enough surface for your sensitivity and arm movement, then choose control versus speed by
+feel. Replace it when wear, humidity, or a damaged edge changes the glide; “replace yearly” is not
+a performance law.
 
-## Network — fiber + ONU + SFP+
+## Network
 
-- **Connection type:** **fiber-to-the-home with a managed ONU** is the meaningful upgrade. Cable + DOCSIS adds variable jitter that Tournament FPS preset can't fix.
-- **ONU options:** the carrier-supplied ONU is usually fine; if it has a wifi-router built-in, **bypass it** with a separate router so the ONU just handles fiber↔ethernet.
-- **SFP+ stick** instead of an ONU: only worth it if your carrier supports XGS-PON and you want to put the SFP+ directly in your router (skips one device, one HOP, one source of variable buffering). Not a meaningful latency win on 1 Gbps services.
-- **Router:** wired ethernet from the router to the gaming rig. Cat6 is sufficient. Wifi for gaming is a handicap regardless of how good your AP is — interference is non-deterministic.
-- **Switch:** unmanaged gigabit consumer switch is fine. **Don't** put a managed enterprise switch in line — many of them buffer packets at the QoS layer in ways that add 1-3 ms of variable latency for no benefit on a single-host LAN.
+- Use wired Ethernet for the gaming PC when possible. It removes Wi-Fi interference and roaming
+  variability, but it does not fix a poor ISP route or queueing.
+- Fiber is not automatically lower-latency than cable to every game server. Compare idle and
+  loaded latency, packet loss, jitter, and the route to the actual region you play.
+- A managed ONU, SFP+ module, or enterprise switch is not a guaranteed gaming upgrade. Buy one
+  only for a documented compatibility, reliability, or bufferbloat problem.
+- Test the router under load with a bufferbloat tool and keep QoS/SQM only if it improves loaded
+  latency without reducing the bandwidth your household needs.
 
 ## Monitor
 
-- **Refresh rate:** 240 Hz is the new floor for competitive. 360 Hz / 480 Hz OLEDs are the real flex.
-- **Panel type:** OLED for color + response time, IPS for sustained brightness, TN is dying.
-- **Adaptive sync:** G-Sync compatible (over DisplayPort) ON in driver, FPS capped 3 below max refresh in-game (per the NVIDIA Reflex research article). VRR + capped FPS = lowest input lag at high FPS **for most games**.
-  - **Fortnite caveat:** at 240+ Hz with stable FPS above refresh, pros run **G-Sync OFF + V-Sync OFF + Reflex On+BOOST + uncapped or refresh-3 cap**. At that frame rate the marginal G-Sync overhead (per [Blur Busters G-Sync 101](https://blurbusters.com/gsync/gsync101-input-lag-tests-and-settings/)) loses to raw V-Sync-off rendering, and tearing is essentially invisible. For lower-refresh / unstable-FPS rigs the standard G-Sync stack still wins.
-- **Connection:** DisplayPort 1.4 or 2.0. HDMI 2.1 is fine but DP is the desktop-PC native.
-- **Cable quality:** matters more than people admit on 4K@240+ — buy a **DP 1.4-rated certified cable**, not the cheapest one.
-- **Firmware update:** check the vendor's support page yearly. ASUS / LG / Samsung have shipped meaningful frame-pacing fixes in firmware updates.
+- Choose refresh rate from measured sustained FPS, not the panel's maximum number. A stable
+  240 Hz path is generally more useful than a 360 Hz panel fed by inconsistent 180–240 FPS; 360
+  Hz or 480 Hz becomes reasonable when the rig can feed it consistently and the player can use it.
+- OLED offers very fast pixel response but has brightness, text, and burn-in trade-offs. Fast IPS
+  can be the better long-session choice. TN is still viable when its motion behavior and price fit.
+- Variable refresh, V-Sync, Reflex, and the in-game frame cap are a test matrix, not a universal
+  “on” recipe. For Fortnite, compare the two states at the same scene and frame cap: VRR for
+  tear control versus V-Sync-off/Reflex for the lowest measured latency when FPS is comfortably
+  above refresh.
+- Use a certified cable for the resolution and refresh rate. A cable failure is not an input-lag
+  tweak; it is a reliability problem.
 
 ## Audio
 
-- **Wired headset > wireless** for competition. Same wireless argument as mouse — wireless audio adds 5-30 ms of buffering depending on codec.
-- **DAC / AMP:** doesn't help latency; helps imaging. Imaging matters in CS / Valorant / R6 (footstep direction). If you can hear footsteps with onboard audio, save the money.
-- **Disable audio enhancements** in Windows Sound panel. We don't have a one-click for this yet (research-article queue item).
+Wired USB or analog audio is a predictable baseline, but good 2.4 GHz wireless can also be fast.
+Latency depends on the device, codec, buffering, and processing path; there is no honest universal
+There is no universal wireless latency penalty. Receiver mode, firmware, codec, interference,
+power management, and the audio path determine the result. Disable unnecessary enhancements and
+compare positional clarity and repeatable cue timing in the game you actually play.
 
-## What we don't ship VIP-tier links for
+## What optimizationmaxxing can verify
 
-We don't run an Amazon-affiliate scheme and we don't take vendor money. The gear list in this article is **what to look for**, not where to click. If you want specific 2026-current product picks, the relevant communities (Tom's Hardware, Linus Tech Tips' WAN show, the Esports Boost discord) update tier lists quarterly with real testing data — not glossy "best of" articles.
+The app can scan hardware and Windows signals, report the active display mode, expose system
+memory information, record CPU/GPU-bound evidence, and point out whether a device or firmware
+setting needs a manual check. It cannot read every mouse firmware, monitor OSD, game toggle, ISP
+route, or wireless queue. Treat a hardware recommendation as a measured hypothesis, not a promise.
 
-## What an actual VIP edition would unlock
-
-The current `vipGate: 'vip'` field on tweaks gates the highest-risk + highest-reward entries (cpu-mitigations off, MSI mode, HVCI off, NIC offload disables, IFEO priority tweaks). We don't have a leaderboard / supporter badge / Discord-verified-pro flair yet — those need a backend we haven't built. The 4-theme system (Val / Sonic / DMC / BO3) does already exist as a free customization surface, so "supporter custom skin" is technically already there for any user.
+Specific models and prices change too quickly for a static “best gear” list. Re-check current
+manufacturer firmware, warranty, return policy, and independent latency/motion testing immediately
+before purchase.

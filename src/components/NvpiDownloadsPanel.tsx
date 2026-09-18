@@ -15,6 +15,7 @@ interface NipProfile {
   exes: string
   settingsCount: number
   highlight?: boolean
+  experimental?: boolean
   /** One-line "what's in it" tagline. */
   blurb: string
 }
@@ -22,12 +23,21 @@ interface NipProfile {
 const PROFILES: NipProfile[] = [
   {
     filename: 'fortnite-pinnacle.nip',
-    label: 'Fortnite — pinnacle',
+    label: 'Fortnite — latency baseline',
     exes: 'FortniteClient-Win64-Shipping.exe, FortniteLauncher.exe',
-    settingsCount: 14,
+    settingsCount: 4,
     highlight: true,
     blurb:
-      'Threaded Optimization OFF (the UE5 stutter fix pros gatekeep), Power Mgmt Prefer Max, VSync force off, Texture filtering High Performance, FXAA + MFAA off, Pre-rendered frames 1, Ansel disabled, Smooth AFR off.',
+      'Power Mgmt Prefer Max, VSync force off, Texture filtering High Performance, and pre-rendered frames left to the 3D app so Fortnite Reflex owns the queue. Start here.',
+  },
+  {
+    filename: 'fortnite-clean-render.nip',
+    label: 'Fortnite — clean render lab',
+    exes: 'FortniteClient-Win64-Shipping.exe, FortniteLauncher.exe',
+    settingsCount: 7,
+    experimental: true,
+    blurb:
+      'Adds driver-level FXAA/MFAA off and Negative LOD clamp to the same latency baseline. It does not remove foliage, clouds, terrain, or visibility; those hidden visual flags are excluded.',
   },
   {
     filename: 'valorant.nip',
@@ -107,6 +117,11 @@ export function NvpiDownloadsPanel() {
           select the <code>.nip</code> → <strong className="text-text">Apply changes</strong> (green
           checkmark top-right). Every setting ID verified against Orbmu2k's source.
         </p>
+        <p className="text-[11px] text-amber-200/90 leading-snug mt-2 max-w-2xl">
+          These are driver profiles, not Fortnite file edits. We do not ship foliage/cloud/terrain
+          removal, wall-visibility flags, memory edits, or anti-cheat bypasses. Use Fortnite's own
+          Performance Mode and low-effects settings for the supported visual-minimum path.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -124,7 +139,7 @@ export function NvpiDownloadsPanel() {
                 {p.label}
               </h4>
               <span className="text-[10px] uppercase tracking-widest text-text-subtle">
-                {p.settingsCount} settings
+                {p.settingsCount} settings{p.experimental ? ' · lab' : ''}
               </span>
             </div>
             <p className="text-[11px] text-text-muted leading-snug">{p.blurb}</p>

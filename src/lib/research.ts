@@ -46,7 +46,7 @@ export interface ResearchArticle {
    * the article — e.g. "Fortnite: Brave wins for tournament rigs (no FPS
    * drops with extension blocking)." */
   perGameCallouts?: Partial<Record<GameId, string>>
-  /** Optional 'advanced' tag — surfaces in the SCEWIN/overclocks track. */
+  /** Optional 'advanced' tag — surfaces in the SCEWIN/firmware-audit track. */
   advanced?: boolean
 }
 
@@ -69,7 +69,7 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'where-your-next-margin-is',
     title: 'Where your next margin is — after the scan comes back clean',
     blurb:
-      "The honest layer model: software/config is ~70% of the gap and the cheapest 70% you'll ever buy — but 'everything except hardware' skips two layers. After a clean scan the order is in-game/peripheral settings (we can only advise) -> your own mechanics (the biggest lever) -> targeted hardware only where Match Scan proves you're bottlenecked. Don't buy a GPU to fix a 60Hz cable.",
+      "The honest layer model: software/config is the cheapest layer to validate, but no fixed percentage applies to every rig. After a clean scan the order is in-game/peripheral settings (we can only advise) -> your own mechanics (the biggest lever) -> targeted hardware only where Match Scan proves you're bottlenecked. Don't buy a GPU to fix a 60Hz cable.",
     badge: 'READ FIRST',
     body: nextMargin,
   },
@@ -82,7 +82,7 @@ export const RESEARCH: ResearchArticle[] = [
     body: nvidiaProfileInspector,
     advanced: true,
     perGameCallouts: {
-      fortnite: 'Threaded Optimization OFF in NVPI fixes UE5 main-thread stutter that NVCP can\'t reach.',
+      fortnite: 'Use the four-setting Reflex-aligned baseline first; the clean-render profile is a separate measured experiment, not a foliage/visibility hack.',
       cs2: 'NVPI Frame Rate Limiter v3 mode beats both in-game cap and NVCP UI cap.',
       valorant: 'Per-app prefer-max-performance + Vanguard-safe NVPI changes.',
       apex: 'Low-latency mode = Ultra on the per-game profile. ImperialHal-tier setting.',
@@ -99,18 +99,18 @@ export const RESEARCH: ResearchArticle[] = [
   },
   {
     id: 'ram-bios-recipes',
-    title: 'RAM tightening — copy-paste BIOS recipes per IC',
+    title: 'RAM stability and profile audit — no copy-paste voltage recipes',
     blurb:
-      'Conservative Buildzoid/DRAM-Calculator starting points for common DDR4 and DDR5 ICs. Enter them manually, then validate with TestMem5 or another memory test; the result depends on the kit, board, controller, and game.',
+      'Read the kit, board, controller, and stability signals first. Manufacturer-rated XMP/EXPO is optional; optimizationmaxxing never writes timings or memory voltage.',
     badge: 'BIOS',
     body: ramBiosRecipes,
     advanced: true,
   },
   {
     id: 'bios-per-chipset',
-    title: 'BIOS settings per chipset (Z790 / X670E / B650 / Z890)',
+    title: 'BIOS readiness per chipset (Z790 / X670E / B650 / Z890)',
     blurb:
-      'ReBAR, EXPO, Curve Optimizer, LLC, C-states. What to flip per board family. Backup before tuning.',
+      'Read-only checks for firmware support, ReBAR, Secure Boot, TPM, memory profile state, and Intel Default Settings. No voltage, thermal-limit, or overclock writes.',
     badge: 'BIOS',
     body: biosPerChipset,
   },
@@ -189,7 +189,7 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'amd-intel',
     title: 'AMD + Intel CPU features — keep / disable',
     blurb:
-      'HT/SMT usually stay on. Intel APO on supported titles. AMD PBO + Curve Optimizer. VBS is an eligibility and security trade-off, not an automatic gaming-off switch.',
+      'Keep HT/SMT and vendor-default scheduling as the baseline. Intel APO is title- and platform-specific; AMD cache scheduling is driver/firmware-dependent. VBS is an eligibility and security trade-off, not an automatic gaming-off switch.',
     badge: 'CPU',
     body: amdIntel,
   },
@@ -197,7 +197,7 @@ export const RESEARCH: ResearchArticle[] = [
     id: 'per-game-windows',
     title: 'Best Windows version per game',
     blurb:
-      'Use a supported Windows 11 branch (24H2 or 25H2 where offered), then compare your own clean installs in OS Lab. Custom and stripped builds trade background load for support, update, and anti-cheat risk.',
+      'Start with a fully patched stock Windows 11 baseline, use 25H2 as the conservative fresh-install reference, and test 26H1 on the same rig. Custom and stripped builds trade background load for support, update, and anti-cheat risk.',
     badge: 'OS',
     body: perGameWindows,
     perGameCallouts: {
@@ -259,7 +259,7 @@ export const RESEARCH: ResearchArticle[] = [
     body: gamingMice,
     perGameCallouts: {
       fortnite: 'Most build-fight pros: 800–1600 DPI, low-mid sens (~12–18 cm/360). Polling 1000+ Hz, accel OFF.',
-      valorant: 'Tac-shooter band: 800 DPI is the historical default but ~30% of top pros sit at 1600. Same eDPI either way.',
+      valorant: 'Tac-shooter band: 800 and 1600 DPI are both common references. Compare the resulting eDPI and control on your own setup rather than copying a percentage.',
       cs2: 'CS pro median 800 DPI, 0.6–1.0 sens. 1.6 m/360 is the modern flick band.',
       apex: 'Higher DPI tolerated (1600–3200) — strafe-heavy aim benefits from finer increments.',
     },

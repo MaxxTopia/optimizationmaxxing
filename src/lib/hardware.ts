@@ -27,10 +27,9 @@ export type HardwareCategory =
 
 export type HardwareTier = 'goat' | 'pro' | 'budget' | 'principle'
 
-/** Pulled from pro rig snapshots in /grind + ProSettings.net + community
- * scene consensus and vendor pages. Bump this when a category's evidence is
- * reviewed. Prices are intentionally not treated as live data. */
-export const HARDWARE_LAST_VERIFIED = '2026-08-21'
+/** Vendor/spec and recommendation copy review date. Prices and pro usage are
+ * intentionally not treated as live data; re-check both before purchase. */
+export const HARDWARE_LAST_VERIFIED = '2026-09-17'
 
 export interface HardwareItem {
   /** Display name. */
@@ -79,7 +78,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$479',
         tier: 'pro',
         why:
-          'The value reference when the flagship premium is not justified. 8 cores, 96MB L3 (3D V-Cache stack), and a 5.2GHz advertised boost. Use current independent benchmarks for the game and patch you play; the percentage gap is not portable across every rig. Unlocked for PBO + Curve Optimizer, which still requires stability and temperature testing.',
+          'A strong value reference when the flagship premium is not justified. 8 cores, 96MB L3 (3D V-Cache stack), and a 5.2GHz advertised boost. Use current independent benchmarks for the game and patch you play; the percentage gap is not portable across every rig. Keep the platform at vendor defaults for a fair latency comparison.',
         link: 'https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9800x3d.html',
         citedPro: 'Most current FNCS top-100 builds',
       },
@@ -88,7 +87,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$359',
         tier: 'pro',
         why:
-          'Last-gen GOAT, still 90-95% of the 9800X3D in Fortnite for $120 less. 8 cores, 96MB L3. Best single buy on AM5 right now if you don\'t need the absolute ceiling — drop it in any X670/B650 board.',
+          'A previous-generation 8-core, 96MB 3D V-Cache reference that can be excellent value when discounted. Fortnite results vary with patch, GPU, memory training, and frame cap; confirm the board BIOS and CPU-support list instead of assuming any AM5 board is equivalent.',
         link: 'https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-7-7800x3d.html',
       },
       {
@@ -160,7 +159,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$390-$420',
         tier: 'goat',
         why:
-          'A tight-timing reference kit. IC labeling and stable timings can vary by batch and memory controller; use the /guides recipe only as a conservative starting point, never as a guaranteed CL26 or voltage instruction. Test every BIOS change.',
+          'A low-latency reference kit. IC labeling, memory-controller margin, and board training vary by batch and platform; use only the manufacturer-rated profile if you choose to enable one, and validate stability before tournament use. This app does not prescribe timings or voltage.',
         link: 'https://www.gskill.com/product/165/390/1726195627/F5-6000J2836G16GX2-TR5RKE',
       },
       {
@@ -168,14 +167,14 @@ export const HARDWARE: HardwareSection[] = [
         price: '$340-$370',
         tier: 'pro',
         why:
-          'AMD EXPO + Intel XMP both on the SPD. Hynix M-die or A-die depending on stocked batch (check Thaiphoon Burner before tightening). The most-bought 6000 CL30 kit on AM5 builds.',
+          'A common DDR5-6000 CL30 reference with platform profile support. Confirm the exact kit part number, board QVL, and CPU memory-controller behavior; do not infer a stable manual timing or voltage from the retail label.',
       },
       {
         name: 'Kingston Fury Beast 32GB DDR5-6000 CL36',
         price: '$270-$300',
         tier: 'budget',
         why:
-          'The "just works" budget kit. CL36 isn\'t tightening territory but it boots EXPO-on across every AM5 board on first POST. Upgrade timings in BIOS later if you want; the kit is what it is.',
+          'A sensible capacity-and-price baseline. Rated profiles are optional and board/CPU training is not guaranteed across every system; leave timings and voltage at vendor defaults unless you are doing a separate, reversible stability experiment.',
       },
     ],
   },
@@ -190,14 +189,14 @@ export const HARDWARE: HardwareSection[] = [
         price: '$499',
         tier: 'goat',
         why:
-          'AM5, X870E chipset, PCIe Gen5 GPU + Gen5 NVMe. Robust 18+2+2 power stage handles 9950X3D at PBO max. AI Suite is bloated — disable it via our /tweaks `peripherals.*.autostart-disable` row after install.',
+          'AM5, X870E chipset, and PCIe Gen5 connectivity with substantial board-level headroom. Compare the exact BIOS support list, firmware maturity, I/O, and vendor software footprint; gaming performance is not created by an overclock preset. AI Suite is optional software and can be disabled through the app only if the catalog detects its autostart entry.',
       },
       {
         name: 'MSI MAG B650 Tomahawk WiFi',
         price: '$229',
         tier: 'pro',
         why:
-          'B650 is fine for 9800X3D (PBO unlocks anyway, the X670E premium is for productivity rigs). 14+2+1 VRM, DDR5-6800+ supported, 2.5GbE. The competitive build sweet spot.',
+          'A reasonable AM5 gaming platform when its current BIOS supports the chosen CPU. Compare VRM thermals, memory QVL, firmware history, I/O, and price; chipset branding alone does not determine Fortnite frame time.',
       },
       {
         name: 'ASRock B650M PG Lightning',
@@ -236,7 +235,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$400+',
         tier: 'principle',
         why:
-          'PCIe Gen5 12-14 GB/s. Useless for Fortnite — game load is bottlenecked by Epic\'s pak file decryption, not SSD bandwidth. Buy for productivity workloads, not for the game.',
+          'PCIe Gen5 12-14 GB/s. It is not an automatic Fortnite input-latency upgrade; game launch/load behavior depends on the game, storage state, CPU, and workload. Buy for measured workload needs or productivity, not sequential numbers alone.',
       },
     ],
   },
@@ -244,7 +243,7 @@ export const HARDWARE: HardwareSection[] = [
     id: 'cooling',
     label: 'Cooling',
     blurb:
-      "X3D parts run cool because the cache stacks under the cores (Zen 5). A 240mm AIO is overkill for 9800X3D thermal envelope. Spend the cooling budget on case airflow + GPU undervolt instead.",
+      "Use cooling to prevent thermal throttling and preserve stable vendor-default clocks. Cooler size, noise, socket support, case airflow, and sustained test results matter more than a blanket AIO recommendation; this app does not apply undervolts or thermal-limit changes.",
     items: [
       {
         name: 'Arctic Liquid Freezer III 360 ARGB',
@@ -258,14 +257,14 @@ export const HARDWARE: HardwareSection[] = [
         price: '$39',
         tier: 'pro',
         why:
-          'Twin-tower air cooler that beats most 240mm AIOs at a tenth the price. Handles 9800X3D + non-overclocked Intel parts. No pump to fail in 4 years.',
+          'A strong twin-tower air-cooling reference for stock-configured gaming CPUs. Check socket support, RAM clearance, case height, noise, and independent sustained-load tests instead of assuming one cooler fits every build.',
       },
       {
         name: 'Noctua NH-D15S G2',
         price: '$169',
         tier: 'pro',
         why:
-          'The premium air-cool answer. Beats most 360mm AIOs, completely silent, lasts forever. Brown fans clash with every aesthetic build — chromax black version if it matters.',
+          'A premium air-cooling reference with no pump to maintain. Compare sustained temperature/noise results on the actual CPU and case; no cooler can guarantee a fixed input-latency change.',
       },
     ],
   },
@@ -371,7 +370,7 @@ export const HARDWARE: HardwareSection[] = [
     id: 'headset',
     label: 'Headset',
     blurb:
-      "Wired headset > wireless for competitive (wireless adds 5-30ms of audio buffering depending on codec). Footstep direction matters more than music fidelity. Pros are split across HyperX Cloud + Astro A40 + Sennheiser HD 6XX.",
+      'Wired is predictable, but modern gaming wireless can also be suitable. Codec, receiver mode, firmware, and the game audio path decide the real delay; there is no universal millisecond penalty. Footstep imaging and comfort matter more than a marketing label.',
     items: [
       {
         name: 'HyperX Cloud Alpha S',
@@ -401,7 +400,7 @@ export const HARDWARE: HardwareSection[] = [
     id: 'mouse',
     label: 'Mouse',
     blurb:
-      "Lightest-possible body + flagship sensor. Sub-60g is the converged-mechanics standard. Polling 1000 Hz minimum (8K Hz on current Razer/Logitech flagships). Every cited GOAT runs in the same band.",
+      'Choose a shape and sensor you can control, then validate polling stability on the actual rig. 1000 Hz is a sensible baseline; 4K/8K can reduce report interval but may add CPU or frametime cost, so it is not an automatic competitive upgrade.',
     items: [
       {
         name: 'Logitech G PRO X Superlight 2',
@@ -498,7 +497,7 @@ export const HARDWARE: HardwareSection[] = [
     id: 'keyboard',
     label: 'Keyboard',
     blurb:
-      "Hall-effect / magnetic switches are the new pro standard. Adjustable actuation point + rapid-trigger reset = ~5 ms faster taps than mechanical. The Wooting tier is the divider between 'pro' and 'best mechanical'.",
+      'Hall-effect / magnetic switches expose adjustable actuation and rapid-trigger behavior. They can change key feel and release timing, but the useful result depends on the game, firmware, settings, and your control; no fixed millisecond gain is guaranteed.',
     items: [
       {
         name: 'Wooting 60HE+ / Wooting 80HE',
@@ -532,14 +531,14 @@ export const HARDWARE: HardwareSection[] = [
     id: 'monitor',
     label: 'Monitor',
     blurb:
-      "Refresh rate matters more than resolution for FPS. 1080p @ 240+ Hz is the converged pro choice. The other lever pros now obsess over: BenQ ZOWIE's panel-side motion-blur reduction — older DyAC+ (XL2566K / XL2546K, still what most Fortnite pros run) and the current **DyAc 2** generation (XL2566X+ 400Hz, XL2586X 540Hz, XL2586X+ 600Hz flagship). It strobes the backlight in sync with the refresh — eliminates trail-blur on tracking moves at the panel level, not via driver. Once you've tracked an enemy with DyAc on, going back to a regular IPS feels like dragging a smear.",
+      "Refresh rate and frame pacing matter for FPS, but the best resolution/refresh/strobing combination is personal and hardware-dependent. BenQ ZOWIE's panel-side motion-blur reduction — older DyAC+ (XL2566K / XL2546K) and current DyAc 2 models — can improve clarity for some players. Compare supported modes, sustained frame pacing, strobe crosstalk, brightness, and comfort on the actual rig rather than treating one panel as a universal Fortnite choice.",
     items: [
       {
         name: 'BenQ ZOWIE XL2586X+ — 600 Hz + DyAc 2',
         price: '$$$',
         tier: 'goat',
         why:
-          "BenQ ZOWIE's current flagship. 600 Hz Fast-TN with the new DyAc 2 motion-blur reduction (the XL2586X 540Hz and XL2566X+ 400Hz round out the DyAc 2 lineup). The true top tier now — though Fortnite caps at 240 FPS, so the proven XL2566K below is still all most pros run.",
+          "Manufacturer-listed 600 Hz Fast-TN with DyAc 2 motion-blur reduction. It is a specialist choice for a rig that can sustain very high frame rates; compare the panel's supported modes, measured frame pacing, clarity, and comfort against a 360/500 Hz alternative before buying.",
         link: 'https://zowie.benq.com/en-us/monitor/xl2586x-plus.html',
       },
       {
@@ -547,8 +546,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$550',
         tier: 'goat',
         why:
-          'The proven Fortnite pick — still the #2 most-used monitor among pros and **what Peterbot runs** — now one generation behind ZOWIE\'s DyAc 2 flagships. 360 Hz TN panel with DyAC+ motion-blur reduction. TN sounds dated but at 360 Hz + DyAC+ the response time + motion clarity beats every IPS at this price. Small panel (24.5") on purpose — pro-eye-distance.',
-        citedPro: 'Peterbot',
+          'A 360 Hz TN option with DyAc+ motion-blur reduction. The small 24.5-inch format and strobing behavior suit some competitive players, but response, clarity, brightness, and strobe crosstalk are panel- and setting-dependent; compare it directly with current high-refresh IPS options.',
         link: 'https://zowie.benq.com/en-us/monitor/xl2566k.html',
       },
       {
@@ -556,7 +554,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$400',
         tier: 'pro',
         why:
-          "Same DyAC+ tech, one refresh tier down. 240 Hz still saturates competitive Fortnite (frame cap 240). If you can't justify the 360 Hz tier, this is the best price/perf with the motion-clarity tech intact.",
+          'A 240 Hz TN option with DyAc+. It can be a sensible value choice when the rig and budget target a stable 240 Hz class experience, but a higher-refresh panel is not wasted if the system can sustain it; choose from measured frame pacing and panel behavior.',
         link: 'https://zowie.benq.com/en-us/monitor/xl2546k.html',
       },
       {
@@ -564,7 +562,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$650',
         tier: 'pro',
         why:
-          "500 Hz IPS at 1080p. Higher refresh than the ZOWIE 360 but no DyAC+ — IPS panel response can't match strobed TN for tracking clarity. Pick this if you value color over motion (you stream + do creative work) or if Mongraal-tier 540 Hz aspirations matter to you.",
+          '500 Hz IPS at 1080p. It trades a different motion/clarity and color profile against strobing TN options; inspect measured response behavior and decide whether the extra refresh is visible and useful on your frame-pacing profile.',
       },
       {
         name: 'Gigabyte G24F2 / AOC 24G15N (180 Hz IPS)',
@@ -578,14 +576,14 @@ export const HARDWARE: HardwareSection[] = [
         price: '—',
         tier: 'principle',
         why:
-          "HDR adds composition latency to the Windows display pipeline. Every cited pro config has it disabled. Doesn't matter how good your monitor is — HDR-on costs ~5 ms.",
+          'For a latency-first Fortnite profile, compare HDR off and on with the same refresh, frame cap, and display mode. HDR can alter the display pipeline and image processing, but there is no universal fixed millisecond cost; keep the mode that measures and looks correct on the target display.',
       },
       {
         name: 'DyAC+ at full brightness — turn brightness DOWN',
         price: '—',
         tier: 'principle',
         why:
-          "DyAC+ strobing dims the panel by ~30%. Most ZOWIE owners crank brightness to compensate, then complain motion looks 'flickery'. Lower brightness in a darker room = same perceived brightness with the strobe artifacts gone.",
+          'Backlight strobing changes brightness, crosstalk, and comfort. Use the manufacturer control and a repeatable motion test to find a brightness/strobe setting you can track with; there is no fixed percentage or universal best value.',
       },
     ],
   },

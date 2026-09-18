@@ -3,16 +3,15 @@ import {
   cpuClearPin,
   cpuPinForeground,
   cpuSetInfo,
-  detectSpecs,
   inTauri,
   type CpuInfo,
   type CpuSetInfo,
   type PinReport,
 } from '../lib/tauri'
+import { useRigStore } from '../store/useRigStore'
 
-/** Classify CPU into a recommendation bucket. Matters because pin strategy
- * differs sharply: Intel hybrid → P-cores only; Ryzen X3D → CCD0 only;
- * everything else → physical cores no SMT. */
+/** Classify CPU for explanatory copy only. This component does not infer that
+ * logical processor 0..N maps to P-cores, E-cores, or an AMD CCD. */
 type CpuKind =
   | 'intel-hybrid'    // 12th+ gen with E-cores
   | 'amd-x3d-multi'   // 7950X3D / 9950X3D (16-core, X3D on CCD0)
@@ -55,23 +54,10 @@ interface CpuRec {
   title: string
   /** The plain-English "your CPU is …" line. */
   cpuLabel: string
-  /** Aggressive preset — max single-thread perf, narrower core set. */
+  /** Legacy shape retained for saved UI compatibility; safe baseline below. */
   maxPerf: { label: string; description: string; cores: (n: number) => number[] }
-  /** Safe preset — works on every game, broader core set. */
+  /** Safe baseline — works on every game without topology guessing. */
   stable: { label: string; description: string; cores: (n: number) => number[] }
-}
-
-/** Generate physical-cores-only set (even-indexed logicals = physical core 0,
- * 1, 2…). True on Windows for Intel HT + AMD SMT, where the OS enumerates
- * logical processors as (P0_T0, P0_T1, P1_T0, P1_T1, …). */
-function physicalCoresOnly(n: number, max: number): number[] {
-  const out: number[] = []
-  for (let i = 0; i < n && out.length < max / 2; i += 2) out.push(i)
-  return out
-}
-
-function firstN(n: number, max: number): number[] {
-  return Array.from({ length: Math.min(n, max) }, (_, i) => i)
 }
 
 function allCores(max: number): number[] {
@@ -87,14 +73,14 @@ function getRec(cpu: CpuInfo): CpuRec {
         title: 'Intel hybrid (P-cores + E-cores)',
         cpuLabel: `${cpu.marketing} — P-cores + E-cores detected (${cpu.cores} physical / ${cpu.logicalCores} logical)`,
         maxPerf: {
-          label: 'P-cores only · no HT',
-          description: 'Highest single-thread perf for UE5 / Fortnite. The render thread sticks to one physical P-core, no scheduler bouncing onto an E-core or HT sibling. Can stutter in games that genuinely use 12+ threads (rare in competitive titles).',
-          cores: (max) => physicalCoresOnly(16, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'Start with all logical processors. Windows and the vendor scheduler know the topology better than a simple logical-index guess. Treat a narrower subset as a measured fallback only.',
+          cores: (max) => allCores(max),
         },
         stable: {
-          label: 'All P-cores · HT on',
-          description: 'P-cores including their HT siblings — keeps you off E-cores while leaving more threads available if the game needs them. Usually the steadier starting point; switch back if a title loses performance or behaves oddly.',
-          cores: (max) => firstN(16, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'The same safe baseline: keep all logical processors available and measure before trying a manual subset.',
+          cores: (max) => allCores(max),
         },
       }
     case 'amd-x3d-multi':
@@ -103,14 +89,14 @@ function getRec(cpu: CpuInfo): CpuRec {
         title: 'AMD Ryzen X3D · multi-CCD (7950X3D / 9950X3D)',
         cpuLabel: `${cpu.marketing} — 3D V-Cache on CCD0, frequency CCD on CCD1`,
         maxPerf: {
-          label: 'CCD0 physical only · no SMT',
-          description: 'Game runs only on the 3D V-Cache CCD with SMT off. This can reduce cross-CCD scheduling on some dual-CCD X3D systems, but the delta is workload-dependent. Game Mode and the AMD driver may already handle the routing; measure both paths.',
-          cores: (max) => physicalCoresOnly(16, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'Do not infer CCD membership from logical IDs. Start with the vendor scheduler and measure any explicit topology-aware fallback separately.',
+          cores: (max) => allCores(max),
         },
         stable: {
-          label: 'CCD0 with SMT (first 16 cores)',
-          description: 'Full CCD0 die including SMT threads. Same cache benefit, more threads for games that want them. Recommended baseline — what AMD\'s own optimization guide ships.',
-          cores: (max) => firstN(16, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'The vendor scheduler/driver path is the baseline. This app does not claim that the first 16 logical IDs are the cache CCD.',
+          cores: (max) => allCores(max),
         },
       }
     case 'amd-x3d-single':
@@ -119,13 +105,13 @@ function getRec(cpu: CpuInfo): CpuRec {
         title: 'AMD Ryzen X3D · single-CCD (7800X3D / 9800X3D)',
         cpuLabel: `${cpu.marketing} — 8 physical / ${cpu.logicalCores} logical, all on the V-cache die`,
         maxPerf: {
-          label: 'Physical cores only · no SMT',
-          description: 'Disables SMT contention on the cache-die cores. Marginal single-thread win in Fortnite (~1-2% 1% lows). Worth trying; revert to Stable if you see hitches.',
-          cores: (max) => physicalCoresOnly(16, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'A single-CCD X3D does not need a guessed CCD pin. Start with all logical processors; narrow only after a controlled capture proves a benefit.',
+          cores: (max) => allCores(max),
         },
         stable: {
-          label: 'All 16 logical cores',
-          description: 'Every thread on the cache die. Single-CCD = no cross-die latency to fight. **This is the recommended default for 7800X3D / 9800X3D** — almost no scenario where you should narrow further.',
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'All logical processors are the safe default on a single-CCD X3D. This app does not change SMT, voltage, or thermal controls.',
           cores: (max) => allCores(max),
         },
       }
@@ -135,14 +121,14 @@ function getRec(cpu: CpuInfo): CpuRec {
         title: 'AMD Ryzen multi-CCD (no 3D V-Cache)',
         cpuLabel: `${cpu.marketing} — 2 CCDs, no V-cache die`,
         maxPerf: {
-          label: 'CCD0 physical only · no SMT',
-          description: 'Single CCD = no cross-die latency. Lower latency at the cost of fewer threads. Big win for CPU-bound titles like Fortnite / CS2.',
-          cores: (max) => physicalCoresOnly(16, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'Start with all logical processors. A no-SMT or single-CCD experiment is not inferred from processor count and must be measured separately.',
+          cores: (max) => allCores(max),
         },
         stable: {
-          label: 'CCD0 with SMT',
-          description: 'Keeps the game on one die for low cross-CCD latency, gives it SMT for thread headroom. Best balance.',
-          cores: (max) => firstN(16, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'Start with the native scheduler. Logical processor IDs do not prove CCD membership on every firmware.',
+          cores: (max) => allCores(max),
         },
       }
     case 'amd-single-ccd':
@@ -151,13 +137,13 @@ function getRec(cpu: CpuInfo): CpuRec {
         title: 'AMD Ryzen single-CCD',
         cpuLabel: `${cpu.marketing} — ${cpu.cores} physical / ${cpu.logicalCores} logical, one die`,
         maxPerf: {
-          label: 'Physical cores only · no SMT',
-          description: 'Removes SMT contention. Small but measurable in CPU-bound games (Fortnite / Apex). Try it; revert if you see stutters.',
-          cores: (max) => physicalCoresOnly(cpu.logicalCores, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'A single-CCD CPU does not need a guessed CCD pin. Start with all logical processors; narrow only after a controlled capture proves a benefit.',
+          cores: (max) => allCores(max),
         },
         stable: {
-          label: 'All cores',
-          description: 'Single CCD = no cross-die latency. Pinning helps less here — Game Mode + the OS scheduler handle it well already. "All" is the safe pick.',
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'Pinning helps less here — Game Mode and the OS scheduler already have the full topology. "All" is the safe pick.',
           cores: (max) => allCores(max),
         },
       }
@@ -167,13 +153,13 @@ function getRec(cpu: CpuInfo): CpuRec {
         title: 'Intel non-hybrid (10th gen or older)',
         cpuLabel: `${cpu.marketing} — ${cpu.cores} physical / ${cpu.logicalCores} logical, no E-cores`,
         maxPerf: {
-          label: 'Physical cores only · no HT',
-          description: 'Disables HT siblings — the render thread doesn\'t fight a sibling thread on the same physical core. Small win in single-thread-bound games.',
-          cores: (max) => physicalCoresOnly(cpu.logicalCores, max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'Start with all logical processors. Excluding SMT siblings is an optional measured experiment, not a universal latency improvement.',
+          cores: (max) => allCores(max),
         },
         stable: {
           label: 'All cores',
-          description: 'No hybrid, no multi-die → pinning helps little. "All" is the safe pick. Spend the optimization time on RAM tightening or BIOS instead.',
+          description: 'No topology-specific mapping is needed here. "All" is the safe pick; spend the optimization time on measured software and stability checks.',
           cores: (max) => allCores(max),
         },
       }
@@ -183,9 +169,9 @@ function getRec(cpu: CpuInfo): CpuRec {
         title: 'CPU not recognized',
         cpuLabel: `${cpu.marketing || cpu.model || 'Unknown CPU'} (${cpu.cores}C/${cpu.logicalCores}T)`,
         maxPerf: {
-          label: 'First half of cores',
-          description: 'Generic aggressive pin — first half of the logical cores. Works as a starting point on unrecognized chips.',
-          cores: (max) => firstN(Math.ceil(max / 2), max),
+          label: 'Native scheduler baseline · all logical processors',
+          description: 'CPU topology is not recognized. Keep all logical processors available and do not guess a mapping from index order.',
+          cores: (max) => allCores(max),
         },
         stable: {
           label: 'All cores',
@@ -224,23 +210,24 @@ function loadCoresPref(maxCores: number): number[] {
   }
 }
 
-/** Default: reserve the bottom half (typically the highest-perf cores on
- * Intel hybrid + first 8 cores on Ryzen X3D parts). User can override. */
+/** Default: keep all logical processors available. Manual subsets are explicit
+ * experiments because Windows logical-index order does not prove CPU topology. */
 function defaultCoreSet(maxCores: number): number[] {
-  if (maxCores <= 4) return Array.from({ length: maxCores }, (_, i) => i)
-  return Array.from({ length: Math.ceil(maxCores / 2) }, (_, i) => i)
+  return allCores(maxCores)
 }
 
 export function CpuPinningSection() {
   const isNative = inTauri()
   const [info, setInfo] = useState<CpuSetInfo | null>(null)
-  const [cpu, setCpu] = useState<CpuInfo | null>(null)
   const [cores, setCores] = useState<number[]>([])
   const [pinned, setPinned] = useState<PinReport[]>([])
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  const cpu = useRigStore((state) => state.spec?.cpu ?? null)
+  const ensureLoaded = useRigStore((state) => state.ensureLoaded)
 
   useEffect(() => {
+    void ensureLoaded()
     if (!isNative) return
     cpuSetInfo()
       .then((i) => {
@@ -248,10 +235,7 @@ export function CpuPinningSection() {
         setCores(loadCoresPref(i.logicalProcessorCount))
       })
       .catch((e) => setErr(String(e)))
-    detectSpecs()
-      .then((s) => setCpu(s.cpu))
-      .catch(() => undefined)
-  }, [isNative])
+  }, [ensureLoaded, isNative])
 
   const rec = useMemo(() => (cpu ? getRec(cpu) : null), [cpu])
 
@@ -323,7 +307,9 @@ export function CpuPinningSection() {
       <div>
         <h2 className="text-lg font-semibold">Game core pinning</h2>
         <p className="text-sm text-text-muted max-w-3xl leading-snug">
-          Tells Windows "run my game on <em>these</em> cores, and run everything else (Discord, browser, AV, OS) on the rest." The game gets cores effectively reserved — not just constrained. Pin lives in the OS scheduler until the game closes. Re-pin each launch (or wait for v0.1.66+ auto-pin daemon).
+          Tells Windows "prefer my game on <em>these</em> cores" through the CPU Sets API. The
+          selection lives in the OS scheduler until the game closes. Re-pin each launch, or use
+          the auto-pin daemon below for a persisted process-name rule.
         </p>
 
         {rec && info && (
@@ -340,24 +326,9 @@ export function CpuPinningSection() {
               <p className="text-xs text-text-muted leading-snug">{rec.cpuLabel}</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* MAX PERF preset */}
+            <div className="grid grid-cols-1 gap-3">
               <div className="rounded-md border border-border bg-bg-raised/40 p-3 flex flex-col">
-                <p className="text-[10px] uppercase tracking-widest text-accent">max performance</p>
-                <p className="text-sm font-semibold text-text mt-0.5">{rec.maxPerf.label}</p>
-                <p className="text-xs text-text-muted leading-snug mt-1 flex-1">{rec.maxPerf.description}</p>
-                <button
-                  onClick={() => applyRec('maxPerf')}
-                  disabled={busy}
-                  className="mt-3 px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-40 hover:opacity-90 transition"
-                >
-                  Use Max-Perf preset
-                </button>
-              </div>
-
-              {/* STABLE + PERF preset */}
-              <div className="rounded-md border border-border bg-bg-raised/40 p-3 flex flex-col">
-                <p className="text-[10px] uppercase tracking-widest text-emerald-400">stable + perf</p>
+                <p className="text-[10px] uppercase tracking-widest text-emerald-400">recommended baseline</p>
                 <p className="text-sm font-semibold text-text mt-0.5">{rec.stable.label}</p>
                 <p className="text-xs text-text-muted leading-snug mt-1 flex-1">{rec.stable.description}</p>
                 <button
@@ -365,13 +336,13 @@ export function CpuPinningSection() {
                   disabled={busy}
                   className="mt-3 px-3 py-1.5 rounded-md border border-emerald-500/50 bg-emerald-500/10 text-emerald-300 text-xs font-semibold disabled:opacity-40 hover:bg-emerald-500/20 transition"
                 >
-                  Use Stable preset
+                  Use native baseline
                 </button>
               </div>
             </div>
 
             <p className="text-[11px] text-text-subtle leading-snug">
-              Not sure which? Start with <strong className="text-emerald-300">Stable + perf</strong> — same big win without edge-case stutters. Switch to Max Perf if you want every last ms and you don't see hitches in scrim. Both reversible — your pick saves to localStorage and you can always click an individual core button below to fine-tune.
+              The baseline keeps all logical processors available and saves locally. The manual subset buttons below are experiments only: logical IDs do not prove P/E-core or CCD membership, so compare frametime and re-open the native baseline if the result is worse.
             </p>
           </div>
         )}
@@ -460,9 +431,9 @@ export function CpuPinningSection() {
 
             <p className="text-[11px] text-text-subtle pt-2 border-t border-border leading-snug">
               Heads up: pin lives in the OS scheduler, not in our app. If the game closes,
-              the pin is released automatically. If our app closes, the pin stays. To pin
-              the SAME game across launches, click "Pin foreground game" each time you
-              start it (or wait for v0.1.66+ when we ship a per-game-name auto-pin daemon).
+              the pin is released automatically. If our app closes, the pin may stay for the
+              running process. To apply the same rule across launches, configure the auto-pin
+              daemon below and verify its last-poll/currently-pinned status.
             </p>
           </>
         )}

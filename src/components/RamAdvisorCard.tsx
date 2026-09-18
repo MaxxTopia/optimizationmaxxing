@@ -2,13 +2,9 @@ import { useEffect, useState } from 'react'
 import { inTauri, ramModules, type RamModule } from '../lib/tauri'
 
 /**
- * RAM Advisor — read-only inspector. Reads Win32_PhysicalMemory + tags
- * each stick with its inferred IC die type + tuning character. Linked to
- * the right tools (Thaiphoon Burner / DRAM Calculator / TestMem5) so
- * users can do the actual BIOS-level tuning themselves.
- *
- * We never auto-flash BIOS. Bad voltage → bricked stick → nuked weekend.
- * This is articleware with detected data.
+ * RAM Advisor — read-only inspector. Reads Win32_PhysicalMemory and reports
+ * the fields Windows exposes. Part-number/IC hints are intentionally treated
+ * as hints, not as permission to apply a timing or voltage recipe.
  */
 
 export function RamAdvisorCard() {
@@ -30,12 +26,12 @@ export function RamAdvisorCard() {
     <section className="surface-card p-5 space-y-3">
       <div>
         <p className="text-xs uppercase tracking-widest text-text-subtle">memory · advisor</p>
-        <h2 className="text-lg font-semibold">RAM tightening advisor</h2>
+        <h2 className="text-lg font-semibold">RAM stability and profile audit</h2>
         <p className="text-sm text-text-muted max-w-2xl leading-snug">
-          Reads your installed sticks via WMI + identifies the IC die type from the part number.
-          Memory timings can matter in CPU-bound games, but there is no universal FPS number. We
-          identify what is installed and show conservative starting points; you enter BIOS values
-          yourself and validate stability. We never auto-flash BIOS.
+          Reads your installed sticks via WMI and reports capacity, speed, and available profile
+          hints. Memory settings can matter in CPU-bound games, but there is no universal FPS
+          number. We never write BIOS timings, voltage, or profiles; if you choose the kit's
+          manufacturer-rated XMP/EXPO profile manually, validate it on this CPU and board.
         </p>
       </div>
 
@@ -55,8 +51,9 @@ export function RamAdvisorCard() {
 
       {modules && modules.length === 0 && (
         <p className="text-xs text-text-muted italic">
-          No modules reported by Win32_PhysicalMemory. Some VMs / hyperthread environments
-          hide this. Run Thaiphoon Burner directly for SPD detail.
+          No modules reported by Win32_PhysicalMemory. Some VMs or firmware configurations hide
+          this data; use the motherboard/kit vendor's documentation if you need an SPD detail
+          that Windows does not expose.
         </p>
       )}
 
@@ -75,70 +72,57 @@ export function RamAdvisorCard() {
           </p>
           <ol className="ml-4 list-decimal text-[11px] text-text-muted leading-snug space-y-1.5">
             <li>
-              <strong className="text-text">Identify your IC</strong> — we did this above from your
-              part number. If a stick shows "unknown," run{' '}
-              <a className="underline text-accent hover:text-text" href="https://www.softnology.biz/files.html" target="_blank" rel="noreferrer">Thaiphoon Burner</a>{' '}
-              → Read → it dumps the SPD with the real IC name (~30 seconds).
+              <strong className="text-text">Identify the installed kit</strong> — we report the
+              manufacturer, part number, capacity, and speed that Windows exposes. An inferred IC
+              label is a hint only; an unknown label is not a reason to guess a manual recipe.
             </li>
             <li>
-              <strong className="text-text">Look up the BIOS-ready timings for that IC</strong> at our{' '}
-              <a className="underline text-accent hover:text-text" href="#/guides?game=any#ram-bios-recipes">/guides → RAM tightening recipes</a>.
-              Per-IC SAFE recipe with exact values for primary timings (tCL / tRCD / tRP / tRAS)
-              + secondaries. For AM4 you can also use{' '}
-              <a className="underline text-accent hover:text-text" href="https://www.techpowerup.com/download/ryzen-dram-calculator/" target="_blank" rel="noreferrer">DRAM Calculator for Ryzen</a>{' '}
-              to generate timings; for AM5 the manual recipe is more current.
+              <strong className="text-text">Choose a baseline</strong> — keep JEDEC defaults
+              while diagnosing instability, or use only the exact manufacturer-rated XMP/EXPO
+              profile after checking the board and CPU support list. The{' '}
+              <a className="underline text-accent hover:text-text" href="#/guides?game=any#ram-bios-recipes">/guides → RAM stability audit</a>{' '}
+              explains the evidence to retain; it contains no copy-paste voltage recipe.
             </li>
             <li>
-              <strong className="text-text">Enter the values in BIOS</strong> — boot to BIOS,
-              Advanced / Tweaker / Ai Tweaker → DRAM Timing Control. Type each timing in by hand
-              (don't paste a profile blob; the BIOS won't accept it). Set EXPO/XMP first, then
-              override the timings on top.
+              <strong className="text-text">If you change the profile manually</strong> — save the
+              board's known-good profile first, change one setting, and keep a CMOS/recovery path.
+              optimizationmaxxing does not apply or restore BIOS changes.
             </li>
             <li>
-              <strong className="text-text">Validate with TestMem5</strong> — download{' '}
-              <a className="underline text-accent hover:text-text" href="https://github.com/CoolCmd/TestMem5" target="_blank" rel="noreferrer">TestMem5</a>{' '}
-              (free, no install), load anta777's "Extreme1" config, run for 1-2 hours minimum.
-              ZERO errors = stable. If you see 1+ errors, raise tCL by 1 step in BIOS and re-test.
-              Don't ship to scrim until two clean back-to-back hours.
+              <strong className="text-text">Validate stability</strong> — use a current bootable
+              or in-OS memory test, then run the actual game workload. Watch for WHEA events,
+              crashes, anti-cheat failures, and frametime regressions. Any error returns you to the
+              last known-good profile; do not conceal it by raising voltage.
             </li>
             <li>
               <strong className="text-text">Verify in Windows</strong> — come back to this card and{' '}
               <button onClick={() => window.location.reload()} className="underline text-accent hover:text-text">refresh</button>;
-              the "Speed" value should now match what you set. If it still shows old, the BIOS
-              didn't commit — re-enter, confirm Save & Exit (not Discard).
+              the "Speed" value should match the selected baseline. A different value can mean the
+              board trained a fallback; record it rather than assuming the requested profile stuck.
             </li>
           </ol>
         </div>
       )}
 
       <div className="pt-3 border-t border-border space-y-1.5 text-[11px] text-text-subtle leading-snug">
-        <p className="uppercase tracking-widest text-text-subtle text-[10px]">tools tuners actually use</p>
+        <p className="uppercase tracking-widest text-text-subtle text-[10px]">validation references</p>
         <p>
-          <a className="underline hover:text-text" href="https://www.softnology.biz/files.html" target="_blank" rel="noreferrer">
-            Thaiphoon Burner
+          <a className="underline hover:text-text" href="https://www.memtest86.com/" target="_blank" rel="noreferrer">
+            MemTest86
           </a>{' '}
-          — verify your IC by dumping SPD directly. Free, no install.
-        </p>
-        <p>
-          <a className="underline hover:text-text" href="https://www.techpowerup.com/download/ryzen-dram-calculator/" target="_blank" rel="noreferrer">
-            DRAM Calculator for Ryzen
-          </a>{' '}
-          — generates SAFE/FAST/EXTREME timings per IC + frequency. AM4 still excellent;
-          AM5 (Ryzen 7000/9000) use Buildzoid's manual approach.
+          — a bootable memory-validation reference. Follow its current documentation and retain
+          the result with the hardware snapshot.
         </p>
         <p>
           <a className="underline hover:text-text" href="https://github.com/CoolCmd/TestMem5" target="_blank" rel="noreferrer">
-            TestMem5 (anta777 extreme config)
+            TestMem5
           </a>{' '}
-          — stability test for tightened timings. 1-2 hours per profile minimum before you
-          trust it for a tournament.
+          — an optional in-OS stress-test reference. Use a current configuration and treat a clean
+          run as evidence, not a guarantee.
         </p>
         <p>
-          <a className="underline hover:text-text" href="https://www.youtube.com/@ActuallyHardcoreOverclocking" target="_blank" rel="noreferrer">
-            Buildzoid (Actually Hardcore Overclocking)
-          </a>{' '}
-          — long-form RAM tuning streams + per-IC manual deep-dives. Watch his Hynix DDR5
-          M-die guide if you're on AM5.
+          For manual firmware experiments, use the motherboard and memory vendor's current
+          recovery documentation. This app does not prescribe or write voltage/timing values.
         </p>
       </div>
     </section>
@@ -170,10 +154,10 @@ function ModuleCard({ module: m }: { module: RamModule }) {
         ) : (
           <a
             href="#/guides?game=any#ram-bios-recipes"
-            title={`Open the per-IC BIOS recipe for ${m.icType}`}
+            title={`Open the read-only memory stability audit for ${m.icType}`}
             className="text-[11px] uppercase tracking-widest px-2 py-0.5 rounded font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/20 transition no-underline"
           >
-            {m.icType} · recipe →
+            {m.icType} · audit →
           </a>
         )}
       </div>
@@ -194,31 +178,22 @@ function ModuleCard({ module: m }: { module: RamModule }) {
           </p>
           <p className="text-[11px] text-text-muted leading-snug">
             Boutique kits, custom binning, and certain Crucial / Patriot / Klevv SKUs publish
-            part numbers our heuristic doesn't recognize. Two ways to find out which IC you have
-            so the BIOS recipe lookup works:
+            part numbers our heuristic doesn't recognize. Treat the missing label as unknown
+            rather than guessing a timing or voltage value from a community table.
           </p>
           <ol className="ml-4 list-decimal text-[11px] text-text-muted leading-snug space-y-0.5">
             <li>
-              Run{' '}
-              <a className="underline text-accent hover:text-text" href="https://www.softnology.biz/files.html" target="_blank" rel="noreferrer">
-                Thaiphoon Burner
-              </a>{' '}
-              → Read → it dumps the SPD directly with the actual IC name. ~30 seconds. No install.
-            </li>
-            <li>
-              Or paste your part number into{' '}
-              <a className="underline text-accent hover:text-text" href="https://fpsheaven.com/die-finder/" target="_blank" rel="noreferrer">
-                Die Finder
-              </a>
-              {' '}— community-maintained part-to-IC lookup (DDR4 + DDR5).
+              Confirm the exact part number against the manufacturer or board support list. If you
+              need deeper SPD evidence, use a vendor-trusted read-only tool and retain the output;
+              it still does not prove that a manual profile is stable.
             </li>
           </ol>
           <p className="text-[11px] text-text-muted leading-snug pt-1">
-            Once you have the IC name, go to{' '}
+            For the safe workflow, go to{' '}
             <a className="underline text-accent hover:text-text" href="#/guides?game=any#ram-bios-recipes">
-              /guides → RAM tightening recipes
+              /guides → RAM stability audit
             </a>{' '}
-            and look up the per-IC BIOS values to enter.
+            and follow the baseline and validation steps.
           </p>
         </div>
       )}

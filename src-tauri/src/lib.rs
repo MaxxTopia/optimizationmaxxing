@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
 mod auto_pin;
@@ -18,8 +18,11 @@ mod toolkit;
 mod vip;
 
 pub use engine::{ApplyReceipt, AppliedTweak, SnapshotStore, TweakAction, TweakPreview};
+pub use engine::VerificationStatus;
 pub use metrics::PerfSnapshot;
 pub use specs::SpecProfile;
+
+const REBOOT_VALIDATION_KEY: &str = "reboot_validation";
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -29,11 +32,285 @@ pub struct BootstrapPayload {
     pub spec: Option<SpecProfile>,
 }
 
+/// Durable proof record for a user-requested reboot persistence check.
+///
+/// This is deliberately a verification record, not an auto-reapply policy:
+/// reapplying a drifted setting can change user state without consent. The
+/// exact receipt IDs are captured when the check is armed so later applies do
+/// not silently get folded into an older proof result.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RebootValidation {
+    /// idle | armed | awaiting_reboot | verified | mismatch | unknown
+    pub status: String,
+    pub armed_at: Option<String>,
+    pub verified_at: Option<String>,
+    pub before_uptime_secs: Option<u64>,
+    pub after_uptime_secs: Option<u64>,
+    pub before_os_build: Option<u32>,
+    pub after_os_build: Option<u32>,
+    pub receipt_ids: Vec<String>,
+    pub checked: usize,
+    pub verified: usize,
+    pub mismatched: usize,
+    pub unknown: usize,
+    pub detail: String,
+    pub items: Vec<RebootValidationItem>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RebootValidationItem {
+    pub receipt_id: String,
+    pub tweak_id: String,
+    pub status: VerificationStatus,
+    pub detail: String,
+}
+
+fn idle_reboot_validation() -> RebootValidation {
+    RebootValidation {
+        status: "idle".into(),
+        armed_at: None,
+        verified_at: None,
+        before_uptime_secs: None,
+        after_uptime_secs: None,
+        before_os_build: None,
+        after_os_build: None,
+        receipt_ids: Vec::new(),
+        checked: 0,
+        verified: 0,
+        mismatched: 0,
+        unknown: 0,
+        detail: "No reboot persistence check is armed.".into(),
+        items: Vec::new(),
+    }
+}
+
+fn load_reboot_validation(state: &SnapshotStore) -> Result<RebootValidation, String> {
+    let Some(raw) = state
+        .kv_get(REBOOT_VALIDATION_KEY)
+        .map_err(|e| format!("{:#}", e))?
+    else {
+        return Ok(idle_reboot_validation());
+    };
+    serde_json::from_str(&raw)
+        .map_err(|e| format!("saved reboot validation is unreadable: {e}"))
+}
+
+fn save_reboot_validation(
+    state: &SnapshotStore,
+    report: &RebootValidation,
+) -> Result<(), String> {
+    let raw = serde_json::to_string(report)
+        .map_err(|e| format!("serializing reboot validation: {e}"))?;
+    state
+        .kv_set(REBOOT_VALIDATION_KEY, &raw)
+        .map_err(|e| format!("{:#}", e))
+}
+
+fn current_uptime_secs() -> u64 {
+    sysinfo::System::uptime()
+}
+
+fn reboot_was_observed(before_uptime_secs: u64, after_uptime_secs: u64) -> bool {
+    // GetTickCount64/sysinfo uptime resets on a Windows restart. A lower
+    // value is the conservative signal; an equal-or-higher value means the
+    // requested reboot has not been proven yet.
+    after_uptime_secs < before_uptime_secs
+}
+
+fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, String> {
+    let mut report = load_reboot_validation(state)?;
+    if report.status == "idle" {
+        return Ok(report);
+    }
+
+    // A completed report is immutable evidence for that armed receipt set.
+    // The user can deliberately create a new proof run with Arm again.
+    if report.verified_at.is_some()
+        && matches!(report.status.as_str(), "verified" | "mismatch" | "unknown")
+    {
+        return Ok(report);
+    }
+
+    let Some(before_uptime_secs) = report.before_uptime_secs else {
+        report.status = "unknown".into();
+        report.detail =
+            "The saved pre-reboot uptime marker is missing; arm a new check before restarting."
+                .into();
+        report.verified_at = Some(chrono::Utc::now().to_rfc3339());
+        save_reboot_validation(state, &report)?;
+        return Ok(report);
+    };
+
+    let after_uptime_secs = current_uptime_secs();
+    if !reboot_was_observed(before_uptime_secs, after_uptime_secs) {
+        report.status = "awaiting_reboot".into();
+        report.after_uptime_secs = Some(after_uptime_secs);
+        report.detail = format!(
+            "No reboot proven yet. Before: {before_uptime_secs}s uptime; current: {after_uptime_secs}s. Restart Windows, then open optimizationmaxxing again."
+        );
+        save_reboot_validation(state, &report)?;
+        return Ok(report);
+    }
+
+    let active = state
+        .list_applied()
+        .map_err(|e| format!("{:#}", e))?
+        .into_iter()
+        .filter(|row| row.status == "applied")
+        .collect::<Vec<_>>();
+
+    report.after_uptime_secs = Some(after_uptime_secs);
+    report.after_os_build = current_os_build();
+    report.verified_at = Some(chrono::Utc::now().to_rfc3339());
+    report.items.clear();
+    report.checked = report.receipt_ids.len();
+    report.verified = 0;
+    report.mismatched = 0;
+    report.unknown = 0;
+
+    for receipt_id in report.receipt_ids.clone() {
+        let Some(row) = active.iter().find(|row| row.receipt_id == receipt_id) else {
+            report.mismatched += 1;
+            report.items.push(RebootValidationItem {
+                receipt_id: receipt_id.clone(),
+                tweak_id: "(missing receipt)".into(),
+                status: VerificationStatus::Mismatch,
+                detail: "The armed receipt is no longer active, so this tweak cannot be proven persistent.".into(),
+            });
+            continue;
+        };
+
+        let Some((action, _pre_state)) = state
+            .get_receipt(&receipt_id)
+            .map_err(|e| format!("{:#}", e))?
+        else {
+            report.mismatched += 1;
+            report.items.push(RebootValidationItem {
+                receipt_id: receipt_id.clone(),
+                tweak_id: row.tweak_id.clone(),
+                status: VerificationStatus::Mismatch,
+                detail: "The armed receipt data is unavailable after reboot.".into(),
+            });
+            continue;
+        };
+
+        let verification = engine::verify(&action);
+        state
+            .update_verification(&receipt_id, &verification)
+            .map_err(|e| format!("{:#}", e))?;
+        match verification.status {
+            VerificationStatus::Verified => report.verified += 1,
+            VerificationStatus::Mismatch => report.mismatched += 1,
+            VerificationStatus::Unknown => report.unknown += 1,
+        }
+        report.items.push(RebootValidationItem {
+            receipt_id,
+            tweak_id: row.tweak_id.clone(),
+            status: verification.status,
+            detail: verification.detail,
+        });
+    }
+
+    report.status = if report.mismatched > 0 {
+        "mismatch"
+    } else if report.unknown > 0 {
+        "unknown"
+    } else {
+        "verified"
+    }
+    .into();
+    report.detail = match report.status.as_str() {
+        "verified" => format!(
+            "Windows rebooted and all {} armed tweak(s) matched their live read-back checks.",
+            report.checked
+        ),
+        "mismatch" => format!(
+            "Windows rebooted, but {} armed tweak(s) no longer match live state.",
+            report.mismatched
+        ),
+        _ => format!(
+            "Windows rebooted, but {} armed tweak(s) could not be proven with a read-back contract.",
+            report.unknown
+        ),
+    };
+    save_reboot_validation(state, &report)?;
+    Ok(report)
+}
+
+#[cfg(test)]
+mod reboot_validation_tests {
+    use super::reboot_was_observed;
+
+    #[test]
+    fn only_a_lower_uptime_proves_a_reboot() {
+        assert!(reboot_was_observed(86_400, 42));
+        assert!(!reboot_was_observed(42, 86_400));
+        assert!(!reboot_was_observed(42, 42));
+    }
+}
+
+#[tauri::command]
+fn get_reboot_validation(
+    state: tauri::State<'_, SnapshotStore>,
+) -> Result<RebootValidation, String> {
+    load_reboot_validation(&state)
+}
+
+/// Capture the exact active receipt set and current Windows uptime before a
+/// user restarts. This is the first half of the persistence proof.
+#[tauri::command]
+fn arm_reboot_validation(
+    state: tauri::State<'_, SnapshotStore>,
+) -> Result<RebootValidation, String> {
+    let active = state
+        .list_applied()
+        .map_err(|e| format!("{:#}", e))?
+        .into_iter()
+        .filter(|row| row.status == "applied")
+        .collect::<Vec<_>>();
+    if active.is_empty() {
+        return Err("Apply at least one tweak before arming a reboot persistence check.".into());
+    }
+
+    let report = RebootValidation {
+        status: "armed".into(),
+        armed_at: Some(chrono::Utc::now().to_rfc3339()),
+        verified_at: None,
+        before_uptime_secs: Some(current_uptime_secs()),
+        after_uptime_secs: None,
+        before_os_build: current_os_build(),
+        after_os_build: None,
+        receipt_ids: active.into_iter().map(|row| row.receipt_id).collect(),
+        checked: 0,
+        verified: 0,
+        mismatched: 0,
+        unknown: 0,
+        detail: "Armed. Restart Windows, then open optimizationmaxxing to perform the post-boot read-back.".into(),
+        items: Vec::new(),
+    };
+    save_reboot_validation(&state, &report)?;
+    Ok(report)
+}
+
+/// Complete the second half of the persistence proof. The uptime marker
+/// prevents an ordinary app reopen from being reported as a reboot.
+#[tauri::command]
+async fn validate_reboot_persistence(
+    state: tauri::State<'_, SnapshotStore>,
+) -> Result<RebootValidation, String> {
+    let store = (*state).clone();
+    tokio::task::spawn_blocking(move || validate_reboot_report(&store))
+        .await
+        .map_err(|e| format!("reboot validation task failed: {e}"))?
+}
+
 #[tauri::command]
 fn bootstrap(state: tauri::State<'_, SnapshotStore>) -> Result<BootstrapPayload, String> {
     let applied = state.list_applied().map_err(|e| format!("{:#}", e))?;
     Ok(BootstrapPayload {
-        catalog_version: "v0".into(),
+        catalog_version: "v1.9.2".into(),
         applied_tweak_ids: applied
             .into_iter()
             .filter(|a| a.status == "applied")
@@ -78,8 +355,9 @@ async fn apply_tweak(
     let store = (*state).clone();
     tokio::task::spawn_blocking(move || -> Result<ApplyReceipt, String> {
         let pre_state = engine::apply(&action).map_err(|e| format!("{:#}", e))?;
+        let verification = engine::verify(&action);
         store
-            .record_apply(&tweak_id, &action, &pre_state)
+            .record_apply(&tweak_id, &action, &pre_state, &verification)
             .map_err(|e| format!("{:#}", e))
     })
     .await
@@ -116,9 +394,15 @@ async fn apply_batch(
         // 3. Collect elevated items (HKLM, BcdeditSet, PS, admin-path FileWrite) into
         //    one batch for one UAC.
         let mut elevated_actions: Vec<&TweakAction> = Vec::new();
+        let mut apply_errors: Vec<String> = Vec::new();
         for (item, _pre) in &prepared {
             if !item.action.requires_admin() {
-                engine::apply_unelevated(&item.action).map_err(|e| format!("{:#}", e))?;
+                if let Err(e) = engine::apply_unelevated(&item.action) {
+                    // Keep going so later independent actions still get a
+                    // chance to apply and every prepared action is recorded
+                    // with a post-apply read-back below.
+                    apply_errors.push(format!("{}: {:#}", item.tweak_id, e));
+                }
             } else {
                 elevated_actions.push(&item.action);
             }
@@ -134,15 +418,33 @@ async fn apply_batch(
                 .flatten()
                 .map(|v| v != "false")
                 .unwrap_or(true);
-            engine::elevation::run_elevated_batch_with_restore_point(&elevated_actions, create_rp)
-                .map_err(|e| format!("{:#}", e))?;
+            if let Err(e) = engine::elevation::run_elevated_batch_with_restore_point(
+                &elevated_actions,
+                create_rp,
+            ) {
+                // The elevated runner executes each line independently, so a
+                // non-zero result means the batch may be partially applied
+                // (or UAC may have denied it). Do not discard the receipts:
+                // record native verification for every prepared action and
+                // return the diagnostic after the durable state is safe.
+                apply_errors.push(format!("elevated batch: {:#}", e));
+            }
         }
 
-        // 4. Record receipts in original order.
+        // 4. Read every resulting state back before recording receipts. A
+        // successful process exit is not proof that Windows accepted the
+        // requested state (policy ACLs, driver ownership, and later tools can
+        // all disagree).
+        let verifications: Vec<engine::VerificationResult> = prepared
+            .iter()
+            .map(|(item, _)| engine::verify(&item.action))
+            .collect();
+
+        // 5. Record receipts in original order.
         let mut receipts = Vec::with_capacity(prepared.len());
-        for (item, pre) in prepared {
+        for ((item, pre), verification) in prepared.into_iter().zip(verifications) {
             let r = store
-                .record_apply(&item.tweak_id, &item.action, &pre)
+                .record_apply(&item.tweak_id, &item.action, &pre, &verification)
                 .map_err(|e| format!("{:#}", e))?;
             receipts.push(r);
         }
@@ -152,7 +454,15 @@ async fn apply_batch(
         if let Some(b) = current_os_build() {
             let _ = store.kv_set("last_applied_build", &b.to_string());
         }
-        Ok(receipts)
+        if apply_errors.is_empty() {
+            Ok(receipts)
+        } else {
+            Err(format!(
+                "Apply completed with {} error(s); receipts were recorded with live verification.\n{}",
+                apply_errors.len(),
+                apply_errors.join("\n"),
+            ))
+        }
     })
     .await
     .map_err(|e| format!("apply_batch task failed: {e}"))?
@@ -226,6 +536,42 @@ async fn revert_tweak(
 #[tauri::command]
 fn list_applied(state: tauri::State<'_, SnapshotStore>) -> Result<Vec<AppliedTweak>, String> {
     state.list_applied().map_err(|e| format!("{:#}", e))
+}
+
+/// Re-read every active receipt against live Windows state and persist the
+/// result. This is intentionally separate from list_applied so the UI can
+/// show whether a setting is still in place after Windows Update, a driver
+/// installer, or another tuning utility changed it.
+#[tauri::command]
+async fn verify_applied(
+    state: tauri::State<'_, SnapshotStore>,
+) -> Result<Vec<AppliedTweak>, String> {
+    let store = (*state).clone();
+    tokio::task::spawn_blocking(move || -> Result<Vec<AppliedTweak>, String> {
+        let active = store
+            .list_applied()
+            .map_err(|e| format!("{:#}", e))?
+            .into_iter()
+            .filter(|row| row.status == "applied")
+            .collect::<Vec<_>>();
+
+        for row in active {
+            let Some((action, _pre_state)) = store
+                .get_receipt(&row.receipt_id)
+                .map_err(|e| format!("{:#}", e))?
+            else {
+                continue;
+            };
+            let verification = engine::verify(&action);
+            store
+                .update_verification(&row.receipt_id, &verification)
+                .map_err(|e| format!("{:#}", e))?;
+        }
+
+        store.list_applied().map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("verify_applied task failed: {e}"))?
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -903,7 +1249,7 @@ fn build_summary(action: &TweakAction, pre_state: &serde_json::Value) -> String 
             };
             format!("bcdedit /set {{current}} {name} {value} (prior: {prior})")
         }
-        TweakAction::PowershellScript { apply, revert } => {
+        TweakAction::PowershellScript { apply, revert, .. } => {
             let revertable = if revert.is_some() { "revertable" } else { "NOT revertable" };
             // First non-empty line as a teaser. Vetted catalog scripts only.
             let first_line = apply
@@ -955,9 +1301,14 @@ fn build_summary(action: &TweakAction, pre_state: &serde_json::Value) -> String 
                         .join(", ")
                 })
                 .unwrap_or_else(|| "(no current matches)".to_string());
+            let target_label = if *target_hz == 0 {
+                "highest-supported".to_string()
+            } else {
+                format!("{target_hz}Hz")
+            };
             format!(
-                "Bump refresh: match={:?} target={}Hz (fallback {:?}) — {} matched: {}",
-                device_match, target_hz, fallback_chain, matched_count, prior_summary
+                "Bump refresh: match={:?} target={} (fallback {:?}) — {} matched: {}",
+                device_match, target_label, fallback_chain, matched_count, prior_summary
             )
         }
     }
@@ -998,10 +1349,14 @@ pub fn run() {
             apply_batch,
             kv_get,
             kv_set,
+            get_reboot_validation,
+            arm_reboot_validation,
+            validate_reboot_persistence,
             enable_system_protection,
             revert_tweak,
             revert_all_applied,
             list_applied,
+            verify_applied,
             system_metrics,
             read_temps,
             disk_free,

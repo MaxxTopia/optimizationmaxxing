@@ -6,9 +6,9 @@ Here's the honest order of remaining margins once Match Scan and the tweak catal
 
 ## Layer 1 — Software / config / thermals (what this app fixes)
 
-This is the layer the app actually owns: registry/BCD tweaks, presets, XMP/EXPO, refresh rate, VBS, background contention, thermal throttling, mouse acceleration, audio. Match Scan's pre-game scan, live spot-check, and deep scans get this layer to its ceiling, and every fix is traced to a source.
+This is the layer the app actually owns: registry/BCD tweaks, validated profiles, refresh rate, security-preserving Windows state, background contention, thermal-throttling detection, mouse acceleration, and audio guidance. Firmware profiles, in-game controls, and device settings remain read-only checks or user-owned follow-up work. Match Scan's pre-game scan, live spot-check, and deep scans get the supported software layer to its ceiling, and every fix is traced to a source.
 
-Honest ceiling: **software closes roughly 70% of the gap between a stock budget rig and a $5,000 build. Hardware is the remaining ~30%** (Blur Busters' latency research and our own latency-budget guide land in the same place). So a clean software pass is most of the win — but it is *not* "everything except hardware."
+There is no honest universal percentage for the split between software, hardware, network, and player performance. A clean software pass removes avoidable variance; it cannot guarantee a frame-time or input-latency gain on every rig.
 
 ## Layer 2 — Settings the app can only *advise* on (not auto-detect)
 
@@ -32,8 +32,8 @@ Before you spend a cent, find out what's actually limiting you:
 
 - **CPU-bound** (the common case for competitive shooters at 1080p low settings — Fortnite, Valorant, CS2 are CPU-heavy): a new GPU does **nothing** for your FPS. The levers are a faster CPU, better cooling, and tighter RAM. Match Scan's session recorder (with PresentMon) reports your CPU-vs-GPU-bound split so you don't guess.
 - **GPU-bound** (higher resolutions / higher graphics settings): then, and only then, a faster GPU is the upgrade.
-- **Thermals / RAM first**: a repaste, better airflow, an undervolt, or finally enabling EXPO often buys more than a part swap — on the rig you already own.
+- **Thermals / RAM first**: improve airflow and verify stability at vendor defaults. If you choose to test a manufacturer-rated EXPO/XMP profile, change one setting, retain the old profile, and validate it; this app does not prescribe voltage or manual timings.
 
 ## The one-line version
 
-Clean software is ~70% of the gap and the cheapest 70% you'll ever buy — but the order of what's left is **in-game/peripheral settings → your own mechanics → targeted hardware where you're proven-bottlenecked.** Hardware is last. The whole point of scanning first is to make sure you never upgrade hardware to fix something that was free to fix.
+Clean software is the cheapest layer to validate — but the order of what's left is **in-game/peripheral settings → your own mechanics → targeted hardware where you're proven-bottlenecked.** Hardware is last. The whole point of scanning first is to make sure you never upgrade hardware to fix something that was free to fix.

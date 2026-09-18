@@ -11,6 +11,7 @@
 //! action is marked non-revertible at the catalog layer.
 
 use anyhow::{anyhow, Result};
+use std::process::Command;
 
 use super::actions::TweakAction;
 
@@ -76,6 +77,39 @@ pub fn revert_cmd_line(action: &TweakAction) -> Result<String> {
     ))
 }
 
+/// Run a catalog-owned, read-only verifier. The verifier is deliberately
+/// separate from apply/revert: it must inspect state and exit 0 when the
+/// requested state is present, without mutating Windows. Encoding keeps the
+/// script out of cmd.exe quoting and the catalog remains the only source of
+/// executable PowerShell.
+pub fn verify(action: &TweakAction) -> Result<bool> {
+    let TweakAction::PowershellScript { verify, .. } = action else {
+        return Err(anyhow!("verify called on non-powershell action"));
+    };
+    let Some(script) = verify else {
+        return Err(anyhow!(
+            "PowerShell action has no declared read-back contract"
+        ));
+    };
+
+    let wrapped = format!("$ErrorActionPreference='Stop'; & {{ {} }}", script);
+    let encoded = encode_for_ps(&wrapped);
+    let output = Command::new("powershell.exe")
+        .args([
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-EncodedCommand",
+            encoded.as_str(),
+        ])
+        .output()
+        .map_err(|e| anyhow!("could not start PowerShell verifier: {e}"))?;
+
+    Ok(output.status.success())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -110,6 +144,7 @@ mod tests {
         let a = TweakAction::PowershellScript {
             apply: "Write-Output OK".into(),
             revert: None,
+            verify: None,
         };
         let line = apply_cmd_line(&a).unwrap();
         assert!(line.starts_with("powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand "));
@@ -120,6 +155,7 @@ mod tests {
         let a = TweakAction::PowershellScript {
             apply: "x".into(),
             revert: None,
+            verify: None,
         };
         assert!(revert_cmd_line(&a).is_err());
     }

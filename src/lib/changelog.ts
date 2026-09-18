@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.5',
+    date: '2026-09-17',
+    highlights: [
+      'NEW **Tune Now intensity profiles.** Scan-aware Light, Competitive, Aggressive, and Extreme lanes now choose eligible catalog actions, re-check native state, repair drift, and report verified/mismatch/unknown results.',
+      'NEW **Reboot persistence proof.** Arm the exact applied receipt set before restarting, then let the app detect the real reboot and read every setting back on startup before calling it persistent.',
+      'NEW **VIP Manual Tuning Lab.** Die-gated secondary timing targets and kit-rated voltage worksheets are back for BIOS-only experiments; the app never writes firmware or turns them into automatic actions.',
+      'IMPROVE **OS guidance is measurable.** Stock supported Windows 11 is the primary baseline, while X-Lite has a dedicated A/B lab for compatibility, recovery, anti-cheat, and frametime evidence instead of unsupported input-lag promises.',
+    ],
+  },
+  {
     version: '0.4.4',
     date: '2026-08-27',
     highlights: [

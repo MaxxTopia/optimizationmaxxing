@@ -1,129 +1,86 @@
-# Fortnite — in-game pro settings (cited)
+# Fortnite — current competitive validation guide
 
-> **Settings keep getting reset after the catalog tweak?** Fortnite rewrites `GameUserSettings.ini` from its encrypted cloud profile on every launch. Fix: set the file read-only after the tweak applies. **PowerShell (one line):**
->
-> ```
-> attrib +R "$env:LOCALAPPDATA\FortniteGame\Saved\Config\WindowsClient\GameUserSettings.ini"
-> ```
->
-> Untick read-only (`attrib -R "<same path>"`) when you want to retune in-game; re-tick after. The "everything Low, View Distance Far" stack is captured in the Graphics table below — that's the spec you want stuck. Full read-only flow is at the bottom of this guide.
+This is a validation guide, not a universal pro preset. Fortnite, Windows, GPU drivers,
+display modes, and anti-cheat requirements change. Tune one variable at a time, record the
+build/driver/monitor state, and keep a setting only when a repeatable match or benchmark run
+improves frame-time consistency without hurting control.
 
-The catalog handles Engine.ini + GameUserSettings.ini. The remaining input-lag wins live inside Fortnite's own Settings menu — the values you have to flip yourself because they're stored in encrypted player profiles, not user-editable INI files. This is the consensus stack from Peterbot, Clix, Bugha, and Mongraal's published configs.
+Epic's current PC requirements and competitive/anti-cheat guidance are the authority for
+supported modes and tournament eligibility:
 
-## Display tab
+- [Epic PC requirements](https://www.epicgames.com/help/en-US/c-Category_Fortnite/c-Fortnite_PlayerBehavior/what-are-the-system-requirements-for-fortnite-on-pc-and-mac-a5720377103003)
+- [Epic anti-cheat update](https://www.fortnite.com/news/fortnite-anti-cheat-update-february-27-2025)
 
-- **Window Mode: Fullscreen or Windowed Fullscreen — both still offered as distinct options.** [Epic's own 2026 competitive guide](https://store.epicgames.com/news/fortnite-on-pc-best-settings-for-competitive-play-in-2026?lang=en-US) recommends **Fullscreen** for lowest input lag. Many pros run **Windowed Fullscreen** instead for fast alt-tab — [Peterbot's config](https://prosettings.net/players/peterbot/) lists Windowed Fullscreen — with negligible lag difference on modern hardware. Pick Fullscreen if you never alt-tab mid-match; Windowed Fullscreen if you do.
-- **Resolution: native (1920×1080 for the vast majority of pros).** Higher resolutions on pro 240+Hz monitors cost frames the player can't see anyway. Some pros stretch (1440×1080) — purely for FOV preference, not perf.
-- **Frame Rate Limit: match your monitor refresh.** 240 Hz monitor → 240 cap. Uncapped + VSync off creates frame-pacing drift; matching cap stabilizes 1% lows. The catalog's GameUserSettings.ini tweak sets this to 240 by default.
-- **VSync: Off.** Always. Adds frames of input lag. The catalog enforces this in GameUserSettings.ini.
-- **HDR: Off.** Adds composition latency in the Windows display pipeline. Every cited pro config has it disabled.
+## What optimizationmaxxing changes
 
-## Graphics tab — the consensus baseline
+The catalog's engine/config actions are snapshot-backed and reversible. Tune Now now asks for
+a game context, so Fortnite-tagged actions are not applied during a Valorant or Windows-only
+run. The old GameUserSettings preset contains fixed 240 FPS / 1920×1080 values and is
+explicit-only; it is not a scan-aware recommendation and Tune Now will not apply it.
 
-| Setting | Pro consensus | Why |
-|---|---|---|
-| Quality Presets | **Custom** (then individual values below) | Auto-presets touch settings you don't want touched |
-| Rendering Mode | **Performance (DirectX 12)** (NOT DX11 / DX12 / Cinematic) | As of patch 37.00 Epic rebuilt Performance Mode on **DirectX 12** — it bypasses Nanite + Lumen entirely. Epic's own 2026 competitive guide names this the **#1 setting**: highest and most *consistent* FPS in 50-player endgame, lowest input lag, low VRAM, and it sidesteps most DX12 shader-comp stutter. This is what every T1 pro runs. |
-| 3D Resolution | **100%** | Lowering it scales everything; doesn't help past 100 |
-| View Distance | **Far** (NOT Epic) | Epic's guide says Near, but pros run Far ([Peterbot](https://prosettings.net/players/peterbot/) = Far) — Epic adds detail beyond what matters at engagement range without the cost of full Epic distance |
-| Textures | **Low** | Aim is on enemy outlines, not foliage detail |
-| Meshes | **Low** | Lowers object/build geometry detail for frames; cleaner reads through builds |
+Do not mark the file read-only as a default. Fortnite and cloud/profile updates can rewrite it,
+and a read-only file prevents legitimate in-game changes. If you deliberately test the legacy
+preset, keep a copy, verify every value in-game, and remove the read-only attribute before
+retuning:
 
-> **Performance Mode exposes only these four Graphics Quality sliders** — View Distance, 3D Resolution, Textures, Meshes. Anti-Aliasing, Shadows, Effects, and Post Processing **do not appear** in Performance Mode (DirectX 12); they live in the non-performance DX11/DX12 render paths. If you ever switch off Performance Mode, set all four of those to Off/Low. ([Epic 2026 competitive guide](https://store.epicgames.com/news/fortnite-on-pc-best-settings-for-competitive-play-in-2026?lang=en-US), [Peterbot ProSettings](https://prosettings.net/players/peterbot/))
-
-### 2026 stutter fix: kill cosmetic streaming
-
-There's a known micro-stutter when Fortnite streams in cosmetic textures mid-match (enemy skins loading on contact). Add this one line to your `GameUserSettings.ini` under `[/Script/FortniteGame.FortGameUserSettings]`:
-
-```
-CosmeticStreamingEnabled=CodeSet_Disabled
+```powershell
+$gameSettings = "$env:LOCALAPPDATA\FortniteGame\Saved\Config\WindowsClient\GameUserSettings.ini"
+attrib -R $gameSettings
 ```
 
-Then re-tick read-only (see the box at the top) so Fortnite doesn't overwrite it on next launch. It trades a tiny one-time load for no streaming hitches during fights. This is config-level — the catalog doesn't auto-write it yet because the exact accepted token has shifted across patches and a wrong value triggers a full settings reset; set it yourself and verify it sticks.
+## Display and frame pacing
 
-### Polling rate: 1000 Hz, not 8000 Hz (yes, really)
+- Test Fullscreen and Windowed Fullscreen on the current Fortnite and Windows build. Keep the
+  mode that gives the best combination of frame-time consistency, alt-tab behavior, VRR behavior,
+  and measured input response on the target rig.
+- Use the monitor's highest supported mode only when the system can feed it consistently. The
+  app's display action reads the current resolution and selects the highest mode Windows exposes;
+  it does not cap a high-refresh display at 240 Hz.
+- Choose a frame cap from a repeatable scene and the display/VRR strategy. Matching a monitor's
+  nominal refresh is only a starting point; uncapped, capped-below-refresh, and tear-tolerant
+  paths have different tradeoffs.
+- Test VSync, VRR, and the cap as a matrix. There is no universal “refresh minus three” or
+  “lowest latency” result across drivers, engines, and displays.
+- HDR, overdrive, and backlight strobing are display-path choices. Compare them at the same
+  resolution, cap, and scene; do not claim a fixed millisecond cost without a measurement.
 
-Run your mouse at **1000 Hz**. 8000 Hz is a *net negative* for competitive Fortnite on all but the very fastest CPUs: it raises mouse-driver CPU overhead from ~2.5% to ~7%, and in CPU-bound endgame that costs 3–5 avg FPS and degrades your 1% lows ~15% (the exact moment you need frames most). The rule: only run 8000 Hz if your average FPS stays above **2× your refresh** at all times — which never happens in a built-out endgame. **No top Fortnite pro competes at 8000 Hz; 1000 Hz is the standard.** Full mouse setup (LOD, rear USB port, sensor) is in the *Gaming mice* guide.
+## Rendering and in-game controls
 
-## Latency tab
+- Compare the render modes Fortnite currently exposes on the installed build. Performance mode
+  can reduce visual workload, but no current build should be described as the universal number-one
+  mode or as the mode every top player uses.
+- Start with Custom quality, then validate view distance, 3D resolution, textures, meshes, and
+  effects against visibility and stable 1% lows. Resolution and view distance are player and rig
+  choices, not automatic latency switches.
+- If NVIDIA Reflex is offered for the GPU/build, compare Off, On, and On + Boost in the same
+  scene. Reflex is an in-game integration; do not promise a fixed 5–30 ms gain. When using Reflex,
+  avoid stacking a contradictory driver low-latency mode without measuring.
+- On Radeon, use the current in-game/official Anti-Lag path when supported. Never recommend
+  unofficial injection or anti-cheat-bypassing latency tools.
+- Test mouse polling at 1000 Hz first. 4/8 kHz can be useful on some rigs but can increase CPU
+  work or frame-time variance; keep it only if polling is actually achieved and the same scene
+  remains stable.
+- Avoid undocumented INI keys such as old cosmetic-streaming tokens unless the current Epic
+  build documents them and the setting is verified after launch. A stale key can be ignored or
+  trigger a settings rewrite.
 
-- **NVIDIA Reflex Low Latency: On + Boost** if you're on RTX 20-series or newer. Documented 5–30 ms reduction depending on CPU/GPU bottleneck. Game-side SDK feature — there is no Windows registry or driver flag we can flip for you, you have to enable it inside Fortnite. **When Reflex is on in-game, set NVIDIA Control Panel → Low Latency Mode to OFF** (not Ultra) — driver NULL is redundant with native Reflex and "Ultra" actively fights it.
-- **AMD Anti-Lag** if Radeon — use the in-game / Anti-Lag 2 path. **Avoid the legacy driver-forced Anti-Lag v1 in anti-cheat titles** (it injects into the game and has triggered VAC-style bans elsewhere).
+## Audio and capture
 
-### The G-Sync / V-Sync / cap matrix (240 Hz+) — get this exactly right
+Use one spatializer at a time. Verify the endpoint format, enhancements, Discord behavior, and
+audio-driver DPC activity with the actual device. Capture-card and dual-PC paths need a separate
+end-to-end test: the app can report configuration, but it cannot prove the sender/receiver path,
+audio sync, or match acceptance without the real hardware.
 
-This is the single most-argued setting and most people set it wrong. The authority here is Blur Busters' latency testing:
+## Acceptance checklist
 
-| Goal | Reflex | G-Sync | V-Sync | FPS cap | Notes |
-|---|---|---|---|---|---|
-| **Absolute lowest latency** (most T1 pros, incl. Diggy's setup) | On + Boost | **OFF** | **OFF** | Uncapped, or capped just above refresh | You accept screen tearing. Wins ~1–2 ms vs a tuned G-Sync stack. Correct when your FPS sits well above your refresh. |
-| **Tear-free, near-lowest** (canonical "safe") | On + Boost | ON | ON (in NVCP, not in-game) | ~3% below refresh (240 → ~233) | Reflex auto-caps below refresh to keep G-Sync in its window. The standard recommendation if tearing bothers you. |
-| **Never do this** | — | OFF | ON | — | V-Sync ON without VRR = a full frame of added lag. |
+1. Record Windows build, GPU driver, Fortnite build, monitor mode, cap, Reflex/VRR state, and
+   mouse polling rate.
+2. Run the same replay or controlled creative scene at least three times before and after one
+   change; record frametime percentiles and input method, not only the FPS average.
+3. Re-launch Fortnite and re-check the settings that the game owns.
+4. Run the app's Diff/rescan view. A catalog receipt is not proof that a game setting stayed
+   active; a mismatch must be repaired or reverted.
+5. For tournaments, re-check Epic's current Secure Boot, TPM, IOMMU, and anti-cheat requirements.
 
-At 240 Hz+ with FPS that stays above refresh in fights, **G-Sync OFF + V-Sync OFF + Reflex On+Boost** is the lowest-latency configuration — this is why so many pros run no-sync and just live with tearing.
-
-## Game tab — quality-of-life
-
-- **Show FPS: On.** You need to see the cap holding, the 1% lows, and what happens when you change a setting. Without it, every "tweak" is faith.
-- **First Person Camera (Locker / Lobby): off** unless you specifically want it. Some Chapter 5+ menus default this on; the lobby render burns CPU you'd rather have for the match.
-- **Replay recording: off** during competitive sessions. Replay captures eat ~3-5% CPU. Turn back on if you're VOD-reviewing.
-
-## Audio tab — footsteps are information, treat them like it
-
-In-game:
-- **Music Volume: 0.** Always. The footstep + reload audio is information; music is decoration. Sound Effects 100%, Dialogue + Cinematics 0.
-- **Voice Chat Notification Sounds: off.** They mask gunshot directionality.
-- **Visualize Sound Effects: ON.** Free directional indicators for footsteps + shots. Used by every cited pro.
-- **3D Headphones: ON** — but only ONE spatializer at a time. If you turn this on, turn **Windows Spatial Sound OFF** (and vice-versa). Stacking two spatializers smears directionality — the most common self-inflicted audio mistake.
-- **Sound Quality: High.**
-
-Windows side (the part most guides skip):
-- **Loudness Equalization: ON** (Sound → your output device → Enhancements). This is the deliberate comp trick: it compresses dynamic range so quiet footsteps get lifted closer to the volume of gunfire — you hear the rotate before they hear you.
-- Optional **Equalizer APO** boosts in the footstep bands (~150–450 Hz body, ~1–3.5 kHz detail, ~4–5 kHz presence) if you want to go further. Free, reversible.
-- **DPC latency from audio drivers is a real FPS/stutter killer.** Run **LatencyMon** for a few minutes during a match — if an audio driver is the top DPC offender, swap a third-party Realtek codec for Microsoft's inbox **High Definition Audio Device** driver and set the format to 24-bit / 48 kHz. Counter-intuitively, onboard audio is often *lower* DPC than a cheap USB DAC.
-
-## Cosmetics — what actually costs FPS
-
-**Top pros don't run default skin.** Peterbot, Clix, Mongraal, Veno, Khanada all play with their preferred skin every match including FNCS finals. The "default skin = lowest delay" line is folklore — the delta on modern hardware is sub-1 FPS for typical skins, invisible past 144 FPS.
-
-What *does* cost FPS is **heavy-VFX cosmetics**:
-
-| Cosmetic type | Real FPS cost | Recommendation |
-|---|---|---|
-| **Skin — low-poly / no VFX** (Renegade Raider, basic Battle Pass skins, OG colorways) | ~0 FPS | Wear what looks good. |
-| **Skin — heavy VFX / particle effects** (DJ Bop, holographic Marvel mythics, animated Icon skins) | -2 to -5 FPS in dense fights | Skip during FNCS / scrims. Save for pubs. |
-| **Back bling — animated / pet** (anything with a pet animation, particle trail, glowing elements) | -1 to -3 FPS | Pick a static back bling or none. |
-| **Back bling — static** (Battle Pass crystals, basic backpacks) | ~0 FPS | Free. |
-| **Pickaxe — basic mesh** (default, Renegade Raider, common-rarity pickaxes) | ~0 FPS | Pick what looks good. |
-| **Pickaxe — heavy VFX** (animated rotating pickaxes, particle-trail pickaxes) | -1 FPS during pickaxe-out moments | Pickaxe-out is the third-most-common visible weapon — picking a simple mesh adds up. |
-| **Weapon wrap — solid color** (Reactive Slurp ON tier 1, Default, basic colors) | ~0 FPS | Free win. |
-| **Weapon wrap — animated** (holographic / fire / Slurp tier 3+ / Refract) | -1 to -2 FPS during shotgun fights | The most-visible cosmetic. Solid wraps are the pro standard. |
-| **Glider trail / contrail** | Negligible | Wear what you want. |
-
-**The "zero-delay pickaxe" claim is a myth.** The pickaxe pull-out animation length + input registration frame is identical across every pickaxe in the game. The TikTok "0-delay pickaxe tier list" videos compare pickaxe-out FPS without accounting for the underlying scene render — the deltas are within FPS-counter noise.
-
-**The real cosmetic rule**: avoid **animated wraps**, **heavy-VFX skins**, and **pet/particle back blings** during competitive sessions. Within that constraint, wear what feels right. Mongraal runs ICON Series Mongraal skin in FNCS. Pete runs his Falcons skin. The aesthetic-as-superstition tax is real — pros pick their drip.
-
-## What this guide *won't* tell you to do
-
-- **DPI / sens.** Personal — see the /grind page for cited rig snapshots from individual pros. eDPI band ~250–300 is where the converged-mechanics players sit, but copying numbers is a worse strategy than building muscle memory at any value.
-- **Keybinds.** Same — see /grind. Wall+Stairs on M5/M4 is the default schoolbook; some pros remap.
-
-## Make it stick
-
-Fortnite rewrites GameUserSettings.ini on launch from the encrypted profile. To prevent it from undoing the catalog tweak:
-
-1. Apply the catalog's `Fortnite: competitive GameUserSettings.ini` tweak.
-2. Open `%LOCALAPPDATA%\FortniteGame\Saved\Config\WindowsClient\GameUserSettings.ini` in Explorer.
-3. Right-click → Properties → check "Read-only".
-4. Re-launch Fortnite. The locked file means the engine reads your values and uses them without overwriting.
-
-Trade-off: as long as it's read-only, in-game Settings panel changes won't persist either. Untick when you want to retune in-game; re-tick when you're done.
-
-## Cited sources
-
-- [Peterbot ProSettings.net](https://prosettings.net/players/peterbot/) — May 2026
-- [Clix ProSettings.net](https://prosettings.net/players/clix/)
-- [Mongraal ProSettings.net](https://prosettings.net/players/mongraal/)
-- [Bugha public Fortnite Masterclass settings](https://www.fortnitemasterclass.com/) — gameplay segments
-- The catalog's `fortnite.engine-ini.optimize` + `fortnite.gus-ini.competitive` tweaks ship the file-side values matching this guide.
+No Windows tweak can prove “fastest edits” or lowest total input delay without this controlled
+game/device measurement. That evidence gate is intentional.

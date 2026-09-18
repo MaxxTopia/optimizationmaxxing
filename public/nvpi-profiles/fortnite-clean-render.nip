@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ArrayOfProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Profile>
-    <ProfileName>Fortnite</ProfileName>
+    <ProfileName>Fortnite - clean render (experimental)</ProfileName>
     <Executeables>
       <string>FortniteClient-Win64-Shipping.exe</string>
       <string>FortniteLauncher.exe</string>
@@ -14,15 +14,33 @@
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>
+        <SettingNameInfo>Vertical Sync</SettingNameInfo>
+        <SettingID>11041231</SettingID>
+        <SettingValue>138504007</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
         <SettingNameInfo>Texture filtering - Quality</SettingNameInfo>
         <SettingID>13510289</SettingID>
         <SettingValue>20</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>
-        <SettingNameInfo>Vertical Sync</SettingNameInfo>
-        <SettingID>11041231</SettingID>
-        <SettingValue>138504007</SettingValue>
+        <SettingNameInfo>Texture filtering - Negative LOD bias</SettingNameInfo>
+        <SettingID>1686376</SettingID>
+        <SettingValue>1</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Enable FXAA</SettingNameInfo>
+        <SettingID>276089202</SettingID>
+        <SettingValue>0</SettingValue>
+        <ValueType>Dword</ValueType>
+      </ProfileSetting>
+      <ProfileSetting>
+        <SettingNameInfo>Enable sample interleaving (MFAA)</SettingNameInfo>
+        <SettingID>10011052</SettingID>
+        <SettingValue>0</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>

@@ -1,20 +1,30 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
+import { GAMES, type GameId } from '../lib/games'
 import { runBench, score } from '../lib/astaBench'
 import { loadImpactStore } from '../lib/benchImpact'
 import { useIsVip } from '../store/useVipStore'
+import { useRigStore } from '../store/useRigStore'
 import {
   applyBatch,
-  detectSpecs,
   inTauri,
   listApplied,
   telemetrySendEvent,
+  verifyApplied,
   type BatchItem,
+  type AppliedTweak,
   type SpecProfile,
 } from '../lib/tauri'
+import {
+  isHardBlockedForAutoTune,
+  recommendedTuneProfile,
+  tuneProfile,
+  type TuneIntensity,
+} from '../lib/tuneProfiles'
 import { issueTuneTicket, readTuneTicket, type TuneTicket } from '../lib/tuneTicket'
 import { TuneTicketModal } from '../components/TuneTicketModal'
+import { DetectedRigCard } from '../components/DetectedRigCard'
 
 /**
  * /tune — the lazy-user one-click conversion page.
@@ -31,50 +41,83 @@ import { TuneTicketModal } from '../components/TuneTicketModal'
  * dedicated tweaks for) because the core ~70 rig-level + Windows-level
  * tweaks compound regardless of title.
  *
- * Excludes the experimental lane + tournament-breaking tweaks from the
- * auto-apply set. The user explicitly opts into those from /tweaks or Asta.
+ * Applies only actions inside the selected profile. Security-degrading,
+ * cosmetic-only, tournament-breaking, and high anti-cheat-risk tweaks remain
+ * protected even in Extreme; the user can inspect those from /tweaks or Asta
+ * with an explicit per-tweak decision.
  */
 
 type Phase = 'idle' | 'scanning' | 'ready' | 'applying' | 'measuring' | 'done' | 'error'
 
 interface PlanBuckets {
-  /** Lower-risk, non-experimental tweaks matching this rig that aren't already
-   * applied and have passed the Tune Now eligibility filters. */
+  /** Tweaks matching the selected profile that are ready to apply. */
   applyFree: TweakRecord[]
   /** VIP tweaks matching this rig — projected composite if user upgrades. */
   vipLocked: TweakRecord[]
   /** Already-applied tweaks (not re-applied). */
   alreadyApplied: TweakRecord[]
-  /** Skipped — too risky / tournament-breaking / requires admin opt-in. */
+  /** Never auto-applied because they need explicit security, eligibility, or readback review. */
   skippedDanger: TweakRecord[]
+  /** Valid catalog matches outside the selected intensity. */
+  skippedByProfile: TweakRecord[]
+  /** Tagged for a different game context and therefore not part of this run. */
+  skippedOtherGame: TweakRecord[]
+}
+
+interface VerificationSummary {
+  total: number
+  verified: number
+  mismatch: number
+  unknown: number
 }
 
 export function TuneNow() {
   const isNative = inTauri()
   const isVip = useIsVip()
+  const spec = useRigStore((state) => state.spec)
+  const ensureLoaded = useRigStore((state) => state.ensureLoaded)
+  const refreshRig = useRigStore((state) => state.refresh)
   const [phase, setPhase] = useState<Phase>('idle')
-  const [spec, setSpec] = useState<SpecProfile | null>(null)
   const [beforeComposite, setBeforeComposite] = useState<number | null>(null)
   const [afterComposite, setAfterComposite] = useState<number | null>(null)
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<string>('')
+  const [intensity, setIntensity] = useState<TuneIntensity>('competitive')
+  const [targetGame, setTargetGame] = useState<GameId | 'any'>('fortnite')
+  const [profileAutoSelected, setProfileAutoSelected] = useState(false)
+  const [verification, setVerification] = useState<VerificationSummary | null>(null)
   const [ticket, setTicket] = useState<TuneTicket | null>(() => readTuneTicket())
   const [showTicket, setShowTicket] = useState(false)
 
   useEffect(() => {
+    void ensureLoaded()
+  }, [ensureLoaded])
+
+  useEffect(() => {
+    if (!spec || profileAutoSelected) return
+    setIntensity(recommendedTuneProfile(spec).profile.id)
+    setProfileAutoSelected(true)
+  }, [spec, profileAutoSelected])
+
+  useEffect(() => {
     if (!isNative) return
-    listApplied()
-      .then((rows) =>
-        setAppliedIds(new Set(rows.filter((r) => r.status === 'applied').map((r) => r.tweakId))),
-      )
+    // A receipt is not proof that the setting is still live. Re-read native
+    // state before planning so a Windows Update, driver update, or another
+    // optimizer can be repaired on the next tune.
+    verifyApplied()
+      .catch(() => listApplied())
+      .then((rows) => setAppliedIds(appliedTweakIdsReadyForReapply(rows)))
       .catch(() => {})
   }, [isNative])
 
   const plan = useMemo<PlanBuckets>(
-    () => buildPlan(catalog.tweaks, spec, appliedIds, isVip),
-    [spec, appliedIds, isVip],
+    () => buildPlan(catalog.tweaks, spec, appliedIds, isVip, tuneProfile(intensity), targetGame),
+    [spec, appliedIds, isVip, intensity, targetGame],
   )
+
+  const recommendation = useMemo(() => recommendedTuneProfile(spec), [spec])
+  const profile = tuneProfile(intensity)
 
   /** Sum measured-impact composite deltas across a tweak set. Falls back
    * to a heuristic (0.6 per low-risk, 1.1 per mid-risk) for tweaks with
@@ -103,8 +146,10 @@ export function TuneNow() {
     setError(null)
     setProgress('Detecting rig…')
     try {
-      const detected = await detectSpecs(false)
-      setSpec(detected)
+      const detected = await refreshRig()
+      if (!detected) {
+        throw new Error('The native rig scan returned no hardware profile. Open Profile and re-scan before tuning.')
+      }
       setProgress('Running Asta Bench (before)…')
       const before = score(await runBench())
       setBeforeComposite(before.composite)
@@ -117,9 +162,21 @@ export function TuneNow() {
   }
 
   async function applyAll() {
+    if (profile.requiresConfirmation && plan.applyFree.length > 0) {
+      const confirmed = window.confirm(
+        `${profile.label} tune will apply ${plan.applyFree.length} catalog tweaks, including experimental OS/driver settings. It will not change voltage or thermal limits, and tournament-breaking/high anti-cheat-risk items remain excluded. Continue only on a restore-backed test install?`,
+      )
+      if (!confirmed) return
+    }
     if (plan.applyFree.length === 0) {
       // Nothing to apply — jump straight to the gap CTA so the user sees value.
       setAfterComposite(beforeComposite)
+      try {
+        const live = await verifyApplied()
+        setVerification(summarizeVerification(live))
+      } catch {
+        setVerification(null)
+      }
       await ensureFirstTuneTicket(true)
       setPhase('done')
       return
@@ -127,14 +184,18 @@ export function TuneNow() {
     setPhase('applying')
     setError(null)
     setProgress(`Applying ${plan.applyFree.length} tweaks under one UAC…`)
+    const selectedIds = new Set(plan.applyFree.map((t) => t.id))
     try {
       const items: BatchItem[] = []
       for (const t of plan.applyFree) {
         for (const a of t.actions) items.push({ tweakId: t.id, action: a })
       }
       await applyBatch(items)
-      const list = await listApplied()
-      setAppliedIds(new Set(list.filter((r) => r.status === 'applied').map((r) => r.tweakId)))
+      const live = await verifyApplied()
+      setVerification(
+        summarizeVerification(live.filter((row) => selectedIds.has(row.tweakId))),
+      )
+      setAppliedIds(appliedTweakIdsReadyForReapply(live))
       setPhase('measuring')
       setProgress('Settling 4s before re-bench…')
       await new Promise((r) => setTimeout(r, 4000))
@@ -155,6 +216,19 @@ export function TuneNow() {
         anyVip: false,
       })
     } catch (e) {
+      // apply_batch records prepared actions even when an elevated command
+      // fails part-way through. Refresh the durable state here so the error
+      // screen does not leave the next scan planning from stale receipts.
+      try {
+        const live = await verifyApplied()
+        setVerification(
+          summarizeVerification(live.filter((row) => selectedIds.has(row.tweakId))),
+        )
+        setAppliedIds(appliedTweakIdsReadyForReapply(live))
+      } catch {
+        // The original apply error is more useful than hiding it behind a
+        // second verification failure.
+      }
       setError(e instanceof Error ? e.message : String(e))
       setPhase('error')
     }
@@ -167,11 +241,13 @@ export function TuneNow() {
         <h1 className="text-3xl font-bold">Tune now</h1>
         <p className="text-sm text-text-muted max-w-2xl">
           Don't want to wipe Windows or read 90 tweak descriptions? Hit scan. We'll detect your
-          rig, measure where you are, apply every safe tweak that matches your hardware, and
+          rig, measure where you are, apply every eligible catalog tweak that matches your hardware, and
           show you what changed. <span className="text-text">Works for any game</span>{' '}
           — the rig + Windows levers are measured on your machine instead of sold as a universal FPS promise.
         </p>
       </header>
+
+      <DetectedRigCard compact />
 
       {phase === 'idle' && (
         <IdleState onStart={startScan} isNative={isNative} />
@@ -188,6 +264,19 @@ export function TuneNow() {
           plan={plan}
           projection={projection}
           isVip={isVip}
+          intensity={intensity}
+          targetGame={targetGame}
+          profile={profile}
+          recommendedId={recommendation.profile.id}
+          recommendationReason={recommendation.reason}
+          onIntensityChange={(next) => {
+            setIntensity(next)
+            setVerification(null)
+          }}
+          onTargetGameChange={(next) => {
+            setTargetGame(next)
+            setVerification(null)
+          }}
           onApply={applyAll}
         />
       )}
@@ -199,6 +288,9 @@ export function TuneNow() {
           plan={plan}
           projection={projection}
           isVip={isVip}
+          intensity={intensity}
+          targetGame={targetGame}
+          verification={verification}
           ticket={ticket}
           onShowTicket={() => setShowTicket(true)}
           onRescan={startScan}
@@ -242,7 +334,7 @@ function IdleState({ onStart, isNative }: { onStart: () => void; isNative: boole
             <span className="text-accent font-semibold">1.</span> Scan + initial Asta Bench (≈30 s)
           </li>
           <li>
-            <span className="text-accent font-semibold">2.</span> Apply every lower-risk, non-experimental tweak that matches your rig — one UAC prompt
+            <span className="text-accent font-semibold">2.</span> Choose Light, Competitive, Aggressive, or Extreme; the scan explains the tradeoffs before applying anything
           </li>
           <li>
             <span className="text-accent font-semibold">3.</span> Re-bench + see exactly how many composite points you gained, and how many you'd unlock with VIP
@@ -257,8 +349,9 @@ function IdleState({ onStart, isNative }: { onStart: () => void; isNative: boole
         {isNative ? 'Start tune →' : 'Requires the desktop app'}
       </button>
       <p className="text-[11px] text-text-subtle">
-        Skipped: risk-4 tweaks (CPU mitigations off, etc.) and tournament-breaking tweaks. You
-        opt into those individually from{' '}
+        Tournament-breaking and high anti-cheat-risk actions are never auto-applied. Experimental
+        actions only enter Aggressive/Extreme after an explicit confirmation. You can inspect every
+        catalog item from{' '}
         <Link to="/tweaks" className="underline hover:text-text">/tweaks</Link>. Every applied
         changes with a recorded inverse are one-click reversible from{' '}
         <Link to="/settings" className="underline hover:text-text">Settings</Link>.
@@ -285,6 +378,13 @@ function ReadyState({
   plan,
   projection,
   isVip,
+  intensity,
+  profile,
+  recommendedId,
+  recommendationReason,
+  targetGame,
+  onIntensityChange,
+  onTargetGameChange,
   onApply,
 }: {
   spec: SpecProfile
@@ -292,8 +392,16 @@ function ReadyState({
   plan: PlanBuckets
   projection: { vipGainEstimate: number; vipGainRange: [number, number] }
   isVip: boolean
+  intensity: TuneIntensity
+  profile: ReturnType<typeof tuneProfile>
+  recommendedId: TuneIntensity
+  recommendationReason: string
+  targetGame: GameId | 'any'
+  onIntensityChange: (next: TuneIntensity) => void
+  onTargetGameChange: (next: GameId | 'any') => void
   onApply: () => void
 }) {
+  const options: TuneIntensity[] = ['light', 'competitive', 'aggressive', 'extreme']
   return (
     <div className="space-y-4">
       <section className="surface-card p-5 space-y-3">
@@ -308,14 +416,78 @@ function ReadyState({
 
       <section className="surface-card p-5 space-y-3">
         <header>
+          <p className="text-xs uppercase tracking-widest text-text-subtle">tune intensity</p>
+          <h2 className="text-xl font-bold">Choose how far the scan is allowed to go</h2>
+          <p className="text-sm text-text-muted">{profile.summary}</p>
+        </header>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          {options.map((id) => {
+            const option = tuneProfile(id)
+            const selected = id === intensity
+            return (
+              <button
+                key={id}
+                onClick={() => onIntensityChange(id)}
+                className={`rounded-md border p-3 text-left transition ${
+                  selected
+                    ? 'border-accent bg-accent/10'
+                    : 'border-border hover:border-border-glow'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-sm">{option.label}</span>
+                  {id === recommendedId && (
+                    <span className="text-[10px] uppercase tracking-wider text-emerald-300">recommended</span>
+                  )}
+                </div>
+                <p className="text-xs text-text-muted mt-1 leading-snug">{option.summary}</p>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-xs text-text-subtle">{recommendationReason}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,18rem)_1fr] gap-3 items-end">
+          <label className="text-xs text-text-muted">
+            <span className="block mb-1 uppercase tracking-wider text-text-subtle">game context</span>
+            <select
+              value={targetGame}
+              onChange={(event) => onTargetGameChange(event.target.value as GameId | 'any')}
+              className="w-full rounded-md border border-border bg-bg-base px-3 py-2 text-sm text-text"
+            >
+              <option value="fortnite">🎯 Fortnite</option>
+              {GAMES.filter((game) => game.id !== 'fortnite').map((game) => (
+                <option key={game.id} value={game.id}>
+                  {game.glyph} {game.label}
+                </option>
+              ))}
+              <option value="any">Windows baseline only</option>
+            </select>
+          </label>
+          <p className="text-xs text-text-subtle leading-snug">
+            Windows baseline tweaks are always eligible. Game-tagged config and priority tweaks are
+            included only for the selected context, so a Fortnite file cannot be applied during a
+            Valorant or baseline-only run.
+          </p>
+        </div>
+        {profile.requiresConfirmation && (
+          <p className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100">
+            Experimental settings are opt-in and may trade security, compatibility, battery life, or
+            exact restore behavior for a possible latency change. Extreme does not disable voltage or
+            thermal safeguards, and tournament-breaking/high anti-cheat-risk items stay excluded.
+          </p>
+        )}
+      </section>
+
+      <section className="surface-card p-5 space-y-3">
+        <header>
           <p className="text-xs uppercase tracking-widest text-text-subtle">the plan</p>
           <h2 className="text-xl font-bold">
-            {plan.applyFree.length} lower-risk tweaks ready to apply
+            {plan.applyFree.length} {profile.label.toLowerCase()} tweaks ready to apply
           </h2>
         </header>
         <ul className="space-y-1.5 text-sm text-text-muted">
           <li>
-            <span className="text-emerald-300 font-semibold">{plan.applyFree.length}</span> free, non-experimental tweaks match your rig
+            <span className="text-emerald-300 font-semibold">{plan.applyFree.length}</span> eligible tweaks match your rig and profile
           </li>
           {plan.alreadyApplied.length > 0 && (
             <li>
@@ -323,13 +495,23 @@ function ReadyState({
             </li>
           )}
           <li>
-            <span className="text-amber-300 font-semibold">{plan.skippedDanger.length}</span> experimental / tournament-flagged (you opt in from /tweaks)
+            <span className="text-amber-300 font-semibold">{plan.skippedDanger.length}</span> protected by security, eligibility, or readback policy (never auto-applied)
           </li>
-          {!isVip && (
+          {plan.skippedByProfile.length > 0 && (
             <li>
-              <span className="text-accent font-semibold">{plan.vipLocked.length}</span> VIP-only — projected{' '}
-              <span className="text-accent">+{projection.vipGainRange[0].toFixed(1)} to +{projection.vipGainRange[1].toFixed(1)} composite</span>{' '}
-              left on the table
+              <span className="text-text-subtle font-semibold">{plan.skippedByProfile.length}</span> outside this profile's risk allowance
+            </li>
+          )}
+          {plan.skippedOtherGame.length > 0 && (
+            <li>
+              <span className="text-text-subtle font-semibold">{plan.skippedOtherGame.length}</span> game-specific tweaks are outside this context
+            </li>
+          )}
+          {plan.vipLocked.length > 0 && (
+            <li>
+              <span className="text-accent font-semibold">{plan.vipLocked.length}</span>{' '}
+              {isVip ? 'outside the automatic VIP lane' : 'VIP/profile-gated'} — projected{' '}
+              <span className="text-accent">+{projection.vipGainRange[0].toFixed(1)} to +{projection.vipGainRange[1].toFixed(1)} composite</span>
             </li>
           )}
         </ul>
@@ -339,7 +521,7 @@ function ReadyState({
             className="btn-chrome px-5 py-2.5 rounded-md bg-accent text-bg-base font-semibold"
           >
             {plan.applyFree.length > 0
-              ? `Apply ${plan.applyFree.length} (1 UAC) →`
+              ? `Apply ${plan.applyFree.length} at ${profile.label} (1 UAC) →`
               : 'Continue to results'}
           </button>
           <Link to="/tweaks" className="text-xs underline text-text-muted hover:text-text">
@@ -357,6 +539,9 @@ function DoneState({
   plan,
   projection,
   isVip,
+  intensity,
+  targetGame,
+  verification,
   ticket,
   onShowTicket,
   onRescan,
@@ -366,6 +551,9 @@ function DoneState({
   plan: PlanBuckets
   projection: { vipGainEstimate: number; vipGainRange: [number, number] }
   isVip: boolean
+  intensity: TuneIntensity
+  targetGame: GameId | 'any'
+  verification: VerificationSummary | null
   ticket: TuneTicket | null
   onShowTicket: () => void
   onRescan: () => void
@@ -388,9 +576,21 @@ function DoneState({
           We applied <strong className="text-text">{plan.applyFree.length}</strong> tweaks. Composite
           went from {beforeComposite.toFixed(0)} → {afterComposite.toFixed(0)} ({sign}
           {delta.toFixed(1)}). Snapshot-backed changes can be reverted from the strip below; the
-          experimental lane stays opt-in and is never silently applied here.
+          <strong className="text-text">{tuneProfile(intensity).label}</strong> profile was selected.
+          {' '}Context: <strong className="text-text">{gameContextLabel(targetGame)}</strong>.
         </p>
       </section>
+
+      {verification && (
+        <section className="surface-card p-5 space-y-2">
+          <p className="text-[11px] uppercase tracking-widest text-text-subtle">live state check</p>
+          <p className="text-sm text-text-muted">
+            {verification.verified} verified · {verification.mismatch} mismatch · {verification.unknown} unknown
+            {' '}of {verification.total} applied actions. A mismatch means Windows or another tool changed
+            the setting; it is not counted as a successful tune.
+          </p>
+        </section>
+      )}
 
       {!isVip && plan.vipLocked.length > 0 && (
         <section
@@ -566,35 +766,88 @@ function buildPlan(
   spec: SpecProfile | null,
   applied: Set<string>,
   isVip: boolean,
+  profile: ReturnType<typeof tuneProfile>,
+  targetGame: GameId | 'any',
 ): PlanBuckets {
   const applyFree: TweakRecord[] = []
   const vipLocked: TweakRecord[] = []
   const alreadyApplied: TweakRecord[] = []
   const skippedDanger: TweakRecord[] = []
+  const skippedByProfile: TweakRecord[] = []
+  const skippedOtherGame: TweakRecord[] = []
 
   for (const t of all) {
+    if (!tweakMatchesSpec(t, spec)) continue
+    if (!tweakMatchesGame(t, targetGame)) {
+      skippedOtherGame.push(t)
+      continue
+    }
     if (applied.has(t.id)) {
       alreadyApplied.push(t)
       continue
     }
-    if (!tweakMatchesSpec(t, spec)) continue
-    // Skip experimental + tournament-breaking by default — user opts in
-    // explicitly from /tweaks.
-    if (isExperimentalTweak(t)) {
+    // Security-degrading, cosmetic-only, tournament-breaking, high
+    // anti-cheat-risk, and script-only actions without a native read-back
+    // contract are never part of automatic Tune Now, including Extreme. The
+    // individual tweak page can explain the explicit risk and recovery path.
+    if (isHardBlockedForAutoTune(t)) {
       skippedDanger.push(t)
       continue
     }
-    if (t.anticheatRisk === 'high') {
-      skippedDanger.push(t)
+    if (
+      t.riskLevel > profile.maxRisk ||
+      (isExperimentalTweak(t) && !profile.includeExperimental)
+    ) {
+      skippedByProfile.push(t)
       continue
     }
-    if (t.vipGate === 'vip' && !isVip) {
+    if ((profile.vipRequired || t.vipGate === 'vip') && !isVip) {
       vipLocked.push(t)
       continue
     }
     applyFree.push(t)
   }
-  return { applyFree, vipLocked, alreadyApplied, skippedDanger }
+  return { applyFree, vipLocked, alreadyApplied, skippedDanger, skippedByProfile, skippedOtherGame }
+}
+
+function tweakMatchesGame(tweak: TweakRecord, targetGame: GameId | 'any'): boolean {
+  const tagged = tweak.applicableGames && tweak.applicableGames.length > 0
+  if (!tagged) return true
+  return targetGame !== 'any' && tweak.applicableGames!.includes(targetGame)
+}
+
+function gameContextLabel(targetGame: GameId | 'any'): string {
+  if (targetGame === 'any') return 'Windows baseline'
+  return GAMES.find((game) => game.id === targetGame)?.label ?? targetGame
+}
+
+function summarizeVerification(
+  rows: Array<{ verificationStatus?: string }>,
+): VerificationSummary {
+  const verified = rows.filter((r) => r.verificationStatus === 'verified').length
+  const mismatch = rows.filter((r) => r.verificationStatus === 'mismatch').length
+  const unknown = rows.filter((r) => r.verificationStatus !== 'verified' && r.verificationStatus !== 'mismatch').length
+  return { total: rows.length, verified, mismatch, unknown }
+}
+
+/**
+ * Return tweak IDs that do not need an automatic repair. Use the newest active
+ * receipt per tweak: older app versions could leave duplicate receipts after
+ * a re-apply, and an old mismatch must not keep a successfully repaired tweak
+ * in an infinite re-apply loop.
+ */
+function appliedTweakIdsReadyForReapply(rows: AppliedTweak[]): Set<string> {
+  const latest = new Map<string, AppliedTweak>()
+  for (const row of rows) {
+    if (row.status !== 'applied') continue
+    const prior = latest.get(row.tweakId)
+    if (!prior || row.appliedAt > prior.appliedAt) latest.set(row.tweakId, row)
+  }
+  return new Set(
+    [...latest.values()]
+      .filter((row) => row.verificationStatus !== 'mismatch')
+      .map((row) => row.tweakId),
+  )
 }
 
 function projectGain(vipLocked: TweakRecord[]): {

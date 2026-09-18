@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useIsVip } from '../store/useVipStore'
-import { applyBatch, detectSpecs, inTauri, listApplied, type BatchItem, type SpecProfile } from '../lib/tauri'
+import { applyBatch, listApplied, type BatchItem } from '../lib/tauri'
 import { catalog } from '../lib/catalog'
 import { presetById, presetExperimentalTweaks } from '../lib/presets'
 import { AstaShareCard } from '../components/AstaShareCard'
 import { TournamentAudit } from '../components/TournamentAudit'
 import { TournamentModePanel } from '../components/TournamentModePanel'
+import { useRigStore } from '../store/useRigStore'
 
 /**
  * /asta — the path + apply page for Asta Mode. Browsable for non-VIP users
@@ -34,8 +35,8 @@ but cranked. The core lane is measurable; the experimental lane is
 clearly marked because a BIOS/driver/security trade can beat a stock
 setup on one rig and hurt another. The bench decides what stays.
 
-What's left after Asta Mode lives on /diagnostics (RAM tightening, CO
-undervolt) and /grind (sleep, warmups, session cadence). Those are
+What's left after Asta Mode lives on /diagnostics (RAM stability/profile
+audit and measured OS/driver experiments) and /grind (sleep, warmups, session cadence). Those are
 real, and they're free.`
 
 export function Asta() {
@@ -213,8 +214,8 @@ export function Asta() {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
           <NextCard
-            title="RAM tightening recipe"
-            body="Read your SPD, identify your IC type, generate a 'type these into BIOS' recipe. Read-only — we never auto-flash."
+            title="RAM profile evidence"
+            body="Read SPD and manufacturer-rated profile data, then use the stability checklist. No automatic BIOS timing or voltage recipe is generated."
             cta="Open /diagnostics"
             href="/diagnostics"
           />
@@ -308,22 +309,12 @@ function Hero() {
 }
 
 function AstaFitCard() {
-  const [spec, setSpec] = useState<SpecProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const spec = useRigStore((state) => state.spec)
+  const status = useRigStore((state) => state.status)
+  const error = useRigStore((state) => state.error)
+  const loading = status === 'idle' || status === 'loading'
 
-  useEffect(() => {
-    if (!inTauri()) {
-      setLoading(false)
-      return
-    }
-    detectSpecs(false)
-      .then(setSpec)
-      .catch((e) => setError(typeof e === 'string' ? e : (e as Error).message ?? String(e)))
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (!inTauri() && !loading) return null
+  if (status === 'unavailable') return null
 
   const desktop = spec ? !spec.mobo.isLaptop : false
   const enoughRam = (spec?.ram.totalGb ?? 0) >= 16

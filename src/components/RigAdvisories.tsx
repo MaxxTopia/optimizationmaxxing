@@ -51,7 +51,7 @@ function buildAdvisories(spec: SpecProfile): Advisory[] {
       key: 'gpu-arc',
       eyebrow: 'your GPU · Intel Arc',
       title: 'Arc: check Resizable BAR first',
-      body: 'ReBAR is worth ~20-40% on Arc and is the #1 knob. Stay on current drivers (Arc gains come from updates), and use XeLL for latency — skip frame-gen for competitive.',
+      body: 'Resizable BAR can materially affect Arc performance in some workloads. Verify it is enabled, keep the driver current, and compare a repeatable game scene; skip frame generation when the goal is direct input response.',
       to: '/guides#intel-arc-setup',
       cta: 'Open Arc guide →',
     })
@@ -74,7 +74,7 @@ function buildAdvisories(spec: SpecProfile): Advisory[] {
       key: 'cpu-apo',
       eyebrow: 'your CPU · Intel',
       title: 'Intel APO may be your biggest free FPS lever',
-      body: 'Application Optimization (14th-gen K / Core Ultra 200) reorders P/E-core threads per game — up to ~14% FPS and ~21% better 1% lows in supported titles like CS2. Most people never enable it. Check the APO app.',
+      body: 'Application Optimization can reorder P/E-core threads for supported games on some 14th-gen K and Core Ultra systems. The result is title-, BIOS-, driver-, and mode-dependent; Fortnite is not currently on Intel\'s official advanced-game list, so measure it rather than assuming a gain.',
       to: '/guides#amd-intel',
       cta: 'How to enable APO →',
     })
@@ -98,7 +98,7 @@ function buildAdvisories(spec: SpecProfile): Advisory[] {
       key: 'os-eol',
       eyebrow: 'your OS · Windows 10',
       title: 'Windows 10 reached end of support (Oct 14, 2025)',
-      body: 'Your tweaks still apply, but Win10 no longer gets security fixes, and Win11 24H2 has real hybrid-CPU scheduler gains. Worth planning an upgrade (or ESU). Per-game OS notes inside.',
+      body: 'Your tweaks still apply, but standard Windows 10 support ended on October 14, 2025. Plan a move to a supported, fully patched Windows 11 branch (or an explicitly supported ESU path) and compare the exact Fortnite workload after the move.',
       to: '/guides#per-game-windows',
       cta: 'OS guidance →',
       tone: 'warn',

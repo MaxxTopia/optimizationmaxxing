@@ -80,6 +80,19 @@ export interface RamInfo {
   configuredSpeedMts: number | null
   manufacturer: string | null
   partNumber: string | null
+  /** WMI inventory for each installed DIMM; it cannot prove die or headroom. */
+  modules?: RamModuleInfo[]
+}
+
+export interface RamModuleInfo {
+  slot: string
+  manufacturer: string | null
+  partNumber: string | null
+  capacityGb: number
+  speedMts: number | null
+  configuredSpeedMts: number | null
+  formFactor: string | null
+  memoryType: string | null
 }
 
 export interface OsInfo {
@@ -167,6 +180,8 @@ export type TweakAction =
       apply: string
       /** Inverse script. null = non-revertible. */
       revert: string | null
+      /** Read-only catalog verifier. Exit code 0 proves the live state matches. */
+      verify?: string
     }
   | {
       kind: 'file_write'
@@ -175,6 +190,15 @@ export type TweakAction =
       /** Base64-encoded file contents. */
       contents_b64: string
     }
+  | {
+      kind: 'display_refresh'
+      /** Pipe-separated display-name/description match; empty matches all. */
+      device_match: string
+      target_hz: number
+      fallback_chain: number[]
+    }
+
+export type VerificationStatus = 'verified' | 'mismatch' | 'unknown'
 
 export interface TweakPreview {
   kind: string
@@ -188,6 +212,8 @@ export interface ApplyReceipt {
   tweakId: string
   appliedAt: string
   kind: string
+  verificationStatus: VerificationStatus
+  verificationDetail: string
 }
 
 export interface AppliedTweak {
@@ -196,12 +222,46 @@ export interface AppliedTweak {
   appliedAt: string
   status: string
   kind: string
+  verificationStatus: VerificationStatus
+  verificationDetail: string
 }
 
 export interface BootstrapPayload {
   catalogVersion: string
   appliedTweakIds: string[]
   spec: SpecProfile | null
+}
+
+export type RebootValidationStatus =
+  | 'idle'
+  | 'armed'
+  | 'awaiting_reboot'
+  | 'verified'
+  | 'mismatch'
+  | 'unknown'
+
+export interface RebootValidationItem {
+  receiptId: string
+  tweakId: string
+  status: VerificationStatus
+  detail: string
+}
+
+export interface RebootValidation {
+  status: RebootValidationStatus
+  armedAt: string | null
+  verifiedAt: string | null
+  beforeUptimeSecs: number | null
+  afterUptimeSecs: number | null
+  beforeOsBuild: number | null
+  afterOsBuild: number | null
+  receiptIds: string[]
+  checked: number
+  verified: number
+  mismatched: number
+  unknown: number
+  detail: string
+  items: RebootValidationItem[]
 }
 
 // ---------- Calls ----------
@@ -270,6 +330,26 @@ export async function revertAllApplied(): Promise<RevertAllReport> {
 
 export async function listApplied(): Promise<AppliedTweak[]> {
   return invoke<AppliedTweak[]>('list_applied')
+}
+
+/** Re-read every active tweak against live Windows state. */
+export async function verifyApplied(): Promise<AppliedTweak[]> {
+  return invoke<AppliedTweak[]>('verify_applied')
+}
+
+/** Read the durable reboot-persistence proof, if one has been armed. */
+export async function getRebootValidation(): Promise<RebootValidation> {
+  return invoke<RebootValidation>('get_reboot_validation')
+}
+
+/** Capture the exact active receipt set and pre-reboot boot marker. */
+export async function armRebootValidation(): Promise<RebootValidation> {
+  return invoke<RebootValidation>('arm_reboot_validation')
+}
+
+/** Verify the armed receipt set only after a real Windows reboot is observed. */
+export async function validateRebootPersistence(): Promise<RebootValidation> {
+  return invoke<RebootValidation>('validate_reboot_persistence')
 }
 
 export interface PerfSnapshot {

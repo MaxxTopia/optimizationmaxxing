@@ -64,6 +64,21 @@ pub fn capture_pre_state(action: &TweakAction) -> anyhow::Result<serde_json::Val
     }
 }
 
+/// Verify a BCD value by reading `{current}` again after the elevated
+/// mutation. A failed `/enum` is unknown to the caller rather than a false
+/// success.
+pub fn verify(action: &TweakAction) -> anyhow::Result<bool> {
+    let TweakAction::BcdeditSet { name, value } = action else {
+        return Err(anyhow!("verify called on non-bcdedit action"));
+    };
+    let output = enum_bcd().ok_or_else(|| anyhow!("bcdedit /enum failed"))?;
+    let current = parse_value(&output, name);
+    Ok(current
+        .as_deref()
+        .map(|v| v.trim().eq_ignore_ascii_case(value.trim()))
+        .unwrap_or(false))
+}
+
 /// Build the cmd.exe-line fragment for an apply (used inside the batched
 /// elevation runner).
 pub fn apply_cmd_line(name: &str, value: &str) -> String {

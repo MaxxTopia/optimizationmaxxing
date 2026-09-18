@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  detectSpecs,
   inTauri,
-  type SpecProfile,
 } from '../lib/tauri'
 import { runBenchMedian, score, type BenchStage } from '../lib/astaBench'
+import { useRigStore } from '../store/useRigStore'
+import type { SpecProfile } from '../lib/tauri'
 
 const STORAGE_KEY = 'optmaxxing-os-lab-runs'
 
@@ -41,11 +41,17 @@ function loadRuns(): OsRun[] {
  */
 export function OsComparisonLab() {
   const isNative = inTauri()
+  const ensureLoaded = useRigStore((state) => state.ensureLoaded)
+  const refreshRig = useRigStore((state) => state.refresh)
   const [runs, setRuns] = useState<OsRun[]>(loadRuns)
   const [label, setLabel] = useState('')
   const [stage, setStage] = useState<BenchStage>('idle')
   const [runNumber, setRunNumber] = useState(0)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    void ensureLoaded()
+  }, [ensureLoaded])
 
   async function run() {
     if (!isNative) {
@@ -55,7 +61,10 @@ export function OsComparisonLab() {
     setError(null)
     setStage('cpu')
     try {
-      const spec: SpecProfile = await detectSpecs(false)
+      const spec = await refreshRig()
+      if (!spec) {
+        throw new Error('The native rig scan returned no hardware profile. Re-scan from Profile before comparing OS runs.')
+      }
       const sample = await runBenchMedian(
         3,
         (idx) => setRunNumber(idx),

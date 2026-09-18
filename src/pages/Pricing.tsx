@@ -43,7 +43,7 @@ const VIP_FEATURES = [
   'Match Scan — deep CPU/GPU thermal + throttle scan (real core temps + voltages via a Microsoft-signed sensor driver) with plain-English fix-it steps',
   'All curated + community presets (Esports / BR / Streamer / Asta Mode / etc.)',
   '/tune wizard unlocks the full measured catalog — no universal latency promise',
-  'Asta Mode — the most aggressive bundled preset (~30 tweaks, anti-magic visual)',
+  'Asta Mode — the highest-intensity opt-in bundle, with anti-magic visual explanations',
   'Tournament Audit + per-game anti-cheat compliance flags',
   'Day-1 game configs as new titles drop',
   'Priority Discord support',
@@ -172,16 +172,20 @@ export function Pricing() {
 
       <section className="surface-card p-5">
         <p className="text-xs uppercase tracking-widest text-text-subtle mb-2">comparison</p>
-        <h2 className="text-lg font-semibold mb-3">vs. competitors</h2>
+        <h2 className="text-lg font-semibold mb-3">capability snapshot · reviewed 2026-09-17</h2>
+        <p className="text-xs text-text-muted mb-4 max-w-3xl">
+          Competitor packaging, pricing, and feature sets change. These are the capabilities we can
+          verify in this build; “varies” means the other product needs its own current audit.
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-          <CompCell label="Bundle size" us="5 MB" them="81 MB Paragon · 90 MB+ Hone" win />
-          <CompCell label="Themes" us="5 + Asta Mode" them="1" win />
-          <CompCell label="Per-tweak undo" us="yes" them="all-or-nothing" win />
-          <CompCell label="Spec-aware curation" us="yes" them="generic" win />
-          <CompCell label="Pricing model" us="$115 lifetime" them="recurring sub" win />
-          <CompCell label="Per-tweak measurement" us="yes" them="no" win />
-          <CompCell label="Tune audit" us="yes" them="no" win />
-          <CompCell label="Day-1 game configs" us="VIP" them="—" win />
+          <CompCell label="Local NSIS artifact" us="~10.9 MiB" them="varies by product" win />
+          <CompCell label="Themes" us="5 + Asta Mode" them="varies by product" win />
+          <CompCell label="Per-tweak undo" us="snapshot-backed where supported" them="varies by product" win />
+          <CompCell label="Spec-aware curation" us="scan-gated" them="varies by product" win />
+          <CompCell label="Pricing model" us="$115 lifetime offer" them="varies by product" win />
+          <CompCell label="Per-tweak measurement" us="before/after records" them="varies by product" win />
+          <CompCell label="Tune audit" us="receipts + drift scan" them="varies by product" win />
+          <CompCell label="Game config lane" us="VIP, explicit opt-in" them="varies by product" win />
         </div>
       </section>
     </div>

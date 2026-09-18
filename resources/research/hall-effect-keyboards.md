@@ -2,7 +2,11 @@
 
 HE (magnetic) switches let you tune **actuation distance** (0.1mm – 4.0mm) + **rapid trigger** (key registers as released the instant it starts moving up, not after a fixed reset travel). This unlocks tap-strafing, counter-strafing, build-edit speeds that are physically impossible on mechanical switches with a fixed actuation point.
 
-Every active Fortnite Major top-10 + every CS2 Major top-10 finalist in 2026 is on HE. This isn't optional anymore at the top.
+Hall-effect boards are common among competitive players, but adoption varies by
+game, team, sponsor, layout, and personal preference. Rapid trigger is not a
+guaranteed performance gain, and tournament rules or game updates can change
+what is allowed; verify the current event rules before using automation-like
+keyboard features.
 
 ## Tier list
 
@@ -20,7 +24,7 @@ Every active Fortnite Major top-10 + every CS2 Major top-10 finalist in 2026 is 
 |---|---|---|---|---|---|
 | **[SteelSeries Apex Pro TKL Gen 3](https://steelseries.com/gaming-keyboards/apex-pro-tkl-gen-3)** | OmniPoint 3.0 | 1000 Hz | 0.1 mm | $250 | Premium build (alu plate + OLED smart display), but stuck at 1K polling vs Wooting's 8K. [GG](https://steelseries.com/gg) software is solid; not browser-based. (Note: Peterbot is *not* on the Gen 3 — see pro adoption below.) |
 | **[Razer Huntsman V3 Pro TKL](https://www.razer.com/gaming-keyboards/razer-huntsman-v3-pro-tkl)** | Razer Analog v2 | 8000 Hz | 0.1 mm | $230 | 8K polling, Razer build quality. [Synapse 4](https://www.razer.com/synapse-4) is the software penalty — bloated installer, account login. The hardware is S-tier; the software experience drops it. |
-| **[Drunkdeer G75](https://drunkdeer.com/products/drunkdeer-g75-wired-adjustable-actuation-magnetic-switch-keyboard)** | Drunkdeer Magnetic (silent) | 8000 Hz w/ Turbo | 0.2 mm | $110 | 90-95% of the Wooting feel at half the price. Software is genuinely good for the bracket. Silent variant is the first competitively-priced quiet HE option. |
+| **[Drunkdeer G75](https://drunkdeer.com/products/drunkdeer-g75-wired-adjustable-actuation-magnetic-switch-keyboard)** | Drunkdeer Magnetic (silent) | 8000 Hz w/ Turbo | 0.2 mm | $110 | A lower-cost alternative with a similar feature set on paper. Verify firmware behavior, software quality, and return support before relying on it for competition. |
 | **[Wooting 60HE](https://wooting.io/wooting-60he)** (original) | Lekker L60 | 1000 Hz | 0.1 mm | $175 | Still on sale; the 60HE+ supersedes it but original-stock 60HEs are everywhere on the secondhand market. |
 
 ### B — entry / niche
@@ -44,34 +48,44 @@ Every active Fortnite Major top-10 + every CS2 Major top-10 finalist in 2026 is 
 
 The spec sheet has eight knobs. Only three of them move the dial:
 
-1. **Rapid trigger** (yes / no). Non-negotiable. Without it you're on a mech with extra steps.
-2. **Polling rate** ≥ 1000 Hz. 8K vs 1K is measurable on an LDAT but invisible in normal play; don't pay double for it unless you're chasing every last ms.
-3. **Per-key actuation tuning**. 0.1mm minimum is what tournament pros use. 0.2mm is fine for non-competitive.
+1. **Rapid trigger** (yes / no). It changes release behavior; whether that helps
+   depends on the game and your control.
+2. **Polling rate** ≥ 1000 Hz. Higher polling can reduce report interval, but
+   it can also increase USB/CPU work; validate frametime on the target rig.
+3. **Per-key actuation tuning**. A lower actuation point can feel faster but
+   also increases accidental inputs. Start conservative and adjust per key.
 
-**Doesn't matter**: RGB. PBT vs ABS keycaps (preference). Wireless (every pro is on wired). Aluminum vs plastic case (build feel ≠ performance).
+**Doesn't matter**: RGB. PBT vs ABS keycaps (preference). Wireless versus wired
+is a reliability and firmware choice, not a universal latency verdict. Aluminum
+versus plastic is primarily build feel and durability.
 
-## Per-game guidance
+## Per-game starting points
+
+The values below are starting points for a controlled personal test, not
+universal pro settings. Change one variable, record accidental inputs and
+frametime, and keep the profile only if it improves control without breaking
+the current game's rules.
 
 ### Fortnite (UE5, build-fight oriented)
 
 | Knob | Setting | Why |
 |---|---|---|
 | Movement keys (WASD) | **Actuation 1.0 mm + Rapid Trigger 0.1 mm** | Standard travel for movement, fast release for counter-strafe / direction changes |
-| Build keys (Q / Z / X / C) | **Actuation 0.2 mm + RT 0.1 mm** | Builds register on light touch — peak edit-speed |
+| Build keys (Q / Z / X / C) | **Actuation around 0.2–0.5 mm + RT as tolerated** | A lighter press can feel faster, but verify accidental-input rate and control |
 | Shift / Space | **Actuation 1.5 mm** | Avoid accidental crouch/jump on key-bounce |
 
 ### Valorant / CS2 (counter-strafe)
 
 | Knob | Setting | Why |
 |---|---|---|
-| WASD | **Actuation 0.5 mm + RT 0.1 mm** | Fast register + instant release = pure counter-strafe. Standing-still-faster than the engine can read movement. |
+| WASD | **Actuation around 0.5–1.0 mm + RT as tolerated** | Fast register and release can help control; verify counter-strafe consistency |
 | Abilities (Q/E/F/C) | **Actuation 1.5 mm** | Mis-tap protection during firefights |
 
 ### Apex / OW2 (movement-tech heavy)
 
 | Knob | Setting | Why |
 |---|---|---|
-| WASD | **Actuation 0.3 mm + RT 0.1 mm** | Tap-strafe + lurch timing benefits from the fastest release the firmware allows |
+| WASD | **Actuation around 0.3–1.0 mm + RT as tolerated** | Movement-tech timing is game- and player-dependent; test before locking the profile |
 | Crouch / Slide | **Actuation 0.8 mm** | Slide-jump consistency |
 
 ## Software tier — Wootility is the moat
@@ -100,7 +114,9 @@ If you're going to spend $200+ on a board, **the software is half of what you're
 2. **Want the highest-pro-adoption-rate board with best software?** → Wooting 80HE (or 60HE+ if you prefer 60% form factor).
 3. **Care more about build quality (aluminum) than software polish?** → Endgame Gear KB65HE 8K.
 
-Anything else is preference (form factor, sound profile, keycap material). The performance floor is the same once you've cleared the "must have rapid trigger + 0.1mm actuation + ≥1000 Hz polling" bar.
+Anything else is preference (form factor, sound profile, keycap material). Do
+not treat a particular actuation or polling threshold as a guaranteed
+competitive floor.
 
 ## Citations
 

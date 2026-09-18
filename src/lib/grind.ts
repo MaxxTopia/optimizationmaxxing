@@ -119,7 +119,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Codelife — Peterbot UPDATED Settings 2026 (March 2026)', url: 'https://www.youtube.com/watch?v=T8cr2AEfofE' },
       },
       {
-        text: 'Performance render mode + 240 fps cap. Visual settings sacrificed for outline visibility, not aesthetics.',
+        text: 'Use the current low-overhead render path and choose a frame cap from your stable frame pacing and display mode. Visual settings are a visibility/performance tradeoff, not a universal 240 FPS prescription.',
       },
       {
         text: 'Builds-on-mouse-buttons keybind philosophy. Wall + Stairs on M5/M4 means your dominant hand never leaves WASD during build battles — frame advantage every retake.',
@@ -343,7 +343,7 @@ export const GRIND_ENTRIES: GrindEntry[] = [
         citation: { label: 'Esports Earnings — Clix tournament results', url: 'https://www.esportsearnings.com/players/62105-clix-cody-conrod' },
       },
       {
-        text: 'In-game settings: **Brightness 117**, Performance render mode, V-Sync OFF, 240 FPS cap. All tuned for outline visibility + frame consistency rather than aesthetics.',
+        text: 'In-game settings: validate brightness, the available low-overhead render path, V-Sync behavior, and a cap that your rig sustains. The goal is visibility plus frame consistency rather than a fixed pro preset.',
         citation: { label: 'ProSettings.net — Clix', url: 'https://prosettings.net/players/clix/' },
       },
       {

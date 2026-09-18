@@ -1,86 +1,94 @@
-# AMD + Intel CPU features — what to keep, what to disable
+# AMD and Intel CPU guidance for competitive gaming
 
-## Intel (12th-15th gen, hybrid P+E architecture)
+**Last reviewed: 2026-09-17.** This guide is intentionally software- and
+firmware-safe. optimizationmaxxing does not write CPU voltage, current limits,
+thermal limits, PBO offsets, Curve Optimizer offsets, fixed frequencies, or
+memory voltages. BIOS audit can show what a board exposes; it is not permission
+to change those controls.
 
-### Hyper-Threading (HT) — 12th-14th gen only
-- **Keep ON** for >90% of games.
-- Edge case: pre-2020 esports titles (CS:GO, Overwatch 1) gained 1-3% on some chips with HT off. CS2 on 14900K? Leave HT on.
-- **15th-gen Arrow Lake (Core Ultra 200S, Lion Cove P-cores) removed Hyper-Threading/SMT entirely** — first mainline Intel desktop without it since Nehalem. There is no HT toggle on these chips, so this advice doesn't apply; nothing to do.
+## Intel Core i9-14900KF and 13th/14th-gen desktop CPUs
 
-### E-cores
-- **Default: keep enabled.** Intel Thread Director routes game threads to P-cores correctly.
-- **[Process Lasso](https://bitsum.com/) pin** if you see stutter: pin game .exe to P-cores only via "CPU Affinity → Always". 13900K/14900K = cores 0-15. Our own `/auto-pin → Fortnite → Auto-pick` does the same with no third-party install.
-- **Disable in BIOS only as a measured last resort** on an older or misbehaving system. Use a supported, fully patched Windows 11 build first; do not select an old build solely because a creator reported a smoother result.
-- 15th gen (Core Ultra 200): Thread Director v2 + APO (Application Optimization). Leave E-cores on, install APO.
+The safe baseline is:
 
-### Intel APO (Application Optimization)
-- **Install it** on supported rigs: **14th-gen K-series (14900K / 14700K / 14600K)** and **Core Ultra 200S / Arrow Lake**. Free — install **Intel APO + the Intel Dynamic Tuning (DSA)** app from the Microsoft Store / intel.com. It feeds the scheduler game-specific thread hints; documented gains run 5-15%, and up to ~24-31% in a few titles.
-- **Fortnite is NOT on Intel's official APO game list** — don't go looking for a Fortnite toggle in the APO app, there isn't one. The list (Intel KB 000098266, last reviewed 06/08/2026) covers ~49 titles — CS2, Valorant, Dota 2, League of Legends, R6 Siege, Metro Exodus, etc. — but no Fortnite. If you run those other titles, APO is still a free, native, zero-anti-cheat-risk win that most people never enable; install it and confirm the supported games you play are toggled **ON**.
-- **EAC caveat (read this):** Arrow Lake + Windows 24H2 had an EAC freeze/crash with Fortnite on early builds. It's fixed — but only if you're **fully updated**: the Nov 2024 24H2 cumulative + the Jan 2025 Intel microcode. Update Windows + GPU drivers and let EAC self-update before leaning on APO.
-- Requires a supported Windows 11 build and the current Intel software/driver prerequisites; the app cannot infer APO support from CPU branding alone.
+- Keep P-cores, E-cores, Hyper-Threading, Speed Shift, and normal Windows
+  scheduling enabled unless a controlled A/B test proves a specific title
+  benefits from a change.
+- Install the newest motherboard BIOS and use **Intel Default Settings**.
+- Confirm the BIOS contains Intel microcode **0x12F or later** for the Vmin
+  Shift issue. Intel says this is the current recommendation and has extended
+  eligible affected-CPU warranty coverage to five years. [Intel Vmin Shift latest
+  information](https://www.intel.com/content/www/us/en/support/articles/000102331/processors.html)
+- Treat WHEA errors, crashes, decompression errors, or new instability as a
+  stop signal. Do not attempt to hide them with more tuning; return to stock,
+  update firmware, and use vendor/Intel diagnostics.
 
-### Performance Cores Boost / Thermal Velocity Boost
-- BIOS-level. Leave on stock unless you've validated thermals at full load (20-min [Cinebench R23](https://www.maxon.net/en/downloads/cinebench-r23-downloads) + 20-min [OCCT](https://www.ocbase.com/)).
+### Intel Application Optimization
 
-### 13th/14th-gen K-series instability — get on the fixed microcode (read this if you own a 13700K/13900K/14700K/14900K)
-- **What happened:** Intel confirmed the root cause of the 13th/14th-gen desktop instability was **elevated operating voltage causing a Vmin shift / permanent silicon degradation** on K-series chips — manifesting as crashes, decompression errors, and freezes that get worse over time.
-- **The fix:** Intel shipped microcode **0x12B** (which rolls up the earlier 0x125 and 0x129 mitigations) plus the **Intel Default Settings** power profile. A later **0x12F** update further addressed Vmin Shift. Delivered via a **motherboard BIOS update** — there is no in-Windows toggle, and the exact latest level is board-specific.
-- **Action:** Flash the latest BIOS for your board (check that its release notes cite microcode **0x12B or newer**) and run the **Intel Default** power profile, not the board vendor's unlimited/"performance" preset. Negligible gaming-perf cost.
-- **Important:** these stop *further* degradation but **cannot reverse damage already done** — if a chip is already unstable, RMA it. Intel extended the warranty to 5 years for affected SKUs.
+Intel Application Optimization (APO) is an optional Intel Dynamic Tuning
+Technology feature that changes scheduling/application behavior for supported
+titles. Intel lists the i9-14900KF among verified processors, requires current
+BIOS/DTT support, and recommends Windows 11 25H2 or later. The game list is
+configuration-dependent and the UI may show different titles on different
+systems. [Intel APO overview](https://www.intel.com/content/www/us/en/support/articles/000095419/processors.html)
 
-## AMD (Zen 3 / 4 / 5)
+Fortnite is not listed in Intel's current official APO game-list article. Do not
+promise an APO gain for Fortnite, and do not unlock Advanced Mode just because
+the processor is supported: Intel says unsupported configurations can show no
+benefit or degrade performance. If the Intel UI exposes a title on this exact
+rig, record an A/B result and keep the per-game off switch available. [Intel APO
+game list](https://www.intel.com/content/www/us/en/support/articles/000098266/processors.html)
 
-### Simultaneous Multi-Threading (SMT)
-- **Keep ON** for most titles.
-- Edge case: some CS2 / R6 testing shows SMT-off winning 5-8% in 1% lows on a few chips. Test both — but this is separate from CCD pinning (below), and on a single-CCD X3D it's the only lever worth touching, not affinity.
+## AMD Ryzen and 3D V-Cache
 
-### Precision Boost Overdrive (PBO)
-- **Enable** in BIOS. Free perf scaling.
-- Combine with **Curve Optimizer** (per-core undervolt: -10 to -30 negative offset). Cinebench R23 + OCCT to validate stability.
-- 7800X3D / 7950X3D: PBO is locked. Use Curve Optimizer only.
+- Keep CPB, SMT, and the platform's normal boost/scheduler behavior at stock for
+  the first measurement.
+- Enable only the memory profile the kit and board vendor support; memory
+  stability is more valuable than a nominal frequency number. The app can read
+  SPD and report timings, but it does not write BIOS values.
+- Single-CCD X3D parts do not need CCD pinning: there is no second CCD to route
+  away from. Treat manual affinity as an experiment, not a default.
+- Dual-CCD X3D parts have more routing complexity. Prefer the current AMD
+  chipset/3D V-Cache driver and Windows scheduler path; only test a launcher or
+  CPU-set policy when a measured problem exists. Never inject into or alter the
+  anti-cheat-protected game process.
 
-### Core Performance Boost (CPB)
-- **Keep ON.** Disabling caps you to base clock — never the right call.
+## What not to ship as a “latency tweak”
 
-### EXPO / DOCP (memory)
-- **Enable** if your kit has EXPO. Stop running JEDEC fallback.
-- See RAM Advisor for kit-specific manual targets.
+The following may appear in enthusiast guides, but they are outside the
+optimizationmaxxing safe tuning contract:
 
-### 3D V-Cache CCD handling — single-CCD vs dual-CCD (people get this backwards)
+- voltage overrides, undervolts, overvolts, LLC/SVID changes, PBO limits,
+  Curve Optimizer offsets, fixed all-core clocks, and power/current-limit edits;
+- thermal-limit edits or fan-control claims presented as latency fixes;
+- disabling CPU mitigations, security features, or heterogeneous cores without
+  a per-title measurement and a clear anti-cheat/tournament warning;
+- applying a creator's affinity mask to every Intel hybrid or dual-CCD AMD rig.
 
-**Single-CCD X3D (5800X3D / 7800X3D / 9800X3D): do not use CCD pinning. There is only one CCD and it carries the V-Cache, so there is no second CCD to route away from. Extra affinity or SMT rules are separate experiments and can hurt a title; compare them only if you have a reproducible reason. Just enable EXPO + Curve Optimizer and validate stability.**
+If a scan sees thermal throttling, the safe remediation is physical and
+diagnostic: improve airflow, verify the cooler mount, clean dust, update the
+firmware, and return tuning to vendor defaults. The app should report the cause
+and stop; it should not prescribe a voltage or thermal-limit change.
 
-**Dual-CCD X3D (7950X3D / 9950X3D):** 16 cores across 2 CCDs, only one has 3D V-Cache — here routing matters. The stack:
-- **CPPC Preferred Cores = Driver** (or Auto) in BIOS.
-- Install the **AMD 3D V-Cache Performance Optimizer** driver (ships with the chipset driver).
-- **Keep the AMD chipset driver and Windows game-routing components current.** Xbox Game Bar can participate in foreground-game detection on supported builds, but do not assume it is the only scheduler path; verify the behavior on your current install before changing it.
-- Manual `/auto-pin` (or Process Lasso) to the V-Cache CCD is a **fallback only** if the driver/Game Bar routing misbehaves — not the default.
+## Should you buy now or wait for AMD?
 
-> For Fortnite specifically: EAC is sensitive to runtime manipulation of the game process. Prefer the native AMD driver + Game Bar routing above; if you must pin, pin the **launcher** and let it inherit, never set a rule directly on `FortniteClient-Win64-Shipping.exe`. See the auto-pin notes in the app.
+As of this review, AMD's Ryzen 9 9950X3D2 Dual Edition is an announced and
+available Zen 5 desktop processor with 16 cores/32 threads and dual 3D V-Cache.
+AMD also announced the Ryzen 7 7700X3D at Computex 2026. I found no official
+consumer Zen 6 launch date from AMD, so a user should not delay a purchase based
+on an unconfirmed rumor. Compare the 9950X3D2, the current single-CCD X3D
+options, and the user's actual CPU-bound 1% lows, frametime tail, and total
+platform cost. [AMD 9950X3D2 announcement](https://newsroom.amd.com/news/amd-launches-ryzen-9-9950x3d2-dual-edition-processor/),
+[AMD Computex 2026 platform update](https://www.amd.com/en/blogs/2026/amd-computex-2026-10-years-of-am4-am5-support-through.html)
 
-### Fixed-frequency under-volt for esports (Zen 4 / Zen 5)
-- Single-CCD chip: lock all cores to a single clock (e.g. 5.2 GHz on 7700X) + tight FCLK. 0% boost variance = consistent frame times. Costs 5-8% multi-core.
+For a Fortnite player already on a stable 14900KF, a platform swap is not
+automatically justified. First apply the Intel Default/microcode baseline and
+measure CPU-bound scenes. Upgrade only when the measured 1% lows or frametime
+tail justify the board, memory, cooling, and platform cost.
 
-## Both
+### Sources
 
-### Virtualization-Based Security (VBS)
-- VBS/HVCI can trade some overhead for meaningful security and anti-cheat eligibility. Keep it on when a tournament, work policy, or game platform requires it; only compare it off in a disposable, measured lab profile.
-- Re-enable it when your job, VPN, corporate IT, or game rules require it. (The catalog labels the off switch experimental.)
-
-### Disable Microsoft Defender Realtime (with care)
-- Real-time scanning runs alongside every PowerShell / process spawn. ~3% sustained CPU.
-- **Don't disable globally.** Use Process Exclusions for game directories + folders that game-launcher writes to.
-
-### Disable VMP / SVM in BIOS
-- If you don't run Hyper-V, WSL2, Docker Desktop, Windows Sandbox, or Android emulators, you can compare virtualization settings in a separate lab profile. Do not disable them for a tournament or Vanguard system based on a generic "fastest path" claim; current game and platform requirements win.
-- If you do, leave on. The tradeoff is real but specific.
-
-## Citations
-- Intel APO supported-games list + setup (intel.com support 000098266, last reviewed 06/08/2026 — Fortnite not listed)
-- Intel community blog — 13th/14th-gen desktop instability root cause (Vmin shift) + 0x12B microcode mitigation; TechPowerUp / Wccftech corroboration of 0x12B (rolls up 0x125 + 0x129)
-- Arrow Lake (Core Ultra 200S) drops Hyper-Threading — PCWorld, Tom's Hardware
-- Tom's Hardware — Arrow Lake APO testing; EAC/24H2 Fortnite fix coverage
-- AMD PBO whitepaper; AMD 3D V-Cache Performance Optimizer driver notes
-- HWBusters + overclock.net — X3D single- vs dual-CCD core-parking / V-Cache routing
-- Hardware Unboxed multi-CCD scheduling deep-dives
-- Wendell @ Level1Techs Curve Optimizer guides
+- [Intel Vmin Shift latest information](https://www.intel.com/content/www/us/en/support/articles/000102331/processors.html)
+- [Intel APO overview](https://www.intel.com/content/www/us/en/support/articles/000095419/processors.html)
+- [Intel APO game list](https://www.intel.com/content/www/us/en/support/articles/000098266/processors.html)
+- [AMD Ryzen 9 9950X3D2 announcement](https://newsroom.amd.com/news/amd-launches-ryzen-9-9950x3d2-dual-edition-processor/)
+- [AMD Computex 2026 platform update](https://www.amd.com/en/blogs/2026/amd-computex-2026-10-years-of-am4-am5-support-through.html)

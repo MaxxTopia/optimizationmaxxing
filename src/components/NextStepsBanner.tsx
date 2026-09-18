@@ -7,9 +7,9 @@ import { Link } from 'react-router-dom'
  *
  * The catalog tops out at the OS layer (registry, services, bcdedit, file
  * writes). Without this banner, friend-tier users hit Apply on a preset,
- * see the green checkmarks, and move on — leaving 30%+ of available
- * latency on the table that lives in NVPI / SCEWIN / standby cleaner /
- * tournament-compliance territory. Each of those has a /guides article;
+ * see the green checkmarks, and move on without reviewing the external
+ * evidence and eligibility checks that live in NVPI / SCEWIN / standby
+ * cleaner / tournament-compliance territory. Each of those has a /guides article;
  * the banner is just a signpost pointing at the doors.
  *
  * Dismissible (localStorage). Comes back if dismissed >30 days ago, in
@@ -39,7 +39,7 @@ const STEPS: Step[] = [
     emoji: '🎮',
     title: 'NVIDIA Profile Inspector',
     blurb:
-      'OS tweaks are done — NVPI is the next-biggest single-tool win. Per-game knobs the NVIDIA Control Panel hides: LLM Ultra, prerender frames, threaded optimization.',
+      'Optional per-game lane — import the verified baseline, then measure it against stock. NVPI exposes driver knobs the NVIDIA Control Panel does not, including latency and threading controls.',
     guideAnchor: 'nvidia-profile-inspector',
   },
   {
@@ -53,7 +53,7 @@ const STEPS: Step[] = [
     emoji: '🛠️',
     title: 'SCEWIN / BIOS tuning',
     blurb:
-      'The deepest layer: disabling C-states, fixing P-cores, MSI mode, Above-4G decoding. Articleware — we tell you exactly which BIOS toggles per chipset.',
+      'The deepest layer: a read-only firmware/security audit, ReBAR/UEFI readiness, and measured CPU-topology fallbacks. Articleware — no BIOS writes or voltage/thermal recipes.',
     guideAnchor: 'scewin-advanced',
   },
 ]

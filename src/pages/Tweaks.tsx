@@ -159,14 +159,24 @@ export function Tweaks() {
         tweakId: t.id,
         action,
       }))
-      await applyBatch(items)
+      const receipts = await applyBatch(items)
       await refreshApplied()
+      const mismatches = receipts.filter((receipt) => receipt.verificationStatus === 'mismatch')
+      if (mismatches.length > 0) {
+        throw new Error(
+          `${mismatches.length} action(s) did not match the requested live state after apply. Review the verification detail before retrying.`,
+        )
+      }
       telemetrySendEvent('tweak.applied', {
         tweakId: t.id,
         category: t.category,
         riskLevel: t.riskLevel,
       })
     } catch (e) {
+      // A partial elevated batch is durably recorded even when the command
+      // returns an error. Refresh so the row cannot look unapplied merely
+      // because the UAC batch stopped part-way through.
+      await refreshApplied()
       setError(formatErr(e))
     } finally {
       setBusyId(null)
@@ -203,8 +213,14 @@ export function Tweaks() {
       const before = score(await runBench())
       setMeasureNotice(`📏 ${t.title} — applying tweak…`)
       const items: BatchItem[] = t.actions.map((action) => ({ tweakId: t.id, action }))
-      await applyBatch(items)
+      const receipts = await applyBatch(items)
       await refreshApplied()
+      const mismatches = receipts.filter((receipt) => receipt.verificationStatus === 'mismatch')
+      if (mismatches.length > 0) {
+        throw new Error(
+          `${mismatches.length} action(s) failed native read-back; impact measurement was not recorded.`,
+        )
+      }
       // Brief settle for caches + scheduler.
       setMeasureNotice(`📏 ${t.title} — settling 4 s before re-bench…`)
       await new Promise((r) => setTimeout(r, 4000))

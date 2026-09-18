@@ -1,39 +1,18 @@
 import { Link } from 'react-router-dom'
 import type { SpecProfile } from '../lib/tauri'
-import { PRESETS, presetTweaks, type PresetBundle } from '../lib/presets'
+import { recommendedTuneProfile } from '../lib/tuneProfiles'
 
 /**
- * Looks at the detected SpecProfile and recommends one preset bundle.
- * Heuristic-first — no ML, just well-known per-vendor priors. Compounds
- * naturally as the catalog grows (each preset's tweak list is updated;
- * recommendation logic stays stable).
+ * Looks at the detected SpecProfile and recommends a Tune Now intensity.
+ * The catalog remains the source of individual actions; this surface should
+ * not silently select a static preset that ignores the current rig.
  */
-function pickPreset(spec: SpecProfile | null): { preset: PresetBundle; reason: string } {
-  // Default fallback — Esports is the measured, lower-risk starting lane.
-  const esports = PRESETS.find((p) => p.id === 'preset.esports')!
-  if (!spec) {
-    return {
-      preset: esports,
-      reason: 'Detecting your rig… starting with the lower-risk measured lane. We do not assume a universal winner.',
-    }
-  }
-
-  // Avoid pretending that CPU vendor, RAM capacity, or a network stack
-  // overhaul proves a preset winner. Those are hypotheses to measure, not
-  // reasons to silently apply timing or TCP changes.
-  return {
-    preset: esports,
-    reason: `${truncate(spec.cpu.model || spec.cpu.marketing, 28)} detected. Start with the lower-risk measured lane, then compare Asta Bench and real-game 1% lows before testing anything experimental.`,
-  }
-}
-
 interface Props {
   spec: SpecProfile | null
 }
 
 export function RecommendedForRig({ spec }: Props) {
-  const { preset, reason } = pickPreset(spec)
-  const tweakCount = presetTweaks(preset).length
+  const { profile, reason } = recommendedTuneProfile(spec)
 
   return (
     <section className="surface-card p-6 md:p-8 relative overflow-hidden">
@@ -50,21 +29,26 @@ export function RecommendedForRig({ spec }: Props) {
             recommended for your rig
           </p>
           <h2 className="text-2xl font-bold mt-1">
-            {preset.glyph && <span className="mr-2" aria-hidden>{preset.glyph}</span>}
-            {preset.name}
+            {profile.label} tune
           </h2>
-          <p className="text-sm text-text-muted mt-1">{preset.tagline}</p>
+          <p className="text-sm text-text-muted mt-1">{profile.summary}</p>
           <p className="text-sm text-text mt-3 max-w-xl">{reason}</p>
           <p className="text-xs text-text-subtle mt-3">
-            {tweakCount} tweak{tweakCount === 1 ? '' : 's'} · {preset.archetype}
+            Auto-detected profile · no voltage or thermal-limit changes · live verification after apply
           </p>
         </div>
         <div className="shrink-0 flex md:flex-col gap-2">
           <Link
-            to="/presets"
+            to="/tune"
             className="btn-chrome px-5 py-2.5 rounded-md bg-accent text-bg-base font-semibold text-sm whitespace-nowrap"
           >
-            Apply preset →
+            Scan and tune →
+          </Link>
+          <Link
+            to="/presets"
+            className="px-5 py-2.5 rounded-md border border-border text-xs text-text-muted hover:border-border-glow text-center whitespace-nowrap"
+          >
+            Browse presets
           </Link>
           <Link
             to="/profile"
@@ -76,8 +60,4 @@ export function RecommendedForRig({ spec }: Props) {
       </div>
     </section>
   )
-}
-
-function truncate(s: string, n: number) {
-  return s.length > n ? s.slice(0, n - 1) + '…' : s
 }

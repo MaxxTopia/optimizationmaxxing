@@ -9,7 +9,7 @@ import {
 /**
  * BiosAuditCard — read what Windows can see about BIOS settings + compare
  * against the per-game ideal config. Pass/warn/fail/unknown punchlist with
- * one-line "what to flip in BIOS" guidance per failure.
+ * read-only context and a safe next step per finding.
  *
  * Detects the motherboard vendor + product + BIOS firmware version, then
  * surfaces the per-vendor BIOS UI navigation paths so the user knows
@@ -17,7 +17,8 @@ import {
  * organize their BIOS menus differently (ASUS: Ai Tweaker / Advanced /
  * Boot, MSI: OC / Settings, Gigabyte: Tweaker / Settings, ASRock: OC
  * Tweaker / Advanced), so vague "go to BIOS → memory section" guidance
- * is less helpful than "ASUS Ai Tweaker → DOCP."
+ * is less helpful than "ASUS Ai Tweaker → DOCP." The paths are navigation
+ * hints only; this app never writes BIOS variables.
  *
  * For the BIOS values Windows can't read (PBO offsets, Curve Optimizer
  * per-core values, EXPO timing tables, SVID Behavior), the card flags
@@ -45,7 +46,7 @@ interface BiosUiMap {
     /** Resizable BAR — null = hidden / only auto-on. */
     rebar: string | null
   }
-  /** Settings this vendor's BIOS UI lets you tune. */
+  /** Settings this vendor's BIOS UI exposes for inspection. */
   exposedInUi: string[]
   /** Settings only visible via SCEWIN dump on this vendor (BIOS UI hides them). */
   needsScewin: string[]
@@ -66,10 +67,10 @@ const BIOS_UI_MAPS: BiosUiMap[] = [
       rebar: 'Advanced → PCI Subsystem Settings → Above 4G Decoding → Enabled, then Re-Size BAR Support → Enabled',
     },
     exposedInUi: [
-      'PBO + per-core Curve Optimizer offsets (X670E / X870E boards)',
-      'EXPO/DOCP profile selection + memory frequency + voltage',
-      'CPU + SOC voltage (most boards)',
-      'Fan curves via Q-Fan',
+      'PBO / Curve Optimizer controls (inspection only)',
+      'EXPO/DOCP profile selection + memory state',
+      'CPU / SOC voltage readouts (do not copy voltage recipes)',
+      'Fan-curve controls (vendor defaults are the baseline)',
     ],
     needsScewin: [
       'Per-DRAM-channel secondary/tertiary timings (some boards only)',
@@ -91,10 +92,10 @@ const BIOS_UI_MAPS: BiosUiMap[] = [
       rebar: 'Settings → Advanced → PCI Subsystem Settings → Re-Size BAR Support → Auto',
     },
     exposedInUi: [
-      'EXPO/XMP + primary memory timings',
-      'PBO + Curve Optimizer (buried under OC → Advanced)',
-      'CPU LITE Load (Intel auto-undervolt presets)',
-      'Memory Try It! preset library',
+      'EXPO/XMP + primary memory timing controls (inspection only)',
+      'PBO + Curve Optimizer controls (inspection only)',
+      'CPU LITE Load presets (do not use as an app-recommended undervolt)',
+      'Memory Try It! preset library (not a validated latency recipe)',
     ],
     needsScewin: [
       'Secondary memory timings on B650 chipset (X670+ exposes them)',
@@ -117,7 +118,7 @@ const BIOS_UI_MAPS: BiosUiMap[] = [
     },
     exposedInUi: [
       'EXPO/XMP profile selection',
-      'PBO + Curve Optimizer (AORUS Master / Elite boards)',
+      'PBO + Curve Optimizer controls (inspection only)',
       'Above 4G Decoding + Resizable BAR',
       'Per-fan curve via Smart Fan',
     ],
@@ -141,9 +142,9 @@ const BIOS_UI_MAPS: BiosUiMap[] = [
       rebar: 'Advanced → PCI Configuration → Above 4G Decoding + Re-Size BAR Support',
     },
     exposedInUi: [
-      'EXPO/XMP + primary + most secondary timings (ASRock exposes more than MSI/Gigabyte on B650)',
-      'PBO + Curve Optimizer per-core',
-      'A-Tuning / BFB (Base Frequency Boost) for non-K Intel chips',
+      'EXPO/XMP + primary + some secondary timing controls (inspection only)',
+      'PBO + Curve Optimizer per-core controls (inspection only)',
+      'A-Tuning / BFB controls (not an app recommendation)',
     ],
     needsScewin: [
       'Some tertiary memory timings on Lightning / Pro chipset SKUs',
@@ -380,9 +381,9 @@ function buildChecks(a: BiosAudit, profile: GameProfile, ui: BiosUiMap | null): 
     checks.push({
       label: 'EXPO / XMP profile active',
       verdict: 'fail',
-      detail: `${a.ramType ?? '?'} running at ${a.ramSpeedMhz ?? '?'} MHz — at or below JEDEC default. You\'re leaving 20-30% of memory perf on the table.`,
+      detail: `${a.ramType ?? '?'} running at ${a.ramSpeedMhz ?? '?'} MHz — at or below the reported JEDEC baseline. This is a signal to inspect the board's rated memory profile, not a guaranteed performance loss.`,
       fix:
-        `Enable the EXPO/XMP profile.${path('expoXmp')} If POST fails after enabling, your kit + board doesn't train cleanly at the rated speed — drop to DDR5-5600 manually as a fallback.`,
+        `If you want to evaluate the kit's manufacturer-rated EXPO/XMP profile, inspect it in the BIOS UI.${path('expoXmp')} This app does not choose timings or voltage; if training is unstable, restore vendor defaults or use the board vendor's supported fallback and validate before gaming.`,
     })
   }
 
@@ -571,7 +572,7 @@ export function BiosAuditCard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-1.5">
             <p className="text-[10px] uppercase tracking-widest text-emerald-300 font-semibold">
-              ✓ Tunable in your {ui.vendor} BIOS UI
+              ✓ Visible in your {ui.vendor} BIOS UI
             </p>
             <ul className="text-[11px] text-text-muted leading-snug space-y-0.5">
               {ui.exposedInUi.map((item, i) => (
@@ -582,13 +583,13 @@ export function BiosAuditCard() {
               ))}
             </ul>
             <p className="text-[11px] text-text-subtle leading-snug pt-1">
-              These you can flip directly from BIOS without any extra tooling.
+              This is a read-only map. The app does not change BIOS settings or provide voltage, thermal-limit, or overclock recipes.
             </p>
           </div>
 
           <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 space-y-1.5">
             <p className="text-[10px] uppercase tracking-widest text-amber-300 font-semibold">
-              ◇ Needs SCEWIN on {ui.vendor}
+              ◇ Needs a read-only SCEWIN dump on {ui.vendor}
             </p>
             <ul className="text-[11px] text-text-muted leading-snug space-y-0.5">
               {ui.needsScewin.map((item, i) => (
@@ -599,7 +600,7 @@ export function BiosAuditCard() {
               ))}
             </ul>
             <p className="text-[11px] text-text-subtle leading-snug pt-1">
-              Read-only SCEWIN dump exposes these — see{' '}
+              A read-only SCEWIN dump can expose these — see{' '}
               <Link
                 to="/guides#scewin-advanced"
                 className="text-accent underline hover:text-text"
@@ -642,7 +643,7 @@ export function BiosAuditCard() {
             </li>
           </ul>
           <p className="text-[11px] text-text-muted leading-snug">
-            For the full audit, run a SCEWIN dump and compare against a known-good profile —{' '}
+            For a fuller read-only audit, run a SCEWIN dump and compare against your own known-good snapshot —{' '}
             <Link to="/guides#scewin-advanced" className="text-accent underline hover:text-text">
               /guides → SCEWIN
             </Link>

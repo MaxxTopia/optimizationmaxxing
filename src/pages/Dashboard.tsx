@@ -13,19 +13,20 @@ import { RingGauge } from '../components/RingGauge'
 import { SonicFastboi } from '../components/SonicFastboi'
 import { SystemHealth } from '../components/SystemHealth'
 import { WhyUs } from '../components/WhyUs'
+import { DetectedRigCard } from '../components/DetectedRigCard'
 import { useMetrics } from '../store/useMetrics'
-import { detectSpecs, listApplied, type SpecProfile } from '../lib/tauri'
+import { listApplied } from '../lib/tauri'
+import { useRigStore } from '../store/useRigStore'
+
+const APP_VERSION = (import.meta.env.VITE_APP_VERSION as string) || '0.1'
 
 export function Dashboard() {
-  const [spec, setSpec] = useState<SpecProfile | null>(null)
+  const spec = useRigStore((s) => s.spec)
   const [appliedCount, setAppliedCount] = useState(0)
   const metrics = useMetrics(2000)
 
   useEffect(() => {
     let cancelled = false
-    detectSpecs()
-      .then((s) => !cancelled && setSpec(s))
-      .catch(() => undefined)
     listApplied()
       .then((list) => !cancelled && setAppliedCount(list.filter((a) => a.status === 'applied').length))
       .catch(() => undefined)
@@ -49,7 +50,7 @@ export function Dashboard() {
         <SonicFastboi />
         <div className="relative z-10">
           <p className="text-xs uppercase tracking-widest text-text-subtle mb-3">
-            optimizationmaxxing · v0.1
+            optimizationmaxxing · v{APP_VERSION}
           </p>
           <h1 className="text-4xl md:text-5xl font-bold mb-3 leading-tight">
             Max FPS. <span className="text-accent">Chase every millisecond.</span>
@@ -81,6 +82,8 @@ export function Dashboard() {
           </div>
         </div>
       </section>
+
+      <DetectedRigCard />
 
       {/* LIVE GAUGES */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -5,9 +5,16 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const catalogPath = path.join(root, 'resources', 'catalog', 'v1.json')
 const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'))
+const verifierPath = path.join(root, 'src', 'lib', 'powershellVerifiers.ts')
+const verifierSource = fs.readFileSync(verifierPath, 'utf8')
+const verifierIds = new Set(
+  [...verifierSource.matchAll(/^\s*'([^']+)':/gm)].map((match) => match[1]),
+)
 const errors = []
 const warnings = []
 const ids = new Set()
+const powershellIds = new Set()
+const explicitOnlyPowerShellIds = new Set()
 const legacyExperimentalIds = new Set([
   'process.cpu-mitigations.disable-DANGER',
   'process.msi-mode.gpu-nic-audio',
@@ -46,6 +53,7 @@ for (const tweak of catalog.tweaks ?? []) {
   if (experimental && !tweak.expectedImpact) warnings.push(`${tweak.id}: experimental entry has no expected-impact copy`)
   for (const [index, action] of tweak.actions.entries()) {
     if (!action.kind) errors.push(`${tweak.id} action ${index + 1}: missing kind`)
+    if (action.kind === 'powershell_script') powershellIds.add(tweak.id)
     if (action.kind === 'powershell_script' && !action.revert) {
       warnings.push(`${tweak.id} action ${index + 1}: PowerShell action has no revert script`)
     }
@@ -61,6 +69,21 @@ for (const tweak of catalog.tweaks ?? []) {
         errors.push(`${tweak.id} action ${index + 1}: invalid base64 file contents`)
       }
     }
+  }
+}
+
+// Keep the catalog and the TypeScript deny-by-default verifier allow-list in
+// lockstep. Missing contracts are an explicit inspection-only state; stale
+// verifier entries are errors because they make the audit appear stronger
+// than the shipped catalog really is.
+for (const id of powershellIds) {
+  if (!verifierIds.has(id)) {
+    explicitOnlyPowerShellIds.add(id)
+  }
+}
+for (const id of verifierIds) {
+  if (!powershellIds.has(id)) {
+    errors.push(`${id}: verifier has no matching catalog PowerShell action`)
   }
 }
 
@@ -83,6 +106,10 @@ for (const tweak of catalog.tweaks ?? []) {
 console.log(`catalog ${catalog.version}: ${catalog.tweaks.length} tweaks`)
 console.log(`risk: ${JSON.stringify(riskCounts)}`)
 console.log(`evidence: ${JSON.stringify(evidenceCounts)}`)
+console.log(`powershell: ${powershellIds.size} actions, ${[...powershellIds].filter((id) => verifierIds.has(id)).length} read-back verified, ${explicitOnlyPowerShellIds.size} explicit-only`)
+if (explicitOnlyPowerShellIds.size > 0) {
+  console.log(`explicit-only PowerShell: ${[...explicitOnlyPowerShellIds].join(', ')}`)
+}
 console.log(`experimental-or-risk4: ${catalog.tweaks.filter((t) => t.experimental === true || t.riskLevel === 4).length}`)
 console.log(`errors: ${errors.length}`)
 console.log(`warnings: ${warnings.length}`)

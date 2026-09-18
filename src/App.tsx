@@ -25,14 +25,16 @@ import { Changelog } from './pages/Changelog'
 import { Diagnostics } from './pages/Diagnostics'
 import { Session } from './pages/Session'
 import { MatchScan } from './pages/MatchScan'
-import { inTauri, openExternal, telemetrySendEvent } from './lib/tauri'
+import { inTauri, openExternal, telemetrySendEvent, validateRebootPersistence } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 import { useProfileStore } from './store/useProfileStore'
+import { useRigStore } from './store/useRigStore'
 
 const SPLASH_MIN_MS = 1200 // give the neon ripple at least one full sweep
 
 export default function App() {
   const activeProfile = useProfileStore((s) => s.activeProfile)
+  const ensureRigLoaded = useRigStore((s) => s.ensureLoaded)
   useEffect(() => {
     if (!inTauri()) return
     const mountedAt = performance.now()
@@ -48,6 +50,24 @@ export default function App() {
     telemetrySendEvent('app.launch', { profile: activeProfile })
     return () => window.clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Start one read-only hardware snapshot for the whole app. Individual pages
+  // can force a refresh after a BIOS/driver/RAM change, but they all consume
+  // the same result instead of racing separate WMI reads.
+  useEffect(() => {
+    void ensureRigLoaded()
+  }, [ensureRigLoaded])
+
+  // If the user armed a persistence proof before restarting Windows, finish
+  // it automatically on the next app launch. This is read-only verification;
+  // it never silently reapplies a drifted setting.
+  useEffect(() => {
+    if (!inTauri()) return
+    void validateRebootPersistence().catch(() => {
+      // Diagnostics exposes the same result and can show a readable error.
+      // Startup should remain usable if an older install has no proof record.
+    })
   }, [])
 
   // Global anchor interceptor: route every `<a target="_blank">` click with

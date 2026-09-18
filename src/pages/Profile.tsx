@@ -1,30 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { RamAdvisor } from '../components/RamAdvisor'
 import { UpgradeAdvisor } from '../components/UpgradeAdvisor'
 import { PartSerials } from '../components/PartSerials'
-import { detectSpecs, type SpecProfile } from '../lib/tauri'
+import { useRigStore } from '../store/useRigStore'
 
 export function Profile() {
-  const [spec, setSpec] = useState<SpecProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  async function load(refresh = false) {
-    setLoading(true)
-    setError(null)
-    try {
-      const s = await detectSpecs(refresh)
-      setSpec(s)
-    } catch (e: unknown) {
-      setError(typeof e === 'string' ? e : (e as Error)?.message ?? 'unknown error')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const spec = useRigStore((s) => s.spec)
+  const status = useRigStore((s) => s.status)
+  const error = useRigStore((s) => s.error)
+  const ensureLoaded = useRigStore((s) => s.ensureLoaded)
+  const refresh = useRigStore((s) => s.refresh)
 
   useEffect(() => {
-    load()
-  }, [])
+    void ensureLoaded()
+  }, [ensureLoaded])
+
+  const loading = status === 'loading' || status === 'idle'
 
   return (
     <div className="space-y-6">
@@ -37,7 +28,7 @@ export function Profile() {
           </p>
         </div>
         <button
-          onClick={() => load(true)}
+           onClick={() => void refresh()}
           disabled={loading}
           className="btn-chrome px-4 py-1.5 rounded-md bg-bg-raised text-text text-sm disabled:opacity-50"
         >
@@ -45,26 +36,22 @@ export function Profile() {
         </button>
       </header>
 
-      {error && (() => {
-        // @ts-expect-error Tauri injects this at runtime
-        const inTauri = typeof window !== 'undefined' && !!window.__TAURI_INTERNALS__
+      {status === 'unavailable' && (
+        <div className="surface-card p-4 text-sm text-text-muted italic">
+          Spec detection runs inside the optimizationmaxxing.exe shell. The browser preview doesn't
+          include the Tauri runtime — install the .exe to see this machine's real rig data.
+        </div>
+      )}
+
+      {status === 'error' && error && (() => {
         return (
           <div className="surface-card p-4 text-sm text-text">
-            {inTauri ? (
-              <>
-                <p className="font-semibold text-accent mb-1">Spec detection failed</p>
-                <pre className="text-text-muted whitespace-pre-wrap text-xs">{error}</pre>
-                <p className="text-text-subtle text-xs mt-2">
-                  WMI may be disabled or the user lacks read permission. Try Re-scan; if it persists,
-                  check Event Viewer for WMI errors.
-                </p>
-              </>
-            ) : (
-              <p className="text-text-muted italic">
-                Spec detection runs inside the optimizationmaxxing.exe shell. The browser preview
-                doesn't include the Tauri runtime — install the .exe to see your real rig data.
-              </p>
-            )}
+            <p className="font-semibold text-accent mb-1">Spec detection failed</p>
+            <pre className="text-text-muted whitespace-pre-wrap text-xs">{error}</pre>
+            <p className="text-text-subtle text-xs mt-2">
+              WMI may be disabled or the user lacks read permission. Try Re-scan; if it persists,
+              check Event Viewer for WMI errors.
+            </p>
           </div>
         )
       })()}
@@ -113,7 +100,7 @@ export function Profile() {
           <SpecCard title="RAM">
             <Row label="Total" value={`${spec.ram.totalGb} GB`} />
             <Row label="Sticks" value={String(spec.ram.stickCount)} />
-            {spec.ram.speedMts && <Row label="Speed (rated)" value={`${spec.ram.speedMts} MT/s`} />}
+            {spec.ram.speedMts && <Row label="Speed (reported)" value={`${spec.ram.speedMts} MT/s`} />}
             {spec.ram.configuredSpeedMts && (
               <Row label="Speed (running)" value={`${spec.ram.configuredSpeedMts} MT/s`} />
             )}
@@ -195,7 +182,7 @@ export function Profile() {
 
       {spec && (
         <div className="md:col-span-2">
-          <RamAdvisor ram={spec.ram} />
+          <RamAdvisor spec={spec} />
         </div>
       )}
     </div>

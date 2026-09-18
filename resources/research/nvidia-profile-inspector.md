@@ -4,9 +4,9 @@ NVIDIA Control Panel exposes maybe 15% of the actual driver knobs. The rest live
 
 Requires a GeForce 900-series or newer (Reflex hardware floor). 1000/2000/3000/4000/5000 all work.
 
-> **2026 orientation:** NVIDIA discontinued GeForce Experience in late 2024 — install the **NVIDIA App** (the only official driver software now), not GFE. The app's driver oracle currently reports **GeForce Game Ready 610.88** (last checked 2026-08-24); re-check the live driver card before applying a profile. NVIDIA's classic Control Panel retirement and the move of supported settings into the NVIDIA App do not change NVPI's import path. **NVPI itself is unaffected** — it talks straight to the driver profile DB and is still the only way to reach the documented profile flags below. ([NVIDIA drivers](https://www.nvidia.com/en-us/geforce/drivers/), [TechPowerUp](https://www.techpowerup.com/349359/nvidia-geforce-graphics-drivers-610-47-whql-drops-control-panel-support))
+> **2026 orientation:** Use NVIDIA's current official driver channel and verify the installed driver before importing a profile. Driver branches and the NVIDIA App/Control Panel split change over time, so this guide deliberately avoids embedding a driver number. NVPI writes driver profile data outside the game; it is still an external, version-sensitive tool and is not a tournament or anti-cheat approval.
 
-> **Fortnite season check:** Epic's current season is **Chapter 7 Season 4: Override**, launched August 20, 2026. Season content can change maps, weapons, and rendering behavior, but it does not automatically invalidate a driver-level profile. Re-test the in-game Performance (DirectX 12), Reflex, frame cap, and VSync/G-Sync stack after a major season or driver update. ([Epic Games — Fortnite Override](https://www.fortnite.com/news/fortnite-override-break-the-rules-change-the-game))
+> **Fortnite update check:** Season and engine updates can change rendering behavior. Re-test the in-game render mode, Reflex, frame cap, and VSync/VRR stack after a major game or driver update instead of treating this profile as permanent.
 
 ## TL;DR — 60-second setup
 
@@ -23,11 +23,22 @@ We hand-crafted these against [Orbmu2k's `NvApiDriverSettings.h`](https://github
 | Game | Download | What's included |
 |---|---|---|
 | **Fortnite — competitive baseline** | [fortnite-pinnacle.nip](/nvpi-profiles/fortnite-pinnacle.nip) | 4 conservative settings: Power Mgmt = Prefer Max, Texture filtering High Performance, VSync force off, Max Pre-Rendered Frames = defer to the 3D app so in-game Reflex owns the queue |
+| **Fortnite — clean render lab** | [fortnite-clean-render.nip](/nvpi-profiles/fortnite-clean-render.nip) | 7-setting experiment: the baseline plus Negative LOD clamp, FXAA off, and MFAA off. It does **not** remove foliage/clouds/terrain or alter visibility. Keep only if the same-scene test improves frametime without harming clarity. |
 | **Valorant** | [valorant.nip](/nvpi-profiles/valorant.nip) | 6 settings: Power Mgmt Prefer Max, VSync off, Texture filtering High Perf, Negative LOD Clamp, FXAA off, Pre-rendered frames = 1. Threaded Optimization left at AUTO (Vanguard-cautious). Binds to `VALORANT-Win64-Shipping.exe` + `vgc.exe`. |
 | **Counter-Strike 2** | [cs2.nip](/nvpi-profiles/cs2.nip) | Same 6-setting baseline as Valorant. Binds to `cs2.exe`. |
 | **Apex Legends** | [apex-legends.nip](/nvpi-profiles/apex-legends.nip) | Same 6-setting baseline. Binds to `r5apex.exe` + `r5apex_dx12.exe`. |
 
-The Fortnite profile deliberately does **not** force Threaded Optimization, pre-rendered frames, undocumented texture flags, or Ansel switches. Those values have changed meaning across driver versions and can fight Fortnite's native Reflex path. The shipped baseline keeps the high-confidence clock, texture, sync, and queue ownership settings visible, reversible, and aligned with the app-generated profile.
+The Fortnite profiles deliberately do **not** force Threaded Optimization, a fixed render queue, undocumented texture flags, foliage/cloud/terrain removals, or visibility changes. Those values can change meaning across driver versions, fight Fortnite's native Reflex path, or cross an anti-cheat/tournament boundary. The shipped baseline keeps the high-confidence clock, texture, sync, and queue ownership settings visible; the clean-render file is a separate, reversible experiment rather than an automatic recommendation.
+
+### RMInstLoc: a real NVIDIA knob, not a proven latency switch
+
+You may see guides claim that adding `RMInstLoc` or `RMInstLoc2` as a 32-bit DWORD in the NVIDIA display-class registry key “puts the GPU in the fastest location.” That claim is not established. Public NVIDIA open-driver headers describe `RMInstLoc` as a resource-manager placement bitfield with encodings for default, coherent system memory, non-coherent system memory, and video memory—not as a general input-latency toggle. Community VRAM research also warns that broad masks can be dangerous and reports no general latency win from copying the setting.
+
+optimizationmaxxing therefore does **not** write `RMInstLoc`, `RMInstLoc2`, or broad `RMInstLoc*` masks automatically. If an engineer wants to test it in a lab, capture the exact display-class key and driver version, export a rollback copy, change one value, reboot, and compare GPU telemetry, DPC/ISR traces, frametime, and stability. A registry value existing after reboot is not evidence that the driver accepted it or that Fortnite improved.
+
+- [NVIDIA open-driver `RMInstLoc` definitions](https://fossies.org/diffs/NVIDIA-open-gpu-kernel-modules/610.57.04_vs_615.71.09/src/nvidia/interface/nvrm_registry.h-diff.html)
+- [Community VRAM research and risk notes](https://github.com/lmganon16/nvidia-vram-research/blob/main/AGENTS.md)
+- [NVIDIA registry inventory](https://github.com/nohuto/regkit/blob/main/records/NVIDIA-DispGUID.txt)
 
 **To import:** NVPI → File → Import Profile(s) → select the `.nip` → Apply changes. Verify by opening the game's profile in NVPI again — the values should reflect what's in the table.
 
@@ -41,40 +52,42 @@ NVPI's "import successful" message only confirms the XML parsed. The green Apply
 4. **In-game test (Fortnite specifically):** launch the same Creative or replay scenario before and after the import. Compare frametime consistency, 1% lows, and input feel with Reflex and the frame cap held constant. Do not treat a single match or a promised FPS number as proof.
 5. **Driver version sanity** — if you update GeForce drivers after this, re-verify in NVPI. Some setting IDs get re-mapped across driver versions and the imported value may not survive.
 
-## Global lowest-latency baseline (set on every game profile)
+## Conservative profile baseline to evaluate (not a universal recipe)
 
 | NVPI section | Setting | Set to | Why |
 |---|---|---|---|
-| **Common** | Power management mode | **Prefer maximum performance** | GPU never downclocks mid-frame. Stacks with Reflex Boost. |
-| **Sync and Refresh** | Vertical Sync | **Off** | VSync adds 1-3 frames of queue latency. Use G-Sync + in-game cap instead. |
+| **Common** | Power management mode | **Prefer maximum performance** | Can reduce clock-transition variability on some systems; compare power, heat, and frame pacing. |
+| **Sync and Refresh** | Vertical Sync | **Test Off and On with VRR** | Queue and tear behavior depends on the display path; there is no fixed frame penalty. |
 | **Sync and Refresh** | Vertical Sync Tear Control | **Standard** | Only matters if you re-enable VSync; harmless otherwise. |
-| **Sync and Refresh** | Frame Rate Limiter V3 | **Off** (use in-game cap) | NVPI's limiter beats RTSS for latency but in-game limiter + Reflex beats both. Leave Off unless the game has no cap option. |
+| **Sync and Refresh** | Frame Rate Limiter V3 | **Prefer the in-game cap when available** | Avoid two competing limiters; compare the game's cap, driver cap, and uncapped behavior with the same scene. |
 | **Common** | Low Latency Mode | **On** (no Reflex) / **Off** (Reflex game) | Reflex replaces this — see per-game table. Never **Ultra** on a Reflex game (fights Reflex). |
-| **Texture Filtering** | Texture filtering - Quality | **High performance** | Disables LOD shimmer reduction, +2-4% FPS, no visible quality loss at competitive settings. |
+| **Texture Filtering** | Texture filtering - Quality | **Application-controlled or High performance for an explicit test** | Visual quality and frame-time effects vary by GPU, resolution, and title; no fixed FPS gain is promised. |
 | **Texture Filtering** | Texture filtering - Negative LOD bias | **Clamp** | Stops shimmer artifacts; required when AF is forced. |
 | **Texture Filtering** | Texture filtering - LOD bias (DX) | **0.0000** | Default. Negative values are for ssaa edge sharpening — not competitive. |
 | **Texture Filtering** | Anisotropic filtering setting | **Application-controlled** | Override only if game doesn't expose AF. |
-| **Texture Filtering** | Anisotropic sample optimization | **On** | Cheaper AF samples. Visually identical at 1080p/1440p. |
-| **Texture Filtering** | Trilinear optimization | **On** | Same as above. |
+| **Texture Filtering** | Anisotropic sample optimization | **Application-controlled or explicit test** | Driver shortcuts can change texture quality; compare the actual game scene. |
+| **Texture Filtering** | Trilinear optimization | **Application-controlled or explicit test** | Driver shortcuts can change texture quality; compare the actual game scene. |
 | **Antialiasing** | Antialiasing - FXAA | **Off** | Use the game's AA — driver-level FXAA blurs UI. |
 | **Antialiasing** | Antialiasing - Transparency Multisampling | **Off** | Costs FPS; competitive titles don't need it. |
 | **Antialiasing** | Antialiasing - Transparency Supersampling | **Off** | Same. |
-| **Common** | Shader Cache Size | **Unlimited** (or 100 GB) | Bigger cache = fewer first-encounter stutters. ~3 GB typical usage. |
+| **Common** | Shader Cache Size | **Driver default or a measured larger limit** | A larger cache can reduce repeat shader compilation, but it consumes disk and does not replace a clean shader-cache rebuild after driver changes. |
 | **Common** | Threaded optimization | **Auto** | Leave engine threading to Fortnite and the current driver; this profile does not force a driver-side override. |
-| **Other** | Background Application Max Frame Rate | **0** (disabled) | Lets your game keep rendering full-speed when alt-tabbed. |
+| **Other** | Background Application Max Frame Rate | **Driver default unless a specific workflow needs otherwise** | Background rendering is a power/heat tradeoff and is not an input-latency control for the foreground game. |
 
 The top-right **Apply changes** button is the green checkmark — `Ctrl+S` works too. PCGamingWiki confirms the import path is **File → Import Profile(s)** if you do later pick up a community `.nip`.
 
 ## Per-game overrides
 
-### Fortnite (UE5, CPU-bound)
+### Fortnite (UE5; validate the current build)
 | Setting | Value | Why |
 |---|---|---|
 | **Threaded optimization** | **Auto** | Leave engine threading to Fortnite and the current driver; re-test after driver or season updates. |
 | **Low Latency Mode** | **Off** | In-game Reflex is canonical. Ultra fights Reflex. Off in NVPI = leave it to in-game. |
-| **In-game** Reflex Low Latency | **On + Boost** | Peterbot/Bugha/Clix all run this. |
-| **In-game** Frame Rate Limit | **Match monitor refresh - 3** (e.g. 237 on 240Hz) | Keeps G-Sync active; below GPU max. |
-| **Process priority** | **High** (not Realtime) | Calypto's `FortniteProcessPriority` repo permanently sets this — [github.com/Calypto/FortniteProcessPriority](https://github.com/Calypto/FortniteProcessPriority) |
+| **In-game** Reflex Low Latency | **Compare the modes the current build exposes** | Reflex is an in-game integration; use the mode that reduces the measured render queue without worsening stability. |
+| **In-game** Frame Rate Limit | **Choose from a controlled cap/VRR matrix** | Refresh-minus-three is only a starting experiment; stable frame pacing and tear tolerance decide the result. |
+| **Process priority** | **Normal/default first** | Manual priority changes can starve services or worsen frametimes; use only as an explicit, reversible test. |
+
+**Visual-minimum boundary:** If the goal is the cleanest supported Fortnite image, use the game's Performance rendering mode, low effects/meshes, and the current official competitive settings guide. NVPI cannot safely turn off every foliage or cloud pass, and this app will not ship terrain/through-wall/visibility flags or game-memory edits. Those are not latency optimizations and can create an unfair-advantage or ban risk.
 
 ### Valorant
 | Setting | Value | Why |
@@ -82,9 +95,9 @@ The top-right **Apply changes** button is the green checkmark — `Ctrl+S` works
 | **Power management mode** | **Prefer maximum performance** | Set on `VALORANT.exe` AND `vgc.exe` profiles. Vanguard service throttles GPU otherwise. |
 | **Threaded optimization** | **Auto** | Engine handles it correctly. |
 | **Low Latency Mode** | **Off** | Reflex shipped 2024 — leave to in-game. |
-| **In-game** NVIDIA Reflex | **On + Boost** | Bigger GPU-bound delta (20-30ms) than Fortnite. |
-| **In-game** Limit FPS Always | **Refresh - 3** | Keeps G-Sync active. |
-| **Anti-cheat** | **NVPI is driver-side** | Vanguard doesn't flag profile writes. Verify per patch (r/VALORANT pinned). |
+| **In-game** NVIDIA Reflex | **Compare the modes the current build exposes** | Do not reuse a fixed latency claim from another title or patch. |
+| **In-game** Limit FPS Always | **Choose from a controlled cap/VRR matrix** | The correct cap depends on the display path and measured frametime. |
+| **Anti-cheat** | **Check current official rules and behavior** | A driver-side profile is not a guarantee of anti-cheat or tournament eligibility. |
 
 ### Counter-Strike 2 (Source 2)
 | Setting | Value | Why |
@@ -92,15 +105,15 @@ The top-right **Apply changes** button is the green checkmark — `Ctrl+S` works
 | **Frame Rate Limiter V3** | **Off** | Use in-game `fps_max` — Source 2 reads it natively. NVPI cap conflicts with engine cap. |
 | **Low Latency Mode** | **Off** | Reflex integrated 2023. |
 | **In-game** NVIDIA Reflex | **Enabled + Boost** | |
-| **Launch options** | `-high -freq <hz> +fps_max 0` | `-high` boots CS2 at High priority. Per Noobs2Pro CS2 guide. |
-| **Note** | `-noreflex` is for streamers only | Adds latency. Don't use unless your capture card breaks Reflex. |
+| **Launch options** | **Keep defaults unless a current game guide requires one** | `-high`, forced frequency, and uncapped values can change scheduling or frame pacing; validate them one at a time. |
+| **Note** | **Check the current build's Reflex/capture behavior** | Do not assume `-noreflex` or another flag is universally better for players or streamers. |
 
 ### Apex Legends (Source engine, Reflex-integrated)
 | Setting | Value | Why |
 |---|---|---|
-| **Low Latency Mode** | **Ultra** *(per-game profile only)* | Apex is the exception — Source's Reflex integration is partial. ImperialHal-tier configs run Ultra here. |
-| **In-game** NVIDIA Reflex | **Enabled + Boost** | |
-| **In-game** FPS Cap | `+fps_max_unlocked 189` or `+fps_max_unlocked 237` (240Hz) | Apex caps at 144 by default — unlock it. |
+| **Low Latency Mode** | **Test driver default/Off against an explicit per-game setting** | Reflex and driver queue control can interact differently across builds; do not treat Ultra as an Apex default. |
+| **In-game** NVIDIA Reflex | **Compare the modes the current build exposes** | |
+| **In-game** FPS Cap | **Use the current in-game/launch setting only after checking patch notes** | Do not copy a fixed 189/237 cap across displays or builds. |
 
 ### Marvel Rivals / R6 Siege / Overwatch 2 / COD MW3
 | Setting | Value |
@@ -109,53 +122,40 @@ The top-right **Apply changes** button is the green checkmark — `Ctrl+S` works
 | **Threaded optimization** | Auto |
 | **In-game** Reflex | Enabled + Boost |
 
-## Windows registry — Win32PrioritySeparation (do this once, applies system-wide)
+## Windows scheduler policy — measure, do not cargo-cult
 
-This is the single most-cited registry tweak for lowering input lag on Windows. Default value: `2` (Windows desktop). Gaming-optimal values per BlurBusters / Make Tech Easier / XbitLabs / Synergy Library:
+`Win32PrioritySeparation` is a system-wide scheduler policy, not a universal
+input-latency switch. The decimal values commonly copied from tuning guides
+change foreground/background quantum behavior, but the result depends on the
+Windows build, CPU topology, game, driver, and background load. The app keeps
+this lane reversible and experimental; it does not call `26`, `38`, or `40` a
+best value.
 
-| Decimal | Hex | Foreground behavior | Trade-off | Best for |
-|---|---|---|---|---|
-| `2` | `0x02` | Default | Balanced multitasker | Stock Windows |
-| `22` | `0x16` | Long, variable, max boost | Smoothest gameplay | Frame-pacing priority |
-| **`26`** | `0x1A` | Short, variable, max boost | **Lowest latency that still preserves frame pacing** | **Recommended starting point** |
-| `38` | `0x26` | Short, fixed, high foreground boost | Aggressive responsiveness | Competitive — tournament FPS |
-| `40` | `0x28` | Short, fixed, no boost | Most aggressive foreground bias; can stutter on weak CPUs | Theoretical floor — measure before keeping |
-
-**How to apply (1-line PowerShell, admin):**
-
-```powershell
-Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl' -Name 'Win32PrioritySeparation' -Type DWord -Value 26
-```
-
-Then **reboot** — Windows reads this once at boot.
-
-**Revert:**
-```powershell
-Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl' -Name 'Win32PrioritySeparation' -Type DWord -Value 2
-```
-
-Try `26` first. If you have a 12+ core CPU with HT and the FPS feels great but inputs feel laggy under load, bump to `38`. `40` is for benchmarking — most users see microstutter and revert.
+Before changing it, capture a baseline frametime trace, DPC/ISR sample, and
+repeatable input test. Change one value, reboot, repeat the same test, and
+keep it only if both frame pacing and control improve. Restore the captured
+prior value if desktop responsiveness, voice, or stability worsens. Do not
+use this setting as a tournament default without checking the current rules.
 
 ## Device-specific tips
 
 | Hardware | Tip |
 |---|---|
-| **RTX 40-series / 50-series** | Enable **DLSS Frame Generation off** in competitive games — adds 8-15ms. Reflex still works. |
-| **RTX 20/30-series** | NIS (NVIDIA Image Scaling) sharpens 1080p→1440p at 0 latency cost. Set in NVCP, not NVPI. |
-| **GTX 16-series / 900-1000** | No Reflex hardware support on 700-series and older. Use NVPI **Low Latency Mode = Ultra** instead. |
-| **G-Sync monitor + most games** | NVCP → G-Sync **On + V-Sync On in NVCP** + V-Sync **Off in-game** + cap FPS at refresh-3. Lowest-latency G-Sync stack (confirmed BlurBusters + NVIDIA). |
-| **G-Sync monitor + competitive Fortnite at 240+ Hz** | **G-Sync OFF + V-Sync OFF everywhere + Reflex On+BOOST + uncapped or refresh-3 cap.** At stable FPS above refresh, pros prefer the marginal latency win over tear elimination — tearing is essentially invisible at 240/360 Hz. ([Blur Busters G-Sync 101](https://blurbusters.com/gsync/gsync101-input-lag-tests-and-settings/)) |
-| **No G-Sync (regular 144/240Hz)** | V-Sync everywhere off. Cap FPS in-game to refresh-3 or use NVPI Frame Rate Limiter V3. |
-| **1080p competitive** | Drop **Texture filtering quality** to High Performance for +2-4% on mid-tier GPUs. Imperceptible at 1080p. |
+| **RTX 40-series / 50-series** | Disable frame generation when testing competitive latency if the title offers it | Generated frames can change queue behavior; measure the current title instead of using a fixed millisecond penalty. |
+| **RTX 20/30-series** | Treat scaling/sharpening as an image-quality and workload test | There is no zero-cost guarantee; verify frametime and clarity at the target resolution. |
+| **Older GPUs** | Use only settings the current driver and title document | Do not assume a driver Low Latency Mode setting substitutes for a missing in-game integration. |
+| **VRR monitor** | Compare VRR/VSync/cap combinations at the same scene | “Refresh minus three” is a test point, not a universal lowest-latency stack. |
+| **High-refresh competitive display** | Compare tear-free and tear-accepted paths with the same cap | Keep the mode that measures best and is acceptable to the player; public pro settings are not proof. |
+| **1080p competitive** | Test texture-quality presets against the game's frametime and visibility | Driver texture shortcuts have title- and GPU-dependent effects; no fixed FPS gain is promised. |
 | **HDR monitor** | NVPI **Display - Color Settings** — leave on **Use the 3D application setting**. Forcing HDR via NVPI breaks calibration on some VA panels. |
-| **Variable refresh laptop (G-Sync Compatible)** | Same G-Sync stack works. Plug into wall — battery throttling defeats Reflex Boost. |
+| **Variable refresh laptop (G-Sync Compatible)** | Test plugged-in and battery behavior separately | Power policy and panel behavior can change clocks, refresh, and frame pacing. |
 | **Voicemeeter / virtual audio** | Disable **Background Application Max Frame Rate** *globally*, not just per game. Voicemeeter loop steals frames when minimized otherwise. |
 
 ## NVPI Revamped — newer fork (optional)
 
 The original NVPI from Orbmu2k is on extended pause. The community-maintained fork has been the active version since 2024:
 
-- **[github.com/xHybred/NvidiaProfileInspectorRevamped](https://github.com/xHybred/NvidiaProfileInspectorRevamped)** — v7.1.0.0 (latest). Its changelog adds support for the newest NVIDIA drivers and **NVIDIA's DLSS 5.0 settings**, plus parity with the main branch and extra themes — superseding the earlier v7.0.2.0 (DLSS 4.5 preset L/M, RTX 50 PhysX switch, better undocumented-flag naming, dark mode, search). ([Nexus Mods](https://www.nexusmods.com/site/mods/1287))
+- **[github.com/xHybred/NvidiaProfileInspectorRevamped](https://github.com/xHybred/NvidiaProfileInspectorRevamped)** — active fork. Check its current release notes and driver compatibility before using it; fork version and exposed flags are not a universal performance recommendation. ([Nexus Mods](https://www.nexusmods.com/site/mods/1287))
 
 Identical workflow — same `.exe`, same import path. Use Revamped if you want the latest DLSS preset toggles. Use Orbmu2k's if you want the most-cited canonical build.
 
@@ -163,17 +163,20 @@ Identical workflow — same `.exe`, same import path. Use Revamped if you want t
 
 After applying, re-open NVPI on the same game profile and scroll through. Values should still be set. If anything reverted:
 - Some flags need a **driver service restart** (Device Manager → disable/re-enable GPU) or **reboot**.
-- Anti-cheat games (Vanguard/EAC) sometimes reset values on first launch — re-apply after the first match.
+- Anti-cheat games (Vanguard/EAC) may reset or ignore profile values after a driver or game update. Re-check the profile and rerun the same controlled test; never auto-reapply blindly.
 
 Want to measure the actual win? Use **LatencyMon** (free, [resplendence.com/latencymon](https://www.resplendence.com/latencymon)) before and after. End-to-end input-to-photon needs an LDAT or a camera at 1000fps — LatencyMon only catches kernel DPC latency.
 
 ## Anti-cheat note
 
-NVPI writes to NVIDIA driver profile storage — **not** the game binary, **not** memory injection. Vanguard/EAC/BattlEye have never publicly flagged it. That said: absence of evidence isn't evidence of absence. Verify per patch on the game's pinned subreddit thread.
+NVPI writes to NVIDIA driver profile storage — **not** the game binary or game
+memory. That narrows the mechanism, but it is not a guarantee of anti-cheat or
+tournament acceptance. Check the current organizer and anti-cheat guidance and
+test the exact game build after any profile or driver change.
 
 ## Shortcut: let the catalog generate the Fortnite profile for you
 
-The Tweaks page now has **"Fortnite: generate NVIDIA Profile Inspector profile (.nip)"** (NVIDIA-only). Apply it and we write a verified, ready-to-import profile to `%LOCALAPPDATA%\optmaxxing\nvpi\Fortnite.nip` and pop the folder open. It sets exactly four things — Power Management = Prefer Maximum Performance, Texture Filtering Quality = High Performance, Vertical Sync = Force Off, Max Pre-Rendered Frames (Low Latency) = defer-to-app — with SettingIDs verified against the NVPI source and a real export. Then either double-click the `.nip` in NVPI → Import, or run it headless (elevated):
+The Tweaks page has **"Fortnite: generate NVIDIA Profile Inspector profile (.nip)"** (NVIDIA-only). Applying it writes a profile artifact to `%LOCALAPPDATA%\optmaxxing\nvpi\Fortnite.nip` and opens the folder. Treat the four values as a starting profile, import them yourself, then re-open NVPI and run the controlled in-game test; a generated artifact is not proof that the driver accepted or improved the settings. The downloadable clean-render lab profile is intentionally separate so a user can compare it without replacing the measured baseline. Then either import the `.nip` in NVPI or run it headless (elevated):
 
 ```
 nvidiaProfileInspector.exe -silentImport "%LOCALAPPDATA%\optmaxxing\nvpi\Fortnite.nip"
@@ -186,7 +189,7 @@ We generate the profile but we **never touch the NVIDIA driver profile DB oursel
 ## Citations
 
 - **[github.com/Orbmu2k/nvidiaProfileInspector](https://github.com/Orbmu2k/nvidiaProfileInspector/releases)** — official NVPI. Only place to download. *(verified 200 OK May 2026)*
-- **[github.com/xHybred/NvidiaProfileInspectorRevamped](https://github.com/xHybred/NvidiaProfileInspectorRevamped)** — active fork, v7.1.0.0 (adds DLSS 5.0 settings + newest-driver support). *(verified 200 OK)*
+- **[github.com/xHybred/NvidiaProfileInspectorRevamped](https://github.com/xHybred/NvidiaProfileInspectorRevamped)** — active fork; inspect its current release and driver-support notes before use. *(repository link verified)*
 - **[github.com/Calypto/FortniteProcessPriority](https://github.com/Calypto/FortniteProcessPriority)** — Calypto's only currently-published optimization repo (process priority utility, not NVPI presets). *(verified 200 OK)*
 - **[github.com/BoringBoredom/PC-Optimization-Hub](https://github.com/BoringBoredom/PC-Optimization-Hub)** — aggregator of latency-optimization resources. *(verified)*
 - **[pcgamingwiki.com/wiki/Nvidia_Profile_Inspector](https://www.pcgamingwiki.com/wiki/Nvidia_Profile_Inspector)** — canonical NVPI wiki page, import flow.

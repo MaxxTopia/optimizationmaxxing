@@ -6,6 +6,7 @@
 import catalogData from '../../resources/catalog/v1.json'
 import type { TweakAction } from './tauri'
 import type { GameId } from './games'
+import { POWERSHELL_VERIFIERS } from './powershellVerifiers'
 
 export type TweakCategory =
   | 'registry'
@@ -120,7 +121,27 @@ export interface Catalog {
   tweaks: TweakRecord[]
 }
 
-export const catalog: Catalog = catalogData as unknown as Catalog
+function hydrateCatalog(raw: Catalog): Catalog {
+  return {
+    ...raw,
+    tweaks: raw.tweaks.map((tweak) => ({
+      ...tweak,
+      actions: tweak.actions.map((action) => {
+        if (action.kind !== 'powershell_script') return action
+        const verify = POWERSHELL_VERIFIERS[tweak.id]
+        return verify ? { ...action, verify } : action
+      }),
+    })),
+  }
+}
+
+/**
+ * Add only locally-reviewed read-back contracts to the baked catalog. This is
+ * intentionally a deny-by-default allow-list: a new or remotely refreshed
+ * PowerShell action cannot enter an automatic Tune Now profile until its live
+ * state can be checked without mutating the machine.
+ */
+export const catalog: Catalog = hydrateCatalog(catalogData as unknown as Catalog)
 
 /**
  * A small compatibility layer for older catalog entries. The catalog was
@@ -163,9 +184,10 @@ export function tweakRequiresAdmin(t: TweakRecord): boolean {
       return a.hive === 'hklm' || a.hive === 'hkcr'
     if (a.kind === 'file_write') {
       // Mirror Rust-side heuristic: anything outside %USERPROFILE% / %APPDATA%
-      // / %LOCALAPPDATA% / %TEMP% needs admin.
+      // / %LOCALAPPDATA% needs admin. TEMP/TMP are deliberately excluded:
+      // Windows permits those variables to point outside the user profile.
       const lower = a.path.toLowerCase()
-      const userPaths = ['%userprofile%', '%appdata%', '%localappdata%', '%temp%', '%tmp%']
+      const userPaths = ['%userprofile%', '%appdata%', '%localappdata%']
       if (userPaths.some((p) => lower.startsWith(p))) return false
       return true
     }

@@ -4,8 +4,8 @@
 
 ## Display tab
 
-- **Display Mode: Fullscreen.** Valorant supports true exclusive fullscreen (unlike Fortnite Ch5+) — keep it on. Lowest input lag of the available modes.
-- **Resolution: native (1920×1080 for almost every pro).** Stretched res (1280×960 → 1920×1080) is a holdover from CS culture; modern pros are ~70/30 native vs stretched. If you don't already prefer stretched, default to native.
+- **Display Mode: start with Fullscreen, then validate the current build.** Keep the mode that gives the best measured frame pacing, alt-tab behavior, and input response on your rig; do not treat it as a universal lowest-latency guarantee.
+- **Resolution: start with native.** Stretched res is a visibility preference and can change clarity/UI behavior; public player configurations vary, so validate the choice instead of presenting a fixed pro ratio.
 - **Aspect Ratio Method: Letterbox** if you do go stretched (4:3 with bars instead of squashed pixels).
 - **Frame Rate Limit Mode: Custom**, **Frame Rate Limit: at least 2× your monitor refresh rate (e.g. 480 fps on a 240 Hz monitor).** Counterintuitive but documented: Valorant's input pipeline benefits from headroom even when the display can't show the extra frames. TenZ + yay both run uncapped or 4× refresh.
 
