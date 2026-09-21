@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.7',
+    date: '2026-09-21',
+    highlights: [
+      'NEW **Verified transactional tuning.** The lab captures pre-state, reads each eligible action back, and attempts reverse-order rollback with a per-action receipt when a reversible lane fails.',
+      'NEW **Rig-aware closed-loop evidence.** Exact board/CPU/SPD guidance and named per-game PresentMon capture contracts keep proxy benchmarks separate from real Fortnite frame-time evidence.',
+      'IMPROVE **Profile provenance and recovery.** NVIDIA profiles now carry review/hash/rollback metadata, exported profiles can be diffed read-only, and driver guidance retains a schema-checked last-known-good response offline.',
+    ],
+  },
+  {
     version: '0.4.6',
     date: '2026-09-20',
     highlights: [

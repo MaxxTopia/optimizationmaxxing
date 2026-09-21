@@ -372,6 +372,425 @@ struct BatchItem {
     action: TweakAction,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransactionItemReport {
+    pub tweak_id: String,
+    pub action_kind: String,
+    pub receipt_id: Option<String>,
+    pub verification_status: Option<VerificationStatus>,
+    pub detail: String,
+    pub attempted: bool,
+    pub applied: bool,
+    pub rolled_back: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransactionReport {
+    pub transaction_id: String,
+    /// committed | failed | rolled_back | partial
+    pub status: String,
+    pub item_count: usize,
+    pub applied_count: usize,
+    pub verified_count: usize,
+    pub rolled_back_count: usize,
+    pub errors: Vec<String>,
+    pub rollback_errors: Vec<String>,
+    pub items: Vec<TransactionItemReport>,
+}
+
+/// A transaction is deliberately narrower than the legacy batch path. An
+/// action must have a deterministic inverse, and PowerShell must expose a
+/// read-only verifier. This keeps an "automatic rollback" promise honest:
+/// unknown scripts are still available through the explicit review flows, but
+/// they cannot be hidden inside a supposedly atomic operation.
+fn transaction_action_supported(action: &TweakAction) -> bool {
+    match action {
+        TweakAction::PowershellScript { revert, verify, .. } => {
+            revert.is_some() && verify.is_some()
+        }
+        _ => true,
+    }
+}
+
+struct TransactionState {
+    item: BatchItem,
+    pre_state: serde_json::Value,
+    attempted: bool,
+    applied: bool,
+    rolled_back: bool,
+    verification: Option<engine::VerificationResult>,
+    receipt: Option<ApplyReceipt>,
+    detail: String,
+}
+
+/// Apply a bounded set of reversible, verifiable actions as one transaction.
+///
+/// This is separate from `apply_batch` on purpose. Existing callers depend on
+/// batch semantics that keep going after an individual failure. New closed-
+/// loop flows can opt into this stronger contract without changing the old
+/// UI's error/retry behavior under an already-shipped build.
+#[tauri::command]
+async fn apply_transaction(
+    state: tauri::State<'_, SnapshotStore>,
+    items: Vec<BatchItem>,
+) -> Result<TransactionReport, String> {
+    let store = (*state).clone();
+    tokio::task::spawn_blocking(move || -> Result<TransactionReport, String> {
+        let transaction_id = format!(
+            "txn-{}-{}",
+            chrono::Utc::now().timestamp_millis(),
+            std::process::id()
+        );
+        let item_count = items.len();
+        let mut errors = Vec::new();
+        let mut rollback_errors = Vec::new();
+        let mut states = Vec::with_capacity(item_count);
+
+        // Capture every pre-state before the first mutation. A failed capture
+        // means no transaction is started, so the caller never gets a partial
+        // "best effort" apply without a rollback reference.
+        for item in items {
+            if !transaction_action_supported(&item.action) {
+                errors.push(format!(
+                    "{} ({}) has no verified transaction contract; use the explicit review flow.",
+                    item.tweak_id,
+                    item.action.kind()
+                ));
+                continue;
+            }
+            match engine::capture_pre_state(&item.action) {
+                Ok(pre_state) => states.push(TransactionState {
+                    item,
+                    pre_state,
+                    attempted: false,
+                    applied: false,
+                    rolled_back: false,
+                    verification: None,
+                    receipt: None,
+                    detail: String::new(),
+                }),
+                Err(e) => errors.push(format!(
+                    "{} pre-state capture failed: {:#}",
+                    item.tweak_id, e
+                )),
+            }
+        }
+
+        // If any input is unsupported or cannot be snapshotted, do not mutate
+        // the subset that happened to pass. This is the all-or-nothing input
+        // gate before the mutation phase.
+        if !errors.is_empty() {
+            let report = transaction_report(
+                transaction_id,
+                "failed",
+                states,
+                errors,
+                rollback_errors,
+            );
+            let _ = store.kv_set(
+                "last_transaction",
+                &serde_json::to_string(&report).unwrap_or_default(),
+            );
+            return Ok(report);
+        }
+
+        // Apply non-admin actions one at a time so a failing action never
+        // prevents us from knowing exactly which earlier actions need undoing.
+        for state in &mut states {
+            if state.item.action.requires_admin() {
+                continue;
+            }
+            state.attempted = true;
+            match engine::apply_unelevated(&state.item.action) {
+                Ok(_) => {
+                    state.applied = true;
+                    state.detail = "Applied in-process; awaiting live verification.".into();
+                }
+                Err(e) => {
+                    state.detail = format!("Apply failed: {:#}", e);
+                    errors.push(format!("{}: {}", state.item.tweak_id, state.detail));
+                    break;
+                }
+            }
+        }
+
+        // The elevated runner is per-line, so a non-zero result can mean a
+        // partial mutation. Mark every line as attempted and recover all of
+        // them from their captured pre-state if the runner reports an error.
+        let elevated_indices = states
+            .iter()
+            .enumerate()
+            .filter_map(|(index, state)| state.item.action.requires_admin().then_some(index))
+            .collect::<Vec<_>>();
+        if errors.is_empty() && !elevated_indices.is_empty() {
+            for index in &elevated_indices {
+                states[*index].attempted = true;
+            }
+            let actions = elevated_indices
+                .iter()
+                .map(|index| &states[*index].item.action)
+                .collect::<Vec<_>>();
+            let create_rp = store
+                .kv_get("restore_point_before_apply")
+                .ok()
+                .flatten()
+                .map(|v| v != "false")
+                .unwrap_or(true);
+            match engine::elevation::run_elevated_batch_with_restore_point(&actions, create_rp) {
+                Ok(_) => {
+                    for index in elevated_indices {
+                        states[index].applied = true;
+                        states[index].detail =
+                            "Applied under one UAC prompt; awaiting live verification.".into();
+                    }
+                }
+                Err(e) => errors.push(format!("elevated transaction batch: {:#}", e)),
+            }
+        }
+
+        // Read back every mutation, including an elevated batch that returned
+        // an error. The latter is important: it tells recovery whether the
+        // line appears to have landed despite the aggregate command failure.
+        for state in &mut states {
+            if !state.attempted {
+                continue;
+            }
+            let verification = engine::verify(&state.item.action);
+            if errors.is_empty() && verification.status != VerificationStatus::Verified {
+                errors.push(format!(
+                    "{} verification {:?}: {}",
+                    state.item.tweak_id,
+                    verification.status,
+                    verification.detail
+                ));
+            }
+            state.verification = Some(verification);
+        }
+
+        // Record a durable receipt for known-successful actions. If an
+        // elevated batch failed, retain receipts for its attempted lines so
+        // the rollback/read-back state is visible in Diff instead of vanishing
+        // behind a transient UAC error.
+        for state in &mut states {
+            let should_record = state.applied
+                || (state.attempted && state.item.action.requires_admin() && !errors.is_empty());
+            if !should_record {
+                continue;
+            }
+            let verification = state.verification.clone().unwrap_or(engine::VerificationResult {
+                status: VerificationStatus::Unknown,
+                detail: "The action was attempted but no live verification was available.".into(),
+            });
+            match store.record_apply(
+                &state.item.tweak_id,
+                &state.item.action,
+                &state.pre_state,
+                &verification,
+            ) {
+                Ok(receipt) => state.receipt = Some(receipt),
+                Err(e) => errors.push(format!(
+                    "{} receipt could not be saved: {:#}",
+                    state.item.tweak_id, e
+                )),
+            }
+        }
+
+        if !errors.is_empty() {
+            // Restore unelevated actions individually in reverse order.
+            for index in (0..states.len()).rev() {
+                let state = &mut states[index];
+                if !state.attempted || state.item.action.requires_admin() {
+                    continue;
+                }
+                match engine::revert_unelevated(&state.item.action, &state.pre_state) {
+                    Ok(_) => {
+                        state.rolled_back = true;
+                        if let Some(receipt) = &state.receipt {
+                            let _ = store.mark_reverted(&receipt.receipt_id);
+                        }
+                    }
+                    Err(e) => rollback_errors.push(format!(
+                        "{} rollback failed: {:#}",
+                        state.item.tweak_id, e
+                    )),
+                }
+            }
+
+            // Restore any elevated line that may have landed in one UAC call.
+            let elevated_pairs = states
+                .iter()
+                .rev()
+                .filter(|state| state.attempted && state.item.action.requires_admin())
+                .map(|state| (&state.item.action, &state.pre_state))
+                .collect::<Vec<_>>();
+            if !elevated_pairs.is_empty() {
+                match engine::elevation::run_elevated_revert_batch(&elevated_pairs) {
+                    Ok(_) => {
+                        for state in &mut states {
+                            if state.attempted && state.item.action.requires_admin() {
+                                state.rolled_back = true;
+                                if let Some(receipt) = &state.receipt {
+                                    let _ = store.mark_reverted(&receipt.receipt_id);
+                                }
+                            }
+                        }
+                    }
+                    Err(e) => rollback_errors.push(format!("elevated rollback failed: {:#}", e)),
+                }
+            }
+        }
+
+        let status = if errors.is_empty() {
+            if let Some(build) = current_os_build() {
+                let _ = store.kv_set("last_applied_build", &build.to_string());
+            }
+            "committed"
+        } else if rollback_errors.is_empty() {
+            "rolled_back"
+        } else {
+            "partial"
+        };
+        let report = transaction_report(
+            transaction_id,
+            status,
+            states,
+            errors,
+            rollback_errors,
+        );
+        let _ = store.kv_set(
+            "last_transaction",
+            &serde_json::to_string(&report).unwrap_or_default(),
+        );
+        Ok(report)
+    })
+    .await
+    .map_err(|e| format!("transaction task failed: {e}"))?
+}
+
+fn transaction_report(
+    transaction_id: String,
+    status: &str,
+    states: Vec<TransactionState>,
+    errors: Vec<String>,
+    rollback_errors: Vec<String>,
+) -> TransactionReport {
+    let items = states
+        .into_iter()
+        .map(|state| {
+            let verification_status = state
+                .verification
+                .as_ref()
+                .map(|verification| verification.status.clone());
+            let detail = if state.rolled_back {
+                "The action was reverted to its captured pre-state.".to_string()
+            } else if !state.detail.is_empty() {
+                state.detail
+            } else if !state.attempted {
+                "Not attempted.".to_string()
+            } else {
+                "No final transaction detail was recorded.".to_string()
+            };
+            TransactionItemReport {
+                tweak_id: state.item.tweak_id,
+                action_kind: state.item.action.kind().to_string(),
+                receipt_id: state.receipt.map(|receipt| receipt.receipt_id),
+                verification_status,
+                detail,
+                attempted: state.attempted,
+                applied: state.applied,
+                rolled_back: state.rolled_back,
+            }
+        })
+        .collect::<Vec<_>>();
+    let applied_count = items.iter().filter(|item| item.applied).count();
+    let verified_count = items
+        .iter()
+        .filter(|item| item.verification_status == Some(VerificationStatus::Verified))
+        .count();
+    let rolled_back_count = items.iter().filter(|item| item.rolled_back).count();
+    TransactionReport {
+        transaction_id,
+        status: status.to_string(),
+        item_count: items.len(),
+        applied_count,
+        verified_count,
+        rolled_back_count,
+        errors,
+        rollback_errors,
+        items,
+    }
+}
+
+#[cfg(test)]
+mod transaction_tests {
+    use super::{
+        transaction_action_supported, transaction_report, BatchItem, TransactionState,
+    };
+    use crate::engine::actions::{Hive, RegValueType, TweakAction};
+    use crate::engine::{VerificationResult, VerificationStatus};
+
+    #[test]
+    fn transaction_rejects_unverifiable_power_shell() {
+        let action = TweakAction::PowershellScript {
+            apply: "Write-Output apply".into(),
+            revert: None,
+            verify: Some("Write-Output verify".into()),
+        };
+        assert!(!transaction_action_supported(&action));
+    }
+
+    #[test]
+    fn transaction_accepts_power_shell_only_with_both_contracts() {
+        let action = TweakAction::PowershellScript {
+            apply: "Write-Output apply".into(),
+            revert: Some("Write-Output revert".into()),
+            verify: Some("Write-Output verify".into()),
+        };
+        assert!(transaction_action_supported(&action));
+    }
+
+    #[test]
+    fn transaction_report_counts_verified_rollback() {
+        let action = TweakAction::RegistrySet {
+            hive: Hive::Hkcu,
+            path: "Software\\OptimizationMaxxing\\Tests".into(),
+            name: "Example".into(),
+            value_type: RegValueType::Dword,
+            value: serde_json::json!(1),
+        };
+        let state = TransactionState {
+            item: BatchItem {
+                tweak_id: "test.transaction".into(),
+                action,
+            },
+            pre_state: serde_json::json!({}),
+            attempted: true,
+            applied: true,
+            rolled_back: true,
+            verification: Some(VerificationResult {
+                status: VerificationStatus::Verified,
+                detail: "verified".into(),
+            }),
+            receipt: None,
+            detail: String::new(),
+        };
+        let report = transaction_report(
+            "txn-test".into(),
+            "rolled_back",
+            vec![state],
+            Vec::new(),
+            Vec::new(),
+        );
+        assert_eq!(report.item_count, 1);
+        assert_eq!(report.applied_count, 1);
+        assert_eq!(report.verified_count, 1);
+        assert_eq!(report.rolled_back_count, 1);
+        assert_eq!(report.status, "rolled_back");
+    }
+}
+
 /// Phase 4c-v1: apply many actions with ONE UAC prompt (for HKLM-touching ones).
 /// HKCU actions in the same batch run in-process before the elevated call.
 /// Returns the list of receipts in submission order.
@@ -1353,6 +1772,7 @@ pub fn run() {
             preview_tweak,
             apply_tweak,
             apply_batch,
+            apply_transaction,
             kv_get,
             kv_set,
             get_reboot_validation,

@@ -64,9 +64,9 @@ jobs:
                   releaseBody: |
                       ## Highlights
 
-                      - Game CPU-set presets include a measured Intel P-core Fortnite A/B option and saved per-game auto-pin rules; restoring Windows defaults stays available.
-                      - Upgrade Advisor supports game-specific comparisons, while Grind and Hardware use dated, linked result and price snapshots.
-                      - NVIDIA profile, SCEWIN, driver, and ONU guidance now give clearer setup steps and explicitly state what they do not prove.
+                      - Verified transactional tuning captures pre-state, reads eligible actions back, and attempts reverse-order rollback with per-action receipts.
+                      - Rig-aware closed-loop evidence uses exact board/CPU/SPD guidance and named per-game PresentMon capture contracts instead of treating proxies as Fortnite proof.
+                      - NVIDIA profiles carry review/hash/rollback metadata, exported profiles can be diffed read-only, and driver guidance keeps a schema-checked last-known-good response offline.
 
                       Auto-built by CI from tag `${{ github.ref_name }}`. The signed `latest.json`, installer, and signature are verified before the release is published.
                   releaseDraft: true

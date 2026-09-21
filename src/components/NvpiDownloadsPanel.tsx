@@ -1,4 +1,10 @@
 import { useState } from 'react'
+import {
+  DRIVER_PROFILE_CATALOG,
+  diffProfileText,
+  profileForFilename,
+  type ProfileTextDiff,
+} from '../lib/driverProfiles'
 
 /**
  * NVPI .nip profile download panel. Rendered above the NVPI guide
@@ -74,6 +80,12 @@ export function NvpiDownloadsPanel() {
   const [busy, setBusy] = useState<string | null>(null)
   const [done, setDone] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const [compareFilename, setCompareFilename] = useState(PROFILES[0].filename)
+  const [profileDiff, setProfileDiff] = useState<{
+    fileName: string
+    diff: ProfileTextDiff
+  } | null>(null)
+  const [compareError, setCompareError] = useState<string | null>(null)
 
   async function download(filename: string) {
     setBusy(filename)
@@ -97,6 +109,24 @@ export function NvpiDownloadsPanel() {
       setErr(e instanceof Error ? e.message : String(e))
     } finally {
       setBusy(null)
+    }
+  }
+
+  async function compareExport(file: File | null) {
+    if (!file) return
+    setCompareError(null)
+    setProfileDiff(null)
+    try {
+      const response = await fetch(`/nvpi-profiles/${compareFilename}`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const shippedText = await response.text()
+      const exportedText = await file.text()
+      setProfileDiff({
+        fileName: file.name,
+        diff: diffProfileText(shippedText, exportedText),
+      })
+    } catch (e) {
+      setCompareError(e instanceof Error ? e.message : String(e))
     }
   }
 
@@ -140,13 +170,20 @@ export function NvpiDownloadsPanel() {
                 {p.label}
               </h4>
               <span className="text-[10px] uppercase tracking-widest text-text-subtle">
-                {p.settingsCount} settings{p.experimental ? ' · lab' : ''}
+                {p.settingsCount} settings{p.experimental ? ' · lab' : ''} · r{profileForFilename(p.filename)?.revision ?? 1}
               </span>
             </div>
             <p className="text-[11px] text-text-muted leading-snug">{p.blurb}</p>
             <p className="text-[10px] font-mono text-text-subtle break-all">
               Executables in file (verify after import): {p.exes}
             </p>
+            {profileForFilename(p.filename) && (
+              <p className="text-[10px] text-text-subtle leading-snug">
+                Reviewed {profileForFilename(p.filename)?.reviewedOn} · SHA-256{' '}
+                <code>{profileForFilename(p.filename)?.sha256.slice(0, 12)}…</code>.{' '}
+                {profileForFilename(p.filename)?.rollback[0]}
+              </p>
+            )}
             <button
               onClick={() => download(p.filename)}
               disabled={busy === p.filename}
@@ -164,6 +201,89 @@ export function NvpiDownloadsPanel() {
         ))}
       </div>
 
+      {(() => {
+        const nic = DRIVER_PROFILE_CATALOG.find((profile) => profile.kind === 'nic-advisory')
+        if (!nic) return null
+        return (
+          <div className="rounded-md border border-border bg-bg-base/40 p-3 space-y-1.5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h4 className="text-sm font-semibold text-text">{nic.label}</h4>
+              <span className="text-[10px] uppercase tracking-widest text-text-subtle">r{nic.revision} · reviewed {nic.reviewedOn}</span>
+            </div>
+            <p className="text-[11px] text-text-muted leading-snug">{nic.objective} The adapter driver decides which properties exist, so this remains a guided per-adapter review instead of a blind registry import.</p>
+            <p className="text-[10px] text-amber-200/80 leading-snug">{nic.warnings.join(' ')}</p>
+          </div>
+        )
+      })()}
+
+      <div className="rounded-md border border-border bg-bg-base/40 p-3 space-y-2">
+        <div>
+          <h4 className="text-sm font-semibold text-text">Verify an exported profile</h4>
+          <p className="text-[11px] text-text-muted leading-snug mt-1">
+            Export the profile from NVIDIA Profile Inspector after importing or changing it, then
+            compare it here. This is read-only: it never writes to the driver or edits your file.
+            Keep the shipped download as the rollback source.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="text-[11px] text-text-muted" htmlFor="nvpi-compare-profile">
+            Shipped baseline
+          </label>
+          <select
+            id="nvpi-compare-profile"
+            value={compareFilename}
+            onChange={(event) => {
+              setCompareFilename(event.target.value)
+              setProfileDiff(null)
+              setCompareError(null)
+            }}
+            className="rounded-md border border-border bg-bg-raised px-2 py-1 text-[11px] text-text"
+          >
+            {PROFILES.map((profile) => (
+              <option key={profile.filename} value={profile.filename}>
+                {profile.label}
+              </option>
+            ))}
+          </select>
+          <label className="cursor-pointer rounded-md border border-border px-3 py-1.5 text-[11px] font-semibold text-text hover:border-border-glow">
+            Choose exported .nip
+            <input
+              id="nvpi-compare-file"
+              type="file"
+              accept=".nip,.txt"
+              className="sr-only"
+              onChange={(event) => void compareExport(event.target.files?.[0] ?? null)}
+            />
+          </label>
+        </div>
+        {compareError && (
+          <p className="text-[11px] text-red-300 leading-snug">
+            Profile comparison failed: {compareError}
+          </p>
+        )}
+        {profileDiff && (
+          <div className="rounded-md border border-border bg-bg-raised/30 p-2 space-y-2">
+            <p className="text-[11px] text-text-muted leading-snug">
+              Compared <code>{profileDiff.fileName}</code> with{' '}
+              <code>{compareFilename}</code>. Matching lines are omitted; this does not prove the
+              driver accepted every setting.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <DiffLines
+                title="Export-only lines"
+                lines={profileDiff.diff.added}
+                tone="text-amber-200"
+              />
+              <DiffLines
+                title="Missing from export"
+                lines={profileDiff.diff.removed}
+                tone="text-red-300"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       {err && (
         <p className="text-[11px] text-red-300 leading-snug">
           Download failed: {err}. Right-click any button above and "Save link as…" as a fallback.
@@ -174,5 +294,32 @@ export function NvpiDownloadsPanel() {
         Saved to your browser's default download folder.
       </p>
     </section>
+  )
+}
+
+function DiffLines({
+  title,
+  lines,
+  tone,
+}: {
+  title: string
+  lines: string[]
+  tone: string
+}) {
+  const shown = lines.slice(0, 8)
+  return (
+    <div className="rounded border border-border bg-bg-base/50 p-2">
+      <p className={`text-[10px] uppercase tracking-widest ${tone}`}>
+        {title} · {lines.length}
+      </p>
+      {shown.length === 0 ? (
+        <p className="text-[10px] text-text-subtle mt-1">None</p>
+      ) : (
+        <pre className="text-[10px] text-text-muted leading-snug whitespace-pre-wrap break-all mt-1">
+          {shown.join('\n')}
+          {lines.length > shown.length ? `\n… ${lines.length - shown.length} more` : ''}
+        </pre>
+      )}
+    </div>
   )
 }

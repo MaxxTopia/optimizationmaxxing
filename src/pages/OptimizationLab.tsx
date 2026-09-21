@@ -4,6 +4,7 @@ import { catalog } from '../lib/catalog'
 import { GAMES, type GameId } from '../lib/games'
 import { runBenchMedian, score, type BenchScored, type BenchStage } from '../lib/astaBench'
 import {
+  applyTransaction,
   biosAuditProbe,
   dpcSnapshot,
   driverHealth,
@@ -13,7 +14,9 @@ import {
   spdDimms,
   systemMetrics,
   verifyApplied,
+  type BatchItem,
   type SpecProfile,
+  type TransactionReport,
 } from '../lib/tauri'
 import {
   buildLabScan,
@@ -30,6 +33,13 @@ import {
 import { useRigStore } from '../store/useRigStore'
 import { useIsVip } from '../store/useVipStore'
 import { tuneProfile, type TuneIntensity } from '../lib/tuneProfiles'
+import { isFeatureEnabled } from '../lib/featureGates'
+import { resolveHardwareProfile } from '../lib/hardwareProfiles'
+import {
+  evaluateClosedLoop,
+  isTransactionActionEligible,
+  sessionProfileFor,
+} from '../lib/optimizationSession'
 
 const LAST_SCAN_KEY = 'optmaxxing-lab-last-scan-v1'
 const RUN_HISTORY_KEY = 'optmaxxing-lab-runs-v1'
@@ -179,6 +189,9 @@ export function OptimizationLab() {
   const [baseline, setBaseline] = useState<BenchScored | null>(null)
   const [after, setAfter] = useState<BenchScored | null>(null)
   const [history, setHistory] = useState<SavedLabRun[]>(() => readJson<SavedLabRun[]>(RUN_HISTORY_KEY, []))
+  const [transactionRunning, setTransactionRunning] = useState(false)
+  const [transactionReport, setTransactionReport] = useState<TransactionReport | null>(null)
+  const [transactionError, setTransactionError] = useState<string | null>(null)
 
   useEffect(() => {
     void ensureLoaded()
@@ -204,6 +217,31 @@ export function OptimizationLab() {
   }, [plan.rows])
 
   const comparison = useMemo(() => compareBench(baseline, after), [after, baseline])
+  const closedLoop = useMemo(
+    () => evaluateClosedLoop(baseline, after, {
+      source: 'asta-proxy',
+      baselineRuns: baseline ? 3 : 0,
+      afterRuns: after ? 3 : 0,
+    }),
+    [after, baseline],
+  )
+  const sessionProfile = sessionProfileFor(targetGame === 'any' ? 'fortnite' : targetGame)
+  const hardwareProfile = useMemo(
+    () => scan?.bios ? resolveHardwareProfile(scan.bios, scan.spec, scan.spd) : null,
+    [scan],
+  )
+  const transactionRows = useMemo(
+    () => plan.rows.filter((row) => (
+      row.state === 'ready' &&
+      row.tweak.actions.length > 0 &&
+      row.tweak.actions.every(isTransactionActionEligible)
+    )),
+    [plan.rows],
+  )
+  const transactionActionCount = useMemo(
+    () => transactionRows.reduce((total, row) => total + row.tweak.actions.length, 0),
+    [transactionRows],
+  )
   const profile = tuneProfile(level)
 
   async function scanRig() {
@@ -302,6 +340,49 @@ export function OptimizationLab() {
       setBenchStage('idle')
     } finally {
       setBenchRunning(false)
+    }
+  }
+
+  async function applyEligibleTransaction() {
+    if (!isNative) {
+      setTransactionError('Transactional apply requires the native optimizationmaxxing.exe shell.')
+      return
+    }
+    if (!scan) {
+      setTransactionError('Scan the rig first so this transaction is matched to the current hardware.')
+      return
+    }
+    if (!isFeatureEnabled('transactional-apply')) {
+      setTransactionError('Transactional apply is disabled by the local feature policy.')
+      return
+    }
+    if (transactionRows.length === 0) {
+      setTransactionError('There are no ready rows with a native rollback and read-back contract in this lane.')
+      return
+    }
+    const items: BatchItem[] = transactionRows.flatMap((row) => row.tweak.actions.map((action) => ({
+      tweakId: row.tweak.id,
+      action,
+    })))
+    const confirmed = window.confirm(
+      `Apply ${transactionActionCount} verified action${transactionActionCount === 1 ? '' : 's'} from ${transactionRows.length} ready tweak${transactionRows.length === 1 ? '' : 's'}?\n\nOnly ready, reversible, read-back-capable rows are included. If apply or verification fails, optimizationmaxxing will attempt to restore every captured pre-state.`,
+    )
+    if (!confirmed) return
+
+    setTransactionRunning(true)
+    setTransactionError(null)
+    setTransactionReport(null)
+    try {
+      const report = await applyTransaction(items)
+      setTransactionReport(report)
+      if (report.status === 'committed') {
+        const applied = await verifyApplied()
+        setScan((previous) => previous ? { ...previous, applied } : previous)
+      }
+    } catch (error) {
+      setTransactionError(error instanceof Error ? error.message : String(error))
+    } finally {
+      setTransactionRunning(false)
     }
   }
 
@@ -430,6 +511,28 @@ export function OptimizationLab() {
               <Link to="/hardware" className="ml-2 text-accent hover:underline">Open hardware evidence →</Link>
             </div>
           )}
+          {hardwareProfile && (
+            <div className="rounded-md border border-sky-500/30 bg-sky-500/5 px-3 py-3 space-y-2">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-sm font-semibold text-text">Exact hardware profile</p>
+                <span className="text-[10px] uppercase tracking-widest text-sky-300">{hardwareProfile.status}</span>
+              </div>
+              <p className="text-xs text-text-muted">
+                {hardwareProfile.profile
+                  ? `${hardwareProfile.profile.boardLabel} · evidence checked ${hardwareProfile.profile.lastChecked} · CPU support ${hardwareProfile.cpuStatus}`
+                  : 'This board is not in the exact evidence catalog, so no nearby-board recipe is substituted.'}
+              </p>
+              {hardwareProfile.memoryIdentity && (
+                <p className="text-[11px] text-text-subtle">SPD identity: <span className="text-text">{hardwareProfile.memoryIdentity}</span> · {hardwareProfile.memoryStatus}</p>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-text-muted">
+                {hardwareProfile.recommendations.slice(0, 4).map((recommendation) => (
+                  <p key={recommendation}>• {recommendation}</p>
+                ))}
+              </div>
+              <p className="text-[11px] text-amber-200/80">{hardwareProfile.manualFallback}</p>
+            </div>
+          )}
         </section>
       )}
 
@@ -452,6 +555,35 @@ export function OptimizationLab() {
           <CountCard label="Drifted" value={plan.counts.drifted} tone="text-red-300" />
           <CountCard label="Manual" value={plan.counts.manual} tone="text-purple-300" />
           <CountCard label="Held" value={plan.counts.held} tone="text-purple-300" />
+        </div>
+        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-2">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <p className="text-sm font-semibold text-text">Transactional apply</p>
+              <p className="text-[11px] text-text-muted mt-0.5">
+                {transactionRows.length} ready tweak{transactionRows.length === 1 ? '' : 's'} · {transactionActionCount} native action{transactionActionCount === 1 ? '' : 's'} · unsupported scripts are excluded
+              </p>
+            </div>
+            <button
+              onClick={() => void applyEligibleTransaction()}
+              disabled={!isNative || !scan || !isFeatureEnabled('transactional-apply') || transactionRunning || transactionRows.length === 0}
+              className="btn-chrome px-3 py-1.5 rounded-md bg-emerald-400 text-bg-base text-xs font-semibold disabled:opacity-40"
+              title="Capture pre-state, apply, verify, and restore on failure"
+            >
+              {transactionRunning ? 'Applying + verifying…' : 'Apply verified lane'}
+            </button>
+          </div>
+          <p className="text-[11px] text-text-muted leading-relaxed">
+            This is the new evidence-backed path. It captures every pre-state before mutation, applies one transaction, reads each setting back, and attempts reverse-order rollback if any action fails or mismatches. It does not promise rollback for arbitrary PowerShell or firmware changes.
+          </p>
+          {transactionError && <p className="rounded border border-red-500/40 bg-red-500/10 px-2 py-1.5 text-[11px] text-red-300">{transactionError}</p>}
+          {transactionReport && (
+            <div className="rounded border border-border bg-bg-base/40 px-2 py-1.5 text-[11px] text-text-muted">
+              Result: <span className="text-text font-semibold">{transactionReport.status}</span> · {transactionReport.verifiedCount}/{transactionReport.itemCount} verified · {transactionReport.rolledBackCount} rolled back.
+              {transactionReport.errors.length > 0 && <span className="block text-red-300 mt-1">{transactionReport.errors.join(' · ')}</span>}
+              {transactionReport.rollbackErrors.length > 0 && <span className="block text-red-200 mt-1">Rollback needs attention: {transactionReport.rollbackErrors.join(' · ')}</span>}
+            </div>
+          )}
         </div>
         {!currentSpec && <p className="text-xs text-text-muted">Scan the desktop rig to replace generic matches with exact CPU/GPU/OS/memory targeting.</p>}
         {currentSpec && visiblePlanRows.length === 0 && <p className="text-xs text-text-muted">No rows match this game and detected hardware at the selected lane.</p>}
@@ -522,6 +654,20 @@ export function OptimizationLab() {
         {comparison && (
           <div className="rounded-md border border-border bg-bg-base/40 p-3 text-xs text-text-muted">
             CPU {metricDelta(comparison.cpuDeltaNs, 0)} ns/op · ping jitter {metricDelta(comparison.pingDeltaMs, 2)} ms · frame pacing {metricDelta(comparison.frameDeltaMs, 2)} ms. Lower is better for these component deltas; repeat in the actual game before calling a tweak a win.
+          </div>
+        )}
+        {isFeatureEnabled('closed-loop-evidence') && (
+          <div className="rounded-md border border-sky-500/30 bg-sky-500/5 p-3 space-y-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div>
+                <p className="text-sm font-semibold text-text">Closed-loop game evidence</p>
+                <p className="text-[11px] text-text-muted">Target session: {sessionProfile.label} · {sessionProfile.processNames.join(', ')}</p>
+              </div>
+              <span className="text-[10px] uppercase tracking-widest text-sky-300">{closedLoop.verdict}</span>
+            </div>
+            <p className="text-xs text-text-muted leading-relaxed">{closedLoop.explanation}</p>
+            <p className="text-[11px] text-text-subtle">The current buttons are still the Asta proxy. Use the same scene in Match Scan for PresentMon frametime evidence, then repeat after reboot before treating a change as persistent.</p>
+            <Link to="/match-scan" className="inline-flex text-xs text-accent hover:underline">Open {targetGame === 'any' ? 'Fortnite' : GAMES.find((game) => game.id === targetGame)?.label} capture →</Link>
           </div>
         )}
         {history.length > 0 && (

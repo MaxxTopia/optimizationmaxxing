@@ -231,7 +231,11 @@ export function DriverHealthCard() {
           our daily scrape worker
         </button>
         {oracle && (
-          <span> · last refreshed {new Date(oracle.fetchedAt).toLocaleString()}</span>
+          <span>
+            {' '}
+            · {oracle.source === 'cache' ? 'using cached last-known-good data' : 'last refreshed'}{' '}
+            {new Date(oracle.fetchedAt).toLocaleString()}
+          </span>
         )}
         . NVIDIA today; AMD + Intel Arc lack public APIs so we don't pretend to know their latest
         versions. Use DDU only to troubleshoot a corrupted install or vendor swap, not for routine

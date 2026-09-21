@@ -295,6 +295,38 @@ export async function applyBatch(items: BatchItem[]): Promise<ApplyReceipt[]> {
   return invoke<ApplyReceipt[]>('apply_batch', { items })
 }
 
+export interface TransactionItemReport {
+  tweakId: string
+  actionKind: string
+  receiptId: string | null
+  verificationStatus: VerificationStatus | null
+  detail: string
+  attempted: boolean
+  applied: boolean
+  rolledBack: boolean
+}
+
+export interface TransactionReport {
+  transactionId: string
+  /** committed | failed | rolled_back | partial */
+  status: 'committed' | 'failed' | 'rolled_back' | 'partial' | string
+  itemCount: number
+  appliedCount: number
+  verifiedCount: number
+  rolledBackCount: number
+  errors: string[]
+  rollbackErrors: string[]
+  items: TransactionItemReport[]
+}
+
+/** Apply only reversible, read-back-capable actions and restore their captured
+ * pre-state automatically when apply or verification fails. The native side
+ * returns a report instead of throwing for a rollback/partial outcome so the
+ * UI can show exactly what happened. */
+export async function applyTransaction(items: BatchItem[]): Promise<TransactionReport> {
+  return invoke<TransactionReport>('apply_transaction', { items })
+}
+
 export async function revertTweak(receiptId: string): Promise<void> {
   return invoke('revert_tweak', { receiptId })
 }
@@ -966,20 +998,69 @@ export interface DriverOracleResponse {
     amd: DriverOracleSource | { error: string } | null
     intel_arc: DriverOracleSource | { error: string } | null
   }
+  /** live = fetched this session; cache = last known-good local response. */
+  source?: 'live' | 'cache'
+  stale?: boolean
+  cachedAt?: string
 }
 
 const DRIVER_ORACLE_URL = 'https://optmaxxing-driver-oracle.maxxtopia.workers.dev/latest'
+const DRIVER_ORACLE_CACHE_KEY = 'optmaxxing-driver-oracle-last-known-good-v1'
+
+function isOracleSource(value: unknown): value is DriverOracleSource | { error: string } | null {
+  if (value == null) return true
+  if (typeof value !== 'object') return false
+  const record = value as Record<string, unknown>
+  if (typeof record.error === 'string') return true
+  return typeof record.name === 'string' && typeof record.version === 'string'
+}
+
+function isDriverOracleResponse(value: unknown): value is DriverOracleResponse {
+  if (value == null || typeof value !== 'object') return false
+  const record = value as Record<string, unknown>
+  const sources = record.sources
+  if (typeof record.fetchedAt !== 'string' || sources == null || typeof sources !== 'object') return false
+  const sourceRecord = sources as Record<string, unknown>
+  return isOracleSource(sourceRecord.nvidia) && isOracleSource(sourceRecord.amd) && isOracleSource(sourceRecord.intel_arc)
+}
+
+function readCachedDriverOracle(): DriverOracleResponse | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const parsed = JSON.parse(localStorage.getItem(DRIVER_ORACLE_CACHE_KEY) || '') as { payload?: unknown; cachedAt?: unknown }
+    if (!isDriverOracleResponse(parsed.payload)) return null
+    return {
+      ...parsed.payload,
+      source: 'cache',
+      stale: true,
+      cachedAt: typeof parsed.cachedAt === 'string' ? parsed.cachedAt : undefined,
+    }
+  } catch {
+    return null
+  }
+}
 
 /** Fetches the latest known driver versions from our daily-scrape Cloudflare
  *  worker. Network call out of the app — fails gracefully (returns null) if
- *  the user is offline or the worker is sick. See `driver-oracle-worker/`. */
+ *  the user is offline or the worker is sick. The last schema-valid response
+ *  is retained locally as a read-only fallback; a missing feed never authorizes
+ *  an update or a tweak. See `driver-oracle-worker/`. */
 export async function driverOracle(): Promise<DriverOracleResponse | null> {
   try {
     const res = await fetch(DRIVER_ORACLE_URL, { cache: 'no-store' })
-    if (!res.ok) return null
-    return (await res.json()) as DriverOracleResponse
+    if (!res.ok) return readCachedDriverOracle()
+    const payload: unknown = await res.json()
+    if (!isDriverOracleResponse(payload)) return readCachedDriverOracle()
+    const response: DriverOracleResponse = { ...payload, source: 'live', stale: false }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(DRIVER_ORACLE_CACHE_KEY, JSON.stringify({
+        payload,
+        cachedAt: new Date().toISOString(),
+      }))
+    }
+    return response
   } catch {
-    return null
+    return readCachedDriverOracle()
   }
 }
 

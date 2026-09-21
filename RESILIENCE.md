@@ -1,8 +1,9 @@
-# OptimizationMaxxing resilience register
+# optimizationmaxxing resilience contract
 
-This is the short pre-mortem for the desktop tuning product. It is intentionally
-plain language so another maintainer can recover the safety boundary without
-depending on chat history.
+Scope: the post-v0.4.6 optimization lab improvement pass. This document is
+part of the product contract: a feature is not considered production-ready
+because it works on the happy path. It must also expose what it cannot prove,
+retain a recovery path, and fail closed when evidence is missing.
 
 ## Locked safety rules
 
@@ -19,7 +20,10 @@ depending on chat history.
   never granted automatically. A screenshot is only a visual reminder; the
   server-side offer record is what Diggy verifies.
 
-## Risk register
+## Existing product risk register
+
+These pre-existing product safeguards remain part of the contract while the
+new lab features are added.
 
 | Priority | Failure mode | Detection signal | Current safeguard | Next safeguard |
 | --- | --- | --- | --- | --- |
@@ -34,20 +38,84 @@ depending on chat history.
 | P2 | Upstream hardware, pro, or Fortnite guidance goes stale. | Review date ages; vendor or official rules page changes. | Evidence review stamps, source links, language that separates historic from current claims. | Add a freshness report that lists citations older than the review window. |
 | P2 | A MaxxTopia update or release artifact is missing even though the app shipped. | Version mismatch, missing rendered Updates card, failed Pages/custom-domain check. | Changelog entry and release checklist; preview plus cache-busted custom route verification. | Add a release check that compares the app version, public update entry, and latest artifact manifest. |
 
-## Kill-switch design
+## Risk register
 
-The safe remote control is a signed, versioned denylist of tweak IDs and preset
-IDs, fetched only when the app already has an approved update/config path. It may
-disable an action or hide a ticket redemption route, but it must never apply a
-replacement tweak, change a user's settings, or weaken local revert. If the
-config is missing, malformed, unsigned, or stale, the app fails closed for the
-listed experimental lane and keeps the local catalog available. The app should
-show the user which action was withheld and why.
+| Risk | Detection signal | Recovery / plan B | Class |
+| --- | --- | --- | --- |
+| PresentMon is missing, cannot attach, or stops mid-capture | Match Scan reports no process, no samples, or an incomplete session | Keep the result unmeasured; fall back to the Asta proxy only as a candidate signal and never call it game proof | HOT |
+| A transaction partially applies or a read-back mismatches | Native verification is not `verified`, the UAC batch returns an error, or receipt creation fails | Restore captured pre-state in reverse order. If any restore fails, report `partial`, retain the receipt, and require user review | HOT / RESTART |
+| A setting drifts after reboot, Windows Update, or a driver install | Reboot validation or the next rig scan reports mismatch/unknown | Mark the receipt drifted, show the exact verifier, and require an explicit reapply; do not silently repair | RESTART |
+| A board or BIOS profile is stale or not exact | SMBIOS identity, revision, or CPU support does not match the catalog | Use the unknown-board path and manual SCEWIN comparison. Never copy a nearby-board recipe | REBUILD |
+| An NVPI/NIC artifact is malformed, stale, or regresses the capture | Hash/revision display, import verification, profile diff, or before/after evidence disagrees | Restore the exported profile or adapter defaults, then rerun the same capture; keep the shipped artifact unchanged | HOT |
+| Driver oracle or update feed is offline | Fetch fails or the response fails schema validation | Use the cached last-known-good response for display only. Missing data never authorizes a driver install or tweak | HOT |
+| A security, anti-cheat, or tournament-sensitive setting causes incompatibility | Review lane, risk metadata, anti-cheat tags, or user-reported failure | Keep it manual/review-only, restore the receipt, and preserve Secure Boot/Defender/anti-cheat access | RESTART |
 
-The first implementation can remain local and release-driven: removing or
-marking an experimental catalog item unavailable is safer than inventing a
-live control plane before there is a signed endpoint, audit log, and rollback
-procedure.
+`HOT` means the app can recover without restarting Windows. `RESTART` means
+the user must reboot or return to firmware to prove the state. `REBUILD` means
+the evidence catalog or shipped artifact must be corrected; the app must not
+claim automatic failover for it.
+
+## Safeguard backlog
+
+P0 (implemented in this pass):
+
+- Capture every native pre-state before a transaction mutates anything.
+- Reject arbitrary PowerShell from the transactional path unless it has both a
+  revert script and a read-only verifier.
+- Verify every attempted action and reverse the transaction on failure.
+- Show `committed`, `rolled_back`, or `partial` with per-action receipts and
+  rollback errors.
+- Keep exact board matching separate from CPU-only or nearby-board guesses.
+- Keep Asta proxy results and PresentMon game evidence as separate verdicts.
+
+P1 (implemented in this pass):
+
+- Keep a local, schema-validated last-known-good driver-oracle response.
+- Version the shipped NVIDIA profiles with review date, settings count, hash,
+  and rollback text; keep NIC tuning advisory and adapter-specific.
+- Add named per-game capture contracts so the same process and scene boundary
+  can be reused by the lab and Match Scan.
+- Add a local feature policy so a new automation feature can be disabled while
+  diagnosing a field regression.
+
+P2 (follow-up before a broad release claim):
+
+- Expand exact board and memory-kit records only from primary OEM/QVL/SPD
+  evidence, with a fixture matrix for each supported BIOS revision.
+- Add a signed, versioned optimization-policy feed with expiry and a cached
+  last-known-good manifest. A missing or invalid manifest must fail closed for
+  mutation, while the app remains usable for diagnostics and rollback.
+- Run real Fortnite same-scene captures across Intel, AMD, NVIDIA, Windows
+  builds, driver branches, and anti-cheat states. Keep the results opt-in and
+  local unless users explicitly consent to anonymous telemetry.
+- Add field proof for UAC apply, reboot persistence, updater recovery, and
+  profile import on clean machines. Source/build tests are not device proof.
+
+## Remote control and kill-switch design
+
+The app already has a signed updater channel for application releases. The new
+local feature policy is intentionally not presented as a remote kill switch.
+Before using a remote policy for optimization mutation, require a signed
+manifest with a schema version, monotonic revision, expiry, feature states,
+and an integrity-protected cached last-known-good copy. Invalid, expired, or
+missing policy must disable new mutation and leave read-only diagnostics,
+rollback, and recovery available. Every policy decision should be logged
+locally with the manifest revision; no credentials or secrets belong in it.
+
+The older release-driven contract still applies: a remote control may disable
+an action or hide a redemption route, but it must never apply a replacement
+tweak, change a user's settings, or weaken local revert. If a remote config is
+missing, malformed, unsigned, or stale, the app fails closed for the listed
+experimental lane and keeps diagnostics and local recovery available.
+
+## Operational boundary
+
+The optimization lab does not write BIOS/NVRAM, SPD, CPU voltage, thermal
+limits, anti-cheat bypasses, or visibility cheats. Manual firmware recipes may
+be documented, but the app must identify the exact board and leave the final
+change, stability test, and rollback to the user. A local benchmark improvement
+is a candidate until the actual game capture and a reboot persistence check
+agree.
 
 ## Release gates
 
