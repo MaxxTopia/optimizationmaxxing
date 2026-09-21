@@ -1,6 +1,6 @@
 # AMD and Intel CPU guidance for competitive gaming
 
-**Last reviewed: 2026-09-17.** This guide is intentionally software- and
+**Last reviewed: 2026-09-20.** This guide is intentionally software- and
 firmware-safe. optimizationmaxxing does not write CPU voltage, current limits,
 thermal limits, PBO offsets, Curve Optimizer offsets, fixed frequencies, or
 memory voltages. BIOS audit can show what a board exposes; it is not permission
@@ -71,14 +71,19 @@ and stop; it should not prescribe a voltage or thermal-limit change.
 
 ## Should you buy now or wait for AMD?
 
-As of this review, AMD's Ryzen 9 9950X3D2 Dual Edition is an announced and
-available Zen 5 desktop processor with 16 cores/32 threads and dual 3D V-Cache.
-AMD also announced the Ryzen 7 7700X3D at Computex 2026. I found no official
-consumer Zen 6 launch date from AMD, so a user should not delay a purchase based
-on an unconfirmed rumor. Compare the 9950X3D2, the current single-CCD X3D
-options, and the user's actual CPU-bound 1% lows, frametime tail, and total
-platform cost. [AMD 9950X3D2 announcement](https://newsroom.amd.com/news/amd-launches-ryzen-9-9950x3d2-dual-edition-processor/),
-[AMD Computex 2026 platform update](https://www.amd.com/en/blogs/2026/amd-computex-2026-10-years-of-am4-am5-support-through.html)
+AMD's Ryzen 9 9950X3D2 launched Apr 22, 2026 (16 cores/32 threads); the Ryzen 7
+7700X3D's official launch date is Jul 16, 2026. Neither announcement proves a
+Fortnite win over a less expensive X3D CPU. I found no official consumer Zen 6
+desktop launch date in AMD's current material, so do not delay a purchase for
+an unconfirmed rumor. Compare current CPUs using the same Fortnite build,
+settings, and measured CPU-bound 1% lows, then include board, memory, cooling,
+and total platform cost. [AMD 9950X3D2 launch](https://newsroom.amd.com/news/amd-launches-ryzen-9-9950x3d2-dual-edition-processor/),
+[AMD Ryzen 7 7700X3D specifications](https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-7-7700x3d.html)
+
+Manual RAM timing/voltage references remain available in the memory worksheet
+for deliberate, user-directed experiments; they are not auto-applied or
+transferable recipes. Validate the exact DIMM kit, memory controller, board,
+BIOS, and stability after each change. SCEWIN and this app remain read-only.
 
 For a Fortnite player already on a stable 14900KF, a platform swap is not
 automatically justified. First apply the Intel Default/microcode baseline and
@@ -90,5 +95,5 @@ tail justify the board, memory, cooling, and platform cost.
 - [Intel Vmin Shift latest information](https://www.intel.com/content/www/us/en/support/articles/000102331/processors.html)
 - [Intel APO overview](https://www.intel.com/content/www/us/en/support/articles/000095419/processors.html)
 - [Intel APO game list](https://www.intel.com/content/www/us/en/support/articles/000098266/processors.html)
-- [AMD Ryzen 9 9950X3D2 announcement](https://newsroom.amd.com/news/amd-launches-ryzen-9-9950x3d2-dual-edition-processor/)
-- [AMD Computex 2026 platform update](https://www.amd.com/en/blogs/2026/amd-computex-2026-10-years-of-am4-am5-support-through.html)
+- [AMD Ryzen 9 9950X3D2 launch](https://newsroom.amd.com/news/amd-launches-ryzen-9-9950x3d2-dual-edition-processor/)
+- [AMD Ryzen 7 7700X3D specifications](https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-7-7700x3d.html)

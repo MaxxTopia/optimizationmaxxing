@@ -234,7 +234,8 @@ export function DriverHealthCard() {
           <span> · last refreshed {new Date(oracle.fetchedAt).toLocaleString()}</span>
         )}
         . NVIDIA today; AMD + Intel Arc lack public APIs so we don't pretend to know their latest
-        versions. For major NVIDIA jumps, run{' '}
+        versions. Use DDU only to troubleshoot a corrupted install or vendor swap, not for routine
+        updates. See{' '}
         <button
           onClick={() =>
             openExternal('https://www.guru3d.com/download/display-driver-uninstaller-download/')
@@ -243,7 +244,7 @@ export function DriverHealthCard() {
         >
           DDU
         </button>{' '}
-        in safe mode before installing.
+        guidance for the current procedure.
       </p>
     </section>
   )

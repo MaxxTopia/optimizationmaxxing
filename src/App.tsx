@@ -18,6 +18,7 @@ import { Grind } from './pages/Grind'
 import { Hardware } from './pages/Hardware'
 import { Asta } from './pages/Asta'
 import { Benchmark } from './pages/Benchmark'
+import { OptimizationLab } from './pages/OptimizationLab'
 import { Diff } from './pages/Diff'
 import { Pricing } from './pages/Pricing'
 import { Settings } from './pages/Settings'
@@ -115,6 +116,7 @@ export default function App() {
           <Route path="/hardware" element={<Hardware />} />
           <Route path="/asta" element={<Asta />} />
           <Route path="/benchmark" element={<Benchmark />} />
+          <Route path="/lab" element={<OptimizationLab />} />
           <Route path="/diff" element={<Diff />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/pricing" element={<Pricing />} />

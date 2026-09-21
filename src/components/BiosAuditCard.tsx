@@ -5,170 +5,29 @@ import {
   inTauri,
   type BiosAudit,
 } from '../lib/tauri'
+import { BoardFirmwareEvidenceCard } from './BoardFirmwareEvidenceCard'
+import { ScewinDumpInspector } from './ScewinDumpInspector'
 
 /**
  * BiosAuditCard — read what Windows can see about BIOS settings + compare
  * against the per-game ideal config. Pass/warn/fail/unknown punchlist with
  * read-only context and a safe next step per finding.
  *
- * Detects the motherboard vendor + product + BIOS firmware version, then
- * surfaces the per-vendor BIOS UI navigation paths so the user knows
- * exactly which menu to hit on THEIR board for each setting. Vendors
- * organize their BIOS menus differently (ASUS: Ai Tweaker / Advanced /
- * Boot, MSI: OC / Settings, Gigabyte: Tweaker / Settings, ASRock: OC
- * Tweaker / Advanced), so vague "go to BIOS → memory section" guidance
- * is less helpful than "ASUS Ai Tweaker → DOCP." The paths are navigation
- * hints only; this app never writes BIOS variables.
- *
- * For the BIOS values Windows can't read (PBO offsets, Curve Optimizer
- * per-core values, EXPO timing tables, SVID Behavior), the card flags
- * which of those each board's UI does/doesn't expose and points to
- * the SCEWIN dump-and-diff workflow in /guides for the rest.
+ * Detects Windows-visible board/firmware identity, but deliberately avoids
+ * claiming a setting path or availability from vendor name alone. The
+ * read-only SCEWIN importer below only reports records present in the user's
+ * export; absence is never treated as proof that firmware lacks a setting.
  */
 
-/** Vendor-specific BIOS UI map. Keyed by lowercased manufacturer substring
- *  match against `Win32_BaseBoard.Manufacturer` (ASUS reports
- *  "ASUSTeK COMPUTER INC.", MSI reports "MSI" or "Micro-Star International",
- *  Gigabyte reports "Gigabyte Technology Co., Ltd.", ASRock reports
- *  "ASRock"). */
-interface BiosUiMap {
-  vendor: string
-  advancedHotkey: string
-  /** Where each user-relevant setting lives in the BIOS UI menu tree. */
-  paths: {
-    secureBoot: string
-    tpm: string
-    csm: string
-    expoXmp: string
-    smt: string
-    /** PBO / Curve Optimizer — null = vendor hides it / doesn't expose. */
-    pboCurveOptimizer: string | null
-    /** Resizable BAR — null = hidden / only auto-on. */
-    rebar: string | null
-  }
-  /** Settings this vendor's BIOS UI exposes for inspection. */
-  exposedInUi: string[]
-  /** Settings only visible via SCEWIN dump on this vendor (BIOS UI hides them). */
-  needsScewin: string[]
-}
+type BiosVendor = 'ASUS' | 'MSI' | 'Gigabyte' | 'ASRock'
 
-const BIOS_UI_MAPS: BiosUiMap[] = [
-  {
-    vendor: 'ASUS',
-    advancedHotkey: 'F7 to toggle Advanced Mode (boots into EZ Mode by default)',
-    paths: {
-      secureBoot: 'Boot → Secure Boot → OS Type: "Other OS" → Key Management → Install Default Secure Boot Keys',
-      tpm: 'Advanced → PCH-FW Configuration → PTT (Intel) — or Advanced → AMD fTPM Configuration → AMD CPU fTPM (AMD)',
-      csm: 'Boot → CSM (Compatibility Support Module) → Launch CSM → Disabled',
-      expoXmp: 'Ai Tweaker → Ai Overclock Tuner → "D.O.C.P. Standard" (AMD) or "XMP" (Intel)',
-      smt: 'Advanced → CPU Configuration → SVM Mode + SMT Mode (AMD) / Hyper-Threading Technology (Intel)',
-      pboCurveOptimizer:
-        'Ai Tweaker → Precision Boost Overdrive → PBO Curve Optimizer (AMD only). Per-core CO offsets live here on X670E/X870E boards.',
-      rebar: 'Advanced → PCI Subsystem Settings → Above 4G Decoding → Enabled, then Re-Size BAR Support → Enabled',
-    },
-    exposedInUi: [
-      'PBO / Curve Optimizer controls (inspection only)',
-      'EXPO/DOCP profile selection + memory state',
-      'CPU / SOC voltage readouts (do not copy voltage recipes)',
-      'Fan-curve controls (vendor defaults are the baseline)',
-    ],
-    needsScewin: [
-      'Per-DRAM-channel secondary/tertiary timings (some boards only)',
-      'Hidden CBS settings on older AGESA versions',
-      'OEM-locked microcode hash overrides',
-    ],
-  },
-  {
-    vendor: 'MSI',
-    advancedHotkey: 'F7 to toggle Advanced Mode',
-    paths: {
-      secureBoot: 'Settings → Security → Secure Boot → Enabled → Reset to Default Keys',
-      tpm: 'Settings → Security → Trusted Computing → AMD CPU fTPM (AMD) or Settings → Security → Intel Platform Trust Technology (Intel)',
-      csm: 'Settings → Advanced → Windows OS Configuration → BIOS CSM/UEFI Mode → UEFI',
-      expoXmp: 'OC → Extreme Memory Profile (EXPO/XMP)',
-      smt: 'OC → Advanced CPU Configuration → SMT Control (AMD) or Hyper-Threading (Intel)',
-      pboCurveOptimizer:
-        'OC → Advanced CPU Configuration → AMD Overclocking → Precision Boost Overdrive (AMD). MSI buries this several levels deep.',
-      rebar: 'Settings → Advanced → PCI Subsystem Settings → Re-Size BAR Support → Auto',
-    },
-    exposedInUi: [
-      'EXPO/XMP + primary memory timing controls (inspection only)',
-      'PBO + Curve Optimizer controls (inspection only)',
-      'CPU LITE Load presets (do not use as an app-recommended undervolt)',
-      'Memory Try It! preset library (not a validated latency recipe)',
-    ],
-    needsScewin: [
-      'Secondary memory timings on B650 chipset (X670+ exposes them)',
-      'PCIe AER + ASPM granular controls',
-      'Locked SVID Behavior on cheaper boards (PRO B650M / B650-A)',
-    ],
-  },
-  {
-    vendor: 'Gigabyte',
-    advancedHotkey: 'F2 to toggle Advanced Mode (Easy Mode default)',
-    paths: {
-      secureBoot: 'Boot → Secure Boot → Secure Boot Enable + restore factory keys',
-      tpm: 'Settings → AMD CBS → AMD fTPM Configuration (AMD) or Settings → Miscellaneous → Trusted Computing (Intel)',
-      csm: 'Boot → CSM Support → Disabled',
-      expoXmp: 'Tweaker → Extreme Memory Profile (X.M.P.) — Gigabyte still calls EXPO "X.M.P. AMD" on some BIOS revs',
-      smt: 'Settings → AMD CBS → CPU Common Options → SMT Control (AMD) or Tweaker → Advanced CPU Settings → Hyper-Threading (Intel)',
-      pboCurveOptimizer:
-        'Tweaker → Advanced CPU Settings → Precision Boost Overdrive (AMD). On AORUS Master / Elite the CO per-core menu is on a separate page deeper down.',
-      rebar: 'Settings → IO Ports → Resizable BAR Support → Enabled (requires Above 4G Decoding ON first)',
-    },
-    exposedInUi: [
-      'EXPO/XMP profile selection',
-      'PBO + Curve Optimizer controls (inspection only)',
-      'Above 4G Decoding + Resizable BAR',
-      'Per-fan curve via Smart Fan',
-    ],
-    needsScewin: [
-      'Memory secondary timings on B650 + cheaper X670 boards',
-      'Per-rail VRM phase counts + LLC tables',
-      'AGESA CBS items not exposed in the Settings → AMD CBS tree',
-    ],
-  },
-  {
-    vendor: 'ASRock',
-    advancedHotkey: 'F6 to toggle Advanced Mode',
-    paths: {
-      secureBoot: 'Security → Secure Boot → Secure Boot Mode: Standard / Custom → Install default keys',
-      tpm: 'Security → Trusted Computing → AMD fTPM switch (AMD) or Security → Intel Platform Trust Technology (Intel)',
-      csm: 'Boot → CSM (Compatibility Support Module) → CSM → Disabled',
-      expoXmp: 'OC Tweaker → DRAM Frequency → AMD EXPO Profile 1 / XMP Profile 1',
-      smt: 'Advanced → CPU Configuration → SMT Mode (AMD) / Hyper-Threading (Intel)',
-      pboCurveOptimizer:
-        'OC Tweaker → AMD Overclocking → Precision Boost Overdrive → Curve Optimizer. ASRock exposes per-core CO on most X670/X870 boards.',
-      rebar: 'Advanced → PCI Configuration → Above 4G Decoding + Re-Size BAR Support',
-    },
-    exposedInUi: [
-      'EXPO/XMP + primary + some secondary timing controls (inspection only)',
-      'PBO + Curve Optimizer per-core controls (inspection only)',
-      'A-Tuning / BFB controls (not an app recommendation)',
-    ],
-    needsScewin: [
-      'Some tertiary memory timings on Lightning / Pro chipset SKUs',
-      'CBS AGESA leaf items not exposed in OC Tweaker',
-    ],
-  },
-]
-
-function findBiosMap(manufacturer: string | null): BiosUiMap | null {
+function findBiosVendor(manufacturer: string | null): BiosVendor | null {
   if (!manufacturer) return null
   const m = manufacturer.toLowerCase()
-  // Substring match. Manufacturer strings vary:
-  //   ASUS: "ASUSTeK COMPUTER INC."
-  //   MSI: "MSI" / "Micro-Star International Co., Ltd."
-  //   Gigabyte: "Gigabyte Technology Co., Ltd."
-  //   ASRock: "ASRock"
-  if (m.includes('asus')) return BIOS_UI_MAPS.find((b) => b.vendor === 'ASUS') ?? null
-  if (m.includes('msi') || m.includes('micro-star')) {
-    return BIOS_UI_MAPS.find((b) => b.vendor === 'MSI') ?? null
-  }
-  if (m.includes('gigabyte') || m.includes('aorus')) {
-    return BIOS_UI_MAPS.find((b) => b.vendor === 'Gigabyte') ?? null
-  }
-  if (m.includes('asrock')) return BIOS_UI_MAPS.find((b) => b.vendor === 'ASRock') ?? null
+  if (m.includes('asus')) return 'ASUS'
+  if (m.includes('msi') || m.includes('micro-star')) return 'MSI'
+  if (m.includes('gigabyte') || m.includes('aorus')) return 'Gigabyte'
+  if (m.includes('asrock')) return 'ASRock'
   return null
 }
 
@@ -187,14 +46,9 @@ interface GameProfile {
   id: GameId
   label: string
   blurb: string
-  /** Each ideal is a function over the live audit returning verdict + detail. */
   ideal: {
-    biosMode: 'UEFI'
     secureBoot: 'required' | 'preferred' | 'optional'
     tpm: 'required' | 'preferred' | 'optional'
-    smt: 'on'
-    expoXmp: 'on'
-    powerPlan: 'High performance' | 'Ultimate Performance'
   }
 }
 
@@ -203,42 +57,30 @@ const GAME_PROFILES: GameProfile[] = [
     id: 'fortnite',
     label: 'Fortnite',
     blurb:
-      'Fortnite tournament eligibility currently includes Secure Boot, TPM 2.0, and IOMMU. This audit reads Windows-side signals only; it cannot enable firmware settings or guarantee approval.',
+      'Epic documents TPM 2.0 + Secure Boot for certain tournaments and IOMMU for some competitive experiences. Requirements can vary by event; this audit is not an eligibility check.',
     ideal: {
-      biosMode: 'UEFI',
-      secureBoot: 'required',
-      tpm: 'required',
-      smt: 'on',
-      expoXmp: 'on',
-      powerPlan: 'High performance',
+      secureBoot: 'preferred',
+      tpm: 'preferred',
     },
   },
   {
     id: 'valorant',
     label: 'Valorant',
     blurb:
-      'Vanguard commonly gates on Secure Boot and TPM 2.0 on Windows 11. Keep Windows, firmware, and Vanguard current; do not treat this card as a guarantee of launch or tournament eligibility.',
+      'Secure Boot and TPM requirements can depend on Windows version and current Riot policy. Verify in Riot support; this read-only audit does not guarantee launch or event eligibility.',
     ideal: {
-      biosMode: 'UEFI',
-      secureBoot: 'required',
-      tpm: 'required',
-      smt: 'on',
-      expoXmp: 'on',
-      powerPlan: 'High performance',
+      secureBoot: 'preferred',
+      tpm: 'preferred',
     },
   },
   {
     id: 'cs2',
     label: 'CS2',
     blurb:
-      'VAC alone doesn\'t care about Secure Boot / TPM, but FACEIT + ESEA do. EXPO/XMP + SMT on for the fps.',
+      'Secure Boot and TPM are not universal CS2 performance settings. Event-platform requirements may differ; this card does not certify eligibility.',
     ideal: {
-      biosMode: 'UEFI',
-      secureBoot: 'preferred',
-      tpm: 'preferred',
-      smt: 'on',
-      expoXmp: 'on',
-      powerPlan: 'High performance',
+      secureBoot: 'optional',
+      tpm: 'optional',
     },
   },
 ]
@@ -252,44 +94,38 @@ interface Check {
   fix?: string
 }
 
-function buildChecks(a: BiosAudit, profile: GameProfile, ui: BiosUiMap | null): Check[] {
+function buildChecks(a: BiosAudit, profile: GameProfile): Check[] {
   const checks: Check[] = []
-  // Compose a "→ on your <board>: <menu path>" suffix when we have a vendor
-  // map. Keeps the generic guidance intact for unrecognized boards.
-  const path = (key: keyof BiosUiMap['paths']): string => {
-    const p = ui?.paths[key]
-    return p ? ` On your ${ui!.vendor} board: ${p}.` : ''
-  }
 
-  // BIOS mode (UEFI vs Legacy) — Legacy = CSM is on.
+  // This is the Windows boot path, not a direct read of the firmware's CSM
+  // toggle or every boot option.
   if (a.biosMode == null) {
     checks.push({
-      label: 'UEFI boot (CSM off)',
+      label: 'Firmware boot mode',
       verdict: 'unknown',
       detail: 'Could not read BIOS firmware type.',
     })
   } else if (a.biosMode.toLowerCase() === 'uefi') {
     checks.push({
-      label: 'UEFI boot (CSM off)',
+      label: 'Firmware boot mode',
       verdict: 'pass',
-      detail: 'BIOS is UEFI mode — CSM disabled.',
+      detail: 'Windows reports UEFI startup. This does not prove the exact state of every CSM or boot option.',
     })
   } else {
     checks.push({
-      label: 'UEFI boot (CSM off)',
-      verdict: 'fail',
-      detail: `BIOS is in ${a.biosMode} mode. CSM / Legacy boot is on.`,
-      fix:
-        `CSM ON disables Resizable BAR and adds ~2s to boot. Disable it.${path('csm')} (Heads-up: switching off CSM may require reinstalling Windows on UEFI/GPT if the current install is BIOS/MBR.)`,
+      label: 'Firmware boot mode',
+      verdict: 'warn',
+      detail: `Windows reports ${a.biosMode} startup. This is not a direct read of each firmware boot option.`,
+      fix: 'If an event or feature requires UEFI/Secure Boot, verify the exact motherboard manual and Windows partition style before changing boot mode; switching modes without preparation can make Windows unbootable.',
     })
   }
 
   // Secure Boot
   if (a.secureBoot == null) {
-    checks.push({
-      label: 'Secure Boot',
-      verdict: 'unknown',
-      detail: 'Could not read Secure Boot state (typically needs UEFI mode to query).',
+      checks.push({
+        label: 'Secure Boot',
+        verdict: 'unknown',
+        detail: 'Windows could not report Secure Boot state. Check System Information and the exact board manual.',
     })
   } else {
     const need = profile.ideal.secureBoot
@@ -297,17 +133,16 @@ function buildChecks(a: BiosAudit, profile: GameProfile, ui: BiosUiMap | null): 
       checks.push({
         label: 'Secure Boot',
         verdict: 'pass',
-        detail: 'Enabled.',
+        detail: 'Windows reports Secure Boot enabled. This is not a tournament attestation result.',
       })
     } else {
       checks.push({
         label: 'Secure Boot',
         verdict: need === 'required' ? 'fail' : 'warn',
         detail: 'Disabled.',
-        fix:
-          need === 'required'
-            ? `${profile.label} requires Secure Boot for anti-cheat eligibility.${path('secureBoot')}`
-            : `Optional for this title, but enable it if you also play FACEIT/Vanguard/FNCS.${path('secureBoot')}`,
+        fix: need === 'required'
+          ? `Epic requires Secure Boot for some tournament eligibility checks. Verify the current event rules and your exact board's manual; do not change Secure Boot mode or keys from a generic menu recipe.`
+          : 'Only change this for a current game/event requirement or a deliberate security policy; use your board manual.',
       })
     }
   }
@@ -315,100 +150,66 @@ function buildChecks(a: BiosAudit, profile: GameProfile, ui: BiosUiMap | null): 
   // TPM
   if (a.tpmEnabled == null) {
     checks.push({
-      label: 'TPM 2.0',
+      label: 'TPM status',
       verdict: 'unknown',
-      detail: 'Could not query TPM state (WMI access restricted or non-elevated). Try running optimizationmaxxing as admin.',
-      fix: `If enabled in BIOS, verify in Windows by pressing Win+R and running "tpm.msc".${path('tpm')}`,
+      detail: 'Could not query TPM state. Press Win+R and run tpm.msc to inspect the Windows-reported version and readiness.',
     })
   } else {
     const need = profile.ideal.tpm
     if (a.tpmEnabled) {
       checks.push({
-        label: 'TPM 2.0',
+        label: 'TPM status',
         verdict: 'pass',
-        detail: 'Ready + enabled.',
+        detail: 'Windows reports a TPM present and enabled/ready. This probe does not verify the TPM specification version; confirm 2.0 in tpm.msc.',
       })
     } else {
       checks.push({
-        label: 'TPM 2.0',
+        label: 'TPM status',
         verdict: need === 'required' ? 'fail' : 'warn',
         detail: 'Not ready or disabled in BIOS / Windows.',
         fix:
           need === 'required'
-            ? `${profile.label} anti-cheat requires TPM 2.0 (fTPM for AMD / PTT for Intel).${path('tpm')} Run "tpm.msc" in Windows to verify.`
-            : `Optional for this title — enable fTPM (AMD) / PTT (Intel) if you play Valorant or FNCS.${path('tpm')}`,
+            ? `Epic requires TPM 2.0 for some tournament eligibility checks. Confirm the version in tpm.msc, then use the exact board manual if the event requires a firmware change.`
+            : 'Only change this for a current game/event requirement or a deliberate security policy; check your board manual.',
       })
     }
   }
 
-  // SMT / HT
+  // This is an OS topology signal, not a universal gaming-performance verdict.
   if (a.smtEnabled == null) {
     checks.push({
-      label: 'SMT / Hyper-Threading',
+      label: 'SMT / Hyper-Threading signal',
       verdict: 'unknown',
       detail: 'Could not derive logical-vs-physical core count.',
     })
-  } else if (a.smtEnabled) {
-    checks.push({
-      label: 'SMT / Hyper-Threading',
-      verdict: 'pass',
-      detail: 'Enabled — logical cores > physical cores.',
-    })
   } else {
     checks.push({
-      label: 'SMT / Hyper-Threading',
-      verdict: 'warn',
-      detail: 'Disabled — logical cores = physical cores.',
-      fix:
-        `SMT off is a CS:GO/Overwatch-1-era esports trick that doesn't apply to UE5 games. Turn it back ON.${path('smt')}`,
+      label: 'SMT / Hyper-Threading signal',
+      verdict: 'unknown',
+      detail: a.smtEnabled
+        ? 'Windows sees more logical than physical cores. This suggests SMT/HT is enabled; it does not prove lower latency or better FPS.'
+        : 'Windows sees no extra logical cores. Hybrid CPU topology can make this inference incomplete; benchmark before changing firmware.',
     })
   }
 
-  // EXPO / XMP
-  if (a.expoXmpActive == null) {
-    checks.push({
-      label: 'EXPO / XMP profile active',
-      verdict: 'unknown',
-      detail: 'Could not classify RAM speed (unknown DDR type or no speed reported).',
-    })
-  } else if (a.expoXmpActive) {
-    checks.push({
-      label: 'EXPO / XMP profile active',
-      verdict: 'pass',
-      detail: `${a.ramType ?? '?'} running at ${a.ramSpeedMhz ?? '?'} MHz (above JEDEC default — EXPO/XMP trained).`,
-    })
-  } else {
-    checks.push({
-      label: 'EXPO / XMP profile active',
-      verdict: 'fail',
-      detail: `${a.ramType ?? '?'} running at ${a.ramSpeedMhz ?? '?'} MHz — at or below the reported JEDEC baseline. This is a signal to inspect the board's rated memory profile, not a guaranteed performance loss.`,
-      fix:
-        `If you want to evaluate the kit's manufacturer-rated EXPO/XMP profile, inspect it in the BIOS UI.${path('expoXmp')} This app does not choose timings or voltage; if training is unstable, restore vendor defaults or use the board vendor's supported fallback and validate before gaming.`,
-    })
-  }
+  const memorySpeeds = [
+    a.ramConfiguredMhz != null ? `configured ${a.ramConfiguredMhz} MT/s` : null,
+    a.ramSpeedMhz != null ? `module field ${a.ramSpeedMhz} MT/s` : null,
+  ].filter(Boolean)
+  checks.push({
+    label: 'Memory profile / timings',
+    verdict: 'unknown',
+    detail: `${a.ramType ?? 'Memory type not identified'}${memorySpeeds.length ? ` · ${memorySpeeds.join(' · ')}` : ''}. Windows clock data does not establish XMP/EXPO selection, trained timings, kit rating, or stability.`,
+    fix: 'Inspect the profile and DIMM specifications in the exact board firmware. Use matched-kit/QVL information and validate stability; do not infer safe timings or voltage from another kit.',
+  })
 
-  // Power plan
-  if (a.powerPlanName == null) {
-    checks.push({
-      label: 'Power plan (High Performance / Ultimate)',
-      verdict: 'unknown',
-      detail: 'Could not read active power plan.',
-    })
-  } else {
-    const name = a.powerPlanName.toLowerCase()
-    const isHighPerf =
-      name.includes('high performance') ||
-      name.includes('ultimate') ||
-      name.includes('high perf')
-    checks.push({
-      label: 'Power plan (High Performance / Ultimate)',
-      verdict: isHighPerf ? 'pass' : 'warn',
-      detail: `Active plan: ${a.powerPlanName}.`,
-      fix: isHighPerf
-        ? undefined
-        : 'Switch to High Performance or Ultimate Performance. Run `powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61` in admin CMD to unlock Ultimate Performance on Win11, then select it in Settings → Power & battery → Additional power settings.',
-    })
-  }
+  checks.push({
+    label: 'Active Windows power plan',
+    verdict: 'unknown',
+    detail: a.powerPlanName
+      ? `${a.powerPlanName}${a.powerPlanGuid ? ` · ${a.powerPlanGuid}` : ''}. The plan name alone does not predict game latency; measure frametimes and clocks under your workload.`
+      : 'Could not read active plan. Even when present, the name alone does not establish performance.',
+  })
 
   return checks
 }
@@ -454,8 +255,8 @@ export function BiosAuditCard() {
   if (!isNative) return null
 
   const profile = GAME_PROFILES.find((g) => g.id === gameId) ?? GAME_PROFILES[0]
-  const ui = audit ? findBiosMap(audit.moboManufacturer) : null
-  const checks = audit ? buildChecks(audit, profile, ui) : []
+  const vendor = audit ? findBiosVendor(audit.moboManufacturer) : null
+  const checks = audit ? buildChecks(audit, profile) : []
   const passCount = checks.filter((c) => c.verdict === 'pass').length
   const failCount = checks.filter((c) => c.verdict === 'fail').length
   const warnCount = checks.filter((c) => c.verdict === 'warn').length
@@ -482,21 +283,22 @@ export function BiosAuditCard() {
         </button>
       </div>
 
-      {audit && (audit.moboManufacturer || audit.moboProduct) && (
+      {audit && (audit.moboManufacturer || audit.moboProduct || audit.biosVersion) && (
         <div className="rounded-md border border-border bg-bg-raised/40 p-3 space-y-1">
           <div className="flex items-baseline justify-between gap-2 flex-wrap">
             <p className="text-[10px] uppercase tracking-widest text-accent">
-              Detected motherboard
+              Detected board / firmware identity
             </p>
-            {ui && (
-              <span className="text-[10px] uppercase tracking-widest text-emerald-300">
-                {ui.vendor} BIOS UI map loaded
+            {vendor && (
+              <span className="text-[10px] uppercase tracking-widest text-text-subtle">
+                Vendor family: {vendor}
               </span>
             )}
           </div>
           <p className="text-sm text-text font-mono">
             {audit.moboManufacturer ?? '?'}
             {audit.moboProduct ? ` · ${audit.moboProduct}` : ''}
+            {audit.moboRevision ? ` · rev ${audit.moboRevision}` : ''}
           </p>
           {(audit.biosVendor || audit.biosVersion || audit.biosReleaseDate) && (
             <p className="text-[11px] text-text-muted font-mono">
@@ -504,22 +306,20 @@ export function BiosAuditCard() {
               {audit.biosReleaseDate && ` · ${fmtBiosDate(audit.biosReleaseDate)}`}
             </p>
           )}
-          {ui && (
-            <p className="text-[11px] text-text-subtle leading-snug">
-              <strong className="text-text">{ui.advancedHotkey}.</strong> Vendor-specific menu
-              paths are pre-loaded — every fix line below tells you the exact menu tree to
-              navigate on your board.
-            </p>
-          )}
-          {!ui && audit.moboManufacturer && (
+          <p className="text-[11px] text-text-subtle leading-snug">
+            {vendor
+              ? `${vendor} identifies the manufacturer family only. Menu paths and option availability depend on the exact board revision and BIOS; use its official manual. This app does not label a setting “visible” from vendor alone.`
+              : 'Windows has not provided a recognized board vendor. Use the exact board/OEM manual; this app will not guess menu paths.'}
+          </p>
+          {!audit.moboProduct && (
             <p className="text-[11px] text-amber-200 leading-snug">
-              We don't have a curated BIOS-UI map for "{audit.moboManufacturer}" yet (we have
-              ASUS, MSI, Gigabyte, ASRock). The generic fix text still works; drop the vendor
-              + a screenshot of your BIOS top menu to get a map added.
+              Windows did not report a board model. Exact model-specific guidance is unavailable until the board identity is known.
             </p>
           )}
         </div>
       )}
+
+      {audit && <BoardFirmwareEvidenceCard audit={audit} />}
 
       <nav className="flex flex-wrap gap-1.5">
         <span className="text-[10px] uppercase tracking-widest text-text-subtle mr-1 self-center">
@@ -568,89 +368,15 @@ export function BiosAuditCard() {
         </ul>
       )}
 
-      {ui ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-widest text-emerald-300 font-semibold">
-              ✓ Visible in your {ui.vendor} BIOS UI
-            </p>
-            <ul className="text-[11px] text-text-muted leading-snug space-y-0.5">
-              {ui.exposedInUi.map((item, i) => (
-                <li key={i} className="flex gap-1.5">
-                  <span className="text-emerald-300 shrink-0">·</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-[11px] text-text-subtle leading-snug pt-1">
-              This is a read-only map. The app does not change BIOS settings or provide voltage, thermal-limit, or overclock recipes.
-            </p>
-          </div>
+      {audit && <ScewinDumpInspector audit={audit} />}
 
-          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-widest text-amber-300 font-semibold">
-              ◇ Needs a read-only SCEWIN dump on {ui.vendor}
-            </p>
-            <ul className="text-[11px] text-text-muted leading-snug space-y-0.5">
-              {ui.needsScewin.map((item, i) => (
-                <li key={i} className="flex gap-1.5">
-                  <span className="text-amber-300 shrink-0">·</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-[11px] text-text-subtle leading-snug pt-1">
-              A read-only SCEWIN dump can expose these — see{' '}
-              <Link
-                to="/guides#scewin-advanced"
-                className="text-accent underline hover:text-text"
-              >
-                /guides → SCEWIN
-              </Link>{' '}
-              for the 4-step workflow.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-md border border-text-subtle/30 bg-bg-raised/30 p-3 space-y-1.5">
-          <p className="text-[10px] uppercase tracking-widest text-text-subtle font-semibold">
-            What we can't read from Windows
-          </p>
-          <ul className="text-[11px] text-text-muted leading-snug space-y-0.5">
-            <li className="flex gap-1.5">
-              <span className="text-text-subtle">·</span>
-              <span>
-                <strong className="text-text">PBO / Curve Optimizer per-core offsets</strong> — only visible in BIOS UI or via a SCEWIN dump.
-              </span>
-            </li>
-            <li className="flex gap-1.5">
-              <span className="text-text-subtle">·</span>
-              <span>
-                <strong className="text-text">EXPO timing values</strong> — we see the freq is above JEDEC, but not whether the timings landed at the rated CL30 or auto-loosened to CL36.
-              </span>
-            </li>
-            <li className="flex gap-1.5">
-              <span className="text-text-subtle">·</span>
-              <span>
-                <strong className="text-text">SVID Behavior / LLC / voltage curves</strong> — Intel + AMD voltage tuning lives entirely in BIOS NVRAM.
-              </span>
-            </li>
-            <li className="flex gap-1.5">
-              <span className="text-text-subtle">·</span>
-              <span>
-                <strong className="text-text">Resizable BAR, PCIe Gen running</strong> — queued for a follow-up release; needs nvidia-smi integration.
-              </span>
-            </li>
-          </ul>
-          <p className="text-[11px] text-text-muted leading-snug">
-            For a fuller read-only audit, run a SCEWIN dump and compare against your own known-good snapshot —{' '}
-            <Link to="/guides#scewin-advanced" className="text-accent underline hover:text-text">
-              /guides → SCEWIN
-            </Link>
-            {' '}walks the 4-step workflow.
-          </p>
-        </div>
-      )}
+      <p className="text-[11px] text-text-subtle leading-snug border-t border-border pt-3">
+        Windows cannot enumerate every setup variable. A SCEWIN export is partial evidence: a listed value is only what that export reports, while an unlisted option remains unknown. Use the{' '}
+        <Link to="/guides#scewin-advanced" className="text-accent underline hover:text-text">
+          read-only SCEWIN guide
+        </Link>{' '}
+        for export instructions. BIOS recommendations require exact board/BIOS and component evidence; no firmware writes occur here.
+      </p>
     </section>
   )
 }

@@ -14,7 +14,7 @@
 //! `%LOCALAPPDATA%\optmaxxing\auto-pin.json`. Frontend reads/writes config
 //! via Tauri commands; the daemon polls the file mtime to pick up changes.
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -74,6 +74,8 @@ pub struct AutoPinStatus {
     pub pinned: Vec<AutoPinPinnedProc>,
     /// Echo of current config (for UI to render).
     pub config: AutoPinConfig,
+    /// Most recent polling/pinning failure, if any.
+    pub last_error: Option<String>,
 }
 
 // Process-wide config + status. Daemon reads CONFIG, writes STATUS.
@@ -117,13 +119,15 @@ pub fn spawn_daemon() {
                 (cfg.enabled, cfg.poll_seconds.max(1), cfg.rules.clone())
             };
 
-            if enabled && !rules.is_empty() {
-                tokio::task::spawn_blocking(move || {
-                    let _ = poll_once(&rules);
-                })
-                .await
-                .ok();
-            }
+            let last_error = if enabled && !rules.is_empty() {
+                match tokio::task::spawn_blocking(move || poll_once(&rules)).await {
+                    Ok(Ok(())) => None,
+                    Ok(Err(error)) => Some(format!("{error:#}")),
+                    Err(error) => Some(format!("auto-pin poll task failed: {error}")),
+                }
+            } else {
+                None
+            };
 
             // Always tick STATUS.last_poll so the UI sees the daemon alive.
             {
@@ -131,6 +135,7 @@ pub fn spawn_daemon() {
                 st.running = enabled;
                 st.last_poll = Some(now_iso());
                 st.config = cfg_lock().lock().clone();
+                st.last_error = last_error;
             }
 
             tokio::time::sleep(Duration::from_secs(interval as u64)).await;
@@ -144,6 +149,7 @@ fn poll_once(rules: &[AutoPinRule]) -> Result<()> {
     sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
 
     let mut still_alive: HashMap<u32, ()> = HashMap::new();
+    let mut first_error: Option<String> = None;
 
     for (pid, proc_) in sys.processes() {
         let name_lc = proc_.name().to_string_lossy().to_lowercase();
@@ -168,11 +174,10 @@ fn poll_once(rules: &[AutoPinRule]) -> Result<()> {
                 continue;
             }
 
-            // Pin via the cpusets module. Errors are non-fatal (silently
-            // dropped) — the foreground might've blocked OpenProcess for a
-            // protected game, or the PID might've exited mid-poll.
-            if let Ok(report) = cpusets::pin_pid_to_cores(pid_u32, &rule.cores) {
-                if report.ok {
+            // Keep polling other matching processes, but preserve the first
+            // failure so the UI does not report a healthy pin that never landed.
+            match cpusets::pin_pid_to_cores(pid_u32, &rule.cores) {
+                Ok(report) if report.ok => {
                     let mut st = status_lock().lock();
                     // Replace any prior entry for this PID.
                     st.pinned.retain(|p| p.pid != pid_u32);
@@ -182,6 +187,22 @@ fn poll_once(rules: &[AutoPinRule]) -> Result<()> {
                         cores: rule.cores.clone(),
                         pinned_at: now_iso(),
                     });
+                }
+                Ok(report) => {
+                    if first_error.is_none() {
+                        first_error = report.error.or_else(|| Some(format!(
+                            "Windows did not apply CPU Sets to {} (PID {pid_u32})",
+                            rule.process_name
+                        )));
+                    }
+                }
+                Err(error) => {
+                    if first_error.is_none() {
+                        first_error = Some(format!(
+                            "could not apply CPU Sets to {} (PID {pid_u32}): {error:#}",
+                            rule.process_name
+                        ));
+                    }
                 }
             }
         }
@@ -193,7 +214,10 @@ fn poll_once(rules: &[AutoPinRule]) -> Result<()> {
         st.pinned.retain(|p| still_alive.contains_key(&p.pid));
     }
 
-    Ok(())
+    match first_error {
+        Some(error) => Err(anyhow!(error)),
+        None => Ok(()),
+    }
 }
 
 pub fn get_status() -> AutoPinStatus {

@@ -12,10 +12,8 @@ import {
 } from '../lib/tauri'
 
 /**
- * Per-game-name auto-pin daemon UI. Maintains a list of {processName, cores}
- * rules; the Rust-side daemon polls every `pollSeconds` and pins matching
- * processes via SetProcessDefaultCpuSets. Pin state survives app restarts —
- * config persists to %LOCALAPPDATA%\optmaxxing\auto-pin.json.
+ * Per-game-name CPU Set rules. The configuration survives app restarts, but
+ * the polling daemon runs only while the app is open and enabled.
  *
  * Pairs with the click-to-pin section above (CpuPinningSection) — that's
  * one-shot for whatever's in the foreground; this is set-and-forget for
@@ -133,24 +131,10 @@ export function AutoPinSection() {
         <h2 className="text-lg font-semibold">Auto-pin games (CPU Sets daemon)</h2>
         <div className="text-sm text-text-muted max-w-3xl leading-snug space-y-2">
           <p>
-            <strong className="text-text">What it does in plain English:</strong> a background
-            poll task that watches for specific game processes by their <code>.exe</code> name
-            and applies the right CPU Set pin <em>automatically</em> the moment the game
-            launches — no Alt-Tab + click required. Set up your rules once, every launch is
-            already pinned.
-          </p>
-          <p>
-            <strong className="text-text">Why this is better than click-to-pin:</strong> the
-            click-to-pin section above is one-shot; close the game + re-launch and you'd have
-            to re-pin. The daemon watches <em>continuously</em> so the second the game spawns
-            (even from Steam / Epic / Discord launches), it gets pinned before its render
-            thread does any real work.
-          </p>
-          <p>
-            <strong className="text-text">How to use it:</strong> Click "Add Fortnite" (or
-            another quick-pick) below, choose which cores to pin it to, then flip the daemon ON.
-            Polls every 5s by default. Config persists across app restarts at{' '}
-            <code className="text-text-muted">%LOCALAPPDATA%\optmaxxing\auto-pin.json</code>.
+            Add Fortnite, choose <strong className="text-text">all detected CPU Sets</strong>
+            for the no-subset baseline or try the Intel P-core preset as an A/B test, then start
+            the daemon. It polls while this app is open; the saved rules return when the app is
+            reopened, but this is not a Windows service and does not start the app at boot.
           </p>
         </div>
 
@@ -161,35 +145,12 @@ export function AutoPinSection() {
             background: 'rgba(255, 215, 0, 0.04)',
           }}
         >
-          <p className="font-semibold text-text mb-1.5">🎯 Recommended Fortnite setup</p>
-          <ol className="list-decimal pl-5 space-y-1 text-text-muted">
-            <li>
-              Click the <strong className="text-text">"+ Fortnite"</strong> quick-pick chip
-              below — adds <code>FortniteClient-Win64-Shipping.exe</code> as a rule.
-            </li>
-            <li>
-              <strong className="text-text">Pick the right cores</strong> based on your CPU:
-              <ul className="mt-1 ml-2 list-disc pl-4 space-y-0.5">
-                <li><strong className="text-text">Intel hybrid (12th gen and newer):</strong> start with all cores and the native Windows scheduler. A P-core-only rule is a measured fallback, not a universal UE5 rule; the correct logical IDs come from the scan and cannot be inferred from a simple 0–N/2 range.</li>
-                <li><strong className="text-text">AMD single-CCD X3D:</strong> leave all cores available. There is no second CCD to route away from, and this tool does not change EXPO, Curve Optimizer, voltage, or thermal controls.</li>
-                <li><strong className="text-text">AMD dual-CCD X3D:</strong> prefer the vendor scheduler/driver path first. CCD and cache mappings vary by firmware and logical-processor numbering, so this app does not guess that cores 0–7 or 0–15 are the cache CCD; use a manual rule only after measuring the real topology and game frametimes.</li>
-                <li><strong className="text-text">AMD non-X3D and Intel non-hybrid:</strong> start with all logical processors. Excluding SMT siblings is an optional experiment only if a before/after capture shows a repeatable benefit.</li>
-              </ul>
-            </li>
-            <li>
-              Flip the daemon to <strong className="text-text">ON</strong>.
-            </li>
-            <li>
-              Launch Fortnite normally. After the next poll, the process should appear in the
-              "currently pinned" list below. The daemon re-applies the CPU Set when the process
-              is seen; it cannot guarantee a game or anti-cheat process will retain that state.
-            </li>
-          </ol>
-          <p className="mt-2 text-text-muted">
-            <strong className="text-text">Verify it's working:</strong> use the app's
-            "currently pinned" status and a before/after frametime capture. Task Manager's
-            "Set affinity" dialog shows process affinity, which is not the same Windows API as
-            CPU Sets and therefore is not conclusive proof of this daemon's rule.
+          <p className="font-semibold text-text mb-1">Fortnite preset</p>
+          <p className="text-text-muted">
+            On Intel hybrid CPUs, the P-core button selects the IDs Windows actually reports.
+            It is an experiment, not a universal Fortnite optimization. Compare identical matches
+            and frametime captures against the all-CPU-Set baseline; keep whichever wins
+            repeatably. Other CPUs start with all detected CPU Sets.
           </p>
         </div>
 
@@ -200,14 +161,11 @@ export function AutoPinSection() {
             background: 'rgba(226, 91, 255, 0.05)',
           }}
         >
-          <p className="font-semibold text-text mb-1.5">⚠️ Honest note on Fortnite + anti-cheat</p>
+          <p className="font-semibold text-text mb-1">Limits</p>
           <p className="text-text-muted">
-            Easy Anti-Cheat and other anti-cheat systems can change or reject runtime process
-            behavior. CPU Sets are an OS scheduling feature, but that is not a guarantee of
-            compatibility or tournament eligibility; stop the daemon if the title, launcher, or
-            event rules object. On a single-CCD X3D, pinning usually has no separate cache CCD to
-            target. Treat auto-pin as a measured power-user fallback; the native scheduler and
-            officially supported vendor features remain the default path.
+            CPU Sets are soft scheduling guidance, not core reservations or a latency guarantee.
+            A title or anti-cheat may reject or override the request; use the native scheduler if
+            behavior changes or results do not improve.
           </p>
         </div>
       </div>
@@ -229,6 +187,11 @@ export function AutoPinSection() {
                 </span>
               )}
             </p>
+            {status?.lastError && (
+              <p role="alert" className="mt-1 max-w-2xl text-[11px] text-accent">
+                Last pin error: {status.lastError}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-1.5 text-[11px] text-text-muted">
@@ -277,6 +240,11 @@ export function AutoPinSection() {
               onChange={(patch) => handleUpdateRule(idx, patch)}
               onRemove={() => handleRemoveRule(idx)}
               onAutoPick={() => handleAutoPickForRule(idx)}
+              onPcorePreset={
+                info?.isHybrid && rule.processName.toLowerCase().includes('fortnite')
+                  ? () => handleUpdateRule(idx, { cores: info.highPerformanceIds })
+                  : undefined
+              }
             />
           ))}
         </div>
@@ -340,6 +308,7 @@ function RuleRow({
   onChange,
   onRemove,
   onAutoPick,
+  onPcorePreset,
 }: {
   rule: AutoPinRule
   info: CpuSetInfo | null
@@ -350,8 +319,9 @@ function RuleRow({
   onChange: (patch: Partial<AutoPinRule>) => void
   onRemove: () => void
   onAutoPick: () => void
+  onPcorePreset?: () => void
 }) {
-  const autoPickLabel = 'Auto-pick (native baseline)'
+  const autoPickLabel = 'All detected sets'
   return (
     <div className="border border-border rounded-md p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-3">
@@ -361,7 +331,7 @@ function RuleRow({
             {isPinned && <span className="text-[10px] text-emerald-300 ml-2">PINNED NOW</span>}
           </p>
           <p className="text-[11px] text-text-subtle">
-            cores [{rule.cores.join(',')}]{' '}
+            CPU Set IDs [{rule.cores.join(', ')}]{' '}
             {rule.cores.length === 0 && <span className="text-amber-300">— no cores selected, won't pin</span>}
           </p>
         </div>
@@ -369,6 +339,16 @@ function RuleRow({
           <button onClick={onAutoPick} disabled={busy || !info} className="text-accent hover:text-text underline">
             {autoPickLabel}
           </button>
+          {onPcorePreset && (
+            <button
+              onClick={onPcorePreset}
+              disabled={busy}
+              title="Measured Fortnite experiment: compare with the all-CPU-Set baseline."
+              className="text-emerald-300 hover:text-text underline"
+            >
+              Fortnite P-core test
+            </button>
+          )}
           <button onClick={onEditToggle} disabled={busy} className="text-text-muted hover:text-text underline">
             {isEditing ? 'done' : 'edit'}
           </button>
@@ -385,10 +365,8 @@ function RuleRow({
 }
 
 /**
- * Per-core selector grid. Renders one button per logical processor in
- * 8-wide rows. Hybrid Intel rigs get a visual P-block / E-block split
- * with class-color borders and a quick-select chip row below for the
- * common picks (All P, All E, All cores).
+ * Select actual Windows CPU Set IDs. Labels include the processor group and
+ * group-relative logical-processor index returned by Windows.
  */
 function CoreGrid({
   info,
@@ -405,53 +383,44 @@ function CoreGrid({
     onChange({ cores: next.slice().sort((a, b) => a - b) })
   }
 
-  function toggle(i: number) {
-    setCores(rule.cores.includes(i) ? rule.cores.filter((x) => x !== i) : [...rule.cores, i])
+  function toggle(id: number) {
+    setCores(rule.cores.includes(id) ? rule.cores.filter((x) => x !== id) : [...rule.cores, id])
   }
 
-  // Hybrid: render P block + E block separately so the boundary is obvious.
-  // Uniform: one continuous grid sized to the logical count.
-  const sections: Array<{ label: string; ids: number[]; tag: 'P' | 'E' | '' }> = info.isHybrid
-    ? [
-        { label: `Performance cores (${info.pCoreIds.length})`, ids: info.pCoreIds, tag: 'P' },
-        { label: `Efficient cores (${info.eCoreIds.length})`, ids: info.eCoreIds, tag: 'E' },
-      ]
-    : [
-        {
-          label: `Cores (${info.logicalProcessorCount})`,
-          ids: Array.from({ length: info.logicalProcessorCount }, (_, i) => i),
-          tag: '',
-        },
-      ]
+  const highIds = new Set(info.highPerformanceIds)
+  const sections: Array<{ label: string; sets: CpuSetInfo['cpuSets']; tag: 'high' | 'other' | '' }> =
+    info.isHybrid
+      ? [
+          {
+            label: `Highest performance class (${info.highPerformanceIds.length})`,
+            sets: info.cpuSets.filter((set) => highIds.has(set.id)),
+            tag: 'high',
+          },
+          {
+            label: `Other efficiency classes (${info.lowerPerformanceIds.length})`,
+            sets: info.cpuSets.filter((set) => !highIds.has(set.id)),
+            tag: 'other',
+          },
+        ]
+      : [{ label: `Detected CPU Sets (${info.cpuSets.length})`, sets: info.cpuSets, tag: '' }]
 
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between flex-wrap gap-2">
         <p className="text-[10px] uppercase tracking-widest text-text-subtle">cores</p>
         <div className="flex items-center gap-2 text-[10px]">
-          {info.isHybrid && info.pCoreIds.length > 0 && (
+          {info.isHybrid && info.highPerformanceIds.length > 0 && (
             <button
-              onClick={() => setCores(info.pCoreIds)}
+              onClick={() => setCores(info.highPerformanceIds)}
               disabled={busy}
               className="px-2 py-0.5 rounded border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
-              title="Measured fallback only: compare against the all-core baseline before keeping this rule."
+              title="A/B test the highest Windows efficiency class against all detected CPU Sets."
             >
-              P-only fallback
-            </button>
-          )}
-          {info.isHybrid && info.eCoreIds.length > 0 && (
-            <button
-              onClick={() => setCores(info.eCoreIds)}
-              disabled={busy}
-              className="px-2 py-0.5 rounded border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-50"
-            >
-              All E
+              Highest class A/B test
             </button>
           )}
           <button
-            onClick={() =>
-              setCores(Array.from({ length: info.logicalProcessorCount }, (_, i) => i))
-            }
+            onClick={() => setCores(info.cpuSetIds)}
             disabled={busy}
             className="px-2 py-0.5 rounded border border-border text-text-muted hover:text-text disabled:opacity-50"
           >
@@ -472,7 +441,7 @@ function CoreGrid({
           <p className="text-[10px] text-text-subtle">
             {info.isHybrid ? (
               <span
-                className={section.tag === 'P' ? 'text-emerald-300' : 'text-amber-300'}
+                className={section.tag === 'high' ? 'text-emerald-300' : 'text-amber-300'}
               >
                 ●
               </span>
@@ -482,46 +451,43 @@ function CoreGrid({
             {section.label}
           </p>
           <div className="grid grid-cols-8 gap-1">
-            {section.ids.map((i) => {
-              const selected = rule.cores.includes(i)
+            {section.sets.map((set) => {
+              const selected = rule.cores.includes(set.id)
               const accent =
-                section.tag === 'P'
+                section.tag === 'high'
                   ? 'border-emerald-500/40'
-                  : section.tag === 'E'
+                  : section.tag === 'other'
                   ? 'border-amber-500/40'
                   : 'border-border'
               return (
                 <button
-                  key={i}
-                  onClick={() => toggle(i)}
+                  key={set.id}
+                  onClick={() => toggle(set.id)}
                   disabled={busy}
-                  title={
-                    section.tag === 'P'
-                      ? `Logical CPU ${i} — Performance core`
-                      : section.tag === 'E'
-                      ? `Logical CPU ${i} — Efficient core`
-                      : `Logical CPU ${i}`
-                  }
+                  title={`CPU Set ${set.id} · group ${set.group}, logical processor ${set.logicalProcessorIndex}, core ${set.coreIndex}, efficiency class ${set.efficiencyClass}`}
                   className={`px-2 py-0.5 text-[11px] font-mono tabular-nums rounded border text-center ${
                     selected
                       ? 'bg-accent text-bg-base border-accent'
                       : `bg-bg-card text-text-muted ${accent} hover:border-border-glow`
                   }`}
                 >
-                  {i}
+                  {set.id}
                   {section.tag && (
                     <span
                       className={`ml-0.5 text-[9px] ${
                         selected
                           ? 'text-bg-base/80'
-                          : section.tag === 'P'
+                          : section.tag === 'high'
                           ? 'text-emerald-300'
                           : 'text-amber-300'
                       }`}
                     >
-                      {section.tag}
+                      {section.tag === 'high' ? 'H' : 'L'}
                     </span>
                   )}
+                  <span className="block text-[8px] text-text-subtle">
+                    G{set.group}/L{set.logicalProcessorIndex}
+                  </span>
                 </button>
               )
             })}
@@ -533,14 +499,11 @@ function CoreGrid({
 }
 
 /**
- * Recommend a conservative core list for the given .exe on this rig.
- *
- * The native Windows/vendor scheduler is the baseline. The scan can expose
- * P-core IDs for a manually measured fallback, but this helper deliberately
- * does not guess AMD CCD/cache mappings from logical numbering.
+ * Start from every CPU Set Windows reports. Narrow subsets are manual
+ * experiments, not automatic recommendations.
  */
 function recommendCoresForRig(info: CpuSetInfo, _exe: string): number[] {
-  return Array.from({ length: Math.max(0, info.logicalProcessorCount) }, (_, i) => i)
+  return [...info.cpuSetIds]
 }
 
 function fmtTs(iso: string): string {

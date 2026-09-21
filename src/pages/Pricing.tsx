@@ -171,21 +171,18 @@ export function Pricing() {
       </section>
 
       <section className="surface-card p-5">
-        <p className="text-xs uppercase tracking-widest text-text-subtle mb-2">comparison</p>
-        <h2 className="text-lg font-semibold mb-3">capability snapshot · reviewed 2026-09-17</h2>
+        <p className="text-xs uppercase tracking-widest text-text-subtle mb-2">tools compared by job</p>
+        <h2 className="text-lg font-semibold mb-3">Different tools solve different problems</h2>
         <p className="text-xs text-text-muted mb-4 max-w-3xl">
-          Competitor packaging, pricing, and feature sets change. These are the capabilities we can
-          verify in this build; “varies” means the other product needs its own current audit.
+          Not a feature or price ranking. Use the tool that matches the task, and verify its current
+          release notes before changing a tournament rig.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-          <CompCell label="Local NSIS artifact" us="~10.9 MiB" them="varies by product" win />
-          <CompCell label="Themes" us="5 + Asta Mode" them="varies by product" win />
-          <CompCell label="Per-tweak undo" us="snapshot-backed where supported" them="varies by product" win />
-          <CompCell label="Spec-aware curation" us="scan-gated" them="varies by product" win />
-          <CompCell label="Pricing model" us="$115 lifetime offer" them="varies by product" win />
-          <CompCell label="Per-tweak measurement" us="before/after records" them="varies by product" win />
-          <CompCell label="Tune audit" us="receipts + drift scan" them="varies by product" win />
-          <CompCell label="Game config lane" us="VIP, explicit opt-in" them="varies by product" win />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+          <ToolCard name="Optimizationmaxxing" href="/" scope="Local rig scan, cataloged Windows/game recommendations, and apply/verification records where supported." />
+          <ToolCard name="Chris Titus Tech WinUtil" href="https://github.com/ChrisTitusTech/winutil" scope="Windows installation and configuration utility; not a Fortnite-specific benchmark tuner." />
+          <ToolCard name="AtlasOS" href="https://docs.atlasos.net/" scope="Windows playbook that changes system configuration; evaluate the exact release and compatibility tradeoffs." />
+          <ToolCard name="NVIDIA Profile Inspector" href="https://github.com/Orbmu2k/nvidiaProfileInspector" scope="Editor/importer for NVIDIA driver profiles; it does not tune other vendors or prove a latency gain." />
+          <ToolCard name="NVCleanstall" href="https://www.techpowerup.com/nvcleanstall/" scope="Builds a customized NVIDIA driver install; component removal can remove features and is not a performance guarantee." />
         </div>
       </section>
     </div>
@@ -357,22 +354,15 @@ function PriceCard({
   )
 }
 
-function CompCell({
-  label,
-  us,
-  them,
-  win,
-}: {
-  label: string
-  us: string
-  them: string
-  win?: boolean
-}) {
+function ToolCard({ name, href, scope }: { name: string; href: string; scope: string }) {
   return (
-    <div className="space-y-1">
-      <p className="text-xs uppercase tracking-widest text-text-subtle">{label}</p>
-      <p className={`text-sm font-semibold ${win ? 'text-accent' : 'text-text'}`}>us · {us}</p>
-      <p className="text-xs text-text-subtle line-through">them · {them}</p>
-    </div>
+    <article className="rounded-md border border-border bg-bg-raised/40 p-3 space-y-1.5">
+      <h3 className="font-semibold text-text">
+        <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noreferrer' : undefined} className="hover:text-accent hover:underline">
+          {name}{href.startsWith('http') ? ' ↗' : ''}
+        </a>
+      </h3>
+      <p className="text-xs leading-snug text-text-muted">{scope}</p>
+    </article>
   )
 }

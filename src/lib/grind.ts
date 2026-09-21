@@ -1,493 +1,271 @@
-/**
- * Grind Channel — curated knowledge from the pros + creators who actually
- * know what it costs.
- *
- * Built to grow over time: adding a new pro is one entry append. Every
- * insight cites a real source so this isn't a vibes-document. When in
- * doubt about a quote: leave it out, it's better to have 5 cited entries
- * than 50 paraphrased ones.
- *
- * Audience: kids on stock rigs trying to compete with $5K builds. The
- * receipts of how the people they're chasing actually train.
- */
+export type GrindKind = 'pro' | 'creator'
 
-export type GrindKind =
-  | 'pro'        // Active competitive Fortnite player
-  | 'creator'    // Content-side voice in the scene
-
-export type GrindGame = 'fortnite' | 'valorant' | 'cs2' | 'apex' | 'warzone' | 'osu' | 'overwatch' | 'general'
-
-export interface GrindCitation {
-  /** Brief description of the source — "ProSettings.net config (May 2026)" */
-  label: string
-  /** Direct URL when one exists. */
-  url?: string
+export interface GrindResult {
+  date: string
+  event: string
+  placement: string
+  context: string
+  sourceLabel: string
+  sourceUrl: string
 }
 
-export interface GrindInsight {
-  /** Headline takeaway in plain language — what to actually do. */
-  text: string
-  /** Optional source citation. Leave empty if it's common knowledge in scene. */
-  citation?: GrindCitation
-}
-
-/** Operationalized daily training template. Optional per entry — leave
- * undefined when we don't have a verified routine, blank space beats
- * hallucination. Strings are bullet phrases shown verbatim, ordered. */
-export interface GrindRoutine {
-  /** "Morning block — first 1-2 hr of the day." */
-  morning?: string[]
-  /** "Mid-day block — when most of the day's hours land." */
-  afternoon?: string[]
-  /** "Evening block — usually scrims / tournament play / VOD review." */
-  evening?: string[]
-  /** Recovery / off-keyboard items that aren't tied to a time slot. */
-  recovery?: string[]
+export interface GrindSnapshot {
+  updatedAt: string
+  dpi?: string
+  pollingHz?: number
+  sensitivity?: string
+  monitor?: string
+  mouse?: string
+  keyboard?: string
+  controller?: string
+  sourceLabel: string
+  sourceUrl: string
 }
 
 export interface GrindEntry {
   id: string
-  /** Display name (Peterbot, Veno, Aussie Antics, etc). */
   name: string
   kind: GrindKind
-  /** Which game(s) this entry is most useful for. 'general' = applies to any FPS. */
-  games: GrindGame[]
-  /** Headline credential — "FNCS World Cup champion" / "$1M+ earnings" / etc. */
-  credential: string
-  /** Short positioning quote — what makes them worth listening to. */
-  voice: string
-  /** 3–6 cited insights. Build out over time. */
-  insights: GrindInsight[]
-  /** Optional rig snapshot — DPI / sens / monitor / kit. Just the numbers.
-   * `controller` is for controller-input pros (Reet) — when set, the card
-   * shows it instead of the Mouse row. */
-  rig?: {
-    dpi?: string
-    sensitivity?: string
-    pollingHz?: number
-    monitor?: string
-    mouse?: string
-    controller?: string
-    keyboard?: string
-  }
-  /** Optional published / inferred daily routine. Operationalizes the
-   * insights — "Bugha says split sessions" turns into "morning 60m, nap,
-   * afternoon 60m" the user can actually run. */
-  dailyRoutine?: GrindRoutine
-  /** Optional URL — main channel / Twitter / etc. */
-  link?: string
-  /** Tier indicator for visual weight — "goat" gets the centerpiece treatment. */
-  tier?: 'goat' | 'top' | 'standard'
+  summary: string
+  profileLabel?: string
+  profileUrl?: string
+  result?: GrindResult
+  snapshot?: GrindSnapshot
 }
 
-/** Content review stamp. It dates the evidence pass; it does not promise that
- * every pro placement, roster, or routine is still current forever. */
-export const GRIND_LAST_REVIEWED = '2026-08-21'
+/** Date the sources on this page were checked; individual records stay dated. */
+export const GRIND_LAST_REVIEWED = '2026-09-20'
+
+const DIVISION_1_PRACTICE_WEEK_4_NAC =
+  'https://www.fortnite.com/competitive/events/S42_FNCSDivisionalCup_Division1?region=NAC&round=S42_FNCSDivisionalCup_Division1_Week3Final_NAC'
+const DIVISION_1_PRACTICE_CURRENT_NAC =
+  'https://www.fortnite.com/competitive/events/S42_FNCSDivisionalCup_Division1?region=NAC'
+const DIVISION_1_PRACTICE_CURRENT_EU =
+  'https://www.fortnite.com/competitive/events/S42_FNCSDivisionalCup_Division1/?region=EU'
+const FNCS_LAST_CHANCE_FINAL_NAC =
+  'https://www.fortnite.com/competitive/events/S41_FNCSLastChanceMajor/leaderboard?region=NAC&round=S41_FNCSLastChanceMajor_Final_NAC'
 
 export const GRIND_ENTRIES: GrindEntry[] = [
   {
     id: 'peterbot',
     name: 'Peterbot',
     kind: 'pro',
-    games: ['fortnite'],
-    credential: 'Falcons · 2024 FNCS Global Championship winner (w/ Pollo) · 2026 Major 1 Summit 2nd ($150K, GC-qualified) · 2025 FNCS Pro-Am winner · widely called the GOAT',
-    voice: "What's harder — scoring a basket on LeBron, or killing Pete in a Fortnite game? People actually have this debate. That's the level.",
-    tier: 'goat',
-    rig: {
-      dpi: '800',
-      sensitivity: '6.4% / 6.4% (X / Y, ADS 45%)',
-      pollingHz: 1000,
-      monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz, DyAC+)',
-      mouse: 'Logitech G PRO X Superlight 2 (Black)',
-      keyboard: 'SteelSeries Apex Pro TKL',
+    summary: '2024 FNCS Global Champion with Pollo; current event results are listed separately below.',
+    profileLabel: 'ProSettings profile',
+    profileUrl: 'https://prosettings.net/players/peterbot/',
+    result: {
+      date: '2026-09-12',
+      event: 'FNCS Division 1 Practice · NAC · Week 4, Round 2',
+      placement: '1st with Pollo · 333 points · 6 matches',
+      context: 'One practice round, not a season or Major ranking.',
+      sourceLabel: 'Epic Games event results',
+      sourceUrl: DIVISION_1_PRACTICE_WEEK_4_NAC,
     },
-    insights: [
-      {
-        text: 'Duo with **Pollo** (Miguel "Pollo" Moreno) — the same partnership that took the 2024 FNCS Global Championship. They reunited for the 2026 duo season after a stint in trios. Frag-and-frag duo, not a strats-and-frag duo.',
-        citation: { label: 'Hotspawn — Peterbot & Pollo to reunite for FNCS 2026', url: 'https://www.hotspawn.com/fortnite/news/peterbot-and-pollo-fncs-2026' },
-      },
-      {
-        text: 'Coach: **Raz** (Dominik "RazZzero0o" Beckmann, Wave Esports). Works with Pete + Pollo + Flickzy. The on-record division of labor is "general performance/strategy coach" — anything more specific than that is fan speculation, so leave it there.',
-        citation: { label: 'Fortnite Esports Wiki — RazZzero0o', url: 'https://fortnite-esports.fandom.com/wiki/RazZzero0o' },
-      },
-      {
-        text: '800 DPI + low single-digit sens. Mouse settings boring on purpose — every mechanical pro has converged to the same band because eDPI ~270 is what cm/360 muscle memory wants.',
-        citation: { label: 'ProSettings.net (updated 2026-04-27)', url: 'https://prosettings.net/players/peterbot/' },
-      },
-      {
-        text: 'ZOWIE XL2566K @ 360 Hz with **DyAC+** (panel-side motion-blur reduction). Not a driver tweak, not a software setting — the monitor itself strobes the backlight to crush trail-blur on tracking. This is why peripheral cost matters past a point.',
-        citation: { label: 'Codelife — Peterbot UPDATED Settings 2026 (March 2026)', url: 'https://www.youtube.com/watch?v=T8cr2AEfofE' },
-      },
-      {
-        text: 'Use the current low-overhead render path and choose a frame cap from your stable frame pacing and display mode. Visual settings are a visibility/performance tradeoff, not a universal 240 FPS prescription.',
-      },
-      {
-        text: 'Builds-on-mouse-buttons keybind philosophy. Wall + Stairs on M5/M4 means your dominant hand never leaves WASD during build battles — frame advantage every retake.',
-      },
-      {
-        text: '2025 FNCS Pro-Am win with AussieAntics — Aussie\'s own quote was "Peterbot\'s the greatest. I just focused on keeping pace." Coverage explicitly framed it as Pete fragging while Aussie stayed alive. The lesson is the opposite of what most people would guess: pair-Pro-Am proved Pete can carry someone who barely plays competitive, not that "great pros need meta-readers".',
-        citation: { label: 'Esports.gg recap (May 12, 2025)', url: 'https://esports.gg/news/fortnite/peterbot-and-aussieantics-win-the-2025-fncs-pro-am/' },
-      },
-    ],
-    link: 'https://www.twitch.tv/peterbot',
+    snapshot: {
+      updatedAt: '2026-08-31',
+      dpi: '800',
+      pollingHz: 1000,
+      sensitivity: '6.4% X / 6.4% Y · target/scope 45%',
+      monitor: 'ZOWIE XL2566K',
+      mouse: 'Logitech G PRO X2 SUPERSTRIKE · Lunar Eclipse',
+      keyboard: 'SteelSeries Apex Pro TKL Gen 3',
+      sourceLabel: 'ProSettings · Aug 31, 2026',
+      sourceUrl: 'https://prosettings.net/players/peterbot/',
+    },
   },
   {
     id: 'veno',
     name: 'Veno',
     kind: 'pro',
-    games: ['fortnite'],
-    credential: 'XSET · FNCS 2026 Major 1 NA Central winner (w/ Curve, 727 pts) · multi-FNCS winner across EU + NA · $1M+ earnings · 21 years old',
-    voice: "British, won't filter language for sponsors, banned from Epic's own Discord for being too toxic toward them. The pro who tells you the road is doable because he just walked it from no-name grinder to multi-region FNCS champion — and won't soften how brutal the middle of it is.",
-    tier: 'top',
-    rig: {
-      dpi: '800',
-      sensitivity: '5.8% / 5.8%',
-      pollingHz: 1000,
-      monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz)',
-      mouse: 'Finalmouse Starlight PRO',
-      keyboard: 'Wooting 60HE+',
+    summary: 'Fortnite competitor; roster labels can change, so this page avoids treating one event tag as a permanent team.',
+    profileLabel: 'ProSettings profile',
+    profileUrl: 'https://prosettings.net/players/veno/',
+    result: {
+      date: '2026-08-14',
+      event: 'FNCS Global Championship Last Chance · NAC',
+      placement: '3rd with GEN Aj · 286 points · 6 matches',
+      context: 'Official final-round placement; not a current power ranking.',
+      sourceLabel: 'Epic Games event results',
+      sourceUrl: FNCS_LAST_CHANCE_FINAL_NAC,
     },
-    insights: [
-      {
-        text: 'EU origin → moved NA → got dropped → **picked up Curve** (a then-no-name controller player nobody had on a watchlist) → won the **FNCS 2026 Major 1 NA Central Grand Finals with 727 points**. Veno is now the **first player ever to win both EU and NA FNCS Grand Finals** (3rd cross-region winner alongside Muz and SwizzY). Lesson: roster luck is real, but you also have to be the kind of player a no-name picks back up after the big-name drops you.',
-        citation: { label: 'Hotspawn — Veno + Curve win FNCS Major 1', url: 'https://www.hotspawn.com/fortnite/news/veno-fncs-major-1-winners' },
-      },
-      {
-        text: 'Banned from **Epic\'s own Discord** for being "too toxic toward them" — his words, in a public Esports News UK interview. Includes Red Bull contestation drama. The receipts on what "uncompromising" looks like as a personality fit for the scene; not a path to recommend, but proof you don\'t have to be marketable to win.',
-        citation: { label: 'Esports News UK interview (June 2023)', url: 'https://esports-news.co.uk/2023/06/09/fortnite-pro-veno-red-bull-contested/' },
-      },
-      {
-        text: '**"We going for that #1 NIGGA."** Stream catchphrase, unfiltered, on-brand for the Epic-Discord-ban era. Not how every pro talks — but it\'s how Veno talks, and pretending otherwise would whitewash the personality that pairs with the resume.',
-        citation: { label: 'Veno stream — verbatim (clip widely circulated in NA Fortnite)' },
-      },
-      {
-        text: '**"If you want to be able to buy things without looking at the price, you need to be able to work without looking at the clock."** Veno\'s work-ethic line. Same kid who got dropped + picked up Curve + won Major 1. The financial freedom-of-grind framing is the most-quoted thing he\'s said outside of the toxic-stream snippets.',
-        citation: { label: 'Veno stream / X — verbatim' },
-      },
-      {
-        text: '**"Is skinny Pete better than Bron all time?"** — Veno\'s framing of the Peterbot-vs-LeBron debate the scene actually has. Pete is the Fortnite GOAT in the same way LeBron is the basketball GOAT, with the "harder to score on / harder to kill" debate stacked on top. Veno\'s the kind of pro who actually engages with the meme.',
-      },
-      {
-        text: 'TKay asked him **"would you rather have Peterbot\'s skill or Spider-Man\'s powers?"** Veno: **"Stupid question nigga."** The implicit answer — Pete\'s skill, obviously — is the punchline. Pro consensus on Pete\'s ceiling captured in 4 words.',
-        citation: { label: 'Veno reply to TKay — verbatim' },
-      },
-      {
-        text: '**"Fuck off the region nigga, this is my region boy!"** Said during the **2026 Esports World Cup playing on EU with Curve** (2026-05-08). Cross-region history made literal — Veno (the NA-based, EU-origin pro who already won FNCS Grand Finals in both regions) defending his territorial claim on the same EU scrim ladder where he started his career. The Veno-as-region-bridge story isn\'t about diplomatic optics; it\'s about owning whichever region his team is in this season.',
-        citation: { label: 'Veno EWC stream — verbatim (2026-05-08)' },
-      },
-      {
-        text: 'Scrim economy is real. Veno publicly maps out which scrim leagues at which hours = which skill levels — going pro is partly a routing problem, not just a mechanical one.',
-        citation: { label: 'Veno "How to become a pro Fortnite player" (YouTube)', url: 'https://www.youtube.com/watch?v=jYqdF5Q0T-k' },
-      },
-      {
-        text: 'Earnings publicly tracked at $1M+ across EU + NA wins — proof the road exists. Liquipedia shows exactly which tournaments added up to it; not a black box.',
-        citation: { label: 'Liquipedia Fortnite — Veno', url: 'https://liquipedia.net/fortnite/Veno' },
-      },
-    ],
-    link: 'https://www.youtube.com/channel/UCDPkeXJFs4ddnrDS-nyjxUg',
+    snapshot: {
+      updatedAt: '2026-08-10',
+      dpi: '800',
+      pollingHz: 1000,
+      sensitivity: '6.3% X / 6.3% Y · target/scope 45%',
+      monitor: 'ZOWIE XL2566K',
+      mouse: 'Razer Viper V3 Pro · Black',
+      keyboard: 'SteelSeries Apex Pro TKL Gen 3 · Black',
+      sourceLabel: 'ProSettings · Aug 10, 2026',
+      sourceUrl: 'https://prosettings.net/players/veno/',
+    },
   },
   {
     id: 'aussie-antics',
     name: 'Aussie Antics',
     kind: 'creator',
-    games: ['fortnite'],
-    credential: 'Dignitas · 2.5M followers · FNCS Pro-Am 2025 winner (w/ Peterbot) · former personal trainer · "watches the game more than anyone"',
-    voice: "Pre-Fortnite-creator he ran a personal training business for four years. Talks about the body cost of the grind in a way nobody else in the scene does. First stream Halloween 2018, full-time January 2020, FNCS Pro-Am champion 2025 — the proof case for what slow, deliberate, body-aware grinding looks like over a 7-year arc.",
-    tier: 'top',
-    insights: [
-      {
-        text: 'Pre-Fortnite, ran a personal training business for **four years** — verbatim. Body grind is real. Wrist tendinitis is one bad week away if you stack 10-hour sessions without breaks. He treats stretching like a non-negotiable training input, not a recovery accessory.',
-        citation: { label: 'Dignitas interview', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
-      },
-      {
-        text: 'First stream October 31, 2018 (Halloween — he remembers exactly). Went full-time January 2020 when he moved into his first house. Public start-to-full-time was ~14 months. Don\'t expect pro-tier results in your first year of trying.',
-        citation: { label: 'Dignitas interview (verbatim)', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
-      },
-      {
-        text: '"People aren\'t just watching for top-notch gameplay. The pro players who have done the best with content... are because of their personalities." — Aussie\'s frame on why mid-tier mechanical pros can outgrow top-100 grinders on the content side. Charisma is the multiplier; mechanics is the floor.',
-        citation: { label: 'Dignitas interview (verbatim)', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
-      },
-      {
-        text: 'Don\'t let metrics define success — creators chasing view-counts burn out fastest. Make content because the work is satisfying, growth is downstream of consistency.',
-        citation: { label: '5 Dos and Don\'ts of Content Creation', url: 'https://dignitas.gg/articles/the-5-dos-and-don-ts-of-content-creation-insights-from-aussie-antics' },
-      },
-      {
-        text: '"For me, you know, I got a kid now. I\'m trying to get to the point where I have financial security. The dream is to be able to make content with no numbers attached to it." — financial-runway perspective most creators won\'t talk about. Treat the chase as a job until it earns you the right to make it not be one.',
-        citation: { label: 'Dignitas interview (verbatim)', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
-      },
-      {
-        text: 'Career-realism take: "I\'d like to see more pros try and look into that route of more traditional jobs." Not anti-pro, anti-fantasy. The number of competitive Fortnite players who clear $80K/year is small enough that a backup track is the smart play.',
-        citation: { label: 'Dignitas interview (verbatim)', url: 'https://dignitas.gg/articles/getting-to-know-the-face-of-competitive-fortnite-aussie-antics' },
-      },
-      {
-        text: 'Watches more than anyone. Pairs with Peterbot specifically because he can read the lobby + meta state, freeing Pete to focus on raw mechanics. At the very top, the limiting factor is information processing, not aim.',
-        citation: { label: 'Esports.gg FNCS Pro-Am preview', url: 'https://esports.gg/news/fortnite/peterbot-and-aussieantics-fncs-pro-am-2025/' },
-      },
-      {
-        text: 'Differentiate. The crowded zone is the wrong zone — find the angle no one else is doing well, even if it gets fewer initial views.',
-      },
-    ],
-    dailyRoutine: {
-      recovery: [
-        'Stretch wrists + forearms every 90 min — set a timer, don\'t trust the feeling',
-        'Posture check: monitor at arm\'s length, feet flat, elbow at 90°',
-        'Hydrate before sessions — wrist + cognitive perf both drop dehydrated',
-        'Walk + sunlight between sessions — competing with your own circadian rhythm',
-      ],
-    },
-    link: 'https://www.twitch.tv/aussieantics',
+    summary: 'Fortnite creator and event analyst. No player ranking or training routine is inferred.',
+    profileLabel: 'Dignitas profile',
+    profileUrl: 'https://dignitas.gg/player/aussieantics',
   },
   {
     id: 'epikwhale',
     name: 'EpikWhale',
     kind: 'pro',
-    games: ['fortnite'],
-    credential: 'XP42 Esports · 2019 Fortnite World Cup — 3rd place Solo Finals · $1.2M won · NA West\'s original LAN proof case · FNCS Global Championship 2025 qualifier (w/ Paper + VicterV) · still competing 2026',
-    voice: "Shane 'EpikWhale' Cotton from NA West — the player who proved a West kid could go to a LAN in front of 19,000 fans and place top 3 against the best NA East + EU competition the scene had to offer. Six years later still grinding, still qualifying for Globals, still in the conversation.",
-    tier: 'top',
-    rig: {
-      dpi: '800',
-      sensitivity: '7.0% / 7.0%',
-      pollingHz: 1000,
-      monitor: 'ZOWIE XL2566K (1920×1080 @ 360 Hz)',
-      mouse: 'Endgame Gear XM2we',
-      keyboard: 'SteelSeries Apex Pro Mini Black',
+    summary: 'Fortnite competitor; the dated result below is an official event placement, not a current ranking.',
+    result: {
+      date: '2026-08-14',
+      event: 'FNCS Global Championship Last Chance · NAC',
+      placement: '19th with pxmp · 154 points · 6 matches',
+      context: 'Official final-round placement; not a current power ranking.',
+      sourceLabel: 'Epic Games event results',
+      sourceUrl: FNCS_LAST_CHANCE_FINAL_NAC,
     },
-    insights: [
-      {
-        text: '**3rd place at the 2019 Fortnite World Cup Solo Finals** at Arthur Ashe Stadium — 32 points, **$1,200,000 prize**, July 28, 2019. Critically, did it as an **NA West** player when nobody believed a West player could perform on LAN against East + EU. Killed that narrative single-handedly.',
-        citation: { label: 'Esports Earnings — EpikWhale profile', url: 'https://www.esportsearnings.com/players/61948-epikwhale-shane-cotton' },
-      },
-      {
-        text: 'The historic **"Deyy pissed on EpikWhale"** clip — one of the most-circulated competitive Fortnite moments of all time. The clip became Deyy\'s identity-defining moment in NA highlights. Critically: EpikWhale\'s entire arc since then is the rebuttal — he kept rising, still qualifies for Globals, still earns. One bad clip didn\'t define him; the response did.',
-      },
-      {
-        text: 'The NA Central run with **Reet** mid-career — moved from NA West to compete in NA Central\'s deeper player pool, performed decent, eventually moved back to NA West when the West roster opportunities aligned. Region-shopping for skill density is a real strategy at the top — the meta is which region\'s scrim ladder is hardest, not just which region you\'re from.',
-      },
-      {
-        text: '**Recently qualified for FNCS Global Championship 2025** with **Paper** and **VicterV** out of NA West Major 3 — finished 31st of 33 at LDLC Arena in Lyon, France (Sept 6-7, 2025), winning $9,000. Still on a Globals stage in 2025 — six years after the World Cup. Most pros from his era are retired or content-only by now.',
-        citation: { label: 'Fortnite Tracker — FNCS Global Championship 2025', url: 'https://fortnitetracker.com/article/2388/fncs-global-championship-2025' },
-      },
-      {
-        text: 'Career longevity lesson — six years from 2019 World Cup top-3 to 2025 Globals qualification is the longest active arc in NA-West competitive Fortnite. The math: pros who keep grinding outlast pros who burn out chasing one big check. Treat tournament earnings as a multi-year compound, not a quarterly target.',
-        citation: { label: 'Liquipedia — EpikWhale', url: 'https://liquipedia.net/fortnite/EpikWhale' },
-      },
-    ],
-    link: 'https://www.twitch.tv/epikwhale',
+    profileLabel: 'Epic Games event results',
+    profileUrl: FNCS_LAST_CHANCE_FINAL_NAC,
   },
   {
     id: 'mongraal',
     name: 'Mongraal',
-    kind: 'pro',
-    games: ['fortnite'],
-    credential: 'Pioneer-era pro (Team Secret signing at age 13) · BBC News appearance April 2018 · Red Bull player 2025 · still competitive 7+ years in',
-    voice: "**Kyle Jackson** from Kent, England. Started at 13, signed by Team Secret in 2018 (which got him on BBC News as a child-prodigy headline), still relevant at 21. Currently in the comeback arc — Red Bull pickup April 2025, MrSavage reunion Jan 2026 (split Feb 2026), 8th-place opening Major. Living proof that the grind works if you actually grind through the seasons most pros retire in.",
-    tier: 'top',
-    rig: {
+    kind: 'creator',
+    summary: 'Former professional player and creator. The equipment below is a dated profile snapshot, not a current recommendation.',
+    profileLabel: 'ProSettings profile',
+    profileUrl: 'https://prosettings.net/players/mongraal/',
+    snapshot: {
+      updatedAt: '2026-08-31',
       dpi: '1600',
-      sensitivity: '3.2% / 3.2%',
       pollingHz: 1000,
-      monitor: 'ASUS PG248QP (1920×1080 @ 540 Hz)',
-      mouse: 'Razer Viper V3 Pro Black',
-      keyboard: 'Wooting 60HE v2 Silver (split layout)',
+      sensitivity: '3.2% X / 3.2% Y · ADS 27.5%',
+      monitor: 'ASUS ROG Swift Pro PG248QP',
+      mouse: 'Razer Viper V3 Pro · Black',
+      keyboard: 'SteelSeries Apex Pro Mini · White Gold',
+      sourceLabel: 'ProSettings · Aug 31, 2026',
+      sourceUrl: 'https://prosettings.net/players/mongraal/',
     },
-    insights: [
-      {
-        text: 'IRL name **Kyle Jackson**, Kent, England. At 13 he was signed by **Team Secret** — the youngest pro player in the European competitive scene at the time. April 2018 he ended up on **BBC News** as the prodigy-gamer headline. Public from age 13, which is its own training stress test most pros never face.',
-        citation: { label: 'Wikipedia — Mongraal', url: 'https://en.wikipedia.org/wiki/Mongraal' },
-      },
-      {
-        text: '**Two big sens pivots over his career** — ran 400 DPI for years, then 800, now sitting at 1600 DPI / 3.2% X+Y as of March 2026. Same edpi neighborhood, but every public pivot costs ~2 weeks of muscle-memory rebuild. Lesson: pros pay the rebuild cost when feel goes stale, hobbyists die on the hill of their first config.',
-        citation: { label: 'ProSettings.net — Mongraal (Mar 2026)', url: 'https://prosettings.net/players/mongraal/' },
-      },
-      {
-        text: '**The current comeback arc** — joined **Red Bull as a player in April 2025**, finished 8th in the opening Major of 2025 FNCS. Reunited with **MrSavage** in January 2026 for FNCS 2026 (the original Mongraal-MrSavage duo that dominated EU 2019-2020) — partnership ended February 12, 2026. ProSettings now lists him as a "former pro" / content creator, but the receipts on roster slots + finals placements within the last 12 months keep him in the conversation.',
-        citation: { label: 'Esports Insider — Mongraal joins Red Bull (April 2025)', url: 'https://esportsinsider.com/2025/04/mongraal-fortnite-red-bull-player' },
-      },
-      {
-        text: '**ASUS PG248QP @ 540 Hz** — not 240, not 360. Past ~360 Hz the per-frame delta drops below 1 ms but Mongraal pays it anyway. At the very top of the bracket every cumulative ms compounds; below tournament level the spend is mostly for feel.',
-      },
-      {
-        text: 'Wall on M5, Stairs on M4 — the original "everything reachable from WASD" school. Variant of the keybind philosophy Pete + Clix run. Pre-edits-fast hand.',
-      },
-    ],
-    link: 'https://www.twitch.tv/mongraal',
   },
   {
     id: 'clix',
     name: 'Clix',
     kind: 'pro',
-    games: ['fortnite'],
-    credential: 'Cody "Clix" Conrod · XSET (player + co-owner) · 5× World Cup qualifier · 2024 Forbes 30 Under 30 (youngest member) · 8M+ Twitch followers',
-    voice: 'NA pro since 2019 (started on Misfits at 14, NRG 2020–Jan 2023, joined XSET Oct 2023). Sits at a rare intersection — top-bracket competitive FNCS regular + a streamer + a business operator (apparel, UEFN studio, XSET co-ownership). The Forbes 30 Under 30 nod at 19 is the receipt.',
-    tier: 'top',
-    rig: {
+    summary: 'Fortnite competitor; current team status is not inferred from a past roster listing.',
+    profileLabel: 'ProSettings profile',
+    profileUrl: 'https://prosettings.net/players/clix/',
+    result: {
+      date: '2026-09-19',
+      event: 'FNCS Division 1 Practice · NAC · Week 5, Round 2',
+      placement: '5th with Twis Rapid · 225 points · 4 matches',
+      context: 'One practice round; this result shows four matches, not a season or Major ranking.',
+      sourceLabel: 'Epic Games event results',
+      sourceUrl: DIVISION_1_PRACTICE_CURRENT_NAC,
+    },
+    snapshot: {
+      updatedAt: '2026-08-31',
       dpi: '800',
-      sensitivity: '8.7% / 6.3% (X / Y)',
       pollingHz: 1000,
-      monitor: 'Alienware AW2523HF (1920×1080 @ 360 Hz)',
-      mouse: 'Finalmouse Ultralight X Sakura',
-      keyboard: 'SteelSeries Apex Pro Mini Gen 3',
+      sensitivity: '8.7% X / 6.3% Y · target 60% / scope 35%',
+      monitor: 'Alienware AW2523HF',
+      mouse: 'Finalmouse ULX · Sakura',
+      keyboard: 'SteelSeries Apex Pro Mini · Black',
+      sourceLabel: 'ProSettings · Aug 31, 2026',
+      sourceUrl: 'https://prosettings.net/players/clix/',
     },
-    insights: [
-      {
-        text: '**Two FNCS Grand Finals 4th-place finishes in 2024 NA** — 4th at FNCS Major 1 NA Grand Finals ($30,000) and 4th at FNCS Major 3 NA Grand Finals ($30,000). Same year, same near-miss pattern at the top of the bracket.',
-        citation: { label: 'Esports Earnings — Clix tournament results', url: 'https://www.esportsearnings.com/players/62105-clix-cody-conrod' },
-      },
-      {
-        text: '**Career biggest single payout: $112,500 — 18th place at the 2019 Fortnite World Cup Solo Finals**, age 14. The peak result on his record is the World Cup, which is older than half the current FNCS lobby.',
-        citation: { label: 'Esports Earnings — Clix tournament results', url: 'https://www.esportsearnings.com/players/62105-clix-cody-conrod' },
-      },
-      {
-        text: '**Other recent FNCS podium finishes** — 2nd at FNCS Major 2 2025 NA Central Grand Finals ($25,500); 3rd at FNCS Major 1 2025 NA Central Grand Finals ($17,000). Region-shopped to NA Central in 2025.',
-        citation: { label: 'Esports Earnings — Clix tournament results', url: 'https://www.esportsearnings.com/players/62105-clix-cody-conrod' },
-      },
-      {
-        text: 'In-game settings: validate brightness, the available low-overhead render path, V-Sync behavior, and a cap that your rig sustains. The goal is visibility plus frame consistency rather than a fixed pro preset.',
-        citation: { label: 'ProSettings.net — Clix', url: 'https://prosettings.net/players/clix/' },
-      },
-      {
-        text: 'Daily training cited at duelmasters.io: edit courses + retakes + scenario-focused 1v1s, not pure aim-trainer hours. Mechanics + decision-making are trained as separate reps.',
-        citation: { label: 'duelmasters.io — Clix breakdown', url: 'https://www.duelmasters.io/blog/clix-fortnite-settings' },
-      },
-      {
-        text: 'Beyond compete: 2024 Forbes 30 Under 30 (youngest member at 19), owns Dr3amin apparel + Clix Creative (UEFN game studio), co-owns XSET. The pro-to-business operator transition without leaving the FNCS circuit is unusual — most pros either go all-in on compete or pivot fully to creator.',
-        citation: { label: 'Famous Birthdays — Clix', url: 'https://www.famousbirthdays.com/people/clix.html' },
-      },
-    ],
-    dailyRoutine: {
-      morning: ['Edit course 1 hr — pure mechanics, before fatigue sets in'],
-      afternoon: [
-        'Retakes 1 hr — pressure simulation',
-        'Scenario-focused 1v1s 2-3 hr — pick which mechanic the rep is for, not just "play"',
-      ],
-      evening: ['Ranked / arena — back-to-back retakes if aim drops mid-session'],
-    },
-    link: 'https://www.twitch.tv/clix',
   },
   {
     id: 'reet',
     name: 'Reet',
     kind: 'pro',
-    games: ['fortnite'],
-    credential: 'Nathan "Reet" Amundson · controller pro · ~$400K career FNCS earnings · multi-FNCS-region winner · 5x S-Tier Grand Final podium',
-    voice: 'Controller pro in a scene where the loudest names are KBM. 1st-place finishes in NA West (C2S8 + 2021 Grand Royale with Arkhram + EpikWhale) plus 2nd at FNCS Major 2 2024 NA Grand Finals with Ritual ($45K). Proof that controller-on-PC is still a podium-tier input at the top of FNCS when the build-edit binds and deadzones are dialed.',
-    tier: 'top',
-    rig: {
-      sensitivity: 'Look 50 / 60 · ADS 16 / 16 · Build & Edit ×1.7 · Deadzone 6 / 6',
-      monitor: 'Alienware AW2518HF (1920×1080 @ 240 Hz)',
-      controller: 'SCUF Reflex / SCUF PS5 — Builder Pro w/ custom binds',
-      keyboard: 'SteelSeries Apex Pro Mini (chat + menus)',
+    summary: 'Competitive Fortnite player; ProSettings listed him as a free agent on Aug 31, 2026.',
+    profileLabel: 'ProSettings profile',
+    profileUrl: 'https://prosettings.net/players/reet/',
+    result: {
+      date: '2026-08-14',
+      event: 'FNCS Global Championship Last Chance · NAC',
+      placement: '13th with Cooper · 192 points · 6 matches',
+      context: 'Event placement; not a current power ranking.',
+      sourceLabel: 'Epic Games event results',
+      sourceUrl: FNCS_LAST_CHANCE_FINAL_NAC,
     },
-    insights: [
-      {
-        text: '**Career bag: ~$400,680** across 100+ tournaments. Single biggest payout: **$45,000 — 2nd place at FNCS Major 2 2024 NA Grand Finals** (with Ritual). Two outright NA West FNCS wins back in C2S8 + 2021 Grand Royale.',
-        citation: { label: 'Esports Earnings — Reet', url: 'https://www.esportsearnings.com/players/80705-reet-nathan-amundson' },
-      },
-      {
-        text: '**Controller config documented**: SCUF (Reflex / PS5), Builder Pro preset with custom build binds — LT = stairs, LB = roof, RT = wall, RB = floor. Look-axis 50 / 60, ADS 16 / 16, Build + Edit sensitivity ×1.7, both stick deadzones 6%. The bind layout is the actually-copyable part — most controller players bottleneck on bind reach, not sens.',
-        citation: { label: 'specs.gg — Reet (May 2026)', url: 'https://specs.gg/Reet' },
-      },
-      {
-        text: 'Region-shopped to NA Central in 2025 — placed 3rd at FNCS Major 2 2025 NA Central Grand Finals with Cooper + Curly ($17K). Also took 5th at Games of the Future 2025 with Cyrzr ($20K). Adapting across regions + format changes (duo → trio → duo) is the harder credential than peak skill in any one meta.',
-        citation: { label: 'Liquipedia — Reet results', url: 'https://liquipedia.net/fortnite/Reet' },
-      },
-    ],
-    link: 'https://www.twitch.tv/reet',
+    snapshot: {
+      updatedAt: '2026-08-31',
+      dpi: '800',
+      pollingHz: 1000,
+      sensitivity: '6.4% X / 6.4% Y · target/scope 58.9%',
+      monitor: 'Alienware AW2518H',
+      mouse: 'Logitech G PRO X SUPERLIGHT 2',
+      keyboard: 'SteelSeries Apex Pro Mini',
+      controller: 'SCUF Reflex is separately listed controller gear',
+      sourceLabel: 'ProSettings · Aug 31, 2026',
+      sourceUrl: 'https://prosettings.net/players/reet/',
+    },
   },
   {
     id: 'bugha',
     name: 'Bugha',
     kind: 'pro',
-    games: ['fortnite'],
-    credential: 'Dignitas · Solo Fortnite World Cup champion 2019 · $3M prize · still competing professionally (2026)',
-    voice: 'Won Solo World Cup at 16. Career has spanned every major Chapter since — one of the few from the 2019 era still on the FNCS circuit.',
-    tier: 'top',
-    rig: {
-      dpi: '800',
-      sensitivity: '6.4% / 6.4%',
-      pollingHz: 1000,
-      monitor: 'Alienware AW2521H (1920×1080 @ 360 Hz, IPS, G-Sync)',
-      mouse: 'Razer Viper V3 Pro Black',
-      keyboard: 'SteelSeries Apex Pro Mini Black',
+    summary: '2019 Fortnite World Cup Solo champion. This page does not infer current roster status from an older profile.',
+    profileLabel: 'ProSettings profile',
+    profileUrl: 'https://prosettings.net/players/bugha/',
+    result: {
+      date: '2026-08-31',
+      event: 'FNCS Division 5 Practice · NAC · Week 2, Round 2',
+      placement: '4th with Cooper · 369 points · 9 matches',
+      context: 'One practice round, not a Major or overall season ranking.',
+      sourceLabel: 'Epic Games event results',
+      sourceUrl: 'https://www.fortnite.com/competitive/events/S42_FNCSDivisionalCup_Division5?region=NAC',
     },
-    insights: [
-      {
-        text: '**Solo World Cup champion 2019** — beat 100 of the world\'s top qualifiers in NYC at age 16, took home $3M (largest prize ever for a single esports tournament at the time). The credential the rest of the scene is still measured against.',
-        citation: { label: 'Wikipedia — Bugha (2019 Fortnite World Cup)', url: 'https://en.wikipedia.org/wiki/Bugha' },
-      },
-      {
-        text: '**FNCS Major 1 DQ + Epic\'s reversal** — Bugha was disqualified from the FNCS Major 1 Grand Finals (NAC) alongside Kreaz, Tragic, and Percnt for using a third-party "drop calculator" overlay. Epic publicly admitted the DQ was a mistake — *"Given the confusion on this, disqualification of these players was a mistake and the DQs will be removed from their record."* — but the Grand Final lobby was already full so they couldn\'t be reinstated. Epic offered a Second Chance Qualifier; Bugha didn\'t qualify for Major 1 Summit through it.',
-        citation: { label: 'Game Rant — Epic admits FNCS DQs were a mistake', url: 'https://gamerant.com/fortnite-fncs-disqualifications-epic-games-statement/' },
-      },
-    ],
-    link: 'https://www.twitch.tv/bugha',
+    snapshot: {
+      updatedAt: '2025-09-15',
+      dpi: '800',
+      pollingHz: 1000,
+      sensitivity: '6.4% X / 6.4% Y · target/scope 45%',
+      monitor: 'Alienware AW2521H',
+      mouse: 'Razer Viper V3 Pro · Black',
+      keyboard: 'SteelSeries Apex Pro Mini · Black',
+      sourceLabel: 'ProSettings · Sep 15, 2025',
+      sourceUrl: 'https://prosettings.net/players/bugha/',
+    },
   },
-
   {
     id: 'khanada',
     name: 'Khanada',
     kind: 'pro',
-    games: ['fortnite'],
-    credential: 'Dignitas · 1st place FNCS 2026 Major 1 NA West Grand Finals (with VicterV) · long-tenured top-tier across multiple chapters',
-    voice: 'Came back to NA West and took the FNCS 2026 Major 1 Grand Finals with VicterV — 160 points clear of 2nd place ($30,000), two Victory Royales en route. Long-career US pro on Dignitas; staying competitive across multiple chapter resets is the rarer credential.',
-    tier: 'top',
-    rig: {
-      dpi: '800',
-      sensitivity: '7.0% / 7.0%',
-      pollingHz: 1000,
-      monitor: 'Alienware AW2523HF (1920×1080 @ 360 Hz)',
-      mouse: 'Razer Viper V3 Pro Black',
-      keyboard: 'SteelSeries Apex Pro TKL (OmniPoint)',
+    summary: 'Fortnite competitor; the result below is one practice round, not a season ranking.',
+    profileLabel: 'Epic Games event results',
+    profileUrl: DIVISION_1_PRACTICE_WEEK_4_NAC,
+    result: {
+      date: '2026-09-12',
+      event: 'FNCS Division 1 Practice · NAC · Week 4, Round 2',
+      placement: '3rd with ark2x · 264 points · 6 matches',
+      context: 'One practice round, not a season or Major ranking.',
+      sourceLabel: 'Epic Games event results',
+      sourceUrl: DIVISION_1_PRACTICE_WEEK_4_NAC,
     },
-    insights: [
-      {
-        text: '**FNCS 2026 Major 1 NA West win with VicterV** — 1st place by 160 points (the runaway margin in a 2-day event) for $30,000 each, two Victory Royales on the way. Result that re-established him as a top NA pro after multiple region + duo shuffles in earlier chapters.',
-        citation: { label: 'Sportskeeda — FNCS 2026 Major 1 Grand Finals NA + EU results', url: 'https://www.sportskeeda.com/fortnite/fortnite-fncs-2026-major-1-grand-finals-na-eu-results' },
-      },
-      {
-        text: 'Career longevity > peak skill. Staying competitive across multiple chapter overhauls (each of which resets meta + mechanics) means re-learning movement, edits, and economy from scratch. Most "fell off" stories are just one meta away from "couldn\'t adapt".',
-        citation: { label: 'Liquipedia — Khanada full results', url: 'https://liquipedia.net/fortnite/Khanada/Results' },
-      },
-    ],
-    link: 'https://www.twitch.tv/khanada',
   },
   {
-    id: 'th0masHD',
+    id: 'th0mashd',
     name: 'Th0masHD',
     kind: 'pro',
-    games: ['fortnite'],
-    credential: 'Virtus.pro (joined Jan 2026) · Danish (b. 2002) · 2024 FNCS Global Championship runner-up · 2024 Major 1 EU runner-up · DreamHack Dallas + Summer winner · ~$1.5M career earnings',
-    voice: "Thomas Høxbro Davidsen — Danish EU pro. One of EU's most decorated FNCS competitors; joined Virtus.pro (with FoCuS) in Jan 2026 when the org returned to Fortnite after ~5 years away. Placements are documented on Liquipedia rather than reverse-engineered from highlight clips.",
-    tier: 'top',
-    rig: {
-      dpi: '1600',
-      sensitivity: '5.0% / 3.0% (X / Y — asymmetric)',
-      pollingHz: 1000,
-      monitor: 'ZOWIE XL2411T (1920×1080 @ 144 Hz)',
-      mouse: 'Logitech G PRO X Superlight White',
-      keyboard: 'SteelSeries Apex Pro TKL (2023)',
+    summary: 'Fortnite competitor; the linked settings snapshot is from February 2026.',
+    profileLabel: 'ProSettings profile',
+    profileUrl: 'https://prosettings.net/players/th0mashd/',
+    result: {
+      date: '2026-09-19',
+      event: 'FNCS Division 1 Practice · EU · Week 5, Round 2',
+      placement: '6th with FocusHD · 275 points · 6 matches',
+      context: 'One practice round, not a season or Major ranking.',
+      sourceLabel: 'Epic Games event results',
+      sourceUrl: DIVISION_1_PRACTICE_CURRENT_EU,
     },
-    insights: [
-      {
-        text: 'Signed by Virtus.pro in Jan 2026 — the org\'s return to Fortnite after ~5 years away picked a proven name, not a prospect. The credential that earned it: 2024 FNCS Global Championship runner-up and 2024 Major 1 EU runner-up. Lesson — orgs re-entering a scene buy track record, so the durable asset is a multi-chapter placement history, not one viral peak.',
-        citation: { label: 'Virtus.pro — return to Fortnite', url: 'https://virtus.pro/news/virtus-pro-return-to-fortnite' },
-      },
-      {
-        text: 'EU pro with consistent FNCS placements across multiple chapters — a track record that\'s harder to put together than a single peak season because each chapter resets meta + mechanics. Full event history at the cited link.',
-        citation: { label: 'Liquipedia Fortnite — Th0masHD', url: 'https://liquipedia.net/fortnite/Th0masHD' },
-      },
-      {
-        text: '**Asymmetric X/Y sens — 5.0% X / 3.0% Y on 1600 DPI**, and a **144 Hz monitor** in a top-tier FNCS field where almost everyone else is 360 Hz+. The lesson isn\'t "144 Hz is enough" (it isn\'t for peak click-to-pixel) — it\'s that mechanical consistency over years on the same config beats chasing every refresh-rate upgrade. Counter-example to the spend-more-to-win narrative.',
-        citation: { label: 'ProSettings.net — Th0masHD (Feb 2026)', url: 'https://prosettings.net/players/th0mashd/' },
-      },
-    ],
-    link: 'https://www.youtube.com/@Th0masHD',
+    snapshot: {
+      updatedAt: '2026-02-23',
+      dpi: '1600',
+      pollingHz: 1000,
+      sensitivity: '5.0% X / 3.0% Y · target/scope 37%',
+      monitor: 'ZOWIE XL2411T',
+      mouse: 'Logitech G PRO X SUPERLIGHT · White',
+      keyboard: 'SteelSeries Apex Pro TKL (2023)',
+      sourceLabel: 'ProSettings · Feb 23, 2026',
+      sourceUrl: 'https://prosettings.net/players/th0mashd/',
+    },
   },
 ]
-
-/** Filter helper for the /grind page. */
-export function entriesByKind(kind: GrindKind | 'all'): GrindEntry[] {
-  if (kind === 'all') return GRIND_ENTRIES
-  return GRIND_ENTRIES.filter((e) => e.kind === kind)
-}

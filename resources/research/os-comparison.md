@@ -1,6 +1,6 @@
 # Custom Windows builds for Fortnite — current decision guide
 
-**Last reviewed: 2026-09-17.** There is no honest universal “lowest-input-delay
+**Last reviewed: 2026-09-20.** There is no honest universal “lowest-input-delay
 OS.” A custom image can lower idle process count, but it can also remove update,
 security, recovery, driver, or anti-cheat prerequisites. A benchmark from another
 rig is not proof of a latency win on yours.
@@ -13,20 +13,22 @@ current Epic tournament prerequisites enabled. Then use optimizationmaxxing to
 measure and apply reversible, cataloged changes. This gives the app a known
 baseline, preserves Windows Update and recovery, and makes a drift check possible.
 
-As of this review, Microsoft lists Windows 11 26H1 (build 28000) as generally
-available from 2026-02-10, Windows 11 25H2 (build 26200) from 2025-09-30, and
-Windows 11 24H2 (build 26100) from 2024-10-01. Home/Pro end-of-service dates are
-2028-03-14 for 26H1, 2027-10-12 for 25H2, and 2026-10-13 for 24H2. “Newest” is
-not automatically “fastest”: choose the newest branch that is supported by the
-motherboard, GPU, capture card, drivers, and the games you actually play, then
-measure it on the same rig. [Microsoft supported Windows client versions](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client)
+Microsoft's release table currently lists 26H1 build 28000, 25H2 build 26200,
+and 24H2 build 26100. **26H1 is a specialized release for selected new devices,
+not a normal in-place upgrade for existing PCs.** Home/Pro support currently
+ends Oct 13, 2027 for 25H2 and Oct 14, 2026 for 24H2; 26H1 has a separate
+device-specific lifecycle. “Newest” is not automatically “fastest”: these are
+support facts, not Fortnite benchmark results. [Microsoft Windows 11 release information](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information),
+[26H1 availability](https://learn.microsoft.com/en-us/windows/whats-new/windows-11-version-26h1),
+[Home/Pro lifecycle](https://learn.microsoft.com/lifecycle/products/windows-11-home-and-pro)
 
-**Practical answer for an existing esports rig:** Windows 11 25H2 is the
-conservative starting point if its driver stack is already known-good. Test 26H1
-as a separate image when OEM and game support are confirmed. Do not choose 24H2
-for a fresh install merely because an old optimization guide says it is the
-“best” Winver, and do not use Windows 10 22H2 as a new competitive baseline:
-Microsoft ended normal support on 2025-10-14.
+**Practical answer for an existing x64 esports rig:** use fully patched stock
+Windows 11 25H2 as the supported starting point, unless the exact rig has a
+known-good supported alternative. Do not tell existing users to upgrade to
+26H1: Microsoft limits it to selected new devices. Avoid a fresh 24H2 install
+this close to Home/Pro end of support. Windows 10 22H2 left normal support on
+2025-10-14. None of these facts proves which branch has the lowest latency on a
+particular PC.
 
 ## What the custom-build labels really mean
 
@@ -45,11 +47,11 @@ alone. The risk is the removed contract around the game, not a guaranteed FPS
 penalty. If your current install launches Fortnite, passes the relevant Epic
 checks, and has stable frametimes, the image may be usable for casual testing.
 
-For a competitive primary install, I would move to stock Windows 11 25H2 (or a
-validated 26H1 image) because it keeps Windows Update, Defender, recovery, and
-the optional Windows components that launchers, capture software, drivers, and
-anti-cheat can depend on. X-Lite's own documentation says its UltraLite builds
-do not support several of those components and recommends a full-featured,
+For a competitive primary install, the support-first choice is stock Windows
+11 25H2. X-Lite is not proven worse or faster by its name; its editions can
+remove or disable Windows Update, Defender, recovery, and optional components.
+Those removals are a compatibility, servicing, and recovery tradeoff—not proof
+of lower input delay. X-Lite's own UltraLite page recommends a full-featured,
 updatable build for most users. [Windows X-Lite UltraLite](https://windowsxlite.com/ultralight)
 
 Atlas's own security FAQ makes the same important distinction: unmodified

@@ -1,17 +1,17 @@
-//! BIOS audit — read everything Windows can see indirectly about BIOS state,
-//! so we can tell the user "this is on, this is off, here's what to flip"
-//! without running SCEWIN.
+//! BIOS audit — collect Windows-exposed system/firmware identifiers and
+//! status. These signals are not a complete view of BIOS setup variables.
 //!
 //! What's readable from Windows:
-//!   * BIOS firmware mode (UEFI vs Legacy) → CSM off iff UEFI
+//!   * BIOS firmware mode (UEFI vs Legacy) — does not independently identify
+//!     every CSM/boot option on every firmware
 //!   * Secure Boot
 //!   * TPM 2.0 present + enabled
 //!   * VBS / HVCI (reuses toolkit::read_vbs_report)
 //!   * Hybrid CPU + SMT/HT (reuses cpusets::cpu_set_info)
-//!   * Installed RAM type + JEDEC vs configured speed → EXPO/XMP applied?
+//!   * Installed RAM type + reported/configured speed — not proof of EXPO/XMP
 //!   * CPU brand string
-//!   * Active power plan (proxies C-state behavior — Ultimate Performance
-//!     disables idle C-states; Balanced + Power Saver leave them on)
+//!   * Active Windows power plan name (not a measurement of latency or C-state
+//!     behavior)
 //!
 //! NOT readable from Windows (need SCEWIN dump or visit BIOS):
 //!   * PBO / Curve Optimizer per-core offsets
@@ -22,8 +22,8 @@
 //!     dependency; queued)
 //!   * PCIe Gen running (need NVAPI or vendor tools; queued)
 //!
-//! The frontend renders pass/warn/fail/unknown per check + a "what BIOS
-//! settings we can't see — run SCEWIN dump to verify" panel.
+//! The frontend renders observed values separately from settings that remain
+//! unknown. SCEWIN imports are parsed separately and never written back.
 
 use anyhow::{Context, Result};
 use serde::Serialize;
@@ -43,17 +43,16 @@ pub struct BiosAudit {
     pub cpu_brand: Option<String>,
     /// SMT (AMD) / HT (Intel) — true iff logical_cores > physical_cores.
     pub smt_enabled: Option<bool>,
-    /// Reported clock the BIOS booted memory at, in MHz. The "Speed"
-    /// field on Win32_PhysicalMemory.
+    /// Module-reported speed from Win32_PhysicalMemory.Speed. This is not
+    /// proof that XMP/EXPO is enabled or that this is the configured rate.
     pub ram_speed_mhz: Option<u32>,
-    /// The actual running clock per WMI's ConfiguredClockSpeed. Sometimes
-    /// differs from `ram_speed_mhz` when the BIOS booted at JEDEC and a
-    /// later memory-training pass succeeded.
+    /// Configured speed from WMI. Useful context, but it does not identify
+    /// the active profile, memory timings, or stability.
     pub ram_configured_mhz: Option<u32>,
     /// "DDR4" / "DDR5" / "Unknown" — decoded from SMBIOSMemoryType.
     pub ram_type: Option<String>,
-    /// True iff `ram_speed_mhz` exceeds the JEDEC default for `ram_type`.
-    /// Proxies "did EXPO/XMP actually train?"
+    /// Compatibility field. Windows clock data alone cannot establish
+    /// whether EXPO/XMP is enabled, so this remains unknown (`None`).
     pub expo_xmp_active: Option<bool>,
     /// Active Windows power plan GUID.
     pub power_plan_guid: Option<String>,
@@ -64,6 +63,8 @@ pub struct BiosAudit {
     pub mobo_manufacturer: Option<String>,
     /// Motherboard product / model ("ROG STRIX X870E-E GAMING WIFI").
     pub mobo_product: Option<String>,
+    /// Motherboard revision from Win32_BaseBoard.Version when reported.
+    pub mobo_revision: Option<String>,
     /// BIOS firmware vendor (often "American Megatrends Inc." regardless of
     /// board vendor — AMI is the OEM most boards use).
     pub bios_vendor: Option<String>,
@@ -72,9 +73,6 @@ pub struct BiosAudit {
     /// BIOS release date (raw WMI string — yyyymmdd format).
     pub bios_release_date: Option<String>,
 }
-
-const JEDEC_DDR4_MHZ: u32 = 2666;
-const JEDEC_DDR5_MHZ: u32 = 4800;
 
 pub fn read_bios_audit() -> Result<BiosAudit> {
     // One PowerShell pass that emits a JSON blob covering every Windows-side
@@ -94,6 +92,7 @@ $out = [ordered]@{
     powerPlanName        = $null
     moboManufacturer     = $null
     moboProduct          = $null
+    moboRevision         = $null
     biosVendor           = $null
     biosVersion          = $null
     biosReleaseDate      = $null
@@ -109,6 +108,7 @@ try {
     if ($null -ne $board) {
         if ($board.Manufacturer) { $out.moboManufacturer = [string]$board.Manufacturer }
         if ($board.Product)      { $out.moboProduct      = [string]$board.Product }
+        if ($board.Version)      { $out.moboRevision     = [string]$board.Version }
     }
 } catch {}
 
@@ -211,6 +211,7 @@ $out | ConvertTo-Json -Compress
             power_plan_name: None,
             mobo_manufacturer: None,
             mobo_product: None,
+            mobo_revision: None,
             bios_vendor: None,
             bios_version: None,
             bios_release_date: None,
@@ -243,6 +244,8 @@ $out | ConvertTo-Json -Compress
         mobo_manufacturer: Option<String>,
         #[serde(rename = "moboProduct")]
         mobo_product: Option<String>,
+        #[serde(rename = "moboRevision")]
+        mobo_revision: Option<String>,
         #[serde(rename = "biosVendor")]
         bios_vendor: Option<String>,
         #[serde(rename = "biosVersion")]
@@ -254,8 +257,6 @@ $out | ConvertTo-Json -Compress
     let raw: Raw = serde_json::from_str(&stdout)
         .with_context(|| format!("parse BIOS audit JSON: {stdout}"))?;
 
-    let expo_xmp_active = expo_xmp_from_speed(raw.ram_speed_mhz, raw.ram_type.as_deref());
-
     Ok(BiosAudit {
         bios_mode: raw.bios_mode.filter(|s| !s.is_empty()),
         secure_boot: raw.secure_boot,
@@ -265,66 +266,14 @@ $out | ConvertTo-Json -Compress
         ram_speed_mhz: raw.ram_speed_mhz.filter(|n| *n > 0),
         ram_configured_mhz: raw.ram_configured_mhz.filter(|n| *n > 0),
         ram_type: raw.ram_type.filter(|s| !s.is_empty()),
-        expo_xmp_active,
+        expo_xmp_active: None,
         power_plan_guid: raw.power_plan_guid.filter(|s| !s.is_empty()),
         power_plan_name: raw.power_plan_name.filter(|s| !s.is_empty()),
         mobo_manufacturer: raw.mobo_manufacturer.filter(|s| !s.is_empty()),
         mobo_product: raw.mobo_product.filter(|s| !s.is_empty()),
+        mobo_revision: raw.mobo_revision.filter(|s| !s.is_empty()),
         bios_vendor: raw.bios_vendor.filter(|s| !s.is_empty()),
         bios_version: raw.bios_version.filter(|s| !s.is_empty()),
         bios_release_date: raw.bios_release_date.filter(|s| !s.is_empty()),
     })
-}
-
-/// Returns Some(true) if BIOS booted memory above the JEDEC default for its
-/// type — that's a near-perfect proxy for "EXPO / XMP profile trained
-/// successfully." Some(false) iff at-or-below JEDEC. None when we can't
-/// classify (unknown RAM type or no speed).
-fn expo_xmp_from_speed(speed_mhz: Option<u32>, ram_type: Option<&str>) -> Option<bool> {
-    let speed = speed_mhz?;
-    if speed == 0 {
-        return None;
-    }
-    match ram_type {
-        Some("DDR4") => Some(speed > JEDEC_DDR4_MHZ),
-        Some("DDR5") => Some(speed > JEDEC_DDR5_MHZ),
-        _ => None,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn ddr5_at_6000_is_expo_active() {
-        assert_eq!(expo_xmp_from_speed(Some(6000), Some("DDR5")), Some(true));
-    }
-
-    #[test]
-    fn ddr5_at_jedec_4800_is_not_expo() {
-        assert_eq!(expo_xmp_from_speed(Some(4800), Some("DDR5")), Some(false));
-    }
-
-    #[test]
-    fn ddr4_at_3600_is_expo_active() {
-        assert_eq!(expo_xmp_from_speed(Some(3600), Some("DDR4")), Some(true));
-    }
-
-    #[test]
-    fn ddr4_at_2666_jedec_is_not_xmp() {
-        assert_eq!(expo_xmp_from_speed(Some(2666), Some("DDR4")), Some(false));
-    }
-
-    #[test]
-    fn unknown_ram_type_returns_none() {
-        assert_eq!(expo_xmp_from_speed(Some(6000), None), None);
-        assert_eq!(expo_xmp_from_speed(Some(6000), Some("Unknown")), None);
-    }
-
-    #[test]
-    fn zero_speed_returns_none() {
-        assert_eq!(expo_xmp_from_speed(Some(0), Some("DDR5")), None);
-        assert_eq!(expo_xmp_from_speed(None, Some("DDR5")), None);
-    }
 }

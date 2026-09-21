@@ -96,7 +96,8 @@ fn read_primary_refresh() -> Option<RefreshInfo> {
                 dmSize: std::mem::size_of::<DEVMODEW>() as u16,
                 ..Default::default()
             };
-            if !EnumDisplaySettingsW(PCWSTR::null(), ENUM_DISPLAY_SETTINGS_MODE(i), &mut m).as_bool()
+            if !EnumDisplaySettingsW(PCWSTR::null(), ENUM_DISPLAY_SETTINGS_MODE(i), &mut m)
+                .as_bool()
             {
                 break;
             }
@@ -183,42 +184,30 @@ pub fn run_preflight() -> MatchScanReport {
     let mut notes: Vec<String> = Vec::new();
     let mut checked: u32 = 0;
 
-    // ---- RAM: running at XMP/EXPO, or stuck at stock JEDEC? --------------
-    // (#1 silent killer — XMP/EXPO is OFF by default; users assume it's on.)
+    // ---- RAM profile state: Windows clocks are not proof of XMP/EXPO -----
     match bios_audit::read_bios_audit() {
         Ok(ba) => {
             checked += 1;
-            let rated = ba.ram_speed_mhz;
+            let reported = ba.ram_speed_mhz;
             let configured = ba.ram_configured_mhz;
-            let evidence = match (configured, rated) {
-                (Some(c), Some(r)) => Some(format!("running {c} MT/s, rated {r} MT/s")),
-                _ => None,
+            let evidence = match (configured, reported) {
+                (Some(c), Some(r)) => Some(format!(
+                    "Windows reports configured {c} MT/s; module speed field {r} MT/s"
+                )),
+                (Some(c), None) => Some(format!("Windows reports configured {c} MT/s")),
+                (None, Some(r)) => Some(format!("module speed field {r} MT/s")),
+                (None, None) => None,
             };
-            match ba.expo_xmp_active {
-                Some(false) => findings.push(Finding {
-                    id: "ram.xmp-off".into(),
-                    severity: "critical".into(),
-                    title: "RAM is running at stock speed, not its rated XMP/EXPO profile".into(),
-                    cause: "Motherboards boot RAM at the slow JEDEC default; the rated speed only applies once you turn on the XMP (Intel) / EXPO (AMD) profile in BIOS. It's off until you enable it.".into(),
-                    fix: "Reboot into BIOS, enable the XMP/EXPO profile (often one toggle), save & exit. This is usually the single biggest free FPS / 1%-low gain on a stock build.".into(),
-                    evidence,
-                    tweak_id: None,
-                    guide_id: None,
-                }),
-                Some(true) => findings.push(Finding {
-                    id: "ram.xmp-on".into(),
-                    severity: "ok".into(),
-                    title: "RAM is running at its rated XMP/EXPO speed".into(),
-                    cause: String::new(),
-                    fix: String::new(),
-                    evidence,
-                    tweak_id: None,
-                    guide_id: None,
-                }),
-                None => notes.push(
-                    "Couldn't confirm XMP/EXPO state on this board (some report the rated speed inconsistently).".into(),
-                ),
-            }
+            findings.push(Finding {
+                id: "ram.profile-unverified".into(),
+                severity: "info".into(),
+                title: "XMP / EXPO profile and timings are not verified by Windows".into(),
+                cause: "Reported memory clocks do not prove which firmware profile is selected, the trained timings, or stability.".into(),
+                fix: "Check the profile name and DIMM kit specification in the exact board BIOS. For a before/after firmware audit, import two read-only SCEWIN text exports in Diagnostics; absence from an export is not proof a setting is unavailable.".into(),
+                evidence,
+                tweak_id: None,
+                guide_id: None,
+            });
 
             // ---- Power plan: High/Ultimate vs Balanced/Saver -------------
             checked += 1;
@@ -539,7 +528,10 @@ pub fn run_preflight() -> MatchScanReport {
             if crits == 1 { "it" } else { "them" }
         )
     } else if warns > 0 {
-        format!("Config is mostly clean — {warns} thing{} worth tightening.", if warns == 1 { "" } else { "s" })
+        format!(
+            "Config is mostly clean — {warns} thing{} worth tightening.",
+            if warns == 1 { "" } else { "s" }
+        )
     } else {
         "Quick scan is clean — no silent config killers found.".into()
     };
@@ -583,7 +575,10 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         let temp = |needle: &str| -> Option<f64> {
             comp.sensors
                 .iter()
-                .find(|s| s.kind.to_lowercase().contains("temperature") && s.name.to_lowercase().contains(needle))
+                .find(|s| {
+                    s.kind.to_lowercase().contains("temperature")
+                        && s.name.to_lowercase().contains(needle)
+                })
                 .and_then(|s| s.value)
         };
         // A "junction"/"memory" sensor is VRAM, not the core hotspot — only fall
@@ -601,8 +596,12 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
             })
             .and_then(|s| s.value);
         let core = temp("core").or_else(|| temp("gpu "));
-        let hotspot = temp("hot spot").or_else(|| temp("hotspot")).or(non_mem_junction);
-        let memjunc = temp("memory junction").or_else(|| temp("vram")).or_else(|| temp("memory"));
+        let hotspot = temp("hot spot")
+            .or_else(|| temp("hotspot"))
+            .or(non_mem_junction);
+        let memjunc = temp("memory junction")
+            .or_else(|| temp("vram"))
+            .or_else(|| temp("memory"));
         if core.is_some() || hotspot.is_some() || memjunc.is_some() {
             read_signal = true;
         }
@@ -850,9 +849,11 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         if uac_denied {
             "Couldn't read your CPU sensors — the admin (UAC) prompt was declined. Re-run and click Yes.".into()
         } else if probe_failed {
-            "Couldn't read your CPU sensors — the WinRing0 driver was blocked (usually antivirus).".into()
+            "Couldn't read your CPU sensors — the WinRing0 driver was blocked (usually antivirus)."
+                .into()
         } else {
-            "Couldn't read your CPU sensors — thermal state unknown (needs admin + WinRing0).".into()
+            "Couldn't read your CPU sensors — thermal state unknown (needs admin + WinRing0)."
+                .into()
         }
     } else {
         "CPU thermals and voltage look healthy.".into()
@@ -922,8 +923,13 @@ pub fn run_live_spotcheck() -> MatchScanReport {
             ("critical",
              "Windows Defender is actively scanning right now — its real-time / scheduled scan competes with the game for CPU and disk and is a classic source of mid-match stutter.".into(),
              "Add your game, shader-cache, and anti-cheat folders to Defender exclusions (Windows Security > Virus & threat protection > Exclusions), and schedule full scans for when you're not playing.".into())
-        } else if lc.contains("chrome") || lc.contains("msedge") || lc.contains("firefox")
-            || lc.contains("brave") || lc.contains("opera") || lc.contains("vivaldi") {
+        } else if lc.contains("chrome")
+            || lc.contains("msedge")
+            || lc.contains("firefox")
+            || lc.contains("brave")
+            || lc.contains("opera")
+            || lc.contains("vivaldi")
+        {
             ("warn",
              "A web browser is using real CPU in the background — tabs with video/animation or hardware-accelerated WebGL keep working and steal CPU + GPU from your game.".into(),
              "Close the browser (or at least media/streaming tabs) before you queue. If you keep it open for guides, turn off its hardware acceleration.".into())
@@ -939,8 +945,11 @@ pub fn run_live_spotcheck() -> MatchScanReport {
             ("warn",
              "RGB / peripheral / wallpaper software is using real CPU in the background — these are well-known DPC-latency and CPU offenders, and the lighting adds nothing while you play.".into(),
              "Set your lights once, then disable the software's autostart for ranked (the LEDs keep their last state). Apply the app's RGB-autostart tweak.".into())
-        } else if lc.contains("onedrive") || lc.contains("dropbox") || lc.contains("googledrive")
-            || lc.contains("backup") {
+        } else if lc.contains("onedrive")
+            || lc.contains("dropbox")
+            || lc.contains("googledrive")
+            || lc.contains("backup")
+        {
             ("warn",
              "A cloud-sync / backup app is active — if it watches the drive your game streams from, it competes for disk and uplink and causes hitches.".into(),
              "Pause syncing while you play (tray icon > Pause), especially if the game is on the same drive it syncs.".into())
@@ -962,7 +971,9 @@ pub fn run_live_spotcheck() -> MatchScanReport {
         findings.push(Finding {
             id: format!(
                 "live.hog.{}",
-                lc.chars().filter(|c| c.is_alphanumeric()).collect::<String>()
+                lc.chars()
+                    .filter(|c| c.is_alphanumeric())
+                    .collect::<String>()
             ),
             severity: sev.into(),
             title: format!("{name} is using {pct:.0}% CPU{gpu_suffix} in the background"),
@@ -1199,8 +1210,14 @@ fn parse_presentmon_csv(path: &str) -> Option<FrameStats> {
             }
         }
         if let (Some(ic), Some(ig)) = (i_cpu, i_gpu) {
-            let cpu = f.get(ic).and_then(|v| v.trim().parse::<f32>().ok()).unwrap_or(0.0);
-            let gpu = f.get(ig).and_then(|v| v.trim().parse::<f32>().ok()).unwrap_or(0.0);
+            let cpu = f
+                .get(ic)
+                .and_then(|v| v.trim().parse::<f32>().ok())
+                .unwrap_or(0.0);
+            let gpu = f
+                .get(ig)
+                .and_then(|v| v.trim().parse::<f32>().ok())
+                .unwrap_or(0.0);
             if gpu >= frametime * 0.95 {
                 gpu_bound += 1;
             } else if cpu > gpu {
@@ -1449,10 +1466,7 @@ pub fn session_start(presentmon_exe: Option<String>, csv_path: String) -> Result
             let (gpu_temp_c, gpu_throttle_mask) = read_gpu_quick();
             // CPU effective clock = base MHz x (% Processor Performance / 100).
             let (eff_clock_mhz, cpu_util_pct) = match read_cpu_perf() {
-                Some((perf, util)) => (
-                    base_clock_mhz.map(|b| b * perf / 100.0),
-                    Some(util),
-                ),
+                Some((perf, util)) => (base_clock_mhz.map(|b| b * perf / 100.0), Some(util)),
                 None => (None, None),
             };
             session_state().lock().samples.push(SessionSample {
@@ -1584,7 +1598,9 @@ pub fn session_stop() -> MatchScanReport {
 
     // ── Headline #2: lowest effective clock under load ──────────────────────
     if eff_measured {
-        let base_txt = base.map(|b| format!(", base {b:.0} MHz")).unwrap_or_default();
+        let base_txt = base
+            .map(|b| format!(", base {b:.0} MHz"))
+            .unwrap_or_default();
         let sev = if cpu_throttled { "warn" } else { "info" };
         let load_txt = if has_loaded {
             "under load"
@@ -1676,7 +1692,12 @@ pub fn session_stop() -> MatchScanReport {
     }
 
     // Frametime + CPU-vs-GPU-bound from PresentMon (the bottleneck truth).
-    match st.presentmon_csv.clone().as_deref().and_then(parse_presentmon_csv) {
+    match st
+        .presentmon_csv
+        .clone()
+        .as_deref()
+        .and_then(parse_presentmon_csv)
+    {
         Some(fs) => {
             let stutter = fs.low01_fps < fs.avg_fps * 0.5;
             findings.push(Finding {
@@ -1702,7 +1723,11 @@ pub fn session_stop() -> MatchScanReport {
             });
 
             // ── Headline #3: worst single frametime spike ───────────────────
-            let worst_fps = if fs.worst_ms > 0.0 { 1000.0 / fs.worst_ms } else { 0.0 };
+            let worst_fps = if fs.worst_ms > 0.0 {
+                1000.0 / fs.worst_ms
+            } else {
+                0.0
+            };
             let big_spike = fs.worst_ms > 50.0 || fs.spikes_2x > 0;
             findings.push(Finding {
                 id: "session.worst-frame".into(),
@@ -1858,7 +1883,11 @@ pub fn session_stop() -> MatchScanReport {
     let headline = if crits > 0 {
         "Your rig didn't hold up — something throttled or destabilised mid-match.".into()
     } else if warns > 0 {
-        format!("Mostly fine, but {} thing{} hurt you during the match.", warns, if warns == 1 { "" } else { "s" })
+        format!(
+            "Mostly fine, but {} thing{} hurt you during the match.",
+            warns,
+            if warns == 1 { "" } else { "s" }
+        )
     } else if !gpu_temp_measured {
         // Clean on what we COULD measure, but GPU throttle was never sampled
         // (NVIDIA-only) — don't claim "no throttling" we didn't observe.
@@ -1913,7 +1942,9 @@ mod tests {
     #[test]
     fn cpu_uac_denied_reports_prompt_not_antivirus() {
         // Elevated probe returns the UAC-denied error (exit code 1223).
-        let r = interpret_lhm_cpu(&failed_report("elevated probe exited with code 1223 (UAC denied)"));
+        let r = interpret_lhm_cpu(&failed_report(
+            "elevated probe exited with code 1223 (UAC denied)",
+        ));
         assert_eq!(r.checked, 0);
         let f = r.findings.iter().find(|f| f.id == "cpu.no-signal").unwrap();
         // UAC case must steer to the prompt, NOT an AV exclusion / guide link.
@@ -1926,7 +1957,9 @@ mod tests {
     #[test]
     fn cpu_probe_failure_blames_driver_with_guide() {
         // Admin granted but the driver/probe failed (e.g. parse/driver-load error).
-        let r = interpret_lhm_cpu(&failed_report("couldn't parse elevated LHM output: expected value"));
+        let r = interpret_lhm_cpu(&failed_report(
+            "couldn't parse elevated LHM output: expected value",
+        ));
         assert_eq!(r.checked, 0);
         let f = r.findings.iter().find(|f| f.id == "cpu.no-signal").unwrap();
         assert!(f.fix.to_lowercase().contains("exclusion"));
@@ -1985,7 +2018,10 @@ mod tests {
             sensors: vec![sensor("Core Max", "temperature", 98.0)],
         };
         let r = interpret_lhm_cpu(&report(vec![comp]));
-        assert!(r.findings.iter().any(|f| f.id == "cpu.thermal" && f.severity == "critical"));
+        assert!(r
+            .findings
+            .iter()
+            .any(|f| f.id == "cpu.thermal" && f.severity == "critical"));
     }
 
     // ---- GPU: no-data must NOT read as healthy -------------------------
@@ -2087,7 +2123,10 @@ mod tests {
         let _ = std::fs::remove_file(&path);
         assert!(fs.worst_ms >= 119.0, "worst single frame captured");
         assert!(fs.spikes_2x >= 1, "the 120ms frame is a >2x-median spike");
-        assert_eq!(fs.present_mode.as_deref(), Some("Hardware: Independent Flip"));
+        assert_eq!(
+            fs.present_mode.as_deref(),
+            Some("Hardware: Independent Flip")
+        );
     }
 
     #[test]

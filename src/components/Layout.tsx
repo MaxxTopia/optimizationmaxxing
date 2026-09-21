@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { to: '/grind', label: 'Grind' },
   { to: '/hardware', label: 'Hardware' },
   { to: '/asta', label: 'Asta' },
+  { to: '/lab', label: 'Optimization Lab' },
   { to: '/toolkit', label: 'Toolkit' },
   { to: '/diagnostics', label: 'Diagnostics' },
   { to: '/match-scan', label: 'Match Scan' },

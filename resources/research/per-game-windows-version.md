@@ -1,30 +1,29 @@
 # Windows version guidance for competitive games
 
-**Last reviewed: 2026-09-17.** There is no Microsoft-certified “best Fortnite
+**Last reviewed: 2026-09-20.** There is no Microsoft-certified “best Fortnite
 Winver” that guarantees lower input delay. The useful question is whether the
 branch is supported, fully patched, compatible with the hardware and anti-cheat
 stack, and measurably stable on the player's own machine.
 
 ## Current answer
 
-For a new primary Fortnite install, choose **stock Windows 11 25H2** when the
-system already has a known-good 25H2 driver and capture stack. Test **Windows 11
-26H1** on a separate image when the motherboard, GPU, capture card, and game
-stack are confirmed. Keep the image fully patched and retain the ability to
-roll back. Windows 11 24H2 is still supported for Home/Pro until 2026-10-13,
-but it is not the branch I would select for a fresh long-lived install now.
+For an existing x64 gaming PC, use **fully patched stock Windows 11 25H2** as
+the support-first baseline. **26H1 is for selected new devices, not a normal
+upgrade path for existing PCs.** Keep a rollback path. Home/Pro 24H2 support
+ends Oct 14, 2026, so it is a poor choice for a fresh long-lived install.
 
-Microsoft's current supported-client table lists 26H1 as build 28000, 25H2 as
-build 26200, and 24H2 as build 26100. Home/Pro end-of-service is 2028-03-14,
-2027-10-12, and 2026-10-13 respectively. Windows 10 22H2 ended normal support
-on 2025-10-14. These are lifecycle facts, not FPS benchmarks. [Microsoft supported
-Windows client versions](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client)
+Microsoft lists 26H1 build 28000, 25H2 build 26200, and 24H2 build 26100.
+Home/Pro 25H2 support ends Oct 13, 2027; 24H2 ends Oct 14, 2026. Windows 10
+22H2 left normal support on Oct 14, 2025. These are lifecycle facts, not FPS
+benchmarks. [Windows 11 release information](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information),
+[26H1 availability](https://learn.microsoft.com/en-us/windows/whats-new/windows-11-version-26h1),
+[Home/Pro lifecycle](https://learn.microsoft.com/lifecycle/products/windows-11-home-and-pro)
 
 ## Per-game baseline
 
 | Game | Baseline to test first | What the app should avoid claiming |
 |---|---|---|
-| **Fortnite / Unreal Engine** | Fully patched stock Windows 11 25H2 or a validated 26H1 image; keep current Epic security requirements enabled. | That a stripped image, a specific build number, or a registry tweak guarantees lower input delay or tournament eligibility. |
+| **Fortnite / Unreal Engine** | Fully patched stock Windows 11 25H2 on existing x64 PCs; keep current Epic security requirements enabled. | That 26H1 is a general upgrade, or a stripped image/build/registry tweak guarantees lower delay or eligibility. |
 | **VALORANT** | Fully patched supported Windows 11 with the security features Riot currently requires. | That disabling VBS, HVCI, Secure Boot, TPM, or services is safe for ranked/tournament play. |
 | **CS2 / Apex / Overwatch / R6** | The current supported Windows 11 branch with the game's current launcher and anti-cheat updates. | That one game's scheduler result transfers to every other engine or anti-cheat. |
 | **Rocket League / older DX titles** | Any supported Windows version that passes the game's current requirements, with the same-rig benchmark as the deciding evidence. | That an older, unsupported Windows release is a sound security or tournament baseline. |

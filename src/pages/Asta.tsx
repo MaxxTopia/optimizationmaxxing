@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useIsVip } from '../store/useVipStore'
-import { applyBatch, listApplied, type BatchItem } from '../lib/tauri'
+import { applyBatch, type BatchItem } from '../lib/tauri'
 import { catalog } from '../lib/catalog'
 import { presetById, presetExperimentalTweaks } from '../lib/presets'
 import { AstaShareCard } from '../components/AstaShareCard'
 import { TournamentAudit } from '../components/TournamentAudit'
-import { TournamentModePanel } from '../components/TournamentModePanel'
 import { useRigStore } from '../store/useRigStore'
 
 /**
@@ -35,15 +34,20 @@ but cranked. The core lane is measurable; the experimental lane is
 clearly marked because a BIOS/driver/security trade can beat a stock
 setup on one rig and hurt another. The bench decides what stays.
 
-What's left after Asta Mode lives on /diagnostics (RAM stability/profile
-audit and measured OS/driver experiments) and /grind (sleep, warmups, session cadence). Those are
-real, and they're free.`
+Apply only what you understand, then repeat the same game test. Receipts verify the immediate
+setting readback where supported; they do not prove reboot persistence or a competitive gain.`
 
 export function Asta() {
   const isVip = useIsVip()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [applied, setApplied] = useState<{ count: number; ts: string } | null>(null)
+  const [applied, setApplied] = useState<{
+    requested: number
+    verified: number
+    mismatch: number
+    unknown: number
+    ts: string
+  } | null>(null)
   const [quoteIdx, setQuoteIdx] = useState(0)
 
   // Rotate quotes on click of the manifesto block — small easter egg.
@@ -81,10 +85,12 @@ export function Asta() {
           items.push({ tweakId: t.id, action })
         }
       }
-      await applyBatch(items)
-      const list = await listApplied().catch(() => [])
+      const receipts = await applyBatch(items)
       setApplied({
-        count: list.filter((a) => a.status === 'applied').length,
+        requested: receipts.length,
+        verified: receipts.filter((receipt) => receipt.verificationStatus === 'verified').length,
+        mismatch: receipts.filter((receipt) => receipt.verificationStatus === 'mismatch').length,
+        unknown: receipts.filter((receipt) => receipt.verificationStatus === 'unknown').length,
         ts: new Date().toLocaleTimeString(),
       })
     } catch (e) {
@@ -156,8 +162,11 @@ export function Asta() {
 
             {applied && (
               <div className="mt-3 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
-                Applied at {applied.ts}. {applied.count} tweaks active. Run Asta Bench to see
-                the delta.
+                {applied.verified}/{applied.requested} actions matched immediate readback
+                {applied.mismatch > 0 ? ` · ${applied.mismatch} mismatch` : ''}
+                {applied.unknown > 0 ? ` · ${applied.unknown} unverified` : ''} (at {applied.ts}).
+                This does not prove reboot persistence or better gameplay; run the same Asta Bench
+                before and after.
               </div>
             )}
 
@@ -199,8 +208,6 @@ export function Asta() {
       <AstaFitCard />
 
       <TournamentAudit />
-
-      <TournamentModePanel />
 
       <AstaShareCard />
 
@@ -326,15 +333,15 @@ function AstaFitCard() {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <p className="text-[10px] uppercase tracking-widest text-text-subtle">rig fit check</p>
-          <h2 className="text-lg font-semibold">Can your rig carry Asta Mode?</h2>
+          <h2 className="text-lg font-semibold">Basic rig inventory</h2>
           <p className="text-xs text-text-muted leading-snug max-w-2xl mt-1">
-            This is a configuration guardrail, not a thermal guarantee. It checks the parts that
-            make aggressive desktop tuning less surprising before you try the experimental lane.
+            A few reported-spec thresholds only. This is not a compatibility, stability, safety,
+            or performance test and does not decide which tweaks you should apply.
           </p>
         </div>
         {spec && (
           <span className={`text-xs uppercase tracking-widest px-2 py-1 rounded border ${fit ? 'border-emerald-500/50 text-emerald-300' : 'border-amber-500/50 text-amber-200'}`}>
-            {fit ? 'core lane ready' : 'proceed carefully'}
+            {fit ? 'thresholds met' : 'thresholds not met'}
           </span>
         )}
       </div>
@@ -349,9 +356,10 @@ function AstaFitCard() {
         </div>
       )}
       <p className="text-[11px] text-text-subtle leading-snug">
-        Laptop users should expect more heat and battery cost from power experiments. If memory,
-        thermals, or stability are uncertain, stay with measured-core tweaks and open{' '}
-        <Link to="/diagnostics" className="underline hover:text-text">Diagnostics</Link> before pushing harder.
+        It does not inspect the cooler, PSU, BIOS, RAM stability, restore readiness, or anti-cheat
+        eligibility. Use{' '}
+        <Link to="/diagnostics" className="underline hover:text-text">Diagnostics</Link> for
+        evidence; benchmark one change at a time and verify it again after reboot.
       </p>
     </section>
   )

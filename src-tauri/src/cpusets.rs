@@ -1,54 +1,55 @@
-//! CPU Sets API — game-launch core pinning.
+//! Windows CPU Sets topology and opt-in process scheduling experiments.
 //!
-//! Wraps Windows' newer `SetProcessDefaultCpuSets` (Win10 1709+) which is
-//! categorically better than the legacy SetProcessAffinityMask:
-//!
-//! - **Affinity mask** is a hard limit: kernel scheduler can ONLY run threads
-//!   on the masked cores. The OS scheduler still considers other processes
-//!   "wanting" those same cores at the same time.
-//! - **CPU sets** is a hint to the scheduler: "prefer these cores for this
-//!   process." The scheduler treats off-set cores as unavailable for the
-//!   pinned process AND prefers them for everything else. Net effect: the
-//!   pinned process gets the cores effectively reserved instead of just
-//!   constrained.
-//!
-//! User flow: pick a "game core set" (e.g. high-perf cores 0-7 on a 16-core
-//! Ryzen), launch the game, click "Pin foreground game" — we pin the active
-//! foreground window's process to that set. Pin survives until the process
-//! exits or we explicitly clear it.
+//! CPU Set IDs are not assumed to equal logical-processor indexes. Windows
+//! documents CPU Sets as soft affinity; they do not reserve cores or promise
+//! lower latency. The native scheduler is the default and the comparison
+//! baseline.
 
 use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
-use windows::Win32::Foundation::{CloseHandle, HANDLE, HWND};
+use std::collections::HashSet;
+use std::mem::size_of;
+use std::ptr::read_unaligned;
+use windows::Win32::Foundation::{CloseHandle, GetLastError, HANDLE, HWND};
 use windows::Win32::System::ProcessStatus::GetModuleBaseNameW;
 use windows::Win32::System::SystemInformation::{
-    GetLogicalProcessorInformationEx, RelationProcessorCore,
-    SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX,
+    CpuSetInformation, GetSystemCpuSetInformation, SYSTEM_CPU_SET_INFORMATION,
 };
 use windows::Win32::System::Threading::{
-    GetActiveProcessorCount, OpenProcess, SetProcessDefaultCpuSets,
-    PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SET_INFORMATION, PROCESS_VM_READ,
+    OpenProcess, SetProcessDefaultCpuSets, PROCESS_QUERY_LIMITED_INFORMATION,
+    PROCESS_SET_INFORMATION, PROCESS_VM_READ,
 };
 use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct CpuSetDescriptor {
+    /// The actual ID accepted by SetProcessDefaultCpuSets.
+    pub id: u32,
+    /// Windows processor group; topology indexes are relative to this group.
+    pub group: u16,
+    pub logical_processor_index: u8,
+    pub core_index: u8,
+    pub last_level_cache_index: u8,
+    /// Higher values identify faster, less energy-efficient processors on
+    /// heterogeneous systems, per Microsoft's SYSTEM_CPU_SET_INFORMATION docs.
+    pub efficiency_class: u8,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CpuSetInfo {
-    /// Logical processor count (per Windows' active-processor enumerator).
+    /// Number of CPU Set records enumerated from Windows.
     pub logical_processor_count: u32,
-    /// CPU Set IDs as Windows reports them. Indices 0..N-1 in the order the
-    /// scheduler enumerates. We surface these so the UI can render the
-    /// "pick which cores to reserve" picker.
+    /// Real Windows CPU Set IDs; these may not be sequential.
     pub cpu_set_ids: Vec<u32>,
-    /// Logical-processor IDs flagged as performance cores (EfficiencyClass > 0
-    /// in Windows' processor info). Empty on uniform CPUs. Intel hybrid:
-    /// P-cores. AMD non-hybrid: empty.
-    pub p_core_ids: Vec<u32>,
-    /// Efficient cores (EfficiencyClass == 0 on hybrid). Empty on uniform CPUs.
-    pub e_core_ids: Vec<u32>,
-    /// True if Windows reports more than one EfficiencyClass — i.e. Intel
-    /// hybrid (12th+) or Snapdragon-X-style heterogeneous parts. False on
-    /// classic AMD desktop + Intel pre-12th.
+    /// Highest-efficiency-class CPU Set IDs (Intel P-core sets on hybrid Intel).
+    pub high_performance_ids: Vec<u32>,
+    /// Lower-efficiency-class CPU Set IDs (Intel E-core sets on hybrid Intel).
+    pub lower_performance_ids: Vec<u32>,
+    /// Full group-relative topology returned by Windows.
+    pub cpu_sets: Vec<CpuSetDescriptor>,
+    /// True when Windows reports more than one efficiency class.
     pub is_hybrid: bool,
 }
 
@@ -65,111 +66,148 @@ pub struct PinReport {
     pub error: Option<String>,
 }
 
-/// Probe the system's CPU set topology. Doesn't need admin.
-///
-/// Note: we report `logical_processor_count` from GetActiveProcessorCount
-/// and synthesize sequential CPU Set IDs (0..N-1). On modern Windows that
-/// matches what GetSystemCpuSetInformation would return for non-NUMA single-
-/// socket consumer hardware. If we ever need real CPU Set IDs (multi-CCD
-/// Threadripper) we can wire GetSystemCpuSetInformation in a follow-up; the
-/// API surface is opaque enough that the synthesized IDs are correct for
-/// every consumer rig we ship to today.
+/// Enumerate Windows' actual CPU Set IDs and topology. Doesn't need admin.
 pub fn cpu_set_info() -> Result<CpuSetInfo> {
-    let count = unsafe { GetActiveProcessorCount(0xFFFF) };
-    if count == 0 {
-        return Err(anyhow!("GetActiveProcessorCount returned 0"));
+    let mut cpu_sets = enumerate_cpu_sets()?;
+    cpu_sets.sort_by_key(|set| (set.group, set.logical_processor_index, set.id));
+    if cpu_sets.is_empty() {
+        return Err(anyhow!("Windows returned no CPU Set records"));
     }
-    let (p_core_ids, e_core_ids, is_hybrid) = detect_hybrid_topology(count).unwrap_or_default();
+
+    let mut seen_ids = HashSet::with_capacity(cpu_sets.len());
+    if cpu_sets.iter().any(|set| !seen_ids.insert(set.id)) {
+        return Err(anyhow!("Windows returned duplicate CPU Set IDs"));
+    }
+
+    let (high_performance_ids, lower_performance_ids, is_hybrid) =
+        split_efficiency_classes(&cpu_sets);
+    let cpu_set_ids = cpu_sets.iter().map(|set| set.id).collect::<Vec<_>>();
+    let logical_processor_count = u32::try_from(cpu_sets.len())
+        .context("CPU Set count does not fit in u32")?;
     Ok(CpuSetInfo {
-        logical_processor_count: count,
-        cpu_set_ids: (0..count).collect(),
-        p_core_ids,
-        e_core_ids,
+        logical_processor_count,
+        cpu_set_ids,
+        high_performance_ids,
+        lower_performance_ids,
+        cpu_sets,
         is_hybrid,
     })
 }
 
-/// Walk GetLogicalProcessorInformationEx(RelationProcessorCore, ...) and
-/// classify each logical processor by EfficiencyClass.
-///
-/// On hybrid Intel (12th+), EfficiencyClass is 1 for P-cores and 0 for
-/// E-cores. On uniform parts every core has EfficiencyClass=0 — we report
-/// `is_hybrid=false` and leave both lists empty (the UI falls back to
-/// "all cores" recommendations).
-fn detect_hybrid_topology(logical_count: u32) -> Result<(Vec<u32>, Vec<u32>, bool)> {
-    let mut buf_len: u32 = 0;
-    // First call: probe required buffer size. Expected to return FALSE with
-    // ERROR_INSUFFICIENT_BUFFER and write the byte count to buf_len.
-    unsafe {
-        let _ = GetLogicalProcessorInformationEx(RelationProcessorCore, None, &mut buf_len);
+/// Query the size, fetch the variable-sized records, and walk each record by
+/// its declared Size as required by the Windows API contract.
+fn enumerate_cpu_sets() -> Result<Vec<CpuSetDescriptor>> {
+    let mut required_bytes = 0u32;
+    // SAFETY: the null/zero probe is the documented way to obtain buffer size.
+    let _ = unsafe {
+        GetSystemCpuSetInformation(None, 0, &mut required_bytes, None, None)
+    };
+    if required_bytes == 0 {
+        return Err(anyhow!("GetSystemCpuSetInformation returned an empty buffer size"));
     }
-    if buf_len == 0 {
-        return Err(anyhow!("GetLogicalProcessorInformationEx returned 0 buffer size"));
-    }
-    let mut buf = vec![0u8; buf_len as usize];
-    unsafe {
-        GetLogicalProcessorInformationEx(
-            RelationProcessorCore,
-            Some(buf.as_mut_ptr() as *mut SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX),
-            &mut buf_len,
+
+    let word_bytes = size_of::<u64>();
+    let word_count = (required_bytes as usize + word_bytes - 1) / word_bytes;
+    let buffer_bytes = word_count
+        .checked_mul(word_bytes)
+        .context("CPU Set buffer size overflow")?;
+    let buffer_len = u32::try_from(buffer_bytes).context("CPU Set buffer is too large")?;
+    let mut aligned_buffer = vec![0u64; word_count];
+    let mut returned_bytes = 0u32;
+    // SAFETY: aligned_buffer is 8-byte aligned, has buffer_len bytes, and the
+    // API writes at most that many bytes. The pointer remains live for the call.
+    let ok = unsafe {
+        GetSystemCpuSetInformation(
+            Some(aligned_buffer.as_mut_ptr().cast::<SYSTEM_CPU_SET_INFORMATION>()),
+            buffer_len,
+            &mut returned_bytes,
+            None,
+            None,
         )
-        .map_err(|e| anyhow!("GetLogicalProcessorInformationEx failed: {e}"))?;
+    };
+    if !ok.as_bool() {
+        return Err(anyhow!(
+            "GetSystemCpuSetInformation failed (last_error={:?})",
+            unsafe { GetLastError() }
+        ));
     }
+    let returned_len = usize::try_from(returned_bytes).context("invalid CPU Set buffer length")?;
+    if returned_len > buffer_bytes {
+        return Err(anyhow!("Windows returned more CPU Set data than the supplied buffer"));
+    }
+    let bytes = unsafe {
+        std::slice::from_raw_parts(aligned_buffer.as_ptr().cast::<u8>(), returned_len)
+    };
+    parse_cpu_set_records(bytes)
+}
 
-    let mut p_cores: Vec<u32> = Vec::new();
-    let mut e_cores: Vec<u32> = Vec::new();
-    let mut efficiency_classes_seen: std::collections::HashSet<u8> =
-        std::collections::HashSet::new();
+/// Parse SYSTEM_CPU_SET_INFORMATION records without assuming their IDs are
+/// sequential. Unknown record types are skipped using their declared size.
+fn parse_cpu_set_records(bytes: &[u8]) -> Result<Vec<CpuSetDescriptor>> {
+    let header_len = size_of::<u32>() + size_of::<i32>();
+    let mut offset = 0usize;
+    let mut cpu_sets = Vec::new();
 
-    let mut offset: usize = 0;
-    while offset + std::mem::size_of::<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>() <= buf.len() {
-        // SAFETY: buf is laid out as a stream of SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX
-        // records of varying Size per the Win32 contract.
-        let info_ptr = unsafe {
-            buf.as_ptr().add(offset) as *const SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX
-        };
-        let info = unsafe { &*info_ptr };
-        let size = info.Size as usize;
-        if size == 0 || offset + size > buf.len() {
-            break;
+    while offset < bytes.len() {
+        let remaining = bytes.len() - offset;
+        if remaining < header_len {
+            return Err(anyhow!("truncated CPU Set record header at byte {offset}"));
         }
-        // info.Relationship == RelationProcessorCore for every record in this
-        // request, so go straight to the Processor union variant.
-        // SAFETY: same — the union access is valid because Relationship is set.
-        let proc_info = unsafe { &info.Anonymous.Processor };
-        let efficiency = proc_info.EfficiencyClass;
-        efficiency_classes_seen.insert(efficiency);
-        for i in 0..proc_info.GroupCount as usize {
-            let group_affinity = proc_info.GroupMask[i];
-            let mut mask = group_affinity.Mask;
-            let mut bit_index: u32 = 0;
-            while mask != 0 {
-                if (mask & 1) != 0 {
-                    let logical_id = bit_index + (group_affinity.Group as u32) * 64;
-                    if logical_id < logical_count {
-                        if efficiency > 0 {
-                            p_cores.push(logical_id);
-                        } else {
-                            e_cores.push(logical_id);
-                        }
-                    }
-                }
-                mask >>= 1;
-                bit_index += 1;
+        let header = &bytes[offset..offset + header_len];
+        let record_size = u32::from_ne_bytes(header[0..4].try_into()?) as usize;
+        let record_type = i32::from_ne_bytes(header[4..8].try_into()?);
+        if record_size < header_len || record_size > remaining {
+            return Err(anyhow!("invalid CPU Set record size {record_size} at byte {offset}"));
+        }
+
+        if record_type == CpuSetInformation.0 {
+            if record_size < size_of::<SYSTEM_CPU_SET_INFORMATION>() {
+                return Err(anyhow!("CPU Set record is shorter than SYSTEM_CPU_SET_INFORMATION"));
             }
+            // SAFETY: the size check above guarantees a complete record, and
+            // read_unaligned handles the byte stream's record alignment.
+            let record = unsafe {
+                read_unaligned(
+                    bytes.as_ptr().add(offset).cast::<SYSTEM_CPU_SET_INFORMATION>(),
+                )
+            };
+            // SAFETY: the Type check above guarantees the CpuSet union arm.
+            let set = unsafe { record.Anonymous.CpuSet };
+            cpu_sets.push(CpuSetDescriptor {
+                id: set.Id,
+                group: set.Group,
+                logical_processor_index: set.LogicalProcessorIndex,
+                core_index: set.CoreIndex,
+                last_level_cache_index: set.LastLevelCacheIndex,
+                efficiency_class: set.EfficiencyClass,
+            });
         }
-        offset += size;
+        offset += record_size;
     }
+    Ok(cpu_sets)
+}
 
-    let is_hybrid = efficiency_classes_seen.len() > 1;
-    if !is_hybrid {
-        // Uniform CPU — clear the buckets so the frontend can fall back to
-        // "all cores" recommendations cleanly.
-        return Ok((Vec::new(), Vec::new(), false));
+/// Windows documents larger EfficiencyClass values as faster, less
+/// energy-efficient processors. A uniform CPU has no special subset to offer.
+fn split_efficiency_classes(sets: &[CpuSetDescriptor]) -> (Vec<u32>, Vec<u32>, bool) {
+    let Some(highest_class) = sets.iter().map(|set| set.efficiency_class).max() else {
+        return (Vec::new(), Vec::new(), false);
+    };
+    let lowest_class = sets.iter().map(|set| set.efficiency_class).min().unwrap_or(highest_class);
+    if highest_class == lowest_class {
+        return (Vec::new(), Vec::new(), false);
     }
-    p_cores.sort_unstable();
-    e_cores.sort_unstable();
-    Ok((p_cores, e_cores, true))
+    let high = sets
+        .iter()
+        .filter(|set| set.efficiency_class == highest_class)
+        .map(|set| set.id)
+        .collect();
+    let lower = sets
+        .iter()
+        .filter(|set| set.efficiency_class < highest_class)
+        .map(|set| set.id)
+        .collect();
+    (high, lower, true)
 }
 
 /// Pin the foreground window's owning process to the given CPU Set IDs.

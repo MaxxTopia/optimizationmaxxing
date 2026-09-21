@@ -862,7 +862,7 @@ export interface BiosAudit {
   ramConfiguredMhz: number | null
   /** "DDR4" | "DDR5" | "Unknown" */
   ramType: string | null
-  /** Derived: true iff ramSpeedMhz > JEDEC default for its type. */
+  /** Compatibility-only field; Windows memory clocks cannot prove this, so currently null. */
   expoXmpActive: boolean | null
   powerPlanGuid: string | null
   powerPlanName: string | null
@@ -870,18 +870,47 @@ export interface BiosAudit {
   moboManufacturer: string | null
   /** Board product/model. */
   moboProduct: string | null
+  /** Board revision from Win32_BaseBoard.Version, when reported. */
+  moboRevision: string | null
   biosVendor: string | null
   biosVersion: string | null
   /** yyyymmdd. */
   biosReleaseDate: string | null
 }
 
-/** Reads BIOS-adjacent settings Windows can see indirectly: BIOS mode,
- *  Secure Boot, TPM, RAM speed + EXPO/XMP status, CPU SMT, active power
- *  plan. For settings Windows can't see (PBO offsets, voltage curves) the
- *  BiosAuditCard surfaces a SCEWIN-dump pointer. */
+/** Reads Windows-visible firmware and system context. It does not expose all
+ *  setup variables; EXPO/XMP, timing, and hidden firmware settings remain
+ *  unknown unless separately verified. */
 export async function biosAuditProbe(): Promise<BiosAudit> {
   return invoke<BiosAudit>('bios_audit_probe')
+}
+
+export interface ScewinIdentity {
+  boardManufacturer: string | null
+  boardProduct: string | null
+  boardRevision: string | null
+  biosVersion: string | null
+}
+
+export interface ScewinEntry {
+  /** Comparison-only key. Never a firmware write token. */
+  comparisonKey: string
+  question: string
+  currentValue: string | null
+  defaultValue: string | null
+  currentValueSource: 'selected-option' | 'value-field' | 'conflict' | 'not-reported' | string
+}
+
+export interface ScewinDump {
+  entries: ScewinEntry[]
+  omittedSensitiveEntries: number
+  identity: ScewinIdentity | null
+}
+
+/** Parses a user-selected SCEWIN text export in memory. This accepts text only;
+ *  it never launches SCEWIN or writes firmware/NVRAM. */
+export async function scewinParseDump(content: string): Promise<ScewinDump> {
+  return invoke<ScewinDump>('scewin_parse_dump', { content })
 }
 
 export interface NetworkAudit {
@@ -1108,11 +1137,19 @@ export async function standbyCheckMigration(): Promise<StandbyMigrationInfo | nu
 export interface CpuSetInfo {
   logicalProcessorCount: number
   cpuSetIds: number[]
-  /** Hybrid Intel P-core logical IDs (12th+ gen). Empty on uniform CPUs. */
-  pCoreIds: number[]
-  /** Hybrid Intel E-core logical IDs. Empty on uniform CPUs. */
-  eCoreIds: number[]
-  /** True iff Windows reports >1 EfficiencyClass (Intel hybrid / SQ-X). */
+  /** Highest Windows EfficiencyClass (Intel P-core CPU Set IDs on hybrid Intel). */
+  highPerformanceIds: number[]
+  /** Lower Windows EfficiencyClass CPU Set IDs (Intel E-core sets on hybrid Intel). */
+  lowerPerformanceIds: number[]
+  cpuSets: Array<{
+    id: number
+    group: number
+    logicalProcessorIndex: number
+    coreIndex: number
+    lastLevelCacheIndex: number
+    efficiencyClass: number
+  }>
+  /** True iff Windows reports more than one EfficiencyClass. */
   isHybrid: boolean
 }
 
@@ -1164,6 +1201,7 @@ export interface AutoPinStatus {
   running: boolean
   lastPoll: string | null
   pinned: AutoPinPinnedProc[]
+  lastError: string | null
   config: AutoPinConfig
 }
 

@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.6',
+    date: '2026-09-20',
+    highlights: [
+      'NEW **Game CPU-set presets.** Try the Intel P-core Fortnite A/B preset or saved per-game auto-pin rules; Windows scheduling remains the baseline, and the app explains how to restore it.',
+      'IMPROVE **Recommendations are game- and source-aware.** Choose a game in Upgrade Advisor; Grind results and hardware pricing are dated and linked instead of presented as timeless rankings or guarantees.',
+      'IMPROVE **Advanced setup guidance.** NVIDIA profile downloads, the read-only SCEWIN workflow, driver guidance, and ONU timeout explanations now show clearer steps and limits.',
+    ],
+  },
+  {
     version: '0.4.5',
     date: '2026-09-17',
     highlights: [

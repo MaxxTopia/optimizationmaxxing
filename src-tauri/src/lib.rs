@@ -12,6 +12,7 @@ mod metrics;
 mod network_audit;
 mod process_helpers;
 mod specs;
+mod scewin;
 mod standby;
 mod telemetry;
 mod toolkit;
@@ -1150,6 +1151,11 @@ async fn bios_audit_probe() -> Result<bios_audit::BiosAudit, String> {
 }
 
 #[tauri::command]
+fn scewin_parse_dump(content: String) -> Result<scewin::ScewinDump, String> {
+    scewin::parse_scewin_dump(&content)
+}
+
+#[tauri::command]
 async fn network_audit_probe() -> Result<network_audit::NetworkAudit, String> {
     tokio::task::spawn_blocking(|| {
         network_audit::read_network_audit().map_err(|e| format!("{:#}", e))
@@ -1396,6 +1402,7 @@ pub fn run() {
             driver_health,
             network_audit_probe,
             bios_audit_probe,
+            scewin_parse_dump,
             list_session_candidates,
             session_suspend,
             session_resume,

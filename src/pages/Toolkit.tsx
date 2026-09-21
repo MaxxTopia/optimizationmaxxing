@@ -139,12 +139,19 @@ export function Toolkit() {
           </p>
         </div>
 
+        <div className="rounded-md border border-accent/40 bg-accent/5 p-3 text-sm text-text-muted">
+          <strong className="text-text">When to use Driver Advisor:</strong> after a GPU or driver
+          change, when the scan flags an old/known-problem version, or when diagnosing a repeatable
+          driver symptom. A newer version alone is not a reason to change a stable tournament rig;
+          compare the same workload before and after.
+        </div>
+
         {/* NVIDIA — full step-by-step. A stripped install can reduce optional
             components, but the performance and compatibility tradeoff is
             driver-, feature-, and capture-workflow dependent. */}
         <div className="rounded-md border border-border p-4 space-y-3">
           <p className="font-semibold text-text">
-            NVIDIA — install with{' '}
+            NVIDIA — official driver first; optional custom package{' '}
             <a
               href="https://www.techpowerup.com/nvcleanstall/"
               target="_blank"
@@ -156,49 +163,30 @@ export function Toolkit() {
           </p>
           <ol className="list-decimal pl-5 space-y-2 text-sm text-text-muted">
             <li>
-              Download NVCleanstall from TechPowerUp. Free, no install — just run the .exe as admin.
+              Start with the current NVIDIA Game Ready driver from{' '}
+              <a
+                href="https://www.nvidia.com/Download/index.aspx"
+                target="_blank"
+                rel="noreferrer"
+                className="text-accent hover:underline"
+              >
+                NVIDIA's official download page
+              </a>.
             </li>
-            <li>
-              <span className="text-text font-medium">Pick a driver:</span>{' '}
-              <span className="text-text-muted">Latest production driver</span> (default — what you want for stability). Choose <span className="text-text-muted">latest beta</span> only if a specific game patch needs it.
-            </li>
-            <li>
-              <span className="text-text font-medium">Components — strip everything except:</span>
-              <ul className="mt-1 ml-2 list-disc pl-4 space-y-0.5 text-[13px]">
-                <li><span className="text-text">Display Driver</span> — required, can't remove</li>
-                <li><span className="text-text">PhysX System Software</span> — keep (UE4/UE5 games rely on it; Fortnite + most modern titles)</li>
-                <li><span className="text-text">HD Audio Driver</span> — keep <em>only</em> if you use HDMI/DisplayPort audio. Otherwise strip — fewer kernel-mode drivers.</li>
-                <li className="text-text-subtle">Strip everything else: GeForce Experience, NVIDIA Container, USB-C Audio, NVIDIA Update, nView, Telemetry — all background services with zero gaming benefit.</li>
-              </ul>
-            </li>
-            <li>
-              <span className="text-text font-medium">Tweaks page — enable these:</span>
-              <ul className="mt-1 ml-2 list-disc pl-4 space-y-0.5 text-[13px]">
-                <li>Disable Telemetry</li>
-                <li>Disable Driver Telemetry</li>
-                <li>Disable Installer Telemetry</li>
-                <li>Disable Ansel (unless you use the photo mode)</li>
-                <li>Disable HDCP (unless you stream Netflix-style protected content)</li>
-                <li><span className="text-text">Perform a clean install</span> — wipes the existing driver before installing. Equivalent to running DDU first; do this every time unless you're patch-level updating.</li>
-                <li><span className="text-text">Show extra tweaks</span> — flip this on so the above are visible.</li>
-              </ul>
-            </li>
-            <li>
-              Click <span className="text-text font-medium">Install</span> — downloads + strips + installs. ~3-5 min total.
-            </li>
-            <li>
-              Reboot. Then open <a href="/guides/nvidia-profile-inspector" className="text-accent hover:underline">NVIDIA Profile Inspector</a> and import the bundled profile for your game. NVCleanstall handles optional component selection; NVPI handles the per-game knobs the Control Panel does not expose.
-            </li>
+            <li>Use NVCleanstall only if you specifically want to omit optional components. Read each component's effect first; removing NVIDIA App, capture/overlay, HD audio, Ansel, update, or HDCP support can remove features you rely on.</li>
+            <li>Keep the driver and components you need. Do not disable HDCP or telemetry-related options on the assumption that they lower game latency; there is no guaranteed FPS or input-delay gain.</li>
+            <li>Use a clean install/DDU for a corrupted driver or a troubleshooting/vendor-swap case, not as routine maintenance. NVCleanstall's clean-install option is not the same as DDU.</li>
+            <li>Reboot and verify the game, display/audio, capture, and overlays you use. Measure before deciding to keep a stripped package.</li>
           </ol>
           <p className="text-[11px] text-text-subtle italic pt-1 border-t border-border">
-            <strong className="text-text-muted not-italic">Measure the tradeoff:</strong> optional NVIDIA components, package size, services, capture/audio support, and idle memory vary by driver branch and selected features. Keep the official installer path when you need GeForce features, HDMI/DP audio, capture, or the simplest rollback; compare frametime and DPC results on the same driver before keeping a stripped install.
+            <strong className="text-text-muted not-italic">Measure the tradeoff:</strong> component and service changes vary by driver and selection. Smaller packages or fewer components do not by themselves prove lower DPC latency or input delay.
           </p>
         </div>
 
         <div className="rounded-md border border-border p-4 space-y-2 text-sm text-text-muted">
           <p className="font-semibold text-text mb-1">AMD</p>
           <p>
-            Skip Adrenaline's auto-install (bundles a launcher + telemetry by default). Download the bare driver from{' '}
+            Choose the AMD package and options you need from{' '}
             <a
               href="https://www.amd.com/en/support"
               target="_blank"
@@ -207,7 +195,7 @@ export function Toolkit() {
             >
               AMD's driver page
             </a>
-            , and <strong className="text-text">use DDU (Display Driver Uninstaller) in Safe Mode</strong> for clean swaps between major versions. AMD doesn't have an NVCleanstall equivalent — DDU is the closest.
+            . DDU is a troubleshooting tool for a corrupted install or a vendor swap, not a routine step for every driver update. After installation, verify your display, audio, recording, and game features.
           </p>
         </div>
       </section>

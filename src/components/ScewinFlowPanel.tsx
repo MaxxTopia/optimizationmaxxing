@@ -9,10 +9,10 @@ import { useRigStore } from '../store/useRigStore'
  * each step has a copy-to-clipboard button for the exact command.
  *
  * Workflow surfaced:
- *   1. Backup dump (read-only) — `SCEWIN_64.exe /o /s pre-tune.txt`
- *   2. Diff against a clean rig (any text-diff tool)
- *   3. Interpret settings in the vendor BIOS UI (never import a dump)
- *   4. Verify by re-dumping after reboot — diff vs pre-tune.txt
+ *   1. Export a text snapshot (read-only) — `SCEWIN_64.exe /o /s pre-tune.txt`
+ *   2. Compare own snapshots for the same board revision and BIOS
+ *   3. Make manual changes only in the vendor BIOS UI
+ *   4. Re-export after reboot; missing fields remain unknown
  */
 
 interface Step {
@@ -27,9 +27,9 @@ interface Step {
 const STEPS: Step[] = [
   {
     num: '1',
-    title: 'Dump BIOS to a file',
+    title: 'Export a text snapshot',
     blurb:
-      'Read-only — every UEFI variable into one text file. Run in admin Command Prompt (not PowerShell). Save the file off the rig (USB / cloud) so it survives a non-POST recovery.',
+      'Read-only setup-script export; it is not every UEFI variable and may omit suppressed, hidden, or duplicate questions. Run in admin Command Prompt (not PowerShell). Save a backup off the rig.',
     cmd: 'SCEWIN_64.exe /o /s pre-tune.txt',
     cmdNote: 'Admin cmd.exe, run in the SCEWIN folder',
   },
@@ -37,22 +37,22 @@ const STEPS: Step[] = [
     num: '2',
     title: 'Diff against a reference',
     blurb:
-      'Compare against a teammate dump on the same chipset, or your own previous snapshot. Open both in any text-diff tool (VS Code, Beyond Compare, WinMerge, Notepad++ Compare). Variables that differ = your investigate-list for step 3.',
-    cmd: 'code --diff pre-tune.txt teammate.txt',
-    cmdNote: 'Or use any diff tool you trust',
+      'Compare your own snapshots from the same board model, revision, and BIOS. Diagnostics can inspect two local text exports after a reboot. Missing records remain unknown; a teammate dump is not a safe template.',
+    cmd: 'code --diff pre-tune.txt previous.txt',
+    cmdNote: 'Use a text-diff tool; review changes one setting at a time',
   },
   {
     num: '3',
-    title: 'Interpret in BIOS UI — never import a dump',
+    title: 'Make manual changes only in BIOS UI',
     blurb:
-      'Use the vendor BIOS UI only for settings you understand and can recover. Never import another board\'s dump and do not copy voltage, thermal-limit, power-limit, PBO, Curve Optimizer, or fixed-frequency values as latency recipes. This app does not write firmware.',
+      'Use the vendor BIOS UI for manual changes only. The memory worksheet keeps manual timing and voltage recipes as experimental references, not copy-paste settings: kit ICs, memory controller, board, BIOS, and cooling margin differ. Change one value at a time and validate stability. The app only reads the text export; never use SCEWIN import/write switches or write NVRAM.',
     warning: true,
   },
   {
     num: '4',
     title: 'Verify it actually committed',
     blurb:
-      'Reboot, re-dump with a new filename, diff vs your pre-tune file. Exactly your intended changes should differ — nothing else. Extra diffs = BIOS reset something (post-flash, CMOS event). Missing diffs = your change didn\'t save.',
+      'Reboot, re-export with a new filename, and compare in Diagnostics. Only values reported in both files can be compared; missing or extra records need manual review and do not prove whether a setting is available or saved.',
     cmd: 'SCEWIN_64.exe /o /s post-tune.txt',
     cmdNote: 'Then diff post-tune.txt vs pre-tune.txt',
   },
@@ -87,11 +87,11 @@ export function ScewinFlowPanel() {
     >
       <div>
         <p className="text-[10px] uppercase tracking-widest text-accent">advanced — read-only workflow</p>
-        <h3 className="text-base font-semibold">SCEWIN — full BIOS audit, in 4 steps</h3>
+        <h3 className="text-base font-semibold">SCEWIN — read-only snapshot review, in 4 steps</h3>
         <p className="text-xs text-text-muted leading-snug mt-1 max-w-2xl">
-          Dump → diff → interpret → verify. SCEWIN gives you a plain-text snapshot of many
-          UEFI variables on your board. <strong className="text-text">Use it as read-only evidence.</strong>
-          Never import a dump or use it to write NVRAM; this app does not apply firmware changes.
+          Export → compare → review → re-export. SCEWIN provides a text setup-script snapshot, not a
+          complete or authenticated view of firmware. <strong className="text-text">Use it as partial read-only evidence.</strong>
+          This app parses exports locally; it never executes SCEWIN or writes firmware/NVRAM.
         </p>
       </div>
 

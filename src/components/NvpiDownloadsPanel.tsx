@@ -28,7 +28,7 @@ const PROFILES: NipProfile[] = [
     settingsCount: 4,
     highlight: true,
     blurb:
-      'Power Mgmt Prefer Max, VSync force off, Texture filtering High Performance, and pre-rendered frames left to the 3D app so Fortnite Reflex owns the queue. Start here.',
+      'Four driver-profile overrides to A/B as a starting point. They do not guarantee lower latency; compare the same Fortnite scene with Reflex, frame cap, and display settings held constant.',
   },
   {
     filename: 'fortnite-clean-render.nip',
@@ -37,28 +37,28 @@ const PROFILES: NipProfile[] = [
     settingsCount: 7,
     experimental: true,
     blurb:
-      'Adds driver-level FXAA/MFAA off and Negative LOD clamp to the same latency baseline. It does not remove foliage, clouds, terrain, or visibility; those hidden visual flags are excluded.',
+      'Seven-setting image-filter experiment. It does not remove foliage, clouds, terrain, or alter visibility. Keep only if your controlled test improves frame pacing without hurting clarity.',
   },
   {
     filename: 'valorant.nip',
     label: 'Valorant',
     exes: 'VALORANT-Win64-Shipping.exe, vgc.exe',
     settingsCount: 6,
-    blurb: 'Power Mgmt Prefer Max, VSync off, Texture High Perf, Neg LOD Clamp, FXAA off, Pre-rendered = 1. Threaded Opt left at AUTO (Vanguard-cautious).',
+    blurb: 'Six driver-profile settings for a controlled test. Not an anti-cheat approval or a guaranteed latency improvement.',
   },
   {
     filename: 'cs2.nip',
     label: 'Counter-Strike 2',
     exes: 'cs2.exe',
     settingsCount: 6,
-    blurb: 'Same 6-setting safe baseline as Valorant.',
+    blurb: 'Six driver-profile settings for a controlled test; compare against the game and driver defaults.',
   },
   {
     filename: 'apex-legends.nip',
     label: 'Apex Legends',
     exes: 'r5apex.exe, r5apex_dx12.exe',
     settingsCount: 6,
-    blurb: 'Same baseline. Source engine integrates Reflex on its own — driver-side overrides stay minimal.',
+    blurb: 'Six driver-profile settings for a controlled test. Verify the executable association and in-game latency options.',
   },
   {
     filename: 'marvel-rivals.nip',
@@ -66,7 +66,7 @@ const PROFILES: NipProfile[] = [
     exes: 'Marvel-Win64-Shipping.exe',
     settingsCount: 12,
     blurb:
-      'UE5 (same engine family as Fortnite) — Threaded Optimization OFF for the main-thread stutter fix, Power Mgmt Prefer Max, VSync force-off, Texture filtering High Performance, FXAA + MFAA off, Pre-rendered frames 1, Ansel disabled.',
+      'Twelve driver-profile settings. Engine-family similarity does not predict a Fortnite result; test this profile only in Marvel Rivals.',
   },
 ]
 
@@ -112,10 +112,11 @@ export function NvpiDownloadsPanel() {
         <p className="text-[10px] uppercase tracking-widest text-accent">one-click downloads</p>
         <h3 className="text-base font-semibold">NVPI .nip profiles — pick a game, import in NVPI</h3>
         <p className="text-xs text-text-muted leading-snug mt-1 max-w-2xl">
-          Each profile binds to the game's <code>.exe</code> so NVPI auto-applies on launch. After
-          download: <strong className="text-text">NVPI → File → Import Profile(s)</strong> →
-          select the <code>.nip</code> → <strong className="text-text">Apply changes</strong> (green
-          checkmark top-right). Every setting ID verified against Orbmu2k's source.
+          Download saves a <code>.nip</code>; it does not change your driver. In NVPI choose{' '}
+          <strong className="text-text">File → Import Profile(s)</strong>, select the file,
+          confirm the game's executable association, then click{' '}
+          <strong className="text-text">Apply changes</strong>. Re-open the profile to verify it.
+          Re-check after driver updates. These are test candidates, not guaranteed latency wins.
         </p>
         <p className="text-[11px] text-amber-200/90 leading-snug mt-2 max-w-2xl">
           These are driver profiles, not Fortnite file edits. We do not ship foliage/cloud/terrain
@@ -144,7 +145,7 @@ export function NvpiDownloadsPanel() {
             </div>
             <p className="text-[11px] text-text-muted leading-snug">{p.blurb}</p>
             <p className="text-[10px] font-mono text-text-subtle break-all">
-              Binds: {p.exes}
+              Executables in file (verify after import): {p.exes}
             </p>
             <button
               onClick={() => download(p.filename)}

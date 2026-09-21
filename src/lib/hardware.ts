@@ -1,8 +1,7 @@
 /**
- * Hardware advisory — per-category tier ladders. Pulled from the same
- * sources as /grind (ProSettings.net pro configs + Aussie Antics' PT
- * background). Every item is something at least one cited pro currently
- * runs OR is a documented budget alternative the scene endorses.
+ * Hardware advisory — per-category component candidates with source links.
+ * Public player configurations are personal snapshots, not performance
+ * proof or a universal buying list.
  *
  * Build to grow: add a new HardwareItem to a category, ship.
  */
@@ -27,15 +26,16 @@ export type HardwareCategory =
 
 export type HardwareTier = 'goat' | 'pro' | 'budget' | 'principle'
 
-/** Vendor/spec and recommendation copy review date. Prices and pro usage are
- * intentionally not treated as live data; re-check both before purchase. */
-export const HARDWARE_LAST_VERIFIED = '2026-09-17'
+/** Copy review date; prices, stock, and player usage are not live data. */
+export const HARDWARE_COPY_REVIEWED = '2026-09-20'
 
 export interface HardwareItem {
   /** Display name. */
   name: string
   /** USD price band — "$" / "$$" / "$$$" or a literal range. */
   price: string
+  /** Optional manufacturer price link; listed prices are point-in-time snapshots. */
+  priceUrl?: string
   /** Tier within its category. */
   tier: HardwareTier
   /** 1-2 sentence WHY — input lag, weight, build, etc. */
@@ -69,18 +69,16 @@ export const HARDWARE: HardwareSection[] = [
         price: '$499',
         tier: 'goat',
         why:
-          'Current flagship reference for a CPU-bound competitive build. 8 cores, 96MB 3D V-Cache, and a 5.6GHz advertised boost; independent game results vary by patch, memory, and settings, so treat the 9850X3D-versus-9800X3D gap as directional rather than a guaranteed Fortnite delta.',
+          'High-end X3D candidate for CPU-bound, high-refresh play. Compare current Fortnite benchmarks against the 9800X3D at your resolution and settings; no published result guarantees the same gap on your rig.',
         link: 'https://www.tomshardware.com/pc-components/cpus/amd-ryzen-7-9850x3d-vs-ryzen-7-9800x3d',
-        citedPro: 'Most current FNCS top-100 builds',
       },
       {
         name: 'AMD Ryzen 7 9800X3D',
         price: '$479',
         tier: 'pro',
         why:
-          'A strong value reference when the flagship premium is not justified. 8 cores, 96MB L3 (3D V-Cache stack), and a 5.2GHz advertised boost. Use current independent benchmarks for the game and patch you play; the percentage gap is not portable across every rig. Keep the platform at vendor defaults for a fair latency comparison.',
+          'High-end X3D alternative. Check current Fortnite results, platform cost, and your own CPU-bound frametimes before paying extra for a newer model; the ranking can change with game patch and settings.',
         link: 'https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9800x3d.html',
-        citedPro: 'Most current FNCS top-100 builds',
       },
       {
         name: 'AMD Ryzen 7 7800X3D',
@@ -113,7 +111,7 @@ export const HARDWARE: HardwareSection[] = [
     id: 'gpu',
     label: 'GPU',
     blurb:
-      "Fortnite is rarely GPU-bound at 1080p competitive (Performance mode renders at half-res). What matters is driver maturity (NVIDIA wins by a mile on UE5 day-one) and Reflex-on-BOOST support. Spend the $1500+ tier money on monitors + chair before you spend it on the GPU.",
+      "At competitive settings, Fortnite may be CPU- or GPU-limited depending on scene, resolution, render mode, and frame cap. No GPU vendor wins every patch; compare current Fortnite benchmarks and your measured bottleneck before upgrading.",
     items: [
       {
         name: 'NVIDIA GeForce RTX 5090',
@@ -377,8 +375,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$129',
         tier: 'goat',
         why:
-          'Pro-default. Wired, 3.5mm + USB-C DAC, dual chambers for sub-bass control on footstep frequencies. Reet runs this. Comfortable for 6+ hour sessions.',
-        citedPro: 'Reet',
+          'Wired open-back headset option. Check fit, microphone needs, connection type, and whether you prefer open-back sound; a headset does not reduce game input latency.',
       },
       {
         name: 'HyperX Cloud III',
@@ -403,14 +400,15 @@ export const HARDWARE: HardwareSection[] = [
       'Choose a shape and sensor you can control, then validate polling stability on the actual rig. 1000 Hz is a sensible baseline; 4K/8K can reduce report interval but may add CPU or frametime cost, so it is not an automatic competitive upgrade.',
     items: [
       {
-        name: 'Logitech G PRO X Superlight 2',
-        price: '$159',
+        name: 'Logitech G PRO X2 SUPERSTRIKE',
+        price: '$179.99 (checked Sep 20, 2026)',
+        priceUrl: 'https://www.logitechg.com/en-us/shop/p/pro-x2-superstrike-mouse.910-007700',
         tier: 'goat',
         why:
-          '60g, HERO 2 sensor (44K DPI, 888 IPS), now with 8K polling. Industry-default — Peterbot, Reet, and a large slice of the active FNCS field. Wireless dongle is sub-1ms latency.',
+          'Listed on Peterbot\'s ProSettings profile updated Aug 31, 2026. That is one player\'s current preference, not evidence of lower latency or a universal best mouse. Check current availability and compatibility before buying.',
         citedPro: 'Peterbot',
-        link: 'https://www.logitechg.com/en-us/products/gaming-mice/pro-x-superlight-2.html',
-        caveat: 'White colorway has a known coating wear after 6+ months of heavy use. Black holds up.',
+        link: 'https://prosettings.net/players/peterbot/',
+        caveat: 'Player gear and regional availability can change; compare shape, click feel, and polling stability on your own PC.',
       },
       {
         name: 'Razer Viper V4 Pro',
@@ -504,8 +502,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$200-260',
         tier: 'goat',
         why:
-          'Magnetic Lekker switches. Per-key adjustable actuation (0.1-4.0 mm), rapid-trigger reset, snap-tap (instant counter-strafing). Veno cited it as the new pro standard. Open-source firmware (Wooting QMK).',
-        citedPro: 'Veno',
+          'Magnetic switches with adjustable actuation and rapid-trigger features. These change key behavior, not guaranteed Fortnite input latency; follow current game rules for SOCD/snap-tap features and configure only permitted options.',
         link: 'https://wooting.io/wooting-60he',
         caveat: '60HE+ is sometimes hard to source US-side — wooting.io ships from EU. 80HE has wider US retail.',
       },
@@ -514,7 +511,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$200',
         tier: 'pro',
         why:
-          'OmniPoint 2.0 magnetic switches. Same per-key adjustable actuation idea as Wooting, easier to find at US Best Buy / Amazon. Peterbot runs the Apex PRO TKL.',
+          'Magnetic switches with adjustable actuation. Peterbot\'s linked public profile lists the Apex Pro TKL Gen3; that is a gear snapshot, not a performance benchmark.',
         citedPro: 'Peterbot',
         link: 'https://steelseries.com/gaming-keyboards/apex-pro-tkl-gen-3',
       },
@@ -598,8 +595,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$60',
         tier: 'goat',
         why:
-          '**What Peterbot runs.** Mid-speed cloth, dense weave, large size. Designed by/for Benjyfishy and other top FNCS competitors. The pro-pad-of-record across the current FNCS field.',
-        citedPro: 'Peterbot',
+          'Large cloth mousepad option. Surface speed and stopping feel are personal; this category is comfort/control preference, not a guaranteed aim or latency improvement.',
         link: 'https://gamesense.gg/products/benjyfishy-radar',
       },
       {
@@ -624,15 +620,14 @@ export const HARDWARE: HardwareSection[] = [
     id: 'ergonomics',
     label: 'Ergonomics',
     blurb:
-      "Aussie Antics: 10-hour sessions = tendinitis risk one bad week away. The body grind is real — hardware that lets you grind longer compounds with hardware that lets you grind faster.",
+      'Choose adjustable gear that fits your body and setup. These are comfort ideas, not medical guidance or claims that a product prevents injury.',
     items: [
       {
-        name: 'Soft fabric wrist rest (NOT gel)',
+        name: 'Wrist rest (optional comfort item)',
         price: '$10-25',
         tier: 'principle',
         why:
-          "Gel rests compress wrist circulation under sustained pressure — long-term carpal tunnel risk. Soft cloth (Corsair MM100, Glorious wrist rest) supports without compressing.",
-        citedPro: 'Aussie Antics',
+          'Only use a rest if it feels comfortable and does not force pressure on the wrist. Material preference is individual; this is not a treatment or injury-prevention device.',
       },
       {
         name: 'Monitor at arm\'s length, top bezel at eye level',
@@ -646,8 +641,7 @@ export const HARDWARE: HardwareSection[] = [
         price: '$0',
         tier: 'principle',
         why:
-          "Set a phone timer. Every 90 min: stand up, wrist + forearm rotations, neck rolls, 60-second walk. Aussie's PT-background advice — don't trust how it 'feels', the damage is silent.",
-        citedPro: 'Aussie Antics',
+          'Optional reminder to take a short break during long sessions. Choose a cadence that works for you; this is general wellbeing advice, not a medical prescription.',
       },
       {
         name: 'Chair: arms at 90°, feet flat',
