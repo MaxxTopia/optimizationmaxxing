@@ -3,8 +3,8 @@
 ## Scope
 
 Added the next optimizationmaxxing improvement pass after the v0.4.6 release.
-This pass is local and unreleased. It improves evidence, rollback, hardware
-matching, profile provenance, and recovery without adding voltage overrides,
+This pass is published as optimizationmaxxing v0.4.7. It improves evidence,
+rollback, hardware matching, profile provenance, and recovery without adding voltage overrides,
 thermal-limit writes, anti-cheat bypasses, visibility cheats, or firmware
 writes.
 
@@ -42,16 +42,30 @@ writes.
 ## Verification
 
 - `npm run build` passed.
+- `npx tsc --noEmit` passed.
 - `npm run audit:catalog` passed: 100 tweaks, 0 errors, 0 warnings.
 - `npm run audit:driver-profiles` passed: 6 catalog hashes verified.
 - `npm run test:bios-evidence` passed: 9 checks.
 - `cargo check --manifest-path src-tauri/Cargo.toml` passed.
 - `cargo test --manifest-path src-tauri/Cargo.toml` passed: 91 tests, 0
   failures.
+- `npm run tauri:build` produced the Windows installer locally, then stopped at
+  updater signing because this checkout does not contain the private Tauri
+  signing key. CI run `35664462105` completed the signed build and published
+  the release.
 - `git diff --check` passed. Git reported only normal LF/CRLF conversion
   warnings for the dirty working copy.
 - Full-crate `cargo fmt --check` remains noisy because unrelated pre-existing
   Rust files have formatting drift; the crate was not reformatted wholesale.
+
+## Live release proof
+
+- Commit `d66500b` and tag `v0.4.7` are pushed to `origin/main` and the
+  matching release tag.
+- GitHub release `v0.4.7` is public with `latest.json`, the signed installer,
+  and the installer signature. The manifest reports version `0.4.7`.
+- The MaxxTopia sync and Cloudflare deployment completed. The public product
+  page and Updates page both serve the v0.4.7 release metadata.
 
 ## Not proven yet
 
@@ -63,8 +77,8 @@ writes.
   reviewed; it is not an exhaustive motherboard or memory-kit database.
 - A signed remote optimization-policy manifest is documented but not wired;
   the current local feature policy is not a remote kill switch.
-- Public website, updater, GitHub release, and desktop installer are not
-  changed or published by this pass.
+- The local checkout still has unrelated dirty VIP Worker, demo, and continuity
+  files; none were included in the v0.4.7 release commit.
 
 ## Working-tree boundary
 
@@ -73,7 +87,7 @@ not reset, clean, or stage the repository broadly.
 
 ## Best next action
 
-Run the native app on the actual gaming PC, perform one controlled baseline,
+Run the native v0.4.7 app on the actual gaming PC, perform one controlled baseline,
 use the transactional lane on one reversible low-risk action, verify the
 read-back, arm the reboot check, and run a three-run Fortnite PresentMon
 baseline/after capture. Only after those human field gates should a release
