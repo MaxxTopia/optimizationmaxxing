@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.8',
+    date: '2026-09-22',
+    highlights: [
+      'FIX **Tuning now respects real Windows interference.** Tune Now and Asta pause when Windows Update or a pending restart could overwrite settings, and eligible actions use read-back verification with rollback instead of treating a script exit code as proof.',
+      'IMPROVE **NVIDIA Profile Inspector setup.** Toolkit now links to the official NVPI release page, explains the manual import/apply flow, and lets you compare an exported profile against the shipped file without silently changing the driver database.',
+      'IMPROVE **Fortnite profile lab.** The aggressive performance-render candidate now contains nine documented standard driver controls, with explicit shimmer/rollback warnings and supported in-game guidance for a low-visual competitive setup.',
+    ],
+  },
+  {
     version: '0.4.7',
     date: '2026-09-21',
     highlights: [

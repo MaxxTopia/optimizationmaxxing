@@ -264,6 +264,21 @@ export interface RebootValidation {
   items: RebootValidationItem[]
 }
 
+export interface TunePreflight {
+  pendingReboot: boolean
+  cbsRebootPending: boolean
+  updateRebootRequired: boolean
+  pendingFileRename: boolean
+  windowsUpdateState: string | null
+  bitsState: string | null
+  osBuild: number | null
+  lastAppliedBuild: number | null
+  buildChangedSinceLastApply: boolean
+  windowsUpdateActive: boolean
+  blocksAutoApply: boolean
+  detail: string
+}
+
 // ---------- Calls ----------
 
 export async function bootstrap(): Promise<BootstrapPayload> {
@@ -382,6 +397,11 @@ export async function armRebootValidation(): Promise<RebootValidation> {
 /** Verify the armed receipt set only after a real Windows reboot is observed. */
 export async function validateRebootPersistence(): Promise<RebootValidation> {
   return invoke<RebootValidation>('validate_reboot_persistence')
+}
+
+/** Read-only stability gate for Tune Now. */
+export async function getTunePreflight(): Promise<TunePreflight> {
+  return invoke<TunePreflight>('get_tune_preflight')
 }
 
 export interface PerfSnapshot {

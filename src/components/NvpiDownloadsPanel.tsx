@@ -7,13 +7,14 @@ import {
 } from '../lib/driverProfiles'
 
 /**
- * NVPI .nip profile download panel. Rendered above the NVPI guide
- * article. Uses fetch + Blob + URL.createObjectURL to trigger a real
- * file save in both browser dev and the Tauri webview — site-relative
- * <a download> links inside the markdown renderer also work for
- * keyboard users, but this panel surfaces the downloads visually with
- * clear "click here, file saves" buttons.
+ * NVPI setup and .nip profile download panel. Rendered above the NVPI
+ * guide article. Uses fetch + Blob + URL.createObjectURL to trigger a
+ * real file save in both browser dev and the Tauri webview. The importer
+ * itself remains an explicit external download so the app never silently
+ * installs or mutates a third-party driver tool.
  */
+
+const NVPI_RELEASES_URL = 'https://github.com/Orbmu2k/nvidiaProfileInspector/releases'
 
 interface NipProfile {
   filename: string
@@ -38,12 +39,12 @@ const PROFILES: NipProfile[] = [
   },
   {
     filename: 'fortnite-clean-render.nip',
-    label: 'Fortnite — clean render lab',
+    label: 'Fortnite — performance render lab',
     exes: 'FortniteClient-Win64-Shipping.exe, FortniteLauncher.exe',
-    settingsCount: 7,
+    settingsCount: 9,
     experimental: true,
     blurb:
-      'Seven-setting image-filter experiment. It does not remove foliage, clouds, terrain, or alter visibility. Keep only if your controlled test improves frame pacing without hurting clarity.',
+      'Nine-setting aggressive-but-standard driver experiment: high-performance filtering, FXAA/MFAA off, and texture-sample optimizations. It can add shimmer or image-quality loss; it does not remove foliage, clouds, terrain, or alter visibility.',
   },
   {
     filename: 'valorant.nip',
@@ -139,14 +140,12 @@ export function NvpiDownloadsPanel() {
       }}
     >
       <div>
-        <p className="text-[10px] uppercase tracking-widest text-accent">one-click downloads</p>
-        <h3 className="text-base font-semibold">NVPI .nip profiles — pick a game, import in NVPI</h3>
+        <p className="text-[10px] uppercase tracking-widest text-accent">driver profile lab</p>
+        <h3 className="text-base font-semibold">Install NVPI, then import a profile</h3>
         <p className="text-xs text-text-muted leading-snug mt-1 max-w-2xl">
-          Download saves a <code>.nip</code>; it does not change your driver. In NVPI choose{' '}
-          <strong className="text-text">File → Import Profile(s)</strong>, select the file,
-          confirm the game's executable association, then click{' '}
-          <strong className="text-text">Apply changes</strong>. Re-open the profile to verify it.
-          Re-check after driver updates. These are test candidates, not guaranteed latency wins.
+          NVPI is the separate importer that applies these files. Optimizationmaxxing never
+          silently installs it or changes the NVIDIA driver database. Use the three steps below,
+          export your current profile first, and keep only results that survive a controlled test.
         </p>
         <p className="text-[11px] text-amber-200/90 leading-snug mt-2 max-w-2xl">
           These are driver profiles, not Fortnite file edits. We do not ship foliage/cloud/terrain
@@ -154,6 +153,34 @@ export function NvpiDownloadsPanel() {
           Performance Mode and low-effects settings for the supported visual-minimum path.
         </p>
       </div>
+
+      <div className="rounded-md border border-accent/40 bg-accent/5 p-3 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-accent">step 1 · importer</p>
+            <h4 className="text-sm font-semibold text-text">Download NVIDIA Profile Inspector</h4>
+            <p className="text-[11px] text-text-muted leading-snug mt-1 max-w-xl">
+              This opens the official Orbmu2k release page. Download the current Windows archive,
+              extract it, and run <code>nvidiaProfileInspector.exe</code>.
+            </p>
+          </div>
+          <a
+            href={NVPI_RELEASES_URL}
+            target="_blank"
+            rel="noreferrer"
+            data-external="true"
+            className="btn-chrome inline-flex items-center justify-center rounded-md bg-accent px-3 py-2 text-xs font-semibold text-bg-base whitespace-nowrap"
+          >
+            Download NVPI
+          </a>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-text-muted leading-snug">
+          <p><strong className="text-text">Step 2:</strong> Download one profile below; it saves as a <code>.nip</code> in your normal Downloads folder.</p>
+          <p><strong className="text-text">Step 3:</strong> In NVPI choose <strong className="text-text">File → Import Profile(s)</strong>, verify Fortnite, then click <strong className="text-text">Apply changes</strong>.</p>
+        </div>
+      </div>
+
+      <p className="text-[10px] uppercase tracking-widest text-text-subtle">step 2 · choose one profile</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {PROFILES.map((p) => (
@@ -199,6 +226,17 @@ export function NvpiDownloadsPanel() {
             </button>
           </div>
         ))}
+      </div>
+
+      <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 space-y-1.5">
+        <h4 className="text-sm font-semibold text-amber-200">For the mobile-style competitive look</h4>
+        <p className="text-[11px] text-text-muted leading-snug">
+          No NVPI profile controls Fortnite clouds or build geometry. In Fortnite itself, use the
+          supported Performance rendering mode, low textures/effects/meshes where available,
+          shadows and motion blur off, VSync off, and your tested Reflex/frame-cap combination.
+          These choices can change by game version and event rules; hidden visibility settings do
+          not belong in a competitive preset.
+        </p>
       </div>
 
       {(() => {
@@ -291,7 +329,8 @@ export function NvpiDownloadsPanel() {
       )}
       <p className="text-[10px] text-text-subtle leading-snug pt-2 border-t border-border">
         Files served from <code>/nvpi-profiles/</code> in the bundled app + on maxxtopia.com.
-        Saved to your browser's default download folder.
+        Profile files save to your browser's default download folder; NVPI is downloaded separately
+        from its official release page and must be imported and applied manually.
       </p>
     </section>
   )

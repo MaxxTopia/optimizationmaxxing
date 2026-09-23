@@ -1,7 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useIsVip } from '../store/useVipStore'
-import { applyBatch, type BatchItem } from '../lib/tauri'
+import {
+  applyBatch,
+  getTunePreflight,
+  verifyApplied,
+  type BatchItem,
+  type TunePreflight,
+} from '../lib/tauri'
+import { confirmAction } from '../lib/confirm'
 import { catalog } from '../lib/catalog'
 import { presetById, presetExperimentalTweaks } from '../lib/presets'
 import { AstaShareCard } from '../components/AstaShareCard'
@@ -49,6 +56,11 @@ export function Asta() {
     ts: string
   } | null>(null)
   const [quoteIdx, setQuoteIdx] = useState(0)
+  const [preflight, setPreflight] = useState<TunePreflight | null>(null)
+
+  useEffect(() => {
+    void getTunePreflight().then(setPreflight).catch(() => undefined)
+  }, [])
 
   // Rotate quotes on click of the manifesto block — small easter egg.
   function bumpQuote() {
@@ -60,6 +72,17 @@ export function Asta() {
     setBusy(true)
     setError(null)
     try {
+      try {
+        const latestPreflight = await getTunePreflight()
+        setPreflight(latestPreflight)
+        if (latestPreflight.blocksAutoApply) {
+          setError(latestPreflight.detail)
+          return
+        }
+      } catch {
+        // Keep compatibility with an older installed shell. The batch still
+        // records immediate verification and the post-apply read-back below.
+      }
       const preset = presetById('asta-mode')
       if (!preset) {
         setError('Asta Mode preset not found in catalog. Update v1.json.')
@@ -71,11 +94,11 @@ export function Asta() {
       const experimental = presetExperimentalTweaks(preset)
       if (
         experimental.length > 0 &&
-        !window.confirm(
+        !(await confirmAction(
           `${experimental.length} Asta experiment${experimental.length === 1 ? '' : 's'} are included:\n\n` +
             `${experimental.map((t) => `• ${t.title}`).join('\n')}\n\n` +
             'These can reduce security, raise power, break eligibility, or fail to help this rig. Create a restore point and continue only if you accept that risk.',
-        )
+        ))
       ) {
         return
       }
@@ -86,11 +109,15 @@ export function Asta() {
         }
       }
       const receipts = await applyBatch(items)
+      const selectedIds = new Set(tweaks.map((t) => t.id))
+      const live = (await verifyApplied()).filter(
+        (row) => row.status === 'applied' && selectedIds.has(row.tweakId),
+      )
       setApplied({
         requested: receipts.length,
-        verified: receipts.filter((receipt) => receipt.verificationStatus === 'verified').length,
-        mismatch: receipts.filter((receipt) => receipt.verificationStatus === 'mismatch').length,
-        unknown: receipts.filter((receipt) => receipt.verificationStatus === 'unknown').length,
+        verified: live.filter((receipt) => receipt.verificationStatus === 'verified').length,
+        mismatch: live.filter((receipt) => receipt.verificationStatus === 'mismatch').length,
+        unknown: live.filter((receipt) => receipt.verificationStatus === 'unknown').length,
         ts: new Date().toLocaleTimeString(),
       })
     } catch (e) {
@@ -170,10 +197,26 @@ export function Asta() {
               </div>
             )}
 
+            {preflight?.blocksAutoApply && (
+              <div className="mt-3 rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 text-xs text-red-100 leading-snug">
+                <strong className="text-red-200">Windows stability gate:</strong> {preflight.detail}{' '}
+                Finish the update and re-scan before activating Asta Mode.
+                <button
+                  type="button"
+                  onClick={() => {
+                    void getTunePreflight().then(setPreflight).catch(() => undefined)
+                  }}
+                  className="mt-2 rounded border border-red-300/50 px-2 py-1 text-[11px] text-red-100 hover:bg-red-100/10"
+                >
+                  Re-check Windows status
+                </button>
+              </div>
+            )}
+
             <div className="mt-4 flex flex-col gap-2">
               <button
                 onClick={handleApply}
-                disabled={busy || !isVip}
+                disabled={busy || !isVip || preflight?.blocksAutoApply}
                 className="btn-chrome w-full px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
                 style={
                   isVip
@@ -192,7 +235,13 @@ export function Asta() {
                       }
                 }
               >
-                {busy ? 'Applying…' : isVip ? '🗡 Activate Asta Mode' : '👑 VIP only'}
+                {preflight?.blocksAutoApply
+                  ? 'Finish Windows Update, then re-scan'
+                  : busy
+                  ? 'Applying…'
+                  : isVip
+                  ? '🗡 Activate Asta Mode'
+                  : '👑 VIP only'}
               </button>
               <Link
                 to="/benchmark"

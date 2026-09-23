@@ -146,6 +146,16 @@ export function Toolkit() {
           compare the same workload before and after.
         </div>
 
+        <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-3 text-sm text-text-muted">
+          <strong className="text-text">Fast NVCleanstall baseline:</strong> check{' '}
+          <span className="text-emerald-300">Disable Installer Telemetry &amp; Advertising</span>,{' '}
+          <span className="text-emerald-300">Perform a Clean Installation</span> when replacing or
+          repairing a driver, <span className="text-emerald-300">Disable Ansel</span> if you do not
+          use it, and <span className="text-emerald-300">Show Expert Tweaks</span>. Keep MSI on{' '}
+          <strong className="text-text">Default</strong> policy/priority if you test it. Leave the
+          experimental driver, container, HDCP, MPO, and NVENC-patch options off by default.
+        </div>
+
         {/* NVIDIA — full step-by-step. A stripped install can reduce optional
             components, but the performance and compatibility tradeoff is
             driver-, feature-, and capture-workflow dependent. */}
@@ -173,13 +183,43 @@ export function Toolkit() {
                 NVIDIA's official download page
               </a>.
             </li>
-            <li>Use NVCleanstall only if you specifically want to omit optional components. Read each component's effect first; removing NVIDIA App, capture/overlay, HD audio, Ansel, update, or HDCP support can remove features you rely on.</li>
-            <li>Keep the driver and components you need. Do not disable HDCP or telemetry-related options on the assumption that they lower game latency; there is no guaranteed FPS or input-delay gain.</li>
-            <li>Use a clean install/DDU for a corrupted driver or a troubleshooting/vendor-swap case, not as routine maintenance. NVCleanstall's clean-install option is not the same as DDU.</li>
-            <li>Reboot and verify the game, display/audio, capture, and overlays you use. Measure before deciding to keep a stripped package.</li>
+            <li>
+              On the component page, keep <strong className="text-text">Display Driver</strong> and{' '}
+              <strong className="text-text">PhysX System Software</strong>. Keep{' '}
+              <strong className="text-text">HD Audio Driver</strong> only when audio leaves the GPU
+              over HDMI or DisplayPort. Keep NVIDIA App, overlay, and capture components only if
+              you actually use recording, filters, or the overlay. Do not remove NVIDIA Container
+              if you use NVIDIA Control Panel or the NVIDIA App.
+            </li>
+            <li>
+              <strong className="text-text">Recommended Installation Tweaks for a competitive
+              desktop:</strong>
+              <ul className="mt-2 space-y-1.5 border-l border-border pl-3 text-[13px]">
+                <li><span className="font-semibold text-emerald-300">✓ CHECK</span> Disable Installer Telemetry &amp; Advertising. This is a privacy/installer choice, not a guaranteed FPS or input-latency tweak.</li>
+                <li><span className="font-semibold text-emerald-300">✓ CHECK when replacing or repairing a driver</span> Perform a Clean Installation. Leave it off for a routine update if preserving NVIDIA profiles matters; export or note important settings first.</li>
+                <li><span className="font-semibold text-emerald-300">✓ CHECK if you do not use Ansel</span> Disable Ansel. It removes an optional capture/photo feature, not a normal Fortnite requirement.</li>
+                <li><span className="font-semibold text-emerald-300">✓ CHECK</span> Show Expert Tweaks so the choices are visible. This checkbox reveals options; it does not change driver behavior by itself.</li>
+                <li><span className="font-semibold text-emerald-300">✓ OPTIONAL</span> Enable Message Signaled Interrupts, but keep Interrupt Policy and Interrupt Priority at <strong className="text-text">Default</strong>. Test the same game workload after reboot; turn it back off if stability, audio, or frame pacing worsens.</li>
+                <li><span className="font-semibold text-emerald-300">✓ OPTIONAL, symptom-based</span> Disable NVIDIA HD Audio device sleep timer only if HDMI/DisplayPort audio goes to sleep, pops, or takes time to wake. It is not a baseline FPS tweak.</li>
+              </ul>
+            </li>
+            <li>
+              <strong className="text-text">Leave these unchecked for the baseline:</strong>
+              <ul className="mt-2 space-y-1.5 border-l border-border pl-3 text-[13px]">
+                <li><span className="font-semibold text-amber-300">○ LEAVE OFF</span> Unattended Express Installation — it removes a chance to review the install and reboot behavior.</li>
+                <li><span className="font-semibold text-amber-300">○ LEAVE OFF</span> Add Hardware Support unless the installer specifically says your hardware needs it.</li>
+                <li><span className="font-semibold text-amber-300">○ LEAVE OFF</span> Enable DLSS Indicator unless you specifically want the in-game DLSS version label; it does not improve DLSS performance.</li>
+                <li><span className="font-semibold text-amber-300">○ LEAVE OFF</span> Disable Driver Telemetry (Experimental). It is not a proven latency win and can change driver compatibility/signing behavior; competitive machines should keep the supported path.</li>
+                <li><span className="font-semibold text-amber-300">○ LEAVE OFF</span> Disable NVIDIA Container. NVCleanstall warns that it breaks NVIDIA Control Panel.</li>
+                <li><span className="font-semibold text-amber-300">○ LEAVE OFF</span> Disable HDCP. It can break protected media and capture workflows without a competitive-game benefit.</li>
+                <li><span className="font-semibold text-amber-300">○ LEAVE OFF</span> Disable Multiplane Overlay (MPO), NVENC Video Encoding Session Limit Patch, and custom interrupt policy/priority. Use these only for a named display, capture, or creator-workflow problem, then validate and roll back if the symptom changes.</li>
+                <li><span className="font-semibold text-amber-300">○ LEAVE OFF</span> Start external application unless you intentionally need NVCleanstall to launch a specific post-install tool.</li>
+              </ul>
+            </li>
+            <li>Reboot and verify Fortnite, display/audio, capture, overlays, and NVIDIA Control Panel. Compare the same workload before and after; a smaller package or a checked box is not proof of lower input delay.</li>
           </ol>
           <p className="text-[11px] text-text-subtle italic pt-1 border-t border-border">
-            <strong className="text-text-muted not-italic">Measure the tradeoff:</strong> component and service changes vary by driver and selection. Smaller packages or fewer components do not by themselves prove lower DPC latency or input delay.
+            <strong className="text-text-muted not-italic">Tournament safety:</strong> do not use a driver option that requires disabling Secure Boot, driver-signature enforcement, or other anti-cheat/security protections. If the install produces a warning, abort and use the official NVIDIA installer or restore the previous driver.
           </p>
         </div>
 

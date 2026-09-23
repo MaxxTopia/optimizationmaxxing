@@ -7,7 +7,8 @@ import { loadImpactStore } from '../lib/benchImpact'
 import { useIsVip } from '../store/useVipStore'
 import { useRigStore } from '../store/useRigStore'
 import {
-  applyBatch,
+  applyTransaction,
+  getTunePreflight,
   inTauri,
   listApplied,
   telemetrySendEvent,
@@ -15,7 +16,10 @@ import {
   type BatchItem,
   type AppliedTweak,
   type SpecProfile,
+  type TransactionReport,
+  type TunePreflight,
 } from '../lib/tauri'
+import { confirmAction } from '../lib/confirm'
 import {
   isHardBlockedForAutoTune,
   recommendedTuneProfile,
@@ -87,6 +91,8 @@ export function TuneNow() {
   const [targetGame, setTargetGame] = useState<GameId | 'any'>('fortnite')
   const [profileAutoSelected, setProfileAutoSelected] = useState(false)
   const [verification, setVerification] = useState<VerificationSummary | null>(null)
+  const [preflight, setPreflight] = useState<TunePreflight | null>(null)
+  const [transactionReport, setTransactionReport] = useState<TransactionReport | null>(null)
   const [ticket, setTicket] = useState<TuneTicket | null>(() => readTuneTicket())
   const [showTicket, setShowTicket] = useState(false)
 
@@ -144,11 +150,20 @@ export function TuneNow() {
     }
     setPhase('scanning')
     setError(null)
+    setTransactionReport(null)
+    setVerification(null)
     setProgress('Detecting rig…')
     try {
       const detected = await refreshRig()
       if (!detected) {
         throw new Error('The native rig scan returned no hardware profile. Open Profile and re-scan before tuning.')
+      }
+      try {
+        setPreflight(await getTunePreflight())
+      } catch {
+        // Older installed shells may not expose this newer read-only command.
+        // Keep the scan usable; the transaction path still verifies/rolls back.
+        setPreflight(null)
       }
       setProgress('Running Asta Bench (before)…')
       const before = score(await runBench())
@@ -162,10 +177,33 @@ export function TuneNow() {
   }
 
   async function applyAll() {
+    // Re-read immediately before mutation. A scan can sit open while Windows
+    // Update starts, so the scan-time result is only advisory.
+    if (isNative) {
+      try {
+        const latestPreflight = await getTunePreflight()
+        setPreflight(latestPreflight)
+        if (latestPreflight.blocksAutoApply) {
+          setError(latestPreflight.detail)
+          setPhase('error')
+          return
+        }
+      } catch {
+        // Keep compatibility with an older installed shell; applyTransaction
+        // remains the final safety net when the preflight command is absent.
+      }
+    }
     if (profile.requiresConfirmation && plan.applyFree.length > 0) {
-      const confirmed = window.confirm(
-        `${profile.label} tune will apply ${plan.applyFree.length} catalog tweaks, including experimental OS/driver settings. It will not change voltage or thermal limits, and tournament-breaking/high anti-cheat-risk items remain excluded. Continue only on a restore-backed test install?`,
-      )
+      let confirmed: boolean
+      try {
+        confirmed = await confirmAction(
+          `${profile.label} tune will apply ${plan.applyFree.length} catalog tweaks, including experimental OS/driver settings. It will not change voltage or thermal limits, and tournament-breaking/high anti-cheat-risk items remain excluded. Continue only on a restore-backed test install?`,
+        )
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e))
+        setPhase('error')
+        return
+      }
       if (!confirmed) return
     }
     if (plan.applyFree.length === 0) {
@@ -183,19 +221,32 @@ export function TuneNow() {
     }
     setPhase('applying')
     setError(null)
-    setProgress(`Applying ${plan.applyFree.length} tweaks under one UAC…`)
+    setTransactionReport(null)
+    setProgress(`Applying and verifying ${plan.applyFree.length} tweaks under one UAC…`)
     const selectedIds = new Set(plan.applyFree.map((t) => t.id))
     try {
       const items: BatchItem[] = []
       for (const t of plan.applyFree) {
         for (const a of t.actions) items.push({ tweakId: t.id, action: a })
       }
-      await applyBatch(items)
+      const report = await applyTransaction(items)
+      setTransactionReport(report)
       const live = await verifyApplied()
       setVerification(
         summarizeVerification(live.filter((row) => selectedIds.has(row.tweakId))),
       )
       setAppliedIds(appliedTweakIdsReadyForReapply(live))
+      if (report.status !== 'committed') {
+        const details = [...report.errors, ...report.rollbackErrors].join(' ')
+        const outcome =
+          report.status === 'rolled_back'
+            ? 'The automatic tune was rolled back because live verification did not pass.'
+            : `The automatic tune did not commit safely (${report.status}).`
+        setError(`${outcome}${details ? ` ${details}` : ''}`)
+        setPhase('error')
+        setProgress('')
+        return
+      }
       setPhase('measuring')
       setProgress('Settling 4s before re-bench…')
       await new Promise((r) => setTimeout(r, 4000))
@@ -216,9 +267,8 @@ export function TuneNow() {
         anyVip: false,
       })
     } catch (e) {
-      // apply_batch records prepared actions even when an elevated command
-      // fails part-way through. Refresh the durable state here so the error
-      // screen does not leave the next scan planning from stale receipts.
+      // Refresh the durable state here so the error screen does not leave the
+      // next scan planning from stale receipts.
       try {
         const live = await verifyApplied()
         setVerification(
@@ -269,6 +319,7 @@ export function TuneNow() {
           profile={profile}
           recommendedId={recommendation.profile.id}
           recommendationReason={recommendation.reason}
+          preflight={preflight}
           onIntensityChange={(next) => {
             setIntensity(next)
             setVerification(null)
@@ -291,6 +342,7 @@ export function TuneNow() {
           intensity={intensity}
           targetGame={targetGame}
           verification={verification}
+          transactionReport={transactionReport}
           ticket={ticket}
           onShowTicket={() => setShowTicket(true)}
           onRescan={startScan}
@@ -300,6 +352,18 @@ export function TuneNow() {
       {phase === 'error' && (
         <section className="surface-card p-5 space-y-3 border-red-500/40">
           <p className="text-sm text-red-300">Tune failed: {error}</p>
+          {transactionReport && (
+            <p className="text-xs text-text-muted">
+              Transaction {transactionReport.status}: {transactionReport.verifiedCount}/
+              {transactionReport.itemCount} actions verified; {transactionReport.rolledBackCount}{' '}
+              rolled back.
+              {transactionReport.rollbackErrors.length > 0 && (
+                <span className="block text-red-200 mt-1">
+                  Rollback needs attention: {transactionReport.rollbackErrors.join(' · ')}
+                </span>
+              )}
+            </p>
+          )}
           <button
             onClick={() => setPhase('idle')}
             className="btn-chrome px-3 py-1.5 rounded-md bg-accent text-bg-base text-sm font-semibold"
@@ -385,6 +449,7 @@ function ReadyState({
   targetGame,
   onIntensityChange,
   onTargetGameChange,
+  preflight,
   onApply,
 }: {
   spec: SpecProfile
@@ -399,6 +464,7 @@ function ReadyState({
   targetGame: GameId | 'any'
   onIntensityChange: (next: TuneIntensity) => void
   onTargetGameChange: (next: GameId | 'any') => void
+  preflight: TunePreflight | null
   onApply: () => void
 }) {
   const options: TuneIntensity[] = ['light', 'competitive', 'aggressive', 'extreme']
@@ -476,6 +542,13 @@ function ReadyState({
             thermal safeguards, and tournament-breaking/high anti-cheat-risk items stay excluded.
           </p>
         )}
+        {preflight?.blocksAutoApply && (
+          <p className="rounded-md border border-red-500/50 bg-red-500/10 p-3 text-xs text-red-100">
+            <strong className="text-red-200">Windows stability gate:</strong> {preflight.detail}{' '}
+            This is intentional: applying while an update is writing can make a successful command
+            look like a tweak that did not stick.
+          </p>
+        )}
       </section>
 
       <section className="surface-card p-5 space-y-3">
@@ -518,9 +591,12 @@ function ReadyState({
         <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={onApply}
+            disabled={Boolean(preflight?.blocksAutoApply && plan.applyFree.length > 0)}
             className="btn-chrome px-5 py-2.5 rounded-md bg-accent text-bg-base font-semibold"
           >
-            {plan.applyFree.length > 0
+            {preflight?.blocksAutoApply && plan.applyFree.length > 0
+              ? 'Finish Windows Update, then re-scan'
+              : plan.applyFree.length > 0
               ? `Apply ${plan.applyFree.length} at ${profile.label} (1 UAC) →`
               : 'Continue to results'}
           </button>
@@ -542,6 +618,7 @@ function DoneState({
   intensity,
   targetGame,
   verification,
+  transactionReport,
   ticket,
   onShowTicket,
   onRescan,
@@ -554,6 +631,7 @@ function DoneState({
   intensity: TuneIntensity
   targetGame: GameId | 'any'
   verification: VerificationSummary | null
+  transactionReport: TransactionReport | null
   ticket: TuneTicket | null
   onShowTicket: () => void
   onRescan: () => void
@@ -586,8 +664,21 @@ function DoneState({
           <p className="text-[11px] uppercase tracking-widest text-text-subtle">live state check</p>
           <p className="text-sm text-text-muted">
             {verification.verified} verified · {verification.mismatch} mismatch · {verification.unknown} unknown
-            {' '}of {verification.total} applied actions. A mismatch means Windows or another tool changed
-            the setting; it is not counted as a successful tune.
+            {' '}of {verification.total} applied actions. A mismatch means the live value differs
+            from the requested target; Windows Update or another tool may have changed or
+            overridden it, but the verifier cannot identify the cause. It is not counted as a
+            successful tune.
+          </p>
+        </section>
+      )}
+
+      {transactionReport && (
+        <section className="surface-card p-5 space-y-2">
+          <p className="text-[11px] uppercase tracking-widest text-text-subtle">apply integrity</p>
+          <p className="text-sm text-text-muted">
+            Transaction <strong className="text-text">{transactionReport.status}</strong> ·{' '}
+            {transactionReport.verifiedCount}/{transactionReport.itemCount} actions verified ·{' '}
+            {transactionReport.rolledBackCount} rolled back on failure.
           </p>
         </section>
       )}
@@ -674,8 +765,8 @@ function DoneState({
           >
             <p className="text-sm font-semibold">See exactly what changed</p>
             <p className="text-xs text-text-muted mt-1 leading-snug">
-              "Your Tune" lists every applied tweak with its current state — still in place,
-              reverted by Windows Update, etc. Copy as text to share in Discord.
+              "Your Tune" lists every applied tweak with its current state — still in place, drifted
+              from target, or not safely re-readable. Copy as text to share in Discord.
             </p>
           </Link>
           <Link

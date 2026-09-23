@@ -9,6 +9,7 @@ import {
   type AppliedTweak,
   type BatchItem,
 } from '../lib/tauri'
+import { confirmAction } from '../lib/confirm'
 
 /**
  * /diff — every active mod from a vanilla Windows in one table.
@@ -135,6 +136,14 @@ export function Diff() {
     if (!rows || reapplyAllBusy) return
     const drifted = rows.filter((r) => r.applied.verificationStatus === 'mismatch')
     if (drifted.length === 0) return
+    try {
+      if (!(await confirmAction(
+        `Re-apply the recorded targets for ${drifted.length} drifted tweak${drifted.length === 1 ? '' : 's'}? This restores only the values optimizationmaxxing originally wrote; it does not identify which tool caused the drift.`,
+      ))) return
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e))
+      return
+    }
     setReapplyAllBusy(true)
     setErr(null)
     try {
@@ -278,9 +287,9 @@ function SummaryStrip({
         {drift > 0 && (
           <span
             className="text-red-400"
-            title="Something outside this app changed these registry values back — usually Windows Update, a vendor tool (NVIDIA / Razer / etc.), or a Settings-app toggle. Click Re-apply to restore the value we wrote."
+            title="The live value differs from the target recorded by this app. Windows Update, a vendor tool, a Settings toggle, or an apply that did not hold can cause drift; the verifier cannot identify the actor. Click Re-apply to try the target again."
           >
-            ✗ {drift} got reverted externally
+            ✗ {drift} drift detected
           </span>
         )}
         {trustOnly > 0 && (
@@ -295,9 +304,10 @@ function SummaryStrip({
       {drift > 0 && (
         <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
           <p className="text-[11px] text-text-muted leading-snug max-w-2xl">
-            {drift} tweak{drift > 1 ? 's are' : ' is'} no longer in the state we wrote. The app
-            didn't undo {drift > 1 ? 'them' : 'it'} — something else did (Windows Update / vendor
-            app / Settings toggle). Re-apply restores the value(s) without changing anything else.
+            {drift} tweak{drift > 1 ? 's no longer match' : ' no longer matches'} the target the app
+            recorded. The verifier cannot identify the cause: Windows Update, a vendor app, a
+            Settings toggle, or an apply that did not hold can all produce drift. Re-apply tries to
+            restore the target value(s) without changing anything else.
           </p>
           <button
             onClick={onReapplyAll}
@@ -337,7 +347,7 @@ function DiffRowCard({
     row.applied.verificationStatus === 'verified'
       ? '✓ verified in place'
       : row.applied.verificationStatus === 'mismatch'
-      ? '✗ got reverted externally'
+      ? '✗ drift detected'
       : '◇ unknown (no read-back)'
   const canReapply = row.applied.verificationStatus === 'mismatch'
 

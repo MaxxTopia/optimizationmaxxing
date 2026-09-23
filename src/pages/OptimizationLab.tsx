@@ -18,6 +18,7 @@ import {
   type SpecProfile,
   type TransactionReport,
 } from '../lib/tauri'
+import { confirmAction } from '../lib/confirm'
 import {
   buildLabScan,
   buildOptimizationPlan,
@@ -364,10 +365,14 @@ export function OptimizationLab() {
       tweakId: row.tweak.id,
       action,
     })))
-    const confirmed = window.confirm(
-      `Apply ${transactionActionCount} verified action${transactionActionCount === 1 ? '' : 's'} from ${transactionRows.length} ready tweak${transactionRows.length === 1 ? '' : 's'}?\n\nOnly ready, reversible, read-back-capable rows are included. If apply or verification fails, optimizationmaxxing will attempt to restore every captured pre-state.`,
-    )
-    if (!confirmed) return
+    try {
+      if (!(await confirmAction(
+        `Apply ${transactionActionCount} verified action${transactionActionCount === 1 ? '' : 's'} from ${transactionRows.length} ready tweak${transactionRows.length === 1 ? '' : 's'}?\n\nOnly ready, reversible, read-back-capable rows are included. If apply or verification fails, optimizationmaxxing will attempt to restore every captured pre-state.`,
+      ))) return
+    } catch (error) {
+      setTransactionError(error instanceof Error ? error.message : String(error))
+      return
+    }
 
     setTransactionRunning(true)
     setTransactionError(null)

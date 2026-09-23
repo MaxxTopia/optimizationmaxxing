@@ -9,6 +9,7 @@ import {
   type PingJitterSample,
   type DpcSnapshot,
 } from '../lib/tauri'
+import { confirmAction } from '../lib/confirm'
 import {
   PING_COUNT,
   PING_TARGET,
@@ -161,6 +162,16 @@ export function Benchmark() {
     })
   }
 
+  async function clearHistory() {
+    try {
+      if (!(await confirmAction('Clear all snapshots?'))) return
+      setHistory([])
+      localStorage.removeItem(SNAPSHOTS_KEY)
+    } catch (e) {
+      setErr(typeof e === 'string' ? e : (e as Error).message ?? String(e))
+    }
+  }
+
   const before = history.find((h) => /before/i.test(h.label))
   const after = history.find((h) => /after/i.test(h.label))
 
@@ -303,12 +314,7 @@ export function Benchmark() {
             ))}
           </ul>
           <button
-            onClick={() => {
-              if (confirm('Clear all snapshots?')) {
-                setHistory([])
-                localStorage.removeItem(SNAPSHOTS_KEY)
-              }
-            }}
+            onClick={() => void clearHistory()}
             className="text-[11px] text-text-subtle hover:text-text underline"
           >
             clear history

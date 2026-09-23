@@ -16,6 +16,7 @@ mod scewin;
 mod standby;
 mod telemetry;
 mod toolkit;
+mod tune_preflight;
 mod vip;
 
 pub use engine::{ApplyReceipt, AppliedTweak, SnapshotStore, TweakAction, TweakPreview};
@@ -900,6 +901,19 @@ fn current_os_build() -> Option<u32> {
     s.trim().parse::<u32>().ok()
 }
 
+/// Read-only gate for the automatic tuning flow. Windows Update and pending
+/// installer restarts can overwrite settings while a batch is applying, so
+/// the frontend pauses the automatic lane until the user re-scans.
+#[tauri::command]
+async fn get_tune_preflight(
+    state: tauri::State<'_, SnapshotStore>,
+) -> Result<tune_preflight::TunePreflight, String> {
+    let store = (*state).clone();
+    tokio::task::spawn_blocking(move || Ok(tune_preflight::read(&store)))
+        .await
+        .map_err(|e| format!("tune preflight task failed: {e}"))?
+}
+
 /// Generic persisted setting read (SQLite kv table). Used by the frontend for
 /// small toggles (restore-point) and drift detection (last-applied build).
 #[tauri::command]
@@ -1778,6 +1792,7 @@ pub fn run() {
             get_reboot_validation,
             arm_reboot_validation,
             validate_reboot_persistence,
+            get_tune_preflight,
             enable_system_protection,
             revert_tweak,
             revert_all_applied,

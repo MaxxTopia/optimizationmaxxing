@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { GAMES, type GameId, getGame } from '../lib/games'
 import { catalog } from '../lib/catalog'
 import { inTauri } from '../lib/tauri'
+import { confirmAction } from '../lib/confirm'
 import {
   gamePrimaryAc,
   nowStamp,
@@ -117,19 +118,24 @@ export function TournamentModePanel() {
     setSchedule(next)
   }
 
-  function handleCancel() {
+  async function handleCancel() {
     if (!schedule) return
-    if (!confirm('Cancel scheduled tournament mode? Already-reverted tweaks STAY reverted (no restore).')) return
+    try {
+      if (!(await confirmAction('Cancel scheduled tournament mode? Already-reverted tweaks STAY reverted (no restore).'))) return
+    } catch (e) {
+      setErr(String(e))
+      return
+    }
     writeSchedule(null)
     setSchedule(null)
   }
 
   async function handleRestoreNow() {
     if (!schedule || (schedule.state !== 'active' && schedule.state !== 'error')) return
-    if (!confirm(`Re-apply all ${schedule.revertedTweakIds.length} reverted tweak(s) now?`)) return
     setErr(null)
-    setBusy(true)
     try {
+      if (!(await confirmAction(`Re-apply all ${schedule.revertedTweakIds.length} reverted tweak(s) now?`))) return
+      setBusy(true)
       await triggerRestoreNow()
     } catch (e) {
       setErr(String(e))

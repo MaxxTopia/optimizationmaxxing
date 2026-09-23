@@ -7,6 +7,7 @@ import {
   type AppliedTweak,
   type BatchItem,
 } from '../lib/tauri'
+import { confirmAction } from '../lib/confirm'
 import { catalog, isExperimentalTweak, tweakRequiresAdmin, type TweakRecord } from '../lib/catalog'
 import { PRESETS, presetExperimentalTweaks, presetMissingTweakIds, presetTweaks } from '../lib/presets'
 import { useIsVip } from '../store/useVipStore'
@@ -70,11 +71,11 @@ export function Presets() {
       const experimental = tweaks.filter(isExperimentalTweak)
       if (
         experimental.length > 0 &&
-        !window.confirm(
+        !(await confirmAction(
           `${experimental.length} experimental tweak${experimental.length === 1 ? '' : 's'} are in this preset:\n\n` +
             `${experimental.map((t) => `• ${t.title}`).join('\n')}\n\n` +
             'Read each warning, create a restore point, and continue only if you accept the tradeoffs.',
-        )
+        ))
       ) {
         return
       }
@@ -135,6 +136,14 @@ export function Presets() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+  }
+
+  async function handleDeleteCustom(p: CustomPreset) {
+    try {
+      if (await confirmAction(`Delete custom preset "${p.name}"?`)) removeCustom(p.id)
+    } catch (e) {
+      setError(formatErr(e))
+    }
   }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
@@ -289,9 +298,7 @@ export function Presets() {
                       Export
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete custom preset "${p.name}"?`)) removeCustom(p.id)
-                      }}
+                      onClick={() => void handleDeleteCustom(p)}
                       className="px-3 py-2 rounded-md border border-border text-xs hover:border-accent text-text-subtle"
                     >
                       ×

@@ -9,6 +9,7 @@ import {
 import type { SpecProfile } from '../lib/tauri'
 import type { TweakAudit } from '../lib/audit'
 import { getImpactFor, type TweakImpactRow } from '../lib/benchImpact'
+import { confirmAction } from '../lib/confirm'
 import { useRigStore } from '../store/useRigStore'
 
 /**
@@ -116,8 +117,13 @@ export function TweakRow({
           {onMeasureImpact && !applied && !lockedByVip && (
             <button
               onClick={() => {
-                if (!confirmExperimental(tweak, 'measure')) return
-                onMeasureImpact()
+                void confirmExperimental(tweak, 'measure')
+                  .then((confirmed) => {
+                    if (confirmed) onMeasureImpact()
+                  })
+                  .catch((error) => {
+                    console.error('[TweakRow] confirmation failed:', error)
+                  })
               }}
               disabled={busy || measuring}
               title="Bench → apply → bench (~70 s) and persist the measured delta on this row."
@@ -144,8 +150,13 @@ export function TweakRow({
           ) : (
             <button
               onClick={() => {
-                if (!confirmExperimental(tweak, 'apply')) return
-                onApply()
+                void confirmExperimental(tweak, 'apply')
+                  .then((confirmed) => {
+                    if (confirmed) onApply()
+                  })
+                  .catch((error) => {
+                    console.error('[TweakRow] confirmation failed:', error)
+                  })
               }}
               disabled={busy || lockedByVip}
               title={
@@ -217,9 +228,9 @@ export function TweakRow({
   )
 }
 
-function confirmExperimental(tweak: TweakRecord, verb: 'apply' | 'measure'): boolean {
+async function confirmExperimental(tweak: TweakRecord, verb: 'apply' | 'measure'): Promise<boolean> {
   if (!isExperimentalTweak(tweak)) return true
-  return window.confirm(
+  return confirmAction(
     `Experimental tweak: ${tweak.title}\n\n${experimentalWarningFor(tweak)}\n\n` +
       `This is an explicit opt-in to ${verb} it. Continue?`,
   )

@@ -15,7 +15,7 @@
 | Profile | Contents | How to treat it |
 |---|---|---|
 | Fortnite latency baseline | 4 driver settings: power mode, texture filtering quality, VSync, and maximum pre-rendered frames | Candidate to compare with your current profile; not a universal fastest preset. |
-| Fortnite clean-render lab | 7 settings; adds conventional LOD/FXAA/MFAA overrides | Separate image-quality experiment. It does not remove foliage, clouds, terrain, or change visibility. |
+| Fortnite performance render lab | 9 settings; adds conventional texture-sample/trilinear, LOD, FXAA, and MFAA overrides | Aggressive image-quality experiment. It may introduce shimmer and does not remove foliage, clouds, terrain, or change visibility. |
 | VALORANT / CS2 / Apex Legends | 6 settings per game | Per-title candidates; verify the matching executable and current in-game latency options. |
 | Marvel Rivals | 12 settings | Test only in Marvel Rivals; sharing Unreal Engine does not imply Fortnite gains. |
 

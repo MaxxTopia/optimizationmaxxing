@@ -129,7 +129,7 @@ export function isHardBlockedForAutoTune(t: {
   riskLevel?: number
   evidenceTier?: string
   tournamentCompliance?: Partial<Record<string, string>>
-  actions?: Array<{ kind?: string; path?: string; verify?: string }>
+  actions?: Array<{ kind?: string; path?: string; verify?: string; revert?: string | null }>
 }): boolean {
   if (t.id && NEVER_AUTO_APPLY_IDS.has(t.id)) return true
   if ((t.riskLevel ?? 0) >= 4) return true
@@ -138,7 +138,8 @@ export function isHardBlockedForAutoTune(t: {
   if (
     t.actions?.some(
       (action) =>
-        (action.kind === 'powershell_script' && !action.verify) ||
+        (action.kind === 'powershell_script' &&
+          (!action.verify?.trim() || !action.revert?.trim())) ||
         (action.kind === 'file_write' &&
           /(?:GameUserSettings\.ini|Engine\.ini|videoconfig\.txt|autoexec\.cfg)$/i.test(
             action.path ?? '',
