@@ -7,7 +7,7 @@
  *     animated avatar URL, theme colors) for discordmaxxer's Channel E/F/G
  *     identity layer. Auth = claimCode + userId pair must match a stored
  *     claim record. Writes to `profile:<userId>` KV namespace. Invalidates
- *     roster memo so /roster picks up the change within ~5 min server cache
+ *     roster memo so /roster picks up the change within ~30 sec server cache
  *     + 1 hr client cache.
  *   - /roster payload now `version: 2` and includes a `profile` sub-object
  *     per user (when set). v1 clients ignore unknown fields gracefully.
@@ -90,12 +90,27 @@ const OFFER_TIERS = [
   { rarity: 'diamond', chance: 6, price: 33 },
 ];
 
-// Profile-flair validation. URLs must be https:// and ≤256 chars; viewer
+// Profile-flair validation. URLs must be https:// and ≤250 chars total; viewer
 // plugin HEAD-checks Content-Length at render time to enforce file-size caps.
 // Colors must be lowercase #RRGGBB.
-const PROFILE_URL_RE = /^https:\/\/[^\s]{1,250}$/;
+const PROFILE_URL_RE = /^https:\/\/[^\s"']{1,242}$/;
 const PROFILE_COLOR_RE = /^#[0-9a-f]{6}$/i;
 const PROFILE_KV_PREFIX = "profile:";
+// Shared Discordmaxxer banner media is stored in R2 and addressed by a
+// short, stable HTTPS URL so it can be placed in the existing roster field.
+// The bucket is intentionally a separate binding: local files are only
+// uploaded after the user explicitly clicks "Publish as shared banner".
+const PROFILE_MEDIA_PREFIX = "profile-media/";
+const PROFILE_MEDIA_PUBLIC_ORIGIN = "https://optmaxxing-vip.maxxtopia.workers.dev";
+const PROFILE_MEDIA_PATH_RE = /^\/profile-media\/([0-9]{17,20})\/(banner|avatar)\/([0-9a-f-]{36})$/i;
+const PROFILE_MEDIA_DATA_URI_RE = /^data:([^;,]+);base64,([A-Za-z0-9+/=\s]+)$/;
+const PROFILE_MEDIA_MIME_TYPES = new Set([
+  'image/gif', 'image/png', 'image/jpeg', 'image/webp',
+  'video/mp4', 'video/webm', 'video/quicktime',
+]);
+const PROFILE_MEDIA_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const PROFILE_MEDIA_MAX_VIDEO_BYTES = 15 * 1024 * 1024;
+const PROFILE_MEDIA_MAX_OBJECTS = 5;
 
 // Crockford-style "FOUND" — F=15, O=N/A so we use 0, U=N/A so we use V… stop.
 // Crockford excludes I/L/O/U so "FOUND" doesn't survive the regex. Instead, we
@@ -114,16 +129,18 @@ const TIER_MAXXER = 1;
 const TIER_MAXXER_PLUS = 2;
 const TIER_MAXXER_PLUS_PLUS = 3;
 
-// Per-tier gating for profile flair fields. Worker-side enforcement so
-// client-side gating can't be bypassed by editing the plugin's JS.
+// Per-tier gating for profile flair media fields. Worker-side enforcement so
+// client-side gating can't be bypassed by editing the plugin's JS. Theme
+// colors are intentionally free for every Discordmaxxer user; the profile
+// auth check below still protects shared roster writes.
 const PROFILE_FIELD_MIN_TIER = {
   bannerUrl: TIER_MAXXER,
   avatarAnimatedUrl: TIER_MAXXER_PLUS,
-  themeColorPrimary: TIER_MAXXER_PLUS_PLUS,
-  themeColorSecondary: TIER_MAXXER_PLUS_PLUS,
+  themeColorPrimary: TIER_FREE,
+  themeColorSecondary: TIER_FREE,
 };
 
-const ROSTER_CACHE_TTL_SEC = 300; // 5 minutes
+const ROSTER_CACHE_TTL_SEC = 30;
 let rosterMemoCache = null;
 let rosterMemoCachedAt = 0;
 
@@ -131,8 +148,9 @@ export default {
   async fetch(request, env, ctx) {
     const corsHeaders = {
       'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'POST, GET, OPTIONS',
+      'access-control-allow-methods': 'POST, GET, HEAD, OPTIONS',
       'access-control-allow-headers': 'content-type',
+      'access-control-expose-headers': 'accept-ranges, content-length, content-range, content-type, etag',
     };
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });
@@ -141,6 +159,24 @@ export default {
 
     if (url.pathname === '/roster' && request.method === 'GET') {
       return handleRoster(env, corsHeaders);
+    }
+
+    if (url.pathname.startsWith('/profile-media/') &&
+        (request.method === 'GET' || request.method === 'HEAD')) {
+      return handleProfileMediaGet(request, url, env, corsHeaders);
+    }
+
+    if (url.pathname === '/profile-media' && request.method === 'POST') {
+      let body;
+      try {
+        body = await request.json();
+      } catch (e) {
+        return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+      }
+      if (await rateLimited(request, 'profile-media', 60, 60)) {
+        return json({ ok: false, error: 'too many profile media uploads; try again shortly' }, 429, corsHeaders);
+      }
+      return handleProfileMediaUpload(body, env, corsHeaders);
     }
 
     // OAuth callback for the optmaxxing path: app launches the user's
@@ -816,6 +852,225 @@ function tierFromMetaOrCode(meta, normCode) {
   return TIER_MAXXER_PLUS_PLUS;
 }
 
+async function getProfileAuth(body, env) {
+  const userId = typeof body?.userId === 'string' ? body.userId : '';
+  const claimCode = typeof body?.claimCode === 'string' ? body.claimCode : '';
+  if (!ALLOWED_USER_ID_RE.test(userId)) {
+    return { status: 400, error: 'malformed userId' };
+  }
+  const normCode = normalizeCode(claimCode);
+  if (!ALLOWED_CODE_RE.test(normCode)) {
+    return { status: 400, error: 'malformed claimCode' };
+  }
+  const claimRaw = await env.VIP_CLAIMS.get(`claim:${normCode}`);
+  if (!claimRaw) {
+    return { status: 401, error: 'unknown claimCode' };
+  }
+  const parsed = parseClaim(claimRaw);
+  if (parsed.userId !== userId) {
+    return { status: 401, error: 'claimCode does not match userId' };
+  }
+  if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
+    return { status: 410, error: 'Discordmaxxer claim expired' };
+  }
+  // A legacy claim with no scope remains usable. Once scope is present,
+  // profile writes must be explicitly for Discordmaxxer or for both products.
+  if (parsed.scope && parsed.scope !== 'both' && parsed.scope !== 'dm') {
+    return { status: 403, error: 'claim scope is not Discordmaxxer' };
+  }
+  return { userId, normCode, parsed, tier: parsed.tier ?? TIER_MAXXER_PLUS_PLUS };
+}
+
+function decodeProfileMediaDataUri(dataUri, claimedMime) {
+  if (typeof dataUri !== 'string' || dataUri.length === 0) {
+    return { error: 'missing dataUri' };
+  }
+  const match = dataUri.match(PROFILE_MEDIA_DATA_URI_RE);
+  if (!match) {
+    return { error: 'dataUri must be a base64 data URL' };
+  }
+  const dataUriMime = match[1].toLowerCase();
+  const mime = typeof claimedMime === 'string' && claimedMime.trim()
+    ? claimedMime.trim().toLowerCase()
+    : dataUriMime;
+  // File.type can be application/octet-stream for a file selected from an
+  // unusual Windows association. In that case the explicit client MIME is
+  // the useful value; any other mismatch is rejected.
+  if (dataUriMime !== 'application/octet-stream' && dataUriMime !== mime) {
+    return { error: 'dataUri MIME does not match the selected file type' };
+  }
+  if (!PROFILE_MEDIA_MIME_TYPES.has(mime)) {
+    return { error: 'unsupported media type' };
+  }
+  const base64 = match[2].replace(/\s+/g, '');
+  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
+  const estimatedBytes = Math.floor(base64.length * 3 / 4) - padding;
+  const maxBytes = mime.startsWith('video/')
+    ? PROFILE_MEDIA_MAX_VIDEO_BYTES
+    : PROFILE_MEDIA_MAX_IMAGE_BYTES;
+  if (estimatedBytes > maxBytes) {
+    return { error: `file exceeds the ${mime.startsWith('video/') ? '15 MB video' : '5 MB image'} limit` };
+  }
+  let binary;
+  try {
+    binary = atob(base64);
+  } catch {
+    return { error: 'invalid base64 media data' };
+  }
+  if (binary.length > maxBytes) {
+    return { error: `file exceeds the ${mime.startsWith('video/') ? '15 MB video' : '5 MB image'} limit` };
+  }
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return { mime, bytes };
+}
+
+function profileMediaKeyForUrl(value, userId, kind = 'banner') {
+  if (typeof value !== 'string') return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.origin !== PROFILE_MEDIA_PUBLIC_ORIGIN) return null;
+    const match = parsed.pathname.match(PROFILE_MEDIA_PATH_RE);
+    if (!match || match[1] !== userId || match[2] !== kind) return null;
+    return `${PROFILE_MEDIA_PREFIX}${match[1]}/${match[2]}/${match[3]}`;
+  } catch {
+    return null;
+  }
+}
+
+function isVideoProfileUrl(value) {
+  return typeof value === 'string' && /(?:[?&]dmx-media=video(?:&|#|$)|\.(?:mp4|webm|mov)(?:[?#]|$))/i.test(value);
+}
+
+async function readProfileRecord(env, userId) {
+  const raw = await env.VIP_CLAIMS.get(`${PROFILE_KV_PREFIX}${userId}`);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+async function pruneProfileMedia(env, userId, profile, preserveKey) {
+  if (!env.PROFILE_MEDIA?.list || !env.PROFILE_MEDIA?.delete) return;
+  try {
+    const listed = await env.PROFILE_MEDIA.list({
+      prefix: `${PROFILE_MEDIA_PREFIX}${userId}/`,
+      limit: 1000,
+    });
+    const objects = Array.isArray(listed?.objects) ? listed.objects : [];
+    const keep = new Set([
+      profileMediaKeyForUrl(profile?.bannerUrl, userId, 'banner'),
+      profileMediaKeyForUrl(profile?.avatarAnimatedUrl, userId, 'avatar'),
+      preserveKey,
+    ].filter(Boolean));
+    const candidates = objects
+      .filter(object => object?.key && !keep.has(object.key))
+      .sort((a, b) => String(a.uploaded ?? '').localeCompare(String(b.uploaded ?? '')));
+    const deleteCount = Math.max(0, objects.length - PROFILE_MEDIA_MAX_OBJECTS);
+    await Promise.all(candidates.slice(0, deleteCount).map(object => env.PROFILE_MEDIA.delete(object.key)));
+  } catch (error) {
+    // Orphan cleanup is best effort. A temporary R2 list/delete failure must
+    // not turn a valid new upload into a broken profile action.
+    console.warn('[profile-media] prune failed:', error?.message ?? error);
+  }
+}
+
+async function handleProfileMediaUpload(body, env, corsHeaders) {
+  const auth = await getProfileAuth(body, env);
+  if (auth.error) return json({ ok: false, error: auth.error }, auth.status, corsHeaders);
+  const kind = body?.kind === 'avatar' ? 'avatar' : body?.kind === 'banner' ? 'banner' : '';
+  if (!kind) {
+    return json({ ok: false, error: 'kind must be banner or avatar' }, 400, corsHeaders);
+  }
+  const field = kind === 'avatar' ? 'avatarAnimatedUrl' : 'bannerUrl';
+  if (auth.tier < PROFILE_FIELD_MIN_TIER[field]) {
+    return json({ ok: false, error: `${field} requires tier ${PROFILE_FIELD_MIN_TIER[field]}+` }, 403, corsHeaders);
+  }
+  if (!env.PROFILE_MEDIA) {
+    return json({ ok: false, error: 'profile media storage is not configured yet' }, 503, corsHeaders);
+  }
+  const decoded = decodeProfileMediaDataUri(body?.dataUri, body?.mime);
+  if (decoded.error) return json({ ok: false, error: decoded.error }, 400, corsHeaders);
+  if (kind === 'avatar' && decoded.mime.startsWith('video/')) {
+    return json({ ok: false, error: 'shared avatars accept GIF/image files; send video once to native Discord instead' }, 400, corsHeaders);
+  }
+
+  const token = crypto.randomUUID();
+  const key = `${PROFILE_MEDIA_PREFIX}${auth.userId}/${kind}/${token}`;
+  await env.PROFILE_MEDIA.put(key, decoded.bytes, {
+    httpMetadata: {
+      contentType: decoded.mime,
+      contentDisposition: 'inline',
+      cacheControl: 'public, max-age=300',
+    },
+  });
+  await pruneProfileMedia(env, auth.userId, await readProfileRecord(env, auth.userId), key);
+  const publicUrl = `${PROFILE_MEDIA_PUBLIC_ORIGIN}/${key}` +
+    (decoded.mime.startsWith('video/') ? '?dmx-media=video' : '');
+  return json({
+    ok: true,
+    url: publicUrl,
+    mime: decoded.mime,
+    bytes: decoded.bytes.byteLength,
+  }, 201, corsHeaders);
+}
+
+async function handleProfileMediaGet(request, url, env, corsHeaders) {
+  const match = url.pathname.match(PROFILE_MEDIA_PATH_RE);
+  if (!match) return json({ ok: false, error: 'media not found' }, 404, corsHeaders);
+  if (!env.PROFILE_MEDIA) {
+    return json({ ok: false, error: 'profile media storage is not configured yet' }, 503, corsHeaders);
+  }
+  const key = `${PROFILE_MEDIA_PREFIX}${match[1]}/${match[2]}/${match[3]}`;
+  const metadata = await env.PROFILE_MEDIA.head(key);
+  if (!metadata) return json({ ok: false, error: 'media not found' }, 404, corsHeaders);
+
+  const totalSize = Number(metadata.size);
+  const rangeHeader = request.method === 'GET' ? request.headers.get('range') : null;
+  let range = null;
+  if (rangeHeader) {
+    const matchRange = /^bytes=(\d*)-(\d*)$/i.exec(rangeHeader.trim());
+    if (!matchRange || (!matchRange[1] && !matchRange[2]) || !Number.isFinite(totalSize) || totalSize <= 0) {
+      return new Response(null, { status: 416, headers: { ...corsHeaders, 'content-range': `bytes */${Number.isFinite(totalSize) ? totalSize : '*'}` } });
+    }
+    let offset;
+    let end;
+    if (matchRange[1]) {
+      offset = Number(matchRange[1]);
+      end = matchRange[2] ? Number(matchRange[2]) : totalSize - 1;
+    } else {
+      const suffixLength = Number(matchRange[2]);
+      offset = Math.max(0, totalSize - suffixLength);
+      end = totalSize - 1;
+    }
+    if (!Number.isSafeInteger(offset) || !Number.isSafeInteger(end) || offset < 0 || end < offset || offset >= totalSize) {
+      return new Response(null, { status: 416, headers: { ...corsHeaders, 'content-range': `bytes */${totalSize}` } });
+    }
+    end = Math.min(end, totalSize - 1);
+    range = { offset, length: end - offset + 1, end };
+  }
+
+  const object = request.method === 'HEAD'
+    ? metadata
+    : range
+      ? await env.PROFILE_MEDIA.get(key, { range: { offset: range.offset, length: range.length } })
+      : await env.PROFILE_MEDIA.get(key);
+  if (!object) return json({ ok: false, error: 'media not found' }, 404, corsHeaders);
+
+  const headers = new Headers(corsHeaders);
+  headers.set('cache-control', object.httpMetadata?.cacheControl || 'public, max-age=300');
+  if (object.httpMetadata?.contentType) headers.set('content-type', object.httpMetadata.contentType);
+  if (object.httpMetadata?.contentDisposition) headers.set('content-disposition', object.httpMetadata.contentDisposition);
+  headers.set('accept-ranges', 'bytes');
+  headers.set('content-length', String(range ? range.length : totalSize));
+  if (range) headers.set('content-range', `bytes ${range.offset}-${range.end}/${totalSize}`);
+  if (object.etag) headers.set('etag', object.etag);
+  return new Response(request.method === 'HEAD' ? null : object.body, { status: range ? 206 : 200, headers });
+}
+
 /**
  * POST /profile — user updates their custom profile flair (banner URL,
  * animated avatar URL, theme colors). Auth = claimCode + userId must match
@@ -831,33 +1086,22 @@ function tierFromMetaOrCode(meta, normCode) {
  * profile: {} }`.
  */
 async function handleProfileUpdate(body, env, corsHeaders) {
-  const userId = typeof body.userId === 'string' ? body.userId : '';
-  const claimCode = typeof body.claimCode === 'string' ? body.claimCode : '';
   const profile = body.profile && typeof body.profile === 'object' ? body.profile : null;
   const replace = body.replace === true;
 
-  if (!ALLOWED_USER_ID_RE.test(userId)) {
-    return json({ ok: false, error: 'malformed userId' }, 400, corsHeaders);
-  }
-  const normCode = normalizeCode(claimCode);
-  if (!ALLOWED_CODE_RE.test(normCode)) {
-    return json({ ok: false, error: 'malformed claimCode' }, 400, corsHeaders);
-  }
   if (!profile) {
     return json({ ok: false, error: 'missing profile object' }, 400, corsHeaders);
   }
 
   // Auth check: claim must exist AND must be bound to this userId. This is
   // the entire authorization model — the claim code is the user's secret.
-  const claimRaw = await env.VIP_CLAIMS.get(`claim:${normCode}`);
-  if (!claimRaw) {
-    return json({ ok: false, error: 'unknown claimCode' }, 401, corsHeaders);
+  const auth = await getProfileAuth(body, env);
+  if (auth.error) return json({ ok: false, error: auth.error }, auth.status, corsHeaders);
+  const { userId, tier } = auth;
+  const requestedUpdatedAt = body?.ifUpdatedAt === undefined ? undefined : Number(body.ifUpdatedAt);
+  if (requestedUpdatedAt !== undefined && !Number.isFinite(requestedUpdatedAt)) {
+    return json({ ok: false, error: 'ifUpdatedAt must be a timestamp' }, 400, corsHeaders);
   }
-  const parsed = parseClaim(claimRaw);
-  if (parsed.userId !== userId) {
-    return json({ ok: false, error: 'claimCode does not match userId' }, 401, corsHeaders);
-  }
-  const tier = parsed.tier ?? TIER_MAXXER_PLUS_PLUS;
 
   // Validate + tier-gate each provided field. Reject the whole request on
   // the first violation — clearer feedback than partial accept.
@@ -882,6 +1126,9 @@ async function handleProfileUpdate(body, env, corsHeaders) {
       if (!PROFILE_URL_RE.test(value)) {
         return json({ ok: false, error: `${field} must be a https:// URL ≤250 chars` }, 400, corsHeaders);
       }
+      if (field === 'avatarAnimatedUrl' && isVideoProfileUrl(value)) {
+        return json({ ok: false, error: 'shared avatar URLs must be GIF/image media; video avatars are native-Discord-only' }, 400, corsHeaders);
+      }
     }
     if (field === 'themeColorPrimary' || field === 'themeColorSecondary') {
       if (!PROFILE_COLOR_RE.test(value)) {
@@ -892,6 +1139,15 @@ async function handleProfileUpdate(body, env, corsHeaders) {
   }
 
   const profileKey = `${PROFILE_KV_PREFIX}${userId}`;
+  const existingRaw = await env.VIP_CLAIMS.get(profileKey);
+  let existing = {};
+  if (existingRaw) {
+    try { existing = JSON.parse(existingRaw); } catch (_) { existing = {}; }
+  }
+  const currentUpdatedAt = Number(existing.updatedAt);
+  if (requestedUpdatedAt !== undefined && Number.isFinite(currentUpdatedAt) && requestedUpdatedAt !== currentUpdatedAt) {
+    return json({ ok: false, error: 'profile changed on another PC', currentUpdatedAt }, 409, corsHeaders);
+  }
   let final;
   if (replace) {
     // Replace mode: stored record becomes exactly what was provided,
@@ -903,11 +1159,6 @@ async function handleProfileUpdate(body, env, corsHeaders) {
   } else {
     // Merge mode: keep existing fields, overlay provided ones; empty-string
     // values clear the matching field.
-    const existingRaw = await env.VIP_CLAIMS.get(profileKey);
-    let existing = {};
-    if (existingRaw) {
-      try { existing = JSON.parse(existingRaw); } catch (_) { existing = {}; }
-    }
     final = { ...existing };
     for (const [k, v] of Object.entries(validated)) {
       if (v === '') delete final[k];
@@ -921,6 +1172,28 @@ async function handleProfileUpdate(body, env, corsHeaders) {
   } else {
     final.updatedAt = Date.now();
     await env.VIP_CLAIMS.put(profileKey, JSON.stringify(final));
+  }
+
+  // Versioned R2 objects avoid overwriting media while it is being viewed.
+  // Once the profile points at a replacement (or clears the field), delete
+  // only previous objects owned by this user. External URLs are never
+  // touched, and a cleanup failure must not turn a successful profile save
+  // into a 500.
+  if (env.PROFILE_MEDIA) {
+    for (const [kind, previousValue, nextValue] of [
+      ['banner', existing.bannerUrl, final.bannerUrl],
+      ['avatar', existing.avatarAnimatedUrl, final.avatarAnimatedUrl],
+    ]) {
+      const previousMediaKey = profileMediaKeyForUrl(previousValue, userId, kind);
+      const nextMediaKey = profileMediaKeyForUrl(nextValue, userId, kind);
+      if (previousMediaKey && previousMediaKey !== nextMediaKey) {
+        try {
+          await env.PROFILE_MEDIA.delete(previousMediaKey);
+        } catch (error) {
+          console.warn('[profile] old media cleanup failed:', error?.message ?? error);
+        }
+      }
+    }
   }
 
   // Invalidate roster memo so the next /roster GET sees the new flair.
@@ -960,11 +1233,14 @@ async function handleRoster(env, corsHeaders) {
       // Only expose entries that opted in by sending their userId.
       // Pre-2026-05-10 claims have no userId and stay private.
       if (!parsed.userId) continue;
+      if (parsed.expiresAt && now > parsed.expiresAt) continue;
+      if (parsed.scope && parsed.scope !== 'both' && parsed.scope !== 'dm') continue;
       const entry = {
         tier: parsed.tier ?? TIER_MAXXER_PLUS_PLUS,
         via: parsed.founderNumber ? 'founder' : 'subscription',
       };
       if (parsed.claimedAt) entry.grantedAt = new Date(parsed.claimedAt).toISOString();
+      if (parsed.expiresAt) entry.expiresAt = new Date(parsed.expiresAt).toISOString();
       if (parsed.founderNumber) entry.founderNumber = parsed.founderNumber;
       users[parsed.userId] = entry;
     }
@@ -994,6 +1270,7 @@ async function handleRoster(env, corsHeaders) {
         if (typeof profile.avatarAnimatedUrl === 'string' && profile.avatarAnimatedUrl) cleaned.avatarAnimatedUrl = profile.avatarAnimatedUrl;
         if (typeof profile.themeColorPrimary === 'string' && profile.themeColorPrimary) cleaned.themeColorPrimary = profile.themeColorPrimary;
         if (typeof profile.themeColorSecondary === 'string' && profile.themeColorSecondary) cleaned.themeColorSecondary = profile.themeColorSecondary;
+        if (Number.isFinite(Number(profile.updatedAt))) users[userId].profileUpdatedAt = Number(profile.updatedAt);
         if (Object.keys(cleaned).length) users[userId].profile = cleaned;
       } catch (_) {
         // Corrupt profile record — skip silently, fall through to no flair.

@@ -35,6 +35,13 @@ DISCORD_OAUTH_REDIRECT_URI = "https://optmaxxing-vip.maxxtopia.workers.dev/disco
 binding = "VIP_CLAIMS"
 id = "06752792b28c4e5e9d3ed3d48d3278ec"
 
+# Public media storage for Discordmaxxer shared local-file banners. Create
+# this bucket once with `wrangler r2 bucket create discordmaxxer-profile-media`
+# before the worker is deployed with this binding.
+[[r2_buckets]]
+binding = "PROFILE_MEDIA"
+bucket_name = "discordmaxxer-profile-media"
+
 # Optional: route to vip.maxxtopia.com after the DNS record exists.
 # Uncomment + adjust when ready. Until then, the workers.dev subdomain
 # (https://optmaxxing-vip.<your-account>.workers.dev) works as-is.

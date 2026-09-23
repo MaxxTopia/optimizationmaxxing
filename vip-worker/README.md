@@ -110,6 +110,55 @@ wrangler kv key delete --binding VIP_CLAIMS "claim:<bare-code>"
 ```
 The bare code is the 16-char string without the `MAXX-` prefix or dashes.
 
+## Discordmaxxer shared profile media
+
+The Discordmaxxer Profile Flair editor has two intentionally different
+actions:
+
+- **Profile gradients are available to every Discordmaxxer user.** No tier is
+  required. A valid Discordmaxxer claim is still required to publish the two
+  shared theme colors so they sync across PCs and show to other Discordmaxxer
+  users; without a claim, the client keeps the gradient local to that install.
+  Animated avatars remain MAXXER+, and custom banners remain MAXXER. Vanilla
+  Discord does not render these roster-only
+  colors or flair.
+- **Publish as shared banner** uploads a selected GIF, image, or video to the
+  `PROFILE_MEDIA` R2 bucket, saves the resulting HTTPS URL through `POST
+  /profile`, and makes it available to other Discordmaxxer clients on the
+  roster. Video URLs receive a `dmx-media=video` hint because the object URL
+  intentionally has no file extension.
+- **Publish as shared avatar** uploads a GIF/image avatar and saves it to the
+  same roster. Video avatars remain a one-time native Discord action because
+  the Discordmaxxer avatar renderer uses `<img>` and cannot reliably render a
+  video as an avatar.
+- **Send banner once** is a separate native Discord `/users/@me/profile`
+  update. It does not save the file to the roster, and it cannot make the
+  Discordmaxxer-only gradient/flair appear in vanilla Discord.
+
+The media route accepts image files up to 5 MB and banner video files up to
+15 MB. It serves `GET`, `HEAD`, and single-range `GET` requests at
+`/profile-media/<userId>/<banner|avatar>/<uuid>` with the stored content type
+so the roster renderer can load the same asset on another PC. Replacing or
+clearing a shared banner/avatar removes the previous object owned by that
+user; a best-effort per-user retention pass keeps at most five recent objects
+and external URLs are never deleted. Uploads are rate-limited at 60/minute.
+Roster responses and the app cache converge in about 30 seconds. Profile
+writes carry an `updatedAt` conflict check so a stale second PC gets a clear
+refresh-and-review error instead of silently overwriting newer flair.
+
+Before deploying this candidate, create the bucket once in the Cloudflare
+account that owns the worker:
+
+```
+wrangler r2 bucket create discordmaxxer-profile-media
+wrangler deploy
+```
+
+The binding is already declared in `wrangler.toml`, but this change is not
+live until the bucket exists and the worker is deployed. Do not create the
+bucket or deploy from an unrelated dirty checkout; the app and worker should
+be released as one tested pair.
+
 ## Operational notes
 
 - KV is eventually-consistent (~60s propagation). In a worst-case
