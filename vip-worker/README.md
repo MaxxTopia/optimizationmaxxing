@@ -144,20 +144,23 @@ user; a best-effort per-user retention pass keeps at most five recent objects
 and external URLs are never deleted. Uploads are rate-limited at 60/minute.
 Roster responses and the app cache converge in about 30 seconds. Profile
 writes carry an `updatedAt` conflict check so a stale second PC gets a clear
-refresh-and-review error instead of silently overwriting newer flair.
+refresh-and-review error instead of silently overwriting newer flair. After
+the first successful legacy migration, `/roster` reads one R2 snapshot rather
+than scanning KV on every cold worker instance. If the free KV list quota is
+temporarily exhausted before that migration, the endpoint returns a retryable
+503 and clients should keep their last good roster instead of replacing it
+with an empty one; the next UTC quota reset completes the migration.
 
-Before deploying this candidate, create the bucket once in the Cloudflare
-account that owns the worker:
+Deployment from this worker directory:
 
 ```
 wrangler r2 bucket create discordmaxxer-profile-media
 wrangler deploy
 ```
 
-The binding is already declared in `wrangler.toml`, but this change is not
-live until the bucket exists and the worker is deployed. Do not create the
-bucket or deploy from an unrelated dirty checkout; the app and worker should
-be released as one tested pair.
+The binding is declared in `wrangler.toml`. Keep the worker and the
+Discordmaxxer client release paired: the worker stores the shared media and
+roster snapshot, while the client renders it.
 
 ## Operational notes
 

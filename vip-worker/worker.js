@@ -141,6 +141,8 @@ const PROFILE_FIELD_MIN_TIER = {
 };
 
 const ROSTER_CACHE_TTL_SEC = 30;
+const ROSTER_SNAPSHOT_KEY = 'roster/v2.json';
+const ROSTER_RETRY_AFTER_SEC = 300;
 let rosterMemoCache = null;
 let rosterMemoCachedAt = 0;
 
@@ -158,7 +160,7 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/roster' && request.method === 'GET') {
-      return handleRoster(env, corsHeaders);
+      return handleRoster(env, corsHeaders, ctx);
     }
 
     if (url.pathname.startsWith('/profile-media/') &&
@@ -229,7 +231,7 @@ export default {
       } catch (e) {
         return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
       }
-      return handleProfileUpdate(body, env, corsHeaders);
+      return handleProfileUpdate(body, env, corsHeaders, ctx);
     }
 
     // ---- Admin dashboard: one bookmarkable page to mint/list/revoke codes
@@ -379,6 +381,11 @@ async function handleClaim(body, env, ctx, corsHeaders) {
       { metadata: { claimedAt, founderNumber: founderNumber ?? null, expiresAt: expiresAt ?? null } },
     );
     rosterMemoCache = null;
+    try {
+      await refreshRosterSnapshotUser(env, claim);
+    } catch (error) {
+      console.warn('[claim] roster snapshot refresh failed:', error?.message ?? error);
+    }
 
     if (userId) {
       ctx.waitUntil(grantDiscordRoles(env, userId, tier));
@@ -453,6 +460,11 @@ async function handleClaim(body, env, ctx, corsHeaders) {
       { metadata: { claimedAt: parsed.claimedAt, founderNumber: parsed.founderNumber ?? null, expiresAt: parsed.expiresAt ?? null } },
     );
     rosterMemoCache = null;
+    try {
+      await refreshRosterSnapshotUser(env, parsed);
+    } catch (error) {
+      console.warn('[claim] roster snapshot refresh failed:', error?.message ?? error);
+    }
     if (parsed.userId) {
       ctx.waitUntil(grantDiscordRoles(env, parsed.userId, parsed.tier ?? tier));
     }
@@ -1085,7 +1097,7 @@ async function handleProfileMediaGet(request, url, env, corsHeaders) {
  * fields). To delete the entire flair record, send `{ replace: true,
  * profile: {} }`.
  */
-async function handleProfileUpdate(body, env, corsHeaders) {
+async function handleProfileUpdate(body, env, corsHeaders, ctx) {
   const profile = body.profile && typeof body.profile === 'object' ? body.profile : null;
   const replace = body.replace === true;
 
@@ -1198,97 +1210,48 @@ async function handleProfileUpdate(body, env, corsHeaders) {
 
   // Invalidate roster memo so the next /roster GET sees the new flair.
   rosterMemoCache = null;
+  try {
+    await updateRosterSnapshotUser(env, userId, rosterEntryFromClaim(auth.parsed, final));
+  } catch (error) {
+    // The profile write is authoritative in KV. Snapshot refresh is a
+    // read-optimized mirror and must not make a successful profile save fail.
+    console.warn('[profile] roster snapshot refresh failed:', error?.message ?? error);
+  }
 
   return json({ ok: true, profile: final }, 200, corsHeaders);
 }
 
-async function handleRoster(env, corsHeaders) {
-  const now = Date.now();
-  if (rosterMemoCache && now - rosterMemoCachedAt < ROSTER_CACHE_TTL_SEC * 1000) {
-    return new Response(JSON.stringify(rosterMemoCache), {
-      status: 200,
-      headers: {
-        'content-type': 'application/json',
-        'cache-control': `public, max-age=${ROSTER_CACHE_TTL_SEC}`,
-        ...corsHeaders,
-      },
-    });
-  }
+function cleanProfileFields(profile) {
+  const cleaned = {};
+  if (!profile || typeof profile !== 'object') return cleaned;
+  if (typeof profile.bannerUrl === 'string' && profile.bannerUrl) cleaned.bannerUrl = profile.bannerUrl;
+  if (typeof profile.avatarAnimatedUrl === 'string' && profile.avatarAnimatedUrl) cleaned.avatarAnimatedUrl = profile.avatarAnimatedUrl;
+  if (typeof profile.themeColorPrimary === 'string' && profile.themeColorPrimary) cleaned.themeColorPrimary = profile.themeColorPrimary;
+  if (typeof profile.themeColorSecondary === 'string' && profile.themeColorSecondary) cleaned.themeColorSecondary = profile.themeColorSecondary;
+  return cleaned;
+}
 
-  // List all claim:* keys + load each value. KV list is paginated; iterate
-  // until done. For 33 founders + a few hundred MAXXER++ codes the total
-  // count stays well under the 1000-key page size for a long time.
-  //
-  // Output shape matches discordmaxxer's plugins/_dm-shared/roster.ts:
-  //   { version, issuedAt, users: { [userId]: RosterEntry } }
-  // where RosterEntry = { tier, via?, grantedAt?, expiresAt?, founderNumber?, profile? }.
-  const users = {};
-  let cursor;
-  do {
-    const page = await env.VIP_CLAIMS.list({ prefix: 'claim:', cursor, limit: 1000 });
-    for (const key of page.keys) {
-      const raw = await env.VIP_CLAIMS.get(key.name);
-      if (!raw) continue;
-      const parsed = parseClaim(raw);
-      // Only expose entries that opted in by sending their userId.
-      // Pre-2026-05-10 claims have no userId and stay private.
-      if (!parsed.userId) continue;
-      if (parsed.expiresAt && now > parsed.expiresAt) continue;
-      if (parsed.scope && parsed.scope !== 'both' && parsed.scope !== 'dm') continue;
-      const entry = {
-        tier: parsed.tier ?? TIER_MAXXER_PLUS_PLUS,
-        via: parsed.founderNumber ? 'founder' : 'subscription',
-      };
-      if (parsed.claimedAt) entry.grantedAt = new Date(parsed.claimedAt).toISOString();
-      if (parsed.expiresAt) entry.expiresAt = new Date(parsed.expiresAt).toISOString();
-      if (parsed.founderNumber) entry.founderNumber = parsed.founderNumber;
-      users[parsed.userId] = entry;
-    }
-    cursor = page.cursor;
-    if (page.list_complete) break;
-  } while (cursor);
-
-  // Merge profile flair (banner / animated avatar / theme colors) onto roster
-  // entries. profile:<userId> KV is written by the /profile POST endpoint.
-  // Only users with a profile record AND a claim record get the flair merge —
-  // a stale profile record for a deleted/expired claim is silently dropped.
-  cursor = undefined;
-  do {
-    const page = await env.VIP_CLAIMS.list({ prefix: PROFILE_KV_PREFIX, cursor, limit: 1000 });
-    for (const key of page.keys) {
-      const userId = key.name.slice(PROFILE_KV_PREFIX.length);
-      if (!users[userId]) continue;
-      const raw = await env.VIP_CLAIMS.get(key.name);
-      if (!raw) continue;
-      try {
-        const profile = JSON.parse(raw);
-        // Whitelist the fields we'll serve so stale records can't smuggle
-        // new keys through. Drop empty strings — the client treats missing
-        // fields as "no flair set."
-        const cleaned = {};
-        if (typeof profile.bannerUrl === 'string' && profile.bannerUrl) cleaned.bannerUrl = profile.bannerUrl;
-        if (typeof profile.avatarAnimatedUrl === 'string' && profile.avatarAnimatedUrl) cleaned.avatarAnimatedUrl = profile.avatarAnimatedUrl;
-        if (typeof profile.themeColorPrimary === 'string' && profile.themeColorPrimary) cleaned.themeColorPrimary = profile.themeColorPrimary;
-        if (typeof profile.themeColorSecondary === 'string' && profile.themeColorSecondary) cleaned.themeColorSecondary = profile.themeColorSecondary;
-        if (Number.isFinite(Number(profile.updatedAt))) users[userId].profileUpdatedAt = Number(profile.updatedAt);
-        if (Object.keys(cleaned).length) users[userId].profile = cleaned;
-      } catch (_) {
-        // Corrupt profile record — skip silently, fall through to no flair.
-      }
-    }
-    cursor = page.cursor;
-    if (page.list_complete) break;
-  } while (cursor);
-
-  const payload = {
-    version: 2,
-    issuedAt: new Date(now).toISOString(),
-    users,
+function rosterEntryFromClaim(claim, profile) {
+  const parsed = claim && typeof claim === 'object' ? claim : {};
+  if (!parsed.userId) return null;
+  if (parsed.expiresAt && Date.now() > parsed.expiresAt) return null;
+  if (parsed.scope && parsed.scope !== 'both' && parsed.scope !== 'dm') return null;
+  const entry = {
+    tier: parsed.tier ?? TIER_MAXXER_PLUS_PLUS,
+    via: parsed.founderNumber ? 'founder' : 'subscription',
   };
+  if (parsed.claimedAt) entry.grantedAt = new Date(parsed.claimedAt).toISOString();
+  if (parsed.expiresAt) entry.expiresAt = new Date(parsed.expiresAt).toISOString();
+  if (parsed.founderNumber) entry.founderNumber = parsed.founderNumber;
+  const cleaned = cleanProfileFields(profile);
+  if (Object.keys(cleaned).length) {
+    entry.profile = cleaned;
+    if (Number.isFinite(Number(profile?.updatedAt))) entry.profileUpdatedAt = Number(profile.updatedAt);
+  }
+  return entry;
+}
 
-  rosterMemoCache = payload;
-  rosterMemoCachedAt = now;
-
+function rosterResponse(payload, corsHeaders) {
   return new Response(JSON.stringify(payload), {
     status: 200,
     headers: {
@@ -1297,6 +1260,147 @@ async function handleRoster(env, corsHeaders) {
       ...corsHeaders,
     },
   });
+}
+
+async function readRosterSnapshot(env) {
+  if (!env.PROFILE_MEDIA?.get) return null;
+  try {
+    const object = await env.PROFILE_MEDIA.get(ROSTER_SNAPSHOT_KEY);
+    if (!object?.body) return null;
+    const payload = JSON.parse(await new Response(object.body).text());
+    if (!payload || payload.version !== 2 || !payload.users || typeof payload.users !== 'object') return null;
+    return payload;
+  } catch (error) {
+    console.warn('[roster] snapshot read failed:', error?.message ?? error);
+    return null;
+  }
+}
+
+async function writeRosterSnapshot(env, payload) {
+  if (!env.PROFILE_MEDIA?.put) return;
+  await env.PROFILE_MEDIA.put(ROSTER_SNAPSHOT_KEY, JSON.stringify(payload), {
+    httpMetadata: {
+      contentType: 'application/json',
+      cacheControl: `public, max-age=${ROSTER_CACHE_TTL_SEC}`,
+    },
+  });
+}
+
+async function updateRosterSnapshotUser(env, userId, entry) {
+  if (!userId || !env.PROFILE_MEDIA?.put) return;
+  const snapshot = await readRosterSnapshot(env);
+  // A missing snapshot means the one-time legacy migration has not completed.
+  // Do not create a partial roster from a single write; the next successful
+  // /roster migration will include all existing claims.
+  if (!snapshot) return;
+  const users = { ...snapshot.users };
+  if (entry) users[userId] = entry;
+  else delete users[userId];
+  await writeRosterSnapshot(env, {
+    version: 2,
+    issuedAt: new Date().toISOString(),
+    users,
+  });
+}
+
+async function refreshRosterSnapshotUser(env, claim) {
+  if (!claim?.userId) return;
+  const profile = await readProfileRecord(env, claim.userId);
+  await updateRosterSnapshotUser(env, claim.userId, rosterEntryFromClaim(claim, profile));
+}
+
+async function buildRosterFromKv(env, now) {
+  const users = {};
+  let cursor;
+  do {
+    const options = { prefix: 'claim:', limit: 1000 };
+    if (cursor) options.cursor = cursor;
+    const page = await env.VIP_CLAIMS.list(options);
+    for (const key of page.keys) {
+      const raw = await env.VIP_CLAIMS.get(key.name);
+      if (!raw) continue;
+      const parsed = parseClaim(raw);
+      const entry = rosterEntryFromClaim(parsed);
+      if (entry) users[parsed.userId] = entry;
+    }
+    cursor = page.cursor;
+    if (page.list_complete) break;
+  } while (cursor);
+
+  // Merge profile flair (banner / animated avatar / theme colors) onto roster
+  // entries. Only users with a claim record get the flair merge.
+  cursor = undefined;
+  do {
+    const options = { prefix: PROFILE_KV_PREFIX, limit: 1000 };
+    if (cursor) options.cursor = cursor;
+    const page = await env.VIP_CLAIMS.list(options);
+    for (const key of page.keys) {
+      const userId = key.name.slice(PROFILE_KV_PREFIX.length);
+      if (!users[userId]) continue;
+      const raw = await env.VIP_CLAIMS.get(key.name);
+      if (!raw) continue;
+      try {
+        const profile = JSON.parse(raw);
+        const cleaned = cleanProfileFields(profile);
+        if (Object.keys(cleaned).length) {
+          users[userId].profile = cleaned;
+          if (Number.isFinite(Number(profile.updatedAt))) users[userId].profileUpdatedAt = Number(profile.updatedAt);
+        }
+      } catch (_) {
+        // Corrupt profile record — skip silently, fall through to no flair.
+      }
+    }
+    cursor = page.cursor;
+    if (page.list_complete) break;
+  } while (cursor);
+
+  return {
+    version: 2,
+    issuedAt: new Date(now).toISOString(),
+    users,
+  };
+}
+
+async function handleRoster(env, corsHeaders, ctx) {
+  const now = Date.now();
+  if (rosterMemoCache && now - rosterMemoCachedAt < ROSTER_CACHE_TTL_SEC * 1000) {
+    return rosterResponse(rosterMemoCache, corsHeaders);
+  }
+
+  const snapshot = await readRosterSnapshot(env);
+  if (snapshot) {
+    rosterMemoCache = snapshot;
+    rosterMemoCachedAt = now;
+    return rosterResponse(snapshot, corsHeaders);
+  }
+
+  try {
+    // One-time migration for the pre-snapshot schema. Once this succeeds,
+    // normal roster reads use one R2 object instead of KV list scans.
+    const payload = await buildRosterFromKv(env, now);
+    try {
+      await writeRosterSnapshot(env, payload);
+    } catch (error) {
+      console.warn('[roster] snapshot write failed:', error?.message ?? error);
+    }
+    rosterMemoCache = payload;
+    rosterMemoCachedAt = now;
+    return rosterResponse(payload, corsHeaders);
+  } catch (error) {
+    // KV list has a small daily quota on the free plan. Do not turn that
+    // expected exhaustion into a 500; clients can keep their last good roster
+    // and retry after the quota window rolls over.
+    console.warn('[roster] legacy migration unavailable:', error?.message ?? error);
+    return json({
+      ok: false,
+      error: 'roster temporarily unavailable; retry after the KV quota resets',
+      retryAfterSeconds: ROSTER_RETRY_AFTER_SEC,
+    }, 503, {
+      ...corsHeaders,
+      'cache-control': 'no-store',
+      'retry-after': String(ROSTER_RETRY_AFTER_SEC),
+    });
+  }
 }
 
 /**
@@ -1573,6 +1677,11 @@ async function handleDiscordLink(url, env, corsHeaders, ctx) {
     matchedClaim.parsed.claimedAt ??= Date.now();
     await env.VIP_CLAIMS.put(matchedClaim.key, JSON.stringify(matchedClaim.parsed));
     rosterMemoCache = null;
+    try {
+      await refreshRosterSnapshotUser(env, matchedClaim.parsed);
+    } catch (error) {
+      console.warn('[discord-link] roster snapshot refresh failed:', error?.message ?? error);
+    }
   } else if (matchedClaim.parsed.userId !== userId) {
     return htmlPage(
       `<h1>HWID already linked to a different Discord user</h1>` +

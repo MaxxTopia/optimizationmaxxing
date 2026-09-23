@@ -7,7 +7,11 @@ class MemoryKV {
   async get(key) { return this.values.has(key) ? this.values.get(key) : null; }
   async put(key, value) { this.values.set(key, String(value)); }
   async delete(key) { this.values.delete(key); }
-  async list({ prefix = '', limit = 1000 } = {}) {
+  async list(options = {}) {
+    if (Object.prototype.hasOwnProperty.call(options, 'cursor') && options.cursor === undefined) {
+      throw new Error('KV list must omit an undefined cursor');
+    }
+    const { prefix = '', limit = 1000 } = options;
     const keys = [...this.values.keys()]
       .filter((key) => key.startsWith(prefix))
       .sort()
@@ -20,7 +24,11 @@ class MemoryKV {
 class MemoryR2 {
   constructor() { this.values = new Map(); }
   async put(key, value, options = {}) {
-    const bytes = value instanceof Uint8Array ? new Uint8Array(value) : new Uint8Array(value);
+    const bytes = value instanceof Uint8Array
+      ? new Uint8Array(value)
+      : typeof value === 'string'
+        ? new TextEncoder().encode(value)
+        : new Uint8Array(value);
     this.values.set(key, {
       bytes,
       httpMetadata: options.httpMetadata ?? {},
@@ -269,4 +277,41 @@ test('profile writes use updatedAt to stop stale second-PC overwrites', async ()
   }), env, context());
   assert.equal(conflict.status, 409);
   assert.match((await jsonResponse(conflict)).body.error, /another PC/i);
+});
+
+test('roster migration builds an R2 snapshot and later reads avoid KV list scans', async () => {
+  const { kv, media, env } = await seededEnvironment();
+  const first = await worker.fetch(request('/roster'), env, context());
+  const firstJson = await jsonResponse(first);
+  assert.equal(first.status, 200);
+  assert.equal(firstJson.body.version, 2);
+  assert.equal(firstJson.body.users[userId].tier, 3);
+  assert.equal(media.values.has('roster/v2.json'), true);
+
+  // Profile writes invalidate the isolate memo and update the durable mirror.
+  const profile = await worker.fetch(request('/profile', 'POST', {
+    userId, claimCode, profile: { themeColorPrimary: '#ff6ec7' },
+  }), env, context());
+  assert.equal(profile.status, 200);
+
+  kv.list = async () => { throw new Error('KV list quota exhausted'); };
+  const second = await worker.fetch(request('/roster'), env, context());
+  const secondJson = await jsonResponse(second);
+  assert.equal(second.status, 200);
+  assert.equal(secondJson.body.users[userId].profile.themeColorPrimary, '#ff6ec7');
+});
+
+test('roster returns a retryable response when legacy migration hits KV quota', async () => {
+  const { kv, env } = await seededEnvironment();
+  // Invalidate the module memo left by the preceding test.
+  const profile = await worker.fetch(request('/profile', 'POST', {
+    userId, claimCode, profile: { themeColorSecondary: '#4a73ff' },
+  }), env, context());
+  assert.equal(profile.status, 200);
+  kv.list = async () => { throw new Error('KV list() limit exceeded for the day.'); };
+  const response = await worker.fetch(request('/roster'), env, context());
+  const result = await jsonResponse(response);
+  assert.equal(response.status, 503);
+  assert.match(result.body.error, /temporarily unavailable/i);
+  assert.equal(result.body.retryAfterSeconds, 300);
 });
