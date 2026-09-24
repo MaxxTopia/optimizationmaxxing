@@ -38,7 +38,9 @@ than endorsing a standby-cache purge interval. See:
 - Release commit: 721110e9a8c4d3fe4db2f48a0a3a7e07020e1c43.
 - Branch: codex/standby-cleaner-guidance-v0.4.12.
 - Published tag: v0.4.12.
-- origin/main and the release tag both resolve to the release commit.
+- At release publication, origin/main and the v0.4.12 tag both resolved to
+  the release commit above. A later docs-only continuity commit is now at
+  origin/main; the v0.4.12 tag remains pinned to the release code.
 - GitHub release is public and not a draft:
   https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.12
 - CI signing and release workflow 36044702654 succeeded. Published assets are
