@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.12',
+    date: '2026-09-24',
+    highlights: [
+      'IMPROVE **Background standby cleaner is honest and testable.** The recommendation is to leave recurring cleanup off; users can run a guarded one-shot without installing a task and compare repeatable Fortnite frame-time results before deciding whether to keep it.',
+      'FIX **Cleaner checks skip supported active games.** Existing scheduled tasks can be updated to the guarded script; game-process detection is best-effort, not a guarantee.',
+    ],
+  },
+  {
     version: '0.4.11',
     date: '2026-09-24',
     highlights: [

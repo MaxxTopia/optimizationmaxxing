@@ -64,6 +64,7 @@ jobs:
                   releaseBody: |
                       ## Highlights
 
+                      - Background standby cleanup is off by recommendation. Users can test a guarded one-shot without installing a recurring task, with clear A/B guidance; current scripts skip detected supported games (best-effort only).
                       - Pinnacle Asta previews live values for the rig-matched Fortnite catalog, lets you select exact rows, and keeps higher-risk review actions separately confirmed; firmware stays manual.
                       - Asta rechecks selected settings immediately before applying and pauses for review if a setting changed while you were reviewing the plan.
                       - Tune Now and Your Tune report mismatches without guessing what caused them; Optimization Lab distinguishes local proxy evidence from real Fortnite capture.

@@ -1351,7 +1351,7 @@ async fn standby_install(
         .resource_dir()
         .map_err(|e| format!("resolve resource dir: {e}"))?;
     let script = resource_dir.join("resources/scripts/clear_standby.ps1");
-    let script_str = script.to_string_lossy().to_string();
+    let script_str = strip_verbatim_prefix(&script.to_string_lossy());
     tokio::task::spawn_blocking(move || -> Result<standby::StandbyStatus, String> {
         standby::install_task(&script_str, interval_minutes).map_err(|e| format!("{:#}", e))?;
         standby::status().map_err(|e| format!("{:#}", e))
@@ -1371,11 +1371,15 @@ async fn standby_uninstall() -> Result<standby::StandbyStatus, String> {
 }
 
 #[tauri::command]
-async fn standby_run_now() -> Result<standby::StandbyStatus, String> {
-    tokio::task::spawn_blocking(|| -> Result<standby::StandbyStatus, String> {
-        standby::run_now().map_err(|e| format!("{:#}", e))?;
-        // Brief beat so the log file gets the new line before we read it back.
-        std::thread::sleep(std::time::Duration::from_millis(800));
+async fn standby_run_now(app: tauri::AppHandle) -> Result<standby::StandbyStatus, String> {
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("resolve resource dir: {e}"))?;
+    let script = resource_dir.join("resources/scripts/clear_standby.ps1");
+    let script_str = strip_verbatim_prefix(&script.to_string_lossy());
+    tokio::task::spawn_blocking(move || -> Result<standby::StandbyStatus, String> {
+        standby::run_once(&script_str).map_err(|e| format!("{:#}", e))?;
         standby::status().map_err(|e| format!("{:#}", e))
     })
     .await

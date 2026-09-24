@@ -330,7 +330,7 @@ function HelpSection() {
 function StandbyCleanerSection() {
   const isNative = inTauri()
   const [status, setStatus] = useState<StandbyStatus | null>(null)
-  const [intervalMin, setIntervalMin] = useState<1 | 2 | 5>(1)
+  const [intervalMin, setIntervalMin] = useState<5 | 15 | 30>(30)
   const [busy, setBusy] = useState<'install' | 'uninstall' | 'run' | 'migrate' | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [migration, setMigration] = useState<StandbyMigrationInfo | null>(null)
@@ -338,10 +338,8 @@ function StandbyCleanerSection() {
   useEffect(() => {
     if (!isNative) return
     standbyStatus().then(setStatus).catch((e) => setErr(String(e)))
-    // v0.1.76 — surface a one-click "Update task" banner if the existing
-    // scheduled task was registered by v0.1.63-v0.1.73 (powershell-direct,
-    // causes 100-300ms flash every interval). v0.1.74+ uses the wscript
-    // shim. Re-register replaces the /TR in-place with the new command.
+    // Ask before replacing a task whose launcher or script lacks the current
+    // best-effort active-game guard. Re-registering requires UAC approval.
     standbyCheckMigration().then(setMigration).catch(() => {})
   }, [isNative])
 
@@ -410,14 +408,41 @@ function StandbyCleanerSection() {
     <section className="space-y-3">
       <div>
         <h2 className="text-lg font-semibold">Background standby cleaner</h2>
-        <p className="text-sm text-text-muted max-w-3xl leading-snug">
-          Pros restart their game every 2-3 hours because Windows pages active game memory back to
-          the standby list during long sessions, causing mid-endgame frametime drops. This installs
-          a Windows scheduled task that calls{' '}
-          <code className="text-accent">NtSetSystemInformation(MemoryPurgeStandbyList)</code> every
-          N minute(s) — same syscall RAMMap (Sysinternals) and Wagnard's ISLC use. Anti-cheat-safe,
-          no driver, no kernel hooks, no game-process injection. Triggers ONE UAC prompt to
-          install + ONE to uninstall; the task itself runs silently on schedule.
+        <div className="mt-3 max-w-4xl rounded-md border border-amber-500/40 bg-amber-500/5 p-3 text-sm leading-snug">
+          <p className="font-semibold text-amber-200">Recommended for competitive Fortnite: leave the recurring cleaner off.</p>
+          <p className="mt-1 text-text-muted">
+            Windows standby memory is reusable file cache; a large standby number alone does not
+            mean Fortnite is short on RAM. Clearing it can make Windows reload cached data. This is
+            not a proven FPS or stutter fix, and there is no evidence-based best timer or verified
+            pro consensus for scheduled standby purging.
+          </p>
+        </div>
+        <div className="mt-3 max-w-4xl rounded-md border border-border bg-bg-card p-3 text-sm leading-snug">
+          <p className="font-semibold text-text">Optional experiment: test one purge at a time, outside matches</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-text-muted">
+            <li>Use the same repeatable Creative/replay route, game settings, FPS cap, overlays, and background apps.</li>
+            <li>Run it three times with the cleaner off; note 1% lows, frame-time spikes, and hitches/loading—not just average FPS.</li>
+            <li>Close every game, select <strong className="text-text">Run once</strong>, then repeat the same test. Repeat the off/on comparison in another session if possible.</li>
+            <li>Keep using it only if improvement repeats beyond your normal run-to-run variation and causes no new hitches. Otherwise leave it off.</li>
+          </ol>
+          <p className="mt-2 text-xs text-text-subtle">
+            This is a comparison procedure, not a claim that the purge will help. No need to create a recurring task to try it.
+          </p>
+        </div>
+        <p className="text-xs text-text-subtle max-w-4xl leading-snug mt-2">
+          The optional recurring schedule is an experiment, not a performance preset. Its 5/15/30-minute choices are not evidence-based; 30 minutes is only the least frequent. A best-effort process-name guard skips supported games, including Fortnite, but does not cover every game and is not a guarantee. Enabling or disabling a schedule requires Windows UAC approval.
+        </p>
+        <p className="text-xs text-text-subtle max-w-4xl leading-snug mt-2">
+          Epic's{' '}
+          <a
+            className="underline hover:text-text"
+            href="https://store.epicgames.com/news/fortnite-on-pc-best-settings-for-competitive-play-in-2026"
+            target="_blank"
+            rel="noreferrer"
+          >
+            competitive PC guide
+          </a>{' '}
+          recommends tuning Fortnite itself and reducing competing background-app load; it does not recommend scheduled standby purging.
         </p>
       </div>
       {migration?.outdated && (
@@ -430,14 +455,13 @@ function StandbyCleanerSection() {
         >
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-text mb-1">
-              ⚡ One-click update available — kills the PowerShell flash
+              ⚡ Safety update available for this scheduled task
             </p>
             <p className="text-text-muted">
-              Your scheduled task was registered by an older build that runs PowerShell directly,
-              which causes a brief blue console flash every {migration.currentIntervalMinutes}{' '}
-              minute(s). Click "Update task" to re-register with the silent <code>wscript.exe</code>{' '}
-              launcher introduced in v0.1.74. Triggers ONE UAC prompt; same{' '}
-              {migration.currentIntervalMinutes}-min interval is preserved.
+              This task uses an older launcher or a script without the current game check. Click
+              "Update task" to register the current launcher and script; its existing{' '}
+              {migration.currentIntervalMinutes}-minute interval will be preserved. Windows asks
+              for UAC approval.
             </p>
           </div>
           <button
@@ -455,14 +479,14 @@ function StandbyCleanerSection() {
             <div className="text-sm text-text-muted">Status</div>
             <div className="text-3xl font-bold mt-1">
               {installed ? (
-                <span className="text-emerald-300">Active</span>
+                <span className="text-emerald-300">Schedule enabled</span>
               ) : (
                 <span className="text-text-muted">Off</span>
               )}
             </div>
             {status?.lastRun && (
               <div className="mt-3 text-xs text-text-subtle">
-                Last cleaned: <span className={lastStatusOk ? 'text-emerald-300' : 'text-amber-300'}>{status.lastRun}</span>
+                Last check: <span className={lastStatusOk ? 'text-emerald-300' : 'text-amber-300'}>{status.lastRun}</span>
                 {status.lastStatus && (
                   <span className="block mt-0.5 font-mono text-[11px] text-text-subtle">{status.lastStatus}</span>
                 )}
@@ -470,47 +494,46 @@ function StandbyCleanerSection() {
             )}
             {!status?.lastRun && installed && (
               <div className="mt-3 text-xs text-text-subtle italic">
-                Task installed — first run pending. Click "Run now" to test.
+                Recurring task installed — first check pending. Purging is skipped when a supported game is detected.
               </div>
             )}
             {err && <div className="mt-3 text-xs text-accent">Error: {err}</div>}
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleRunNow}
+              disabled={!!busy}
+              className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-sm disabled:opacity-50"
+              title="Runs once after Windows UAC approval; it does not install a recurring task. Close all games first."
+            >
+              {busy === 'run' ? 'Running…' : 'Run once (all games closed)'}
+            </button>
             {!installed && (
               <select
                 value={intervalMin}
-                onChange={(e) => setIntervalMin(Number(e.target.value) as 1 | 2 | 5)}
+                onChange={(e) => setIntervalMin(Number(e.target.value) as 5 | 15 | 30)}
                 className="px-2 py-1.5 rounded-md bg-bg-card border border-border text-sm"
               >
-                <option value={1}>every 1 min</option>
-                <option value={2}>every 2 min</option>
-                <option value={5}>every 5 min</option>
+                <option value={5}>every 5 min · experiment</option>
+                <option value={15}>every 15 min · experiment</option>
+                <option value={30}>every 30 min · least frequent</option>
               </select>
             )}
             {installed ? (
-              <>
-                <button
-                  onClick={handleRunNow}
-                  disabled={!!busy}
-                  className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-sm disabled:opacity-50"
-                >
-                  {busy === 'run' ? '…' : 'Run now'}
-                </button>
-                <button
-                  onClick={handleUninstall}
-                  disabled={!!busy}
-                  className="px-3 py-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-sm text-amber-300 hover:border-amber-500 disabled:opacity-50"
-                >
-                  {busy === 'uninstall' ? '…' : 'Turn off'}
-                </button>
-              </>
+              <button
+                onClick={handleUninstall}
+                disabled={!!busy}
+                className="px-3 py-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-sm text-amber-300 hover:border-amber-500 disabled:opacity-50"
+              >
+                {busy === 'uninstall' ? '…' : 'Turn off schedule'}
+              </button>
             ) : (
               <button
                 onClick={handleInstall}
                 disabled={!!busy}
                 className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {busy === 'install' ? '…' : 'Turn on'}
+                {busy === 'install' ? '…' : 'Enable experimental schedule'}
               </button>
             )}
           </div>

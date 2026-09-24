@@ -1,18 +1,24 @@
-# clear_standby.ps1 - purge Windows standby memory list.
+# clear_standby.ps1 - conditionally purge Windows standby memory list.
 #
-# Runs from a scheduled task (HighestAvailable run-level) every N seconds.
+# Runs from a scheduled task (HighestAvailable run-level) every N minutes.
 # Calls NtSetSystemInformation(SystemMemoryListInformation, MemoryPurgeStandbyList=4)
-# via inline C# P/Invoke. Same syscall RAMMap (Sysinternals) and Wagnard's ISLC use.
-# No driver, no kernel hooks, no game-process injection - anti-cheat-safe.
+# via inline C# P/Invoke. RAMMap (Sysinternals) exposes the same purge operation.
+# No driver, kernel hook, or game-process injection is used; do not promise that
+# any third-party utility is universally compatible with every anti-cheat.
 #
 # Privilege: requires SeProfileSingleProcessPrivilege which is in the Admin token
 # but DISABLED by default. We enable it explicitly via AdjustTokenPrivileges before
 # the syscall. The scheduled task must be registered with HighestAvailable +
 # RunAs SYSTEM (or elevated user) for this to succeed.
 #
-# Output: writes a single-line status to the optmaxxing telemetry log so the
-# Settings UI can show "last cleaned at <ts>". Runs silently otherwise - failures
-# don't surface to the user (the UI checks task last-result code instead).
+# ACTIVE-GAME-GUARD: v1
+# Scheduled runs skip the purge while a supported game process is running.
+# The script only checks process names; it does not open, modify, or inject into
+# any game process. Unknown/custom games are not covered by this guard.
+#
+# Output: writes a single-line status to the optmaxxing local log so the
+# Settings UI can show the last check and its result. Runs silently otherwise;
+# failures are shown in Settings and are not automatically retried.
 
 param(
     [string]$LogPath = "$env:LOCALAPPDATA\optmaxxing\standby-cleaner.log"
@@ -34,6 +40,30 @@ function Log-Line($msg) {
         $lines = Get-Content -LiteralPath $LogPath -Tail 200
         Set-Content -LiteralPath $LogPath -Value $lines
     } catch {}
+}
+
+# Standby pages are reclaimable cache, not memory that Windows must free for
+# a game. Avoid flushing that cache during a known game session. This is a
+# best-effort safeguard, not a guarantee against every possible source of
+# background activity or a substitute for leaving the feature off by default.
+$protectedGameProcesses = @(
+    'FortniteClient-Win64-Shipping',
+    'FortniteClient-Win64-Shipping_EAC',
+    'FortniteClient-Win64-Shipping_BE',
+    'VALORANT-Win64-Shipping',
+    'cs2',
+    'r5apex',
+    'Marvel-Win64-Shipping',
+    'Overwatch',
+    'cod'
+)
+
+foreach ($processName in $protectedGameProcesses) {
+    $running = Get-Process -Name $processName -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($null -ne $running) {
+        Log-Line "SKIPPED active game: $($running.ProcessName)"
+        exit 0
+    }
 }
 
 # Inline C# - defines StandbyCleaner with EnablePrivilege + Purge static methods.

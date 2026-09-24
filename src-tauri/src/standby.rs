@@ -5,8 +5,9 @@
 //! NtSetSystemInformation(SystemMemoryListInformation, MemoryPurgeStandbyList=4)
 //! via inline P/Invoke + EnablePrivilege(SeProfileSingleProcessPrivilege).
 //!
-//! Same syscall RAMMap (Sysinternals) and Wagnard's ISLC use. Anti-cheat-safe —
-//! no driver, no kernel hooks, no game-process injection.
+//! Uses the same documented purge operation exposed by RAMMap. It is not a
+//! proven gaming optimization; the UI defaults to off and the script skips
+//! known game processes as a best-effort safeguard (not an anti-cheat guarantee).
 //!
 //! Install / uninstall both require admin (creating an elevated scheduled task
 //! always does); we route through the existing single-UAC elevation runner so
@@ -89,11 +90,36 @@ pub fn uninstall_task() -> Result<()> {
     Ok(())
 }
 
-/// Trigger the task immediately (one-shot). Same UAC requirement as install.
-/// Useful for the "Run now" button in the UI.
-pub fn run_now() -> Result<()> {
-    let line = format!("schtasks /Run /TN {}", TASK_NAME);
-    run_elevated_one_liner(&line).context("triggering scheduled task")?;
+/// Run the cleaner once without installing a recurring task. This is the
+/// low-commitment path offered for a game-closed comparison. It still uses
+/// the script's best-effort active-game guard and asks for UAC elevation.
+pub fn run_once(script_path: &str) -> Result<()> {
+    let script = std::path::Path::new(script_path);
+    if !script.is_file() {
+        return Err(anyhow!("standby cleaner script not found: {}", script.display()));
+    }
+
+    // Start-Process -ArgumentList receives one command-line string. Quote the
+    // script path for the child PowerShell, then single-quote that whole string
+    // as a PowerShell literal in the unelevated parent process.
+    let child_args = format!(
+        "-NoProfile -ExecutionPolicy Bypass -File \"{}\"",
+        script.display()
+    );
+    let outer = format!(
+        "$p = Start-Process -FilePath powershell.exe -ArgumentList {} -Verb RunAs -Wait -WindowStyle Hidden -PassThru; exit $p.ExitCode",
+        ps_quote(&child_args),
+    );
+    let status = hidden_powershell()
+        .args(["-NoProfile", "-WindowStyle", "Hidden", "-Command", &outer])
+        .status()
+        .context("spawning elevated standby cleaner")?;
+    if !status.success() {
+        return Err(anyhow!(
+            "elevated standby cleaner exited with status {} (UAC may have been declined)",
+            status.code().unwrap_or(-1),
+        ));
+    }
     Ok(())
 }
 
@@ -126,19 +152,16 @@ fn schtasks_query_exists() -> bool {
     cmd.status().map(|s| s.success()).unwrap_or(false)
 }
 
-/// Migration check (v0.1.74+): scheduled tasks created by v0.1.63-v0.1.73
-/// stored a direct `powershell.exe -WindowStyle Hidden -File <ps1>` command
-/// in /TR, which causes a 100-300ms console flash every interval (Task
-/// Scheduler triggers the paint, PowerShell sees -WindowStyle Hidden too
-/// late). v0.1.74+ wraps the call in `wscript.exe <hide_launcher.vbs> <ps1>`
-/// which is windowless from start.
+/// Legacy tasks may run PowerShell directly, briefly flashing a console, or
+/// point at a script without the active-game guard. Current tasks use the
+/// windowless wscript shim and a guarded script.
 ///
 /// This function queries the existing task's verbose details and returns:
 ///   - None if no task exists (nothing to migrate)
-///   - Some(MigrationInfo { outdated: false, .. }) if task exists + already
-///     uses the new wscript shim
+///   - Some(MigrationInfo { outdated: false, .. }) if task uses the current
+///     launcher and a script containing the active-game guard
 ///   - Some(MigrationInfo { outdated: true, current_interval_minutes: N })
-///     if task exists + still uses the old powershell-direct command
+///     if either safety condition is missing or cannot be verified
 ///
 /// Frontend uses this to surface a one-click "update task" banner so the
 /// user doesn't have to do the manual Uninstall→Install dance. We don't
@@ -195,16 +218,62 @@ pub fn check_migration_needed() -> Option<MigrationInfo> {
         }
     }
 
-    // The new format always contains the wscript launcher path. The old
-    // format starts with `powershell.exe`. Check both for robustness.
+    // The new format contains the wscript launcher and the target script has
+    // an explicit guard marker. Treat an unknown/missing script path as stale
+    // so the user can re-register against the current bundled resource.
     let lower = task_to_run.to_lowercase();
-    let outdated = lower.contains("powershell.exe") && !lower.contains("wscript.exe");
+    let old_launcher = !lower.contains("wscript.exe");
+    let missing_game_guard = script_path_from_task_to_run(&task_to_run)
+        .and_then(|path| std::fs::read_to_string(path).ok())
+        .map(|script| !script.contains("ACTIVE-GAME-GUARD: v1"))
+        .unwrap_or(true);
+    let outdated = old_launcher || missing_game_guard;
 
     Some(MigrationInfo {
         outdated,
         current_interval_minutes: interval_minutes,
         task_to_run,
     })
+}
+
+fn script_path_from_task_to_run(command: &str) -> Option<&str> {
+    let lower = command.to_ascii_lowercase();
+    let marker = "clear_standby.ps1";
+    let marker_start = lower.rfind(marker)?;
+    let prefix = &command[..marker_start];
+    let path_start = prefix
+        .rfind('"')
+        .map(|quote| quote + 1)
+        .or_else(|| prefix.rfind(' ').map(|space| space + 1))?;
+    Some(&command[path_start..marker_start + marker.len()])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::script_path_from_task_to_run;
+
+    #[test]
+    fn finds_guarded_script_path_in_quoted_task_action() {
+        let command = r#"wscript.exe "C:\Program Files\Optimizationmaxxing\hide_launcher.vbs" "C:\Program Files\Optimizationmaxxing\clear_standby.ps1""#;
+        assert_eq!(
+            script_path_from_task_to_run(command),
+            Some(r#"C:\Program Files\Optimizationmaxxing\clear_standby.ps1"#)
+        );
+    }
+
+    #[test]
+    fn finds_script_path_in_unquoted_task_action() {
+        let command = r"powershell.exe -File C:\Optimizationmaxxing\clear_standby.ps1";
+        assert_eq!(
+            script_path_from_task_to_run(command),
+            Some(r"C:\Optimizationmaxxing\clear_standby.ps1")
+        );
+    }
+
+    #[test]
+    fn missing_script_path_is_not_treated_as_current() {
+        assert_eq!(script_path_from_task_to_run("wscript.exe hide_launcher.vbs"), None);
+    }
 }
 
 /// Read the last meaningful line of the log + extract the timestamp from it.
@@ -260,6 +329,16 @@ fn hidden_cmd_no_window() -> Command {
     use std::os::windows::process::CommandExt;
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
     let mut c = Command::new("cmd.exe");
+    c.creation_flags(CREATE_NO_WINDOW);
+    c
+}
+
+/// PowerShell with no console window. Start-Process -Verb RunAs still presents
+/// the normal Windows UAC consent prompt to the user.
+fn hidden_powershell() -> Command {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    let mut c = Command::new("powershell.exe");
     c.creation_flags(CREATE_NO_WINDOW);
     c
 }
