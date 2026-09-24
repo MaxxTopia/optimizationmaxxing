@@ -1,4 +1,4 @@
-# Continuity checkpoint: Pinnacle Asta and persistence release (2026-09-23)
+# Continuity checkpoint: Pinnacle Asta and persistence release (2026-09-24)
 
 ## Scope
 
@@ -30,10 +30,10 @@ opaque confirmation failures, and drift that was reported but not repaired.
 
 ## Release
 
-- Version: `0.4.10`
-- Intended tag: `v0.4.10`
-- Scoped source: this worktree's frontend/native tuning changes, resilience
-  notes, version metadata, and changelog only.
+- Version: `0.4.11` (the prior `v0.4.10` tag is already published and must not be overwritten)
+- Intended tag: `v0.4.11`
+- Scoped source: this worktree's frontend/native tuning changes, release notes,
+  version metadata, and continuity notes only.
 - The canonical optimizationmaxxing checkout may contain unrelated work; it is
   not used as a staging source for this release.
 
@@ -46,7 +46,7 @@ interference, or reboot persistence on Diggy's physical PC.
 
 ## Diggy-owed field test after install
 
-1. Install/relaunch the signed `v0.4.10` client.
+1. Install/relaunch the signed `v0.4.11` client.
 2. Open Tune Now and confirm the intensity/game choice appears before scanning;
    run a low-risk lane and verify no read-only black console flashes appear.
 3. Open Asta, confirm the inventory separates standard/review/manual rows, and
@@ -56,6 +56,6 @@ interference, or reboot persistence on Diggy's physical PC.
 
 ## Best next move
 
-Install the CI-signed artifact on the gaming PC and run the field test above.
+Install the CI-signed `v0.4.11` artifact on the gaming PC and run the field test above.
 If the real machine still shows drift, capture the exact tweak receipt and live
 read-back rather than reapplying the whole catalog.

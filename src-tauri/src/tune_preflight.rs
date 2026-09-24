@@ -90,7 +90,7 @@ pub fn read(state: &SnapshotStore) -> TunePreflight {
     }
     let detail = if reasons.is_empty() {
         if build_changed_since_last_apply {
-            "Windows Update changed the OS build since the last recorded tune, but no update installation or pending restart is detected. Re-applying can proceed; verify live state and reboot persistence afterward.".into()
+            "The OS build differs from the last recorded tune, but no update installation or pending restart is detected. The cause is unknown; re-applying can proceed after checking live state, then verify persistence after reboot.".into()
         } else {
             "No pending Windows restart or active Windows Update installation was detected. Updates that are merely available or queued do not block Asta.".into()
         }

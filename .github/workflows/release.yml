@@ -64,9 +64,9 @@ jobs:
                   releaseBody: |
                       ## Highlights
 
-                      - Verified transactional tuning captures pre-state, reads eligible actions back, and attempts reverse-order rollback with per-action receipts.
-                      - Rig-aware closed-loop evidence uses exact board/CPU/SPD guidance and named per-game PresentMon capture contracts instead of treating proxies as Fortnite proof.
-                      - NVIDIA profiles carry review/hash/rollback metadata, exported profiles can be diffed read-only, and driver guidance keeps a schema-checked last-known-good response offline.
+                      - Pinnacle Asta previews live values for the rig-matched Fortnite catalog, lets you select exact rows, and keeps higher-risk review actions separately confirmed; firmware stays manual.
+                      - Asta rechecks selected settings immediately before applying and pauses for review if a setting changed while you were reviewing the plan.
+                      - Tune Now and Your Tune report mismatches without guessing what caused them; Optimization Lab distinguishes local proxy evidence from real Fortnite capture.
 
                       Auto-built by CI from tag `${{ github.ref_name }}`. The signed `latest.json`, installer, and signature are verified before the release is published.
                   releaseDraft: true

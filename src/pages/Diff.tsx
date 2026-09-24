@@ -189,10 +189,11 @@ export function Diff() {
           <p className="text-xs uppercase tracking-widest text-text-subtle">your tune</p>
           <h1 className="text-3xl font-bold">What you've changed</h1>
           <p className="text-sm text-text-muted max-w-2xl mt-1">
-            Every tweak you've applied, in one list. Each row tells you whether the change is{' '}
-            <strong className="text-emerald-300">still in place</strong> or whether something
-            <strong className="text-amber-300"> reverted it</strong> (Windows Update, another
-            tuner, or you yourself flipped it back). Native read-back is persisted for registry,
+            Every tweak you've applied, in one list. Each row tells you whether the live setting
+            <strong className="text-emerald-300"> still matches the recorded target</strong> or
+            <strong className="text-amber-300"> differs from it</strong>. A mismatch does not tell
+            us whether Windows, another app, a later manual change, or the original apply caused it.
+            Native read-back is persisted for registry,
             BCD, file, and display actions; PowerShell actions remain{' '}
             <span className="text-text-muted">◇ unknown</span> unless the catalog declares a
             safe read-back contract. Click any row for the per-action detail. "Copy as text" pastes

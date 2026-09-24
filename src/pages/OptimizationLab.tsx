@@ -416,6 +416,20 @@ export function OptimizationLab() {
           Tune Now is the guided safe-by-default lane; Asta is the full applicable catalog with
           explicit review gates.
         </p>
+        <div className="grid gap-2 pt-2 md:grid-cols-3">
+          <div className="rounded-md border border-accent/30 bg-accent/5 p-3">
+            <p className="text-xs font-semibold text-text">Optimization Lab · measure and plan</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-text-muted">Scan this PC, inspect why a recommendation exists, then compare controlled before/after evidence. It is not an auto-apply-all button.</p>
+          </div>
+          <Link to="/tune" className="rounded-md border border-border bg-bg-base/40 p-3 transition hover:border-border-glow">
+            <p className="text-xs font-semibold text-text">Tune Now · guided lane →</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-text-muted">Choose intensity and game first; apply the eligible policy rows with live verification.</p>
+          </Link>
+          <Link to="/asta" className="rounded-md border border-border bg-bg-base/40 p-3 transition hover:border-border-glow">
+            <p className="text-xs font-semibold text-text">Asta · full reviewed catalog →</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-text-muted">Preview current values, select rows, and confirm higher-risk actions separately. Firmware stays manual.</p>
+          </Link>
+        </div>
       </header>
 
       <section className="surface-card p-5 space-y-4">
@@ -635,6 +649,15 @@ export function OptimizationLab() {
         <p className="text-xs text-text-muted leading-relaxed">
           Each button runs the existing median-of-three Asta Bench. It is a local proxy for CPU work, DPC tail latency, network jitter, and frame pacing—not a click-to-pixel Fortnite measurement. Keep the game, driver, scene, power state, background load, and route consistent.
         </p>
+        <div className="rounded-md border border-sky-500/30 bg-sky-500/5 p-3 space-y-2">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-sm font-semibold text-text">Actual Fortnite check · separate from the proxy</p>
+            <Link to="/match-scan" className="text-xs text-accent hover:underline">Open Fight Capture →</Link>
+          </div>
+          <p className="text-xs leading-relaxed text-text-muted">
+            For a real gameplay comparison, capture the same repeatable Fortnite scene or Creative route with the same resolution, render mode, graphics, driver, and background load. Match Scan can report PresentMon average FPS, 1%/0.1% lows, and the worst frame-time spike. Repeat after the PC reboots to check persistence; keep network/server ping separate from local frame-time results. Neither test alone proves click-to-photon latency or tournament eligibility.
+          </p>
+        </div>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => void runMeasurement('baseline')}

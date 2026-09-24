@@ -813,9 +813,8 @@ function DoneState({
           <p className="text-sm text-text-muted">
             {verification.verified} verified · {verification.mismatch} mismatch · {verification.unknown} unknown
             {' '}of {verification.total} applied actions. A mismatch means the live value differs
-            from the requested target; Windows Update or another tool may have changed or
-            overridden it, but the verifier cannot identify the cause. It is not counted as a
-            successful tune.
+            from the recorded target. This check cannot tell whether a later change or the
+            original apply caused that difference. It is not counted as a successful tune.
           </p>
         </section>
       )}

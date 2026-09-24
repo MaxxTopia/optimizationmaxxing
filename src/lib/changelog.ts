@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.11',
+    date: '2026-09-24',
+    highlights: [
+      'IMPROVE **Pinnacle Asta is review-first.** Preview live values for the rig-matched Fortnite catalog, choose the exact rows to apply, and separately confirm higher-risk actions; firmware stays manual.',
+      'FIX **Asta checks the reviewed settings again just before applying.** If a selected setting changed during review, it stops and refreshes the read-back so you can review before trying again.',
+      'FIX **Persistence reports only what it can prove.** Tune Now and Your Tune no longer guess that Windows Update or another tool caused a mismatch.',
+      'IMPROVE **Optimization Lab has a clearer role.** Compare controlled local proxy evidence, with direct paths to Tune Now, Asta, and separate real-Fortnite capture guidance.',
+    ],
+  },
+  {
     version: '0.4.10',
     date: '2026-09-23',
     highlights: [

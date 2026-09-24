@@ -17,6 +17,7 @@ import { confirmAction } from '../lib/confirm'
 import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
 import { isTransactionActionEligible } from '../lib/optimizationSession'
 import { isHardBlockedForAutoTune } from '../lib/tuneProfiles'
+import { auditMany, type TweakAudit } from '../lib/audit'
 import { AstaShareCard } from '../components/AstaShareCard'
 import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
 import { TournamentAudit } from '../components/TournamentAudit'
@@ -77,11 +78,22 @@ export function Asta() {
   const [quoteIdx, setQuoteIdx] = useState(0)
   const [preflight, setPreflight] = useState<TunePreflight | null>(null)
   const [appliedRows, setAppliedRows] = useState<AppliedTweak[]>([])
+  const [reviewedPlan, setReviewedPlan] = useState<AstaPlan | null>(null)
+  const [reviewedPlanKey, setReviewedPlanKey] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const [planAudit, setPlanAudit] = useState<Record<string, TweakAudit> | null>(null)
+  const [previewProgress, setPreviewProgress] = useState({ done: 0, total: 0 })
+  const [previewBusy, setPreviewBusy] = useState(false)
 
   const inventory = useMemo(
     () => (spec ? buildAstaPlan(spec, appliedRows) : null),
     [spec, appliedRows],
   )
+  const displayPlan = reviewedPlan ?? inventory
+  const previewIsCurrent = Boolean(
+    spec && inventory && reviewedPlan && reviewedPlanKey === planFingerprint(spec, inventory),
+  )
+  const selectedCount = displayPlan?.candidates.filter((tweak) => selectedIds.has(tweak.id)).length ?? 0
 
   useEffect(() => {
     void ensureLoaded()
@@ -101,8 +113,53 @@ export function Asta() {
     setQuoteIdx((i) => (i + 1) % QUOTES.length)
   }
 
+  async function handlePreview() {
+    if (!isNative) {
+      setError('The desktop app is required to read current Windows values. This preview never applies tweaks.')
+      return
+    }
+    setPreviewBusy(true)
+    setError(null)
+    setPlanAudit(null)
+    setPreviewProgress({ done: 0, total: 0 })
+    try {
+      const detected = await refreshRig()
+      if (!detected) throw new Error('Asta needs a fresh rig scan before it can preview this plan.')
+      const liveRows = await verifyApplied()
+      setAppliedRows(liveRows)
+      const nextPlan = buildAstaPlan(detected, liveRows)
+      const nextKey = planFingerprint(detected, nextPlan)
+      setReviewedPlan(nextPlan)
+      setReviewedPlanKey(nextKey)
+      setSelectedIds((previous) => {
+        const previousKey = reviewedPlanKey
+        if (previousKey === nextKey && previous.size > 0) {
+          return new Set(nextPlan.candidates.filter((tweak) => previous.has(tweak.id)).map((tweak) => tweak.id))
+        }
+        return new Set(nextPlan.candidates.map((tweak) => tweak.id))
+      })
+      setPreviewProgress({ done: 0, total: nextPlan.candidates.length })
+      const audit = await auditMany(nextPlan.candidates, (done, total) => setPreviewProgress({ done, total }), 3)
+      setPlanAudit(audit)
+    } catch (e) {
+      setError(typeof e === 'string' ? e : (e as Error).message ?? String(e))
+      setReviewedPlan(null)
+      setReviewedPlanKey(null)
+    } finally {
+      setPreviewBusy(false)
+    }
+  }
+
   async function handleApply() {
     if (!isVip) return
+    if (!reviewedPlan || !reviewedPlanKey || !previewIsCurrent || !planAudit) {
+      setError('Preview the current plan first. If the rig or inventory changed, refresh the preview before applying.')
+      return
+    }
+    if (selectedCount === 0) {
+      setError('Select at least one tweak in the reviewed plan, or leave without applying.')
+      return
+    }
     setBusy(true)
     setError(null)
     try {
@@ -125,72 +182,102 @@ export function Asta() {
       const latestApplied = await verifyApplied()
       const plan = buildAstaPlan(detected, latestApplied)
       setAppliedRows(latestApplied)
-      if (plan.candidates.length === 0) {
-        setApplied({
-          requested: 0,
-          verified: 0,
-          mismatch: 0,
-          unknown: 0,
-          skipped: plan.alreadyApplied.length,
-          transactional: 0,
-          explicit: 0,
-          reviewSkipped: 0,
-          manual: plan.manual.length,
-          otherGame: plan.otherGame.length,
-          notMatched: plan.notMatched.length,
-          ts: new Date().toLocaleTimeString(),
-        })
+      const currentPlanKey = planFingerprint(detected, plan)
+      if (currentPlanKey !== reviewedPlanKey) {
+        setReviewedPlan(plan)
+        setReviewedPlanKey(currentPlanKey)
+        setPlanAudit(null)
+        setSelectedIds((previous) => new Set(plan.candidates.filter((tweak) => previous.has(tweak.id)).map((tweak) => tweak.id)))
+        setError('The rig or applicable plan changed since preview. Review the refreshed list before applying.')
         return
       }
-      const safeActionCount = plan.transactional.length + plan.explicit.length
-      const reviewActionCount = plan.reviewTransactional.length + plan.reviewExplicit.length
-      const experimentalCount = plan.candidates.filter((tweak) => isExperimentalTweak(tweak)).length
+      const chosen = plan.candidates.filter((tweak) => selectedIds.has(tweak.id))
+      if (chosen.length === 0) {
+        setError('The selected tweaks are no longer eligible on this rig. Preview the current plan again.')
+        setReviewedPlan(null)
+        setReviewedPlanKey(null)
+        return
+      }
+      const chosenIds = new Set(chosen.map((tweak) => tweak.id))
+      const chosenReview = plan.review.filter((tweak) => chosenIds.has(tweak.id))
+      const chosenItems = (items: BatchItem[]) => items.filter((item) => chosenIds.has(item.tweakId))
+      const transactional = chosenItems(plan.transactional)
+      const explicit = chosenItems(plan.explicit)
+      const reviewTransactional = chosenItems(plan.reviewTransactional)
+      const reviewExplicit = chosenItems(plan.reviewExplicit)
+      const safeActionCount = transactional.length + explicit.length
+      const reviewActionCount = reviewTransactional.length + reviewExplicit.length
+      const experimentalCount = chosen.filter((tweak) => isExperimentalTweak(tweak)).length
       if (!(await confirmAction(
-        `Pinnacle Asta found ${plan.candidates.length} applicable Fortnite/Windows tweaks. It can apply ${safeActionCount} standard actions now; ${plan.review.length} rows (${reviewActionCount} actions) need a separate security/compatibility review confirmation. ${experimentalCount} rows are experimental. BIOS/NVRAM/firmware rows and mismatched hardware targets stay excluded. A restore point and a same-condition benchmark are strongly recommended. Continue?`,
+        `Pinnacle Asta is ready to apply the ${chosen.length} selected Fortnite/Windows tweaks from the reviewed plan. That is ${safeActionCount} standard actions; ${chosenReview.length} selected review rows (${reviewActionCount} actions) need a separate security/compatibility confirmation. ${experimentalCount} selected rows are experimental. Unchecked rows will be left alone; BIOS/NVRAM/firmware and mismatched hardware targets remain excluded. A restore point and same-condition game test are strongly recommended. Continue?`,
       ))) {
         return
       }
 
       const applyReview =
-        plan.review.length === 0 ||
+        chosenReview.length === 0 ||
         (await confirmAction(
-          `Review lane: apply ${plan.review.length} higher-risk or hard-to-read-back tweak${plan.review.length === 1 ? '' : 's'} too? These can weaken security, affect anti-cheat/tournament eligibility, or lack a deterministic read-back. Review the individual rows first if you are unsure. Continue?`,
+          `Review lane: apply the ${chosenReview.length} selected higher-risk or hard-to-read-back tweak${chosenReview.length === 1 ? '' : 's'} too? These can weaken security, affect anti-cheat/tournament eligibility, or lack deterministic read-back. Continue only if you accept the tradeoffs shown in the plan.`,
         ))
+
+      // Confirm dialogs can remain open while other software changes settings.
+      // Take one last read-only snapshot immediately before the first mutation.
+      const executionIds = new Set([
+        ...transactional,
+        ...explicit,
+        ...(applyReview ? [...reviewTransactional, ...reviewExplicit] : []),
+      ].map((item) => item.tweakId))
+      const executionTweaks = chosen.filter((tweak) => executionIds.has(tweak.id))
+      const freshAudit = await auditMany(executionTweaks, undefined, 3)
+      const auditChanged = executionTweaks.some((tweak) =>
+        !sameAuditReadback(planAudit[tweak.id], freshAudit[tweak.id]),
+      )
+      if (auditChanged) {
+        setPlanAudit((previous) => ({ ...(previous ?? {}), ...freshAudit }))
+        setError('One or more settings in the apply lane changed since preview. The read-back is refreshed; review the updated rows before applying.')
+        return
+      }
 
       let transactionStatus: TransactionReport['status'] | undefined
       let requested = 0
-      if (plan.transactional.length > 0) {
-        const report = await applyTransaction(plan.transactional)
+      const appliedReceiptIds = new Set<string>()
+      if (transactional.length > 0) {
+        const report = await applyTransaction(transactional)
         transactionStatus = report.status
-        requested += plan.transactional.length
+        requested += transactional.length
         if (report.status !== 'committed') {
           const detail = [...report.errors, ...report.rollbackErrors].join(' ')
           throw new Error(`Verified Asta lane ${report.status}.${detail ? ` ${detail}` : ''}`)
         }
+        for (const item of report.items) {
+          if (item.applied && item.receiptId) appliedReceiptIds.add(item.receiptId)
+        }
       }
-      if (plan.explicit.length > 0) {
-        const receipts = await applyBatch(plan.explicit)
+      if (explicit.length > 0) {
+        const receipts = await applyBatch(explicit)
         requested += receipts.length
+        for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
       }
-      if (applyReview && plan.reviewTransactional.length > 0) {
-        const report = await applyTransaction(plan.reviewTransactional)
+      if (applyReview && reviewTransactional.length > 0) {
+        const report = await applyTransaction(reviewTransactional)
         transactionStatus = report.status
-        requested += plan.reviewTransactional.length
+        requested += reviewTransactional.length
         if (report.status !== 'committed') {
           const detail = [...report.errors, ...report.rollbackErrors].join(' ')
           throw new Error(`Review lane ${report.status}.${detail ? ` ${detail}` : ''}`)
         }
+        for (const item of report.items) {
+          if (item.applied && item.receiptId) appliedReceiptIds.add(item.receiptId)
+        }
       }
-      if (applyReview && plan.reviewExplicit.length > 0) {
-        const receipts = await applyBatch(plan.reviewExplicit)
+      if (applyReview && reviewExplicit.length > 0) {
+        const receipts = await applyBatch(reviewExplicit)
         requested += receipts.length
+        for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
       }
 
-      const selectedIds = new Set(plan.candidates.map((tweak) => tweak.id))
       const allLive = await verifyApplied()
-      const live = allLive.filter(
-        (row) => row.status === 'applied' && selectedIds.has(row.tweakId),
-      )
+      const live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
       setAppliedRows(allLive)
       setApplied({
         requested,
@@ -198,15 +285,19 @@ export function Asta() {
         mismatch: live.filter((receipt) => receipt.verificationStatus === 'mismatch').length,
         unknown: live.filter((receipt) => receipt.verificationStatus === 'unknown').length,
         skipped: plan.alreadyApplied.length,
-        transactional: plan.transactional.length,
-        explicit: plan.explicit.length,
-        reviewSkipped: applyReview ? 0 : plan.review.length,
+        transactional: transactional.length,
+        explicit: explicit.length,
+        reviewSkipped: applyReview ? 0 : chosenReview.length,
         manual: plan.manual.length,
         otherGame: plan.otherGame.length,
         notMatched: plan.notMatched.length,
         transactionStatus,
         ts: new Date().toLocaleTimeString(),
       })
+      setReviewedPlan(null)
+      setReviewedPlanKey(null)
+      setPlanAudit(null)
+      setSelectedIds(new Set())
     } catch (e) {
       setError(typeof e === 'string' ? e : (e as Error).message ?? String(e))
     } finally {
@@ -253,22 +344,111 @@ export function Asta() {
             <p className="text-[10px] uppercase tracking-widest text-text-subtle">apply</p>
             <h3 className="text-xl font-bold mt-1">Activate Asta Mode</h3>
             <p className="text-sm text-text-muted leading-snug mt-1">
-              Pinnacle Asta inventories the full catalog, then applies every row that matches this
-              rig and Fortnite context. Reversible/read-back-capable actions use the transactional
-              lane; unsupported scripts are visibly separated into an explicit review lane and may
-              need a second UAC prompt. BIOS/NVRAM/firmware changes never become automatic.
+              Pinnacle Asta inventories the full catalog for this rig and Fortnite context. Preview
+              the live values, choose exactly which rows to include, then apply that selection.
+              Reversible/read-back-capable actions use the transactional lane; unsupported scripts
+              are visibly separated into an explicit review lane and may need a second UAC prompt.
+              BIOS/NVRAM/firmware changes never become automatic.
             </p>
 
-            {inventory && (
+            {displayPlan && (
               <div className="mt-3 rounded-md border border-border bg-bg-base/40 px-3 py-2 text-xs text-text-muted leading-relaxed">
-                <strong className="text-text">Current inventory:</strong>{' '}
-                <span className="text-emerald-300">{inventory.candidates.length} applicable to apply</span>{' · '}
-                <span className="text-sky-300">{inventory.alreadyApplied.length} already on target</span>{' · '}
-                <span className="text-amber-200">{inventory.review.length} explicit review</span>{' · '}
-                <span className="text-purple-300">{inventory.manual.length} manual firmware excluded</span>.
+                <strong className="text-text">{reviewedPlan ? 'Reviewed inventory:' : 'Current inventory:'}</strong>{' '}
+                <span className="text-emerald-300">{displayPlan.candidates.length} eligible</span>{' · '}
+                <span className="text-sky-300">{displayPlan.alreadyApplied.length} already on target</span>{' · '}
+                <span className="text-amber-200">{displayPlan.review.length} require separate review</span>{' · '}
+                <span className="text-purple-300">{displayPlan.manual.length} manual firmware excluded</span>.
                 <span className="block mt-1 text-[11px] text-text-subtle">
-                  {inventory.notMatched.length} hardware mismatches and {inventory.otherGame.length} other-game rows are excluded from this Fortnite run.
+                  {displayPlan.notMatched.length} hardware mismatches and {displayPlan.otherGame.length} other-game rows are excluded from this Fortnite run.
                 </span>
+              </div>
+            )}
+
+            {inventory && (
+              <div className="mt-3 rounded-md border border-amber-200/20 bg-black/20 p-3 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-text">Read-only plan review</p>
+                    <p className="text-[11px] text-text-muted">Preview reads current settings only. Nothing changes until you activate the selected rows.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handlePreview()}
+                    disabled={!isNative || previewBusy || busy}
+                    className="rounded-md border border-amber-200/40 px-3 py-1.5 text-xs text-text hover:bg-white/5 disabled:opacity-40"
+                  >
+                    {previewBusy
+                      ? `Reading plan… ${previewProgress.done}/${previewProgress.total}`
+                      : reviewedPlan && previewIsCurrent
+                        ? 'Refresh preview'
+                        : 'Preview exact changes'}
+                  </button>
+                </div>
+                {previewBusy && (
+                  <div className="h-1.5 overflow-hidden rounded bg-white/10" aria-label="Reading current tweak states">
+                    <div
+                      className="h-full bg-sky-400 transition-all"
+                      style={{ width: `${previewProgress.total ? Math.round(previewProgress.done / previewProgress.total * 100) : 5}%` }}
+                    />
+                  </div>
+                )}
+                {reviewedPlan && planAudit && previewIsCurrent && (
+                  <>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2">
+                      <p className="text-[11px] text-text-muted">
+                        {selectedCount} of {reviewedPlan.candidates.length} selected · values read at {new Date(Object.values(planAudit)[0]?.scannedAt ?? Date.now()).toLocaleTimeString()}.
+                        {' '}Unknown means this action has no declared read-back contract.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIds(new Set(reviewedPlan.candidates.map((tweak) => tweak.id)))}
+                          className="text-[11px] text-sky-300 underline underline-offset-2"
+                        >Select all</button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIds(new Set())}
+                          className="text-[11px] text-text-muted underline underline-offset-2"
+                        >Select none</button>
+                      </div>
+                    </div>
+                    <details open className="rounded border border-white/10 bg-black/10">
+                      <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-text">
+                        Review eligible tweaks ({reviewedPlan.candidates.length}) — unchecked rows stay untouched
+                      </summary>
+                      <div className="max-h-[34rem] space-y-2 overflow-y-auto p-2">
+                        {reviewedPlan.candidates.map((tweak) => (
+                          <AstaPlanReviewRow
+                            key={tweak.id}
+                            tweak={tweak}
+                            audit={planAudit[tweak.id] ?? null}
+                            selected={selectedIds.has(tweak.id)}
+                            disabled={!previewIsCurrent || busy || previewBusy}
+                            onToggle={() => setSelectedIds((previous) => {
+                              const next = new Set(previous)
+                              if (next.has(tweak.id)) next.delete(tweak.id)
+                              else next.add(tweak.id)
+                              return next
+                            })}
+                          />
+                        ))}
+                      </div>
+                    </details>
+                  </>
+                )}
+                {reviewedPlan && previewIsCurrent && !planAudit && !previewBusy && (
+                  <p className="text-[11px] text-amber-200">Plan loaded, but the read-only preview did not finish. Refresh it before applying.</p>
+                )}
+                {displayPlan && (
+                  <details className="rounded border border-white/10 px-3 py-2">
+                    <summary className="cursor-pointer text-[11px] text-text-muted">Why other catalog rows are excluded from this Fortnite run</summary>
+                    <div className="mt-2 grid gap-3 md:grid-cols-3">
+                      <ExcludedRows label="Manual firmware / BIOS" reason="No BIOS, NVRAM, or firmware changes are applied by Asta." rows={displayPlan.manual} />
+                      <ExcludedRows label="Hardware does not match" reason="The exact rig-target filter did not pass; no nearby-hardware substitute is used." rows={displayPlan.notMatched} />
+                      <ExcludedRows label="Other game" reason="These catalog entries are scoped to a different game." rows={displayPlan.otherGame} />
+                    </div>
+                  </details>
+                )}
               </div>
             )}
 
@@ -321,17 +501,18 @@ export function Asta() {
               !preflight.blocksAutoApply &&
               preflight.buildChangedSinceLastApply && (
                 <div className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-snug">
-                  <strong className="text-amber-200">Windows was updated since the last tune.</strong>{' '}
-                  No update installation or pending restart is detected, so Asta can be activated.
-                  Some earlier settings may have drifted; use the immediate readback and run the
-                  same benchmark again after your next reboot.
+                  <strong className="text-amber-200">The OS build differs from the last recorded tune.</strong>{' '}
+                  This can follow Windows servicing or a reinstall; the app cannot identify what
+                  caused the difference. No active installation or pending restart is detected.
+                  Check live state and reboot persistence after applying.
                 </div>
               )}
 
             <div className="mt-4 flex flex-col gap-2">
               <button
+                type="button"
                 onClick={handleApply}
-                disabled={busy || !isVip || preflight?.blocksAutoApply}
+                disabled={busy || previewBusy || !isVip || !previewIsCurrent || !planAudit || selectedCount === 0 || preflight?.blocksAutoApply}
                 className="btn-chrome w-full px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
                 style={
                   isVip
@@ -354,8 +535,12 @@ export function Asta() {
                   ? 'Finish Windows Update, then re-scan'
                   : busy
                   ? 'Applying…'
+                  : !previewIsCurrent || !planAudit
+                    ? 'Preview the plan first'
+                  : selectedCount === 0
+                    ? 'Select at least one tweak'
                   : isVip
-                  ? '🗡 Activate Pinnacle Asta'
+                  ? `🗡 Activate ${selectedCount} selected tweaks`
                   : '👑 VIP only'}
               </button>
               <Link
@@ -425,9 +610,9 @@ interface AstaPlan {
 
 /** Build Asta's full, rig-aware Fortnite inventory. "Full" means every
  * applicable software row in the catalog, not firmware writes or rows for a
- * different game. A verified receipt is skipped; a drifted/unknown receipt is
- * eligible for an explicit re-apply so Windows Update and vendor tools can be
- * recovered instead of silently hiding the row. */
+ * different game. A verified receipt is skipped; drifted/unknown receipts are
+ * eligible for explicit review because the verifier cannot identify what
+ * changed the live value. */
 function buildAstaPlan(spec: SpecProfile, applied: AppliedTweak[]): AstaPlan {
   const latest = new Map<string, AppliedTweak>()
   for (const row of applied) {
@@ -496,6 +681,125 @@ function buildAstaPlan(spec: SpecProfile, applied: AppliedTweak[]): AstaPlan {
     reviewTransactional,
     reviewExplicit,
   }
+}
+
+function planFingerprint(spec: SpecProfile, plan: AstaPlan): string {
+  return JSON.stringify({
+    cpu: spec.cpu.model,
+    gpu: spec.gpu.model,
+    ramGb: spec.ram.totalGb,
+    board: `${spec.mobo.manufacturer ?? ''} ${spec.mobo.product ?? ''}`,
+    osBuild: spec.os.build,
+    candidates: plan.candidates.map((tweak) => tweak.id).sort(),
+  })
+}
+
+function sameAuditReadback(before: TweakAudit | undefined, after: TweakAudit | undefined): boolean {
+  if (!before || !after || before.status !== after.status || before.total !== after.total) return false
+  if (before.actions.length !== after.actions.length) return false
+  return before.actions.every((action, index) => {
+    const current = after.actions[index]
+    return current?.index === action.index && current.status === action.status && current.detail === action.detail
+  })
+}
+
+function auditStatusClass(status: string): string {
+  if (status === 'matches') return 'text-emerald-300'
+  if (status === 'differs' || status === 'partial') return 'text-amber-200'
+  if (status === 'error') return 'text-red-300'
+  return 'text-text-muted'
+}
+
+function AstaPlanReviewRow({
+  tweak,
+  audit,
+  selected,
+  disabled,
+  onToggle,
+}: {
+  tweak: TweakRecord
+  audit: TweakAudit | null
+  selected: boolean
+  disabled: boolean
+  onToggle: () => void
+}) {
+  const reviewOnly = isHardBlockedForAutoTune(tweak)
+  const transactional = tweak.actions.length > 0 && tweak.actions.every(isTransactionActionEligible)
+  const lane = reviewOnly ? 'Separate review confirmation' : transactional ? 'Verified transaction lane' : 'Explicit action lane'
+  const matchCount = audit?.actions.filter((action) => action.status === 'matches').length ?? 0
+  const differsCount = audit?.actions.filter((action) => action.status === 'differs').length ?? 0
+  const unknownCount = audit?.actions.filter((action) => action.status === 'unknown').length ?? 0
+  const errorCount = audit?.actions.filter((action) => action.status === 'error').length ?? 0
+  return (
+    <article className="rounded-md border border-border bg-bg-base/60 p-3">
+      <label className="flex cursor-pointer items-start gap-3">
+        <input
+          type="checkbox"
+          checked={selected}
+          disabled={disabled}
+          onChange={onToggle}
+          aria-label={`Include ${tweak.title} in Asta apply`}
+          className="mt-1 accent-red-500"
+        />
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-semibold text-sm text-text">{tweak.title}</span>
+            <span className={`rounded border px-2 py-0.5 text-[10px] ${reviewOnly ? 'border-amber-500/40 text-amber-200' : transactional ? 'border-emerald-500/40 text-emerald-300' : 'border-sky-500/40 text-sky-300'}`}>
+              {lane}
+            </span>
+          </span>
+          <span className="mt-1 block text-[11px] text-text-subtle">
+            {tweak.category} · risk {tweak.riskLevel}/4 · anti-cheat risk {tweak.anticheatRisk} · reboot {tweak.rebootRequired}
+            {tweak.evidenceTier ? ` · evidence ${tweak.evidenceTier}` : ''}
+            {isExperimentalTweak(tweak) ? ' · experimental' : ''}
+          </span>
+          <span className="mt-1 block text-xs leading-relaxed text-text-muted">{tweak.description}</span>
+          {tweak.rationale && <span className="mt-1 block text-[11px] leading-relaxed text-text-subtle">Why it is listed: {tweak.rationale}</span>}
+          {tweak.expectedImpact && <span className="mt-1 block text-[11px] leading-relaxed text-text-subtle">Expected impact / tradeoff: {tweak.expectedImpact}</span>}
+          {tweak.experimentalWarning && <span className="mt-1 block text-[11px] leading-relaxed text-amber-200">Caution: {tweak.experimentalWarning}</span>}
+          {audit ? (
+            <span className="mt-2 block rounded border border-white/10 bg-black/20 px-2 py-1.5">
+              <span className={`block text-[11px] font-semibold ${auditStatusClass(audit.status)}`}>
+                Read-back: {audit.status} · {matchCount} match · {differsCount} differ · {unknownCount} unknown{errorCount ? ` · ${errorCount} error` : ''}
+              </span>
+              {audit.actions.length > 0 ? (
+                <span className="mt-1 block space-y-1">
+                  {audit.actions.map((action) => (
+                    <span key={action.index} className="block text-[11px] text-text-muted">
+                      <span className={auditStatusClass(action.status)}>{action.status}</span>
+                      {' · '}{action.detail}
+                    </span>
+                  ))}
+                </span>
+              ) : (
+                <span className="mt-1 block text-[11px] text-text-subtle">
+                  State could not be read. No change is made by this preview.
+                </span>
+              )}
+            </span>
+          ) : (
+            <span className="mt-2 block text-[11px] text-text-subtle">Read-back preview is being prepared…</span>
+          )}
+        </span>
+      </label>
+    </article>
+  )
+}
+
+function ExcludedRows({ label, reason, rows }: { label: string; reason: string; rows: TweakRecord[] }) {
+  const preview = rows.slice(0, 8)
+  return (
+    <div className="rounded border border-white/10 bg-black/10 p-2">
+      <p className="text-[11px] font-semibold text-text">{label} · {rows.length}</p>
+      <p className="mt-1 text-[10px] leading-relaxed text-text-subtle">{reason}</p>
+      {preview.length > 0 && (
+        <ul className="mt-1 list-inside list-disc text-[10px] leading-relaxed text-text-muted">
+          {preview.map((row) => <li key={row.id}>{row.title}</li>)}
+        </ul>
+      )}
+      {rows.length > preview.length && <p className="mt-1 text-[10px] text-text-subtle">and {rows.length - preview.length} more</p>}
+    </div>
+  )
 }
 
 function isManualFirmwareRecipe(tweak: TweakRecord): boolean {
