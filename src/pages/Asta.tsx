@@ -213,6 +213,17 @@ export function Asta() {
               </div>
             )}
 
+            {preflight &&
+              !preflight.blocksAutoApply &&
+              preflight.buildChangedSinceLastApply && (
+                <div className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-snug">
+                  <strong className="text-amber-200">Windows was updated since the last tune.</strong>{' '}
+                  No update installation or pending restart is detected, so Asta can be activated.
+                  Some earlier settings may have drifted; use the immediate readback and run the
+                  same benchmark again after your next reboot.
+                </div>
+              )}
+
             <div className="mt-4 flex flex-col gap-2">
               <button
                 onClick={handleApply}

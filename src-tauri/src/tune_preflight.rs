@@ -5,6 +5,11 @@
 //! creates the exact "it applied, then most tweaks did not stick" experience
 //! this app needs to prevent. This module only observes Windows state; it
 //! never starts, stops, or changes an update service.
+//!
+//! The Windows Update service itself is not an activity signal: `wuauserv` can
+//! remain running while the machine is idle. The preflight therefore uses the
+//! Windows Update Agent's installer `IsBusy` property for the active-operation
+//! check and keeps the service state as diagnostic context only.
 
 use serde::Serialize;
 use winreg::enums::HKEY_LOCAL_MACHINE;
@@ -35,9 +40,8 @@ pub struct TunePreflight {
 pub fn should_hold_auto_apply(
     pending_reboot: bool,
     windows_update_active: bool,
-    build_changed_since_last_apply: bool,
 ) -> bool {
-    pending_reboot || windows_update_active || build_changed_since_last_apply
+    pending_reboot || windows_update_active
 }
 
 pub fn read(state: &SnapshotStore) -> TunePreflight {
@@ -62,10 +66,10 @@ pub fn read(state: &SnapshotStore) -> TunePreflight {
     let pending_reboot = cbs_reboot_pending || update_reboot_required || pending_file_rename;
     let windows_update_state = service_state("wuauserv");
     let bits_state = service_state("BITS");
-    // The Windows Update service is the useful signal here. BITS also serves
-    // unrelated background transfers, so it is reported but does not by
-    // itself block a tune.
-    let windows_update_active = matches!(windows_update_state.as_deref(), Some("running"));
+    // Do not use the service state as the gate: wuauserv commonly remains
+    // running after Windows Update is idle. BITS also serves unrelated
+    // background transfers, so it is reported but does not block a tune.
+    let windows_update_active = update_installation_active();
 
     let os_build = current_os_build();
     let last_applied_build = state
@@ -75,24 +79,21 @@ pub fn read(state: &SnapshotStore) -> TunePreflight {
         .and_then(|value| value.trim().parse::<u32>().ok());
     let build_changed_since_last_apply =
         matches!((os_build, last_applied_build), (Some(now), Some(last)) if now != last);
-    let blocks_auto_apply = should_hold_auto_apply(
-        pending_reboot,
-        windows_update_active,
-        build_changed_since_last_apply,
-    );
+    let blocks_auto_apply = should_hold_auto_apply(pending_reboot, windows_update_active);
 
     let mut reasons = Vec::new();
     if pending_reboot {
         reasons.push("Windows has a pending restart from an update or installer");
     }
     if windows_update_active {
-        reasons.push("the Windows Update service is active");
-    }
-    if build_changed_since_last_apply {
-        reasons.push("the Windows build changed since the last recorded apply");
+        reasons.push("Windows Update is actively installing or uninstalling an update");
     }
     let detail = if reasons.is_empty() {
-        "No pending Windows restart or active Windows Update service was detected.".into()
+        if build_changed_since_last_apply {
+            "Windows Update changed the OS build since the last recorded tune, but no update installation or pending restart is detected. Re-applying can proceed; verify live state and reboot persistence afterward.".into()
+        } else {
+            "No pending Windows restart or active Windows Update installation was detected. Updates that are merely available or queued do not block Asta.".into()
+        }
     } else {
         format!(
             "Automatic tuning is paused because {}. Finish Windows Update, restart if requested, then re-scan before applying tweaks.",
@@ -144,27 +145,46 @@ fn service_state(name: &str) -> Option<String> {
     (!state.is_empty()).then_some(state)
 }
 
+/// Ask the supported Windows Update Agent whether an install/uninstall is in
+/// progress. Unlike the service status, this reflects the operation that can
+/// actually race with a tune. A failed probe is treated as not busy; the
+/// registry pending-restart checks above remain the conservative fallback.
+fn update_installation_active() -> bool {
+    let script = "$ErrorActionPreference='Stop'; $installer=New-Object -ComObject Microsoft.Update.Installer; if ([bool]$installer.IsBusy) {'busy'} else {'idle'}";
+    let output = match process_helpers::hidden_powershell()
+        .args(["-NoProfile", "-NonInteractive", "-Command", script])
+        .output()
+    {
+        Ok(output) if output.status.success() => output,
+        _ => return false,
+    };
+
+    String::from_utf8_lossy(&output.stdout)
+        .trim()
+        .eq_ignore_ascii_case("busy")
+}
+
 #[cfg(test)]
 mod tests {
     use super::should_hold_auto_apply;
 
     #[test]
-    fn stable_machine_does_not_block() {
-        assert!(!should_hold_auto_apply(false, false, false));
+    fn queued_updates_without_installation_do_not_block() {
+        assert!(!should_hold_auto_apply(false, false));
     }
 
     #[test]
     fn pending_update_blocks() {
-        assert!(should_hold_auto_apply(true, false, false));
+        assert!(should_hold_auto_apply(true, false));
     }
 
     #[test]
     fn active_update_blocks() {
-        assert!(should_hold_auto_apply(false, true, false));
+        assert!(should_hold_auto_apply(false, true));
     }
 
     #[test]
-    fn changed_build_blocks() {
-        assert!(should_hold_auto_apply(false, false, true));
+    fn changed_build_is_advisory_after_update_finishes() {
+        assert!(!should_hold_auto_apply(false, false));
     }
 }

@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.9',
+    date: '2026-09-23',
+    highlights: [
+      'FIX **Asta no longer treats the idle Windows Update service as an active update.** Available or queued updates no longer block activation; only an update currently installing or a Windows-required restart pauses the safety gate.',
+      'FIX **NVPI profile integrity metadata now matches the six shipped `.nip` artifacts**, so profile downloads pass the release checksum audit.',
+    ],
+  },
+  {
     version: '0.4.8',
     date: '2026-09-22',
     highlights: [
