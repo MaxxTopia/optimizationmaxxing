@@ -4,12 +4,14 @@ import { auditMany, type TweakAudit } from '../lib/audit'
 import { catalog, type TweakRecord } from '../lib/catalog'
 import {
   applyBatch,
+  applyTransaction,
   inTauri,
   verifyApplied,
   type AppliedTweak,
   type BatchItem,
 } from '../lib/tauri'
 import { confirmAction } from '../lib/confirm'
+import { isTransactionActionEligible } from '../lib/optimizationSession'
 
 /**
  * /diff — every active mod from a vanilla Windows in one table.
@@ -119,7 +121,7 @@ export function Diff() {
     setErr(null)
     try {
       const items: BatchItem[] = tweak.actions.map((action) => ({ tweakId: tweak.id, action }))
-      await applyBatch(items)
+      await applyReapplyItems(items)
       await refresh()
     } catch (e) {
       setErr(`Re-apply failed for ${tweak.title}: ${e instanceof Error ? e.message : String(e)}`)
@@ -153,7 +155,7 @@ export function Diff() {
           items.push({ tweakId: r.tweak.id, action })
         }
       }
-      await applyBatch(items)
+      await applyReapplyItems(items)
       await refresh()
     } catch (e) {
       setErr(`Re-apply all failed: ${e instanceof Error ? e.message : String(e)}`)
@@ -194,7 +196,8 @@ export function Diff() {
             BCD, file, and display actions; PowerShell actions remain{' '}
             <span className="text-text-muted">◇ unknown</span> unless the catalog declares a
             safe read-back contract. Click any row for the per-action detail. "Copy as text" pastes
-            the full setup into a Discord DM.
+            the full setup into a Discord DM. This page is an audit: opening it never changes
+            Windows. Re-apply is always an explicit action here.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -307,7 +310,9 @@ function SummaryStrip({
             {drift} tweak{drift > 1 ? 's no longer match' : ' no longer matches'} the target the app
             recorded. The verifier cannot identify the cause: Windows Update, a vendor app, a
             Settings toggle, or an apply that did not hold can all produce drift. Re-apply tries to
-            restore the target value(s) without changing anything else.
+            restore the target value(s) without changing anything else. Opening this audit never
+            changes Windows; Tune Now makes one automatic repair attempt only after you explicitly
+            apply a tune.
           </p>
           <button
             onClick={onReapplyAll}
@@ -411,4 +416,21 @@ function DiffRowCard({
       )}
     </article>
   )
+}
+
+/** Re-apply the reversible/read-back lane transactionally. Legacy or
+ * unverifiable PowerShell remains an explicit batch because the native engine
+ * cannot honestly promise rollback for it. */
+async function applyReapplyItems(items: BatchItem[]): Promise<void> {
+  const transactional = items.filter((item) => isTransactionActionEligible(item.action))
+  const explicit = items.filter((item) => !isTransactionActionEligible(item.action))
+
+  if (transactional.length > 0) {
+    const report = await applyTransaction(transactional)
+    if (report.status !== 'committed') {
+      const detail = [...report.errors, ...report.rollbackErrors].join(' ')
+      throw new Error(`Verified re-apply ${report.status}.${detail ? ` ${detail}` : ''}`)
+    }
+  }
+  if (explicit.length > 0) await applyBatch(explicit)
 }

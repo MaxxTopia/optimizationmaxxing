@@ -411,8 +411,10 @@ export function OptimizationLab() {
         <h1 className="text-3xl font-bold">Optimization Lab</h1>
         <p className="text-sm text-text-muted max-w-3xl">
           One place to scan the actual PC, choose the tuning depth, see the exact reasons behind
-          every recommendation, and measure before/after. It is an explainable planning surface;
-          the existing Tune Now and per-tweak receipt flow remain the apply controls.
+          every recommendation, and measure before/after. The Lab is the evidence/planning cockpit:
+          its ready transactional lane can apply only captured, verified, rollback-capable actions.
+          Tune Now is the guided safe-by-default lane; Asta is the full applicable catalog with
+          explicit review gates.
         </p>
       </header>
 
@@ -575,7 +577,7 @@ export function OptimizationLab() {
               className="btn-chrome px-3 py-1.5 rounded-md bg-emerald-400 text-bg-base text-xs font-semibold disabled:opacity-40"
               title="Capture pre-state, apply, verify, and restore on failure"
             >
-              {transactionRunning ? 'Applying + verifying…' : 'Apply verified lane'}
+              {transactionRunning ? 'Applying + verifying…' : 'Apply ready transaction lane'}
             </button>
           </div>
           <p className="text-[11px] text-text-muted leading-relaxed">

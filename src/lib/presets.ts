@@ -103,68 +103,19 @@ export const PRESETS: PresetBundle[] = [
     vipGate: 'vip',
   },
   // ── Asta Mode ───────────────────────────────────────────────────────
-  // The ceiling. Every aggressive software lever this app reaches in one
-  // bundle. VIP-only, Fortnite-leaning. It is a lab preset, not a promise of
-  // a fixed millisecond or FPS gain.
+  // The ceiling. Asta is intentionally the full catalog inventory; the page
+  // performs the rig/game/manual-firmware filter at apply time. It is a lab
+  // preset, not a promise that every row is safe or useful on every PC.
   // Visual treatment: Black Clover anti-magic. See AstaCard.tsx + /asta.
   {
     id: 'preset.asta-mode',
     name: 'Asta Mode',
     archetype: 'Asta',
     glyph: '🗡',
-    tagline: 'Push the rig to its limit · measure every change',
+    tagline: 'Full applicable catalog · explicit risk gates · measure every change',
     description:
-      "The unpolite lab preset: measured and mechanism-backed changes first, then explicitly marked experiments such as device MSI, VBS/Hyper-V, core parking, PCIe power, timer policy, and realtime HID priority. It can improve a specific rig, do nothing, cost power, reduce security, or break tournament eligibility. Run Asta Bench before and after; keep only changes that win on your machine.",
-    tweakIds: [
-      // Core latency (measured wins)
-      'display.refresh.maximize',
-      'process.msi-mode.gpu-nic-audio',
-      'ui.mouse.disable-acceleration',
-      'ui.sticky-keys.disable',
-      'audio.comms-ducking.disable',
-      'ui.gamedvr.disable',
-      'ui.gamedvr.appcapture.disable',
-      'ui.fse.disable-global',
-      // HID realtime
-      'hid.mouse.priority-realtime',
-      // Per-game IFEO priority
-      'process.fortnite.priority-high',
-      'process.valorant.priority-high',
-      'process.cs2.priority-high',
-      // Mitigations / VBS / Hyper-V — DANGER tier
-      'process.cpu-mitigations.disable-DANGER',
-      'bcd.hypervisorlaunchtype.off',
-      'vbs.hvci.disable',
-      // Power
-      'process.power-throttling.disable',
-      'process.core-parking.disable',
-      'power.pcie.link-state.off',
-      'power.usb3.link-power.disable',
-      'process.usb-power-mgmt.disable',
-      'process.hid-power-mgmt.disable',
-      // Network (the real in-match wins only)
-      'net.nic.eee-powersave.disable',
-      'net.nic.interrupt-moderation.disable',
-      'net.nic.rss.enable',
-      // GPU + display
-      'process.hags.enable',
-      'process.windows-search.disable',
-      // Boot + kernel
-      'bcd.tscsyncpolicy.enhanced',
-      // Memory
-      'ps.mmagent.disable-mc',
-      'ps.mmagent.disable-pagecombining',
-      // Background noise
-      'tasks.telemetry-batch.disable',
-      'service.werservice.disable',
-      'service.maps-broker.disable',
-      'service.geolocation.disable',
-      'process.sysmain.disable',
-      'hosts.block.ms-telemetry',
-      'hosts.block.windows-ads',
-      // Fortnite-specific config FileWrite (added in v0.1.48)
-      'fortnite.engine-ini.optimize',
-    ],
+      "The full applicable catalog for the detected rig and selected game context. Asta separates transactional changes from explicit script review, skips BIOS/NVRAM/firmware writes, and never claims that a command exit code proves persistence or competitive gain.",
+    tweakIds: catalog.tweaks.map((tweak) => tweak.id),
     vipGate: 'vip',
   },
 ]

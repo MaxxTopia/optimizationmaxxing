@@ -1,17 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useIsVip } from '../store/useVipStore'
 import {
   applyBatch,
+  applyTransaction,
   getTunePreflight,
+  inTauri,
   verifyApplied,
+  type AppliedTweak,
   type BatchItem,
+  type SpecProfile,
+  type TransactionReport,
   type TunePreflight,
 } from '../lib/tauri'
 import { confirmAction } from '../lib/confirm'
-import { catalog } from '../lib/catalog'
-import { presetById, presetExperimentalTweaks } from '../lib/presets'
+import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
+import { isTransactionActionEligible } from '../lib/optimizationSession'
+import { isHardBlockedForAutoTune } from '../lib/tuneProfiles'
 import { AstaShareCard } from '../components/AstaShareCard'
+import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
 import { TournamentAudit } from '../components/TournamentAudit'
 import { useRigStore } from '../store/useRigStore'
 
@@ -46,6 +53,10 @@ setting readback where supported; they do not prove reboot persistence or a comp
 
 export function Asta() {
   const isVip = useIsVip()
+  const isNative = inTauri()
+  const spec = useRigStore((state) => state.spec)
+  const ensureLoaded = useRigStore((state) => state.ensureLoaded)
+  const refreshRig = useRigStore((state) => state.refresh)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [applied, setApplied] = useState<{
@@ -53,14 +64,37 @@ export function Asta() {
     verified: number
     mismatch: number
     unknown: number
+    skipped: number
+    transactional: number
+    explicit: number
+    reviewSkipped: number
+    manual: number
+    otherGame: number
+    notMatched: number
+    transactionStatus?: TransactionReport['status']
     ts: string
   } | null>(null)
   const [quoteIdx, setQuoteIdx] = useState(0)
   const [preflight, setPreflight] = useState<TunePreflight | null>(null)
+  const [appliedRows, setAppliedRows] = useState<AppliedTweak[]>([])
+
+  const inventory = useMemo(
+    () => (spec ? buildAstaPlan(spec, appliedRows) : null),
+    [spec, appliedRows],
+  )
 
   useEffect(() => {
+    void ensureLoaded()
+      .then((detected) => {
+        if (!detected || !isNative) return null
+        return verifyApplied()
+      })
+      .then((rows) => {
+        if (rows) setAppliedRows(rows)
+      })
+      .catch(() => undefined)
     void getTunePreflight().then(setPreflight).catch(() => undefined)
-  }, [])
+  }, [ensureLoaded, isNative])
 
   // Rotate quotes on click of the manifesto block — small easter egg.
   function bumpQuote() {
@@ -83,41 +117,94 @@ export function Asta() {
         // Keep compatibility with an older installed shell. The batch still
         // records immediate verification and the post-apply read-back below.
       }
-      const preset = presetById('asta-mode')
-      if (!preset) {
-        setError('Asta Mode preset not found in catalog. Update v1.json.')
+      const detected = await refreshRig()
+      if (!detected) {
+        setError('Asta needs a fresh desktop rig scan before it can build the full applicable catalog.')
         return
       }
-      const tweaks = preset.tweakIds
-        .map((id) => catalog.tweaks.find((t) => t.id === id))
-        .filter((t): t is NonNullable<typeof t> => Boolean(t))
-      const experimental = presetExperimentalTweaks(preset)
-      if (
-        experimental.length > 0 &&
-        !(await confirmAction(
-          `${experimental.length} Asta experiment${experimental.length === 1 ? '' : 's'} are included:\n\n` +
-            `${experimental.map((t) => `• ${t.title}`).join('\n')}\n\n` +
-            'These can reduce security, raise power, break eligibility, or fail to help this rig. Create a restore point and continue only if you accept that risk.',
+      const latestApplied = await verifyApplied()
+      const plan = buildAstaPlan(detected, latestApplied)
+      setAppliedRows(latestApplied)
+      if (plan.candidates.length === 0) {
+        setApplied({
+          requested: 0,
+          verified: 0,
+          mismatch: 0,
+          unknown: 0,
+          skipped: plan.alreadyApplied.length,
+          transactional: 0,
+          explicit: 0,
+          reviewSkipped: 0,
+          manual: plan.manual.length,
+          otherGame: plan.otherGame.length,
+          notMatched: plan.notMatched.length,
+          ts: new Date().toLocaleTimeString(),
+        })
+        return
+      }
+      const safeActionCount = plan.transactional.length + plan.explicit.length
+      const reviewActionCount = plan.reviewTransactional.length + plan.reviewExplicit.length
+      const experimentalCount = plan.candidates.filter((tweak) => isExperimentalTweak(tweak)).length
+      if (!(await confirmAction(
+        `Pinnacle Asta found ${plan.candidates.length} applicable Fortnite/Windows tweaks. It can apply ${safeActionCount} standard actions now; ${plan.review.length} rows (${reviewActionCount} actions) need a separate security/compatibility review confirmation. ${experimentalCount} rows are experimental. BIOS/NVRAM/firmware rows and mismatched hardware targets stay excluded. A restore point and a same-condition benchmark are strongly recommended. Continue?`,
+      ))) {
+        return
+      }
+
+      const applyReview =
+        plan.review.length === 0 ||
+        (await confirmAction(
+          `Review lane: apply ${plan.review.length} higher-risk or hard-to-read-back tweak${plan.review.length === 1 ? '' : 's'} too? These can weaken security, affect anti-cheat/tournament eligibility, or lack a deterministic read-back. Review the individual rows first if you are unsure. Continue?`,
         ))
-      ) {
-        return
-      }
-      const items: BatchItem[] = []
-      for (const t of tweaks) {
-        for (const action of t.actions) {
-          items.push({ tweakId: t.id, action })
+
+      let transactionStatus: TransactionReport['status'] | undefined
+      let requested = 0
+      if (plan.transactional.length > 0) {
+        const report = await applyTransaction(plan.transactional)
+        transactionStatus = report.status
+        requested += plan.transactional.length
+        if (report.status !== 'committed') {
+          const detail = [...report.errors, ...report.rollbackErrors].join(' ')
+          throw new Error(`Verified Asta lane ${report.status}.${detail ? ` ${detail}` : ''}`)
         }
       }
-      const receipts = await applyBatch(items)
-      const selectedIds = new Set(tweaks.map((t) => t.id))
-      const live = (await verifyApplied()).filter(
+      if (plan.explicit.length > 0) {
+        const receipts = await applyBatch(plan.explicit)
+        requested += receipts.length
+      }
+      if (applyReview && plan.reviewTransactional.length > 0) {
+        const report = await applyTransaction(plan.reviewTransactional)
+        transactionStatus = report.status
+        requested += plan.reviewTransactional.length
+        if (report.status !== 'committed') {
+          const detail = [...report.errors, ...report.rollbackErrors].join(' ')
+          throw new Error(`Review lane ${report.status}.${detail ? ` ${detail}` : ''}`)
+        }
+      }
+      if (applyReview && plan.reviewExplicit.length > 0) {
+        const receipts = await applyBatch(plan.reviewExplicit)
+        requested += receipts.length
+      }
+
+      const selectedIds = new Set(plan.candidates.map((tweak) => tweak.id))
+      const allLive = await verifyApplied()
+      const live = allLive.filter(
         (row) => row.status === 'applied' && selectedIds.has(row.tweakId),
       )
+      setAppliedRows(allLive)
       setApplied({
-        requested: receipts.length,
+        requested,
         verified: live.filter((receipt) => receipt.verificationStatus === 'verified').length,
         mismatch: live.filter((receipt) => receipt.verificationStatus === 'mismatch').length,
         unknown: live.filter((receipt) => receipt.verificationStatus === 'unknown').length,
+        skipped: plan.alreadyApplied.length,
+        transactional: plan.transactional.length,
+        explicit: plan.explicit.length,
+        reviewSkipped: applyReview ? 0 : plan.review.length,
+        manual: plan.manual.length,
+        otherGame: plan.otherGame.length,
+        notMatched: plan.notMatched.length,
+        transactionStatus,
         ts: new Date().toLocaleTimeString(),
       })
     } catch (e) {
@@ -166,12 +253,24 @@ export function Asta() {
             <p className="text-[10px] uppercase tracking-widest text-text-subtle">apply</p>
             <h3 className="text-xl font-bold mt-1">Activate Asta Mode</h3>
             <p className="text-sm text-text-muted leading-snug mt-1">
-              One UAC prompt for the selected Asta set. Core changes are separated from the
-              experimental lane: device interrupts, virtualization/security, power, timer, and
-              realtime HID changes can trade stability or eligibility for a possible local win.
-              Read the warning, then measure before and after. Revert through Settings after
-              testing.
+              Pinnacle Asta inventories the full catalog, then applies every row that matches this
+              rig and Fortnite context. Reversible/read-back-capable actions use the transactional
+              lane; unsupported scripts are visibly separated into an explicit review lane and may
+              need a second UAC prompt. BIOS/NVRAM/firmware changes never become automatic.
             </p>
+
+            {inventory && (
+              <div className="mt-3 rounded-md border border-border bg-bg-base/40 px-3 py-2 text-xs text-text-muted leading-relaxed">
+                <strong className="text-text">Current inventory:</strong>{' '}
+                <span className="text-emerald-300">{inventory.candidates.length} applicable to apply</span>{' · '}
+                <span className="text-sky-300">{inventory.alreadyApplied.length} already on target</span>{' · '}
+                <span className="text-amber-200">{inventory.review.length} explicit review</span>{' · '}
+                <span className="text-purple-300">{inventory.manual.length} manual firmware excluded</span>.
+                <span className="block mt-1 text-[11px] text-text-subtle">
+                  {inventory.notMatched.length} hardware mismatches and {inventory.otherGame.length} other-game rows are excluded from this Fortnite run.
+                </span>
+              </div>
+            )}
 
             {!isVip && (
               <div className="mt-4 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 leading-snug">
@@ -192,8 +291,13 @@ export function Asta() {
                 {applied.verified}/{applied.requested} actions matched immediate readback
                 {applied.mismatch > 0 ? ` · ${applied.mismatch} mismatch` : ''}
                 {applied.unknown > 0 ? ` · ${applied.unknown} unverified` : ''} (at {applied.ts}).
+                {applied.skipped > 0 ? ` ${applied.skipped} already-on-target tweaks were skipped.` : ''}
+                {applied.transactional > 0 ? ` ${applied.transactional} actions used verified transactions.` : ''}
+                {applied.explicit > 0 ? ` ${applied.explicit} actions used explicit review.` : ''}
+                {applied.reviewSkipped > 0 ? ` ${applied.reviewSkipped} higher-risk rows stayed unapplied because the review confirmation was declined.` : ''}
+                {applied.transactionStatus ? ` Transaction status: ${applied.transactionStatus}.` : ''}
                 This does not prove reboot persistence or better gameplay; run the same Asta Bench
-                before and after.
+                before and after, then use Your Tune to re-check drift.
               </div>
             )}
 
@@ -251,7 +355,7 @@ export function Asta() {
                   : busy
                   ? 'Applying…'
                   : isVip
-                  ? '🗡 Activate Asta Mode'
+                  ? '🗡 Activate Pinnacle Asta'
                   : '👑 VIP only'}
               </button>
               <Link
@@ -266,6 +370,8 @@ export function Asta() {
       </section>
 
       <AstaFitCard />
+
+      <RebootPersistenceCard />
 
       <TournamentAudit />
 
@@ -302,6 +408,98 @@ export function Asta() {
       </section>
     </div>
   )
+}
+
+interface AstaPlan {
+  candidates: TweakRecord[]
+  alreadyApplied: TweakRecord[]
+  review: TweakRecord[]
+  manual: TweakRecord[]
+  otherGame: TweakRecord[]
+  notMatched: TweakRecord[]
+  transactional: BatchItem[]
+  explicit: BatchItem[]
+  reviewTransactional: BatchItem[]
+  reviewExplicit: BatchItem[]
+}
+
+/** Build Asta's full, rig-aware Fortnite inventory. "Full" means every
+ * applicable software row in the catalog, not firmware writes or rows for a
+ * different game. A verified receipt is skipped; a drifted/unknown receipt is
+ * eligible for an explicit re-apply so Windows Update and vendor tools can be
+ * recovered instead of silently hiding the row. */
+function buildAstaPlan(spec: SpecProfile, applied: AppliedTweak[]): AstaPlan {
+  const latest = new Map<string, AppliedTweak>()
+  for (const row of applied) {
+    if (row.status !== 'applied') continue
+    const prior = latest.get(row.tweakId)
+    if (!prior || row.appliedAt > prior.appliedAt) latest.set(row.tweakId, row)
+  }
+
+  const candidates: TweakRecord[] = []
+  const alreadyApplied: TweakRecord[] = []
+  const review: TweakRecord[] = []
+  const manual: TweakRecord[] = []
+  const otherGame: TweakRecord[] = []
+  const notMatched: TweakRecord[] = []
+
+  for (const tweak of catalog.tweaks) {
+    const taggedForFortnite = !tweak.applicableGames?.length || tweak.applicableGames.includes('fortnite')
+    if (!taggedForFortnite) {
+      otherGame.push(tweak)
+      continue
+    }
+    if (!tweakMatchesSpec(tweak, spec)) {
+      notMatched.push(tweak)
+      continue
+    }
+    if (isManualFirmwareRecipe(tweak)) {
+      manual.push(tweak)
+      continue
+    }
+    if (latest.get(tweak.id)?.verificationStatus === 'verified') {
+      alreadyApplied.push(tweak)
+      continue
+    }
+    candidates.push(tweak)
+    if (isHardBlockedForAutoTune(tweak)) review.push(tweak)
+  }
+
+  const transactional: BatchItem[] = []
+  const explicit: BatchItem[] = []
+  const reviewTransactional: BatchItem[] = []
+  const reviewExplicit: BatchItem[] = []
+  const reviewIds = new Set(review.map((tweak) => tweak.id))
+  for (const tweak of candidates) {
+    for (const action of tweak.actions) {
+      const item = { tweakId: tweak.id, action }
+      const destination = reviewIds.has(tweak.id)
+        ? isTransactionActionEligible(action)
+          ? reviewTransactional
+          : reviewExplicit
+        : isTransactionActionEligible(action)
+          ? transactional
+          : explicit
+      destination.push(item)
+    }
+  }
+
+  return {
+    candidates,
+    alreadyApplied,
+    review,
+    manual,
+    otherGame,
+    notMatched,
+    transactional,
+    explicit,
+    reviewTransactional,
+    reviewExplicit,
+  }
+}
+
+function isManualFirmwareRecipe(tweak: TweakRecord): boolean {
+  return tweak.category === 'bios' || /\b(?:xmp|expo|dram timing|memory timing|firmware|nvram)\b/i.test(tweak.title)
 }
 
 function Hero() {

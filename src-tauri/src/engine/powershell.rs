@@ -11,9 +11,9 @@
 //! action is marked non-revertible at the catalog layer.
 
 use anyhow::{anyhow, Result};
-use std::process::Command;
 
 use super::actions::TweakAction;
+use crate::process_helpers::hidden_powershell;
 
 /// Base64-encode UTF-16-LE bytes for `powershell -EncodedCommand`.
 pub fn encode_for_ps(script: &str) -> String {
@@ -26,8 +26,7 @@ pub fn encode_for_ps(script: &str) -> String {
 
 /// Standard base64 encoder — kept inline to avoid a dependency for ~25 lines.
 fn base64_encode(input: &[u8]) -> String {
-    const ALPHA: &[u8] =
-        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const ALPHA: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out: Vec<u8> = Vec::with_capacity((input.len() + 2) / 3 * 4);
     for chunk in input.chunks(3) {
         let b0 = chunk[0];
@@ -94,7 +93,7 @@ pub fn verify(action: &TweakAction) -> Result<bool> {
 
     let wrapped = format!("$ErrorActionPreference='Stop'; & {{ {} }}", script);
     let encoded = encode_for_ps(&wrapped);
-    let output = Command::new("powershell.exe")
+    let output = hidden_powershell()
         .args([
             "-NoLogo",
             "-NoProfile",

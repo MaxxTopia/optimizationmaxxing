@@ -20,6 +20,7 @@ import {
   type TunePreflight,
 } from '../lib/tauri'
 import { confirmAction } from '../lib/confirm'
+import { isTransactionActionEligible } from '../lib/optimizationSession'
 import {
   isHardBlockedForAutoTune,
   recommendedTuneProfile,
@@ -29,6 +30,7 @@ import {
 import { issueTuneTicket, readTuneTicket, type TuneTicket } from '../lib/tuneTicket'
 import { TuneTicketModal } from '../components/TuneTicketModal'
 import { DetectedRigCard } from '../components/DetectedRigCard'
+import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
 
 /**
  * /tune — the lazy-user one-click conversion page.
@@ -75,6 +77,13 @@ interface VerificationSummary {
   unknown: number
 }
 
+interface RepairSummary {
+  attempted: number
+  remaining: number
+  status?: TransactionReport['status']
+  error?: string
+}
+
 export function TuneNow() {
   const isNative = inTauri()
   const isVip = useIsVip()
@@ -90,7 +99,9 @@ export function TuneNow() {
   const [intensity, setIntensity] = useState<TuneIntensity>('competitive')
   const [targetGame, setTargetGame] = useState<GameId | 'any'>('fortnite')
   const [profileAutoSelected, setProfileAutoSelected] = useState(false)
+  const [intensityManuallySelected, setIntensityManuallySelected] = useState(false)
   const [verification, setVerification] = useState<VerificationSummary | null>(null)
+  const [repairSummary, setRepairSummary] = useState<RepairSummary | null>(null)
   const [preflight, setPreflight] = useState<TunePreflight | null>(null)
   const [transactionReport, setTransactionReport] = useState<TransactionReport | null>(null)
   const [ticket, setTicket] = useState<TuneTicket | null>(() => readTuneTicket())
@@ -101,7 +112,7 @@ export function TuneNow() {
   }, [ensureLoaded])
 
   useEffect(() => {
-    if (!spec || profileAutoSelected) return
+    if (!spec || profileAutoSelected || intensityManuallySelected) return
     setIntensity(recommendedTuneProfile(spec).profile.id)
     setProfileAutoSelected(true)
   }, [spec, profileAutoSelected])
@@ -152,6 +163,7 @@ export function TuneNow() {
     setError(null)
     setTransactionReport(null)
     setVerification(null)
+    setRepairSummary(null)
     setProgress('Detecting rig…')
     try {
       const detected = await refreshRig()
@@ -222,6 +234,7 @@ export function TuneNow() {
     setPhase('applying')
     setError(null)
     setTransactionReport(null)
+    setRepairSummary(null)
     setProgress(`Applying and verifying ${plan.applyFree.length} tweaks under one UAC…`)
     const selectedIds = new Set(plan.applyFree.map((t) => t.id))
     try {
@@ -231,7 +244,7 @@ export function TuneNow() {
       }
       const report = await applyTransaction(items)
       setTransactionReport(report)
-      const live = await verifyApplied()
+      let live = await verifyApplied()
       setVerification(
         summarizeVerification(live.filter((row) => selectedIds.has(row.tweakId))),
       )
@@ -246,6 +259,53 @@ export function TuneNow() {
         setPhase('error')
         setProgress('')
         return
+      }
+
+      // A successful transaction should already be verified, but Windows or a
+      // vendor utility can race the final read-back. Repair only the safe,
+      // transaction-capable subset, and only once per explicit Tune Now click.
+      // Unknown/script-only actions stay visible for manual review instead of
+      // becoming an invisible retry loop.
+      const driftedIds = mismatchedTweakIds(live, selectedIds)
+      if (driftedIds.size > 0) {
+        setProgress(`Repairing ${driftedIds.size} drifted tweak${driftedIds.size === 1 ? '' : 's'} once…`)
+        const repairItems: BatchItem[] = []
+        for (const tweak of plan.applyFree) {
+          if (!driftedIds.has(tweak.id)) continue
+          for (const action of tweak.actions) {
+            if (isTransactionActionEligible(action)) repairItems.push({ tweakId: tweak.id, action })
+          }
+        }
+        if (repairItems.length > 0) {
+          try {
+            const repairReport = await applyTransaction(repairItems)
+            live = await verifyApplied()
+            const remaining = mismatchedTweakIds(live, selectedIds)
+            setRepairSummary({
+              attempted: driftedIds.size,
+              remaining: remaining.size,
+              status: repairReport.status,
+              error:
+                repairReport.status === 'committed'
+                  ? undefined
+                  : [...repairReport.errors, ...repairReport.rollbackErrors].join(' '),
+            })
+          } catch (repairError) {
+            setRepairSummary({
+              attempted: driftedIds.size,
+              remaining: driftedIds.size,
+              error: repairError instanceof Error ? repairError.message : String(repairError),
+            })
+          }
+          setVerification(summarizeVerification(live.filter((row) => selectedIds.has(row.tweakId))))
+          setAppliedIds(appliedTweakIdsReadyForReapply(live))
+        } else {
+          setRepairSummary({
+            attempted: 0,
+            remaining: driftedIds.size,
+            error: 'The drifted actions do not expose a safe native repair contract.',
+          })
+        }
       }
       setPhase('measuring')
       setProgress('Settling 4s before re-bench…')
@@ -300,7 +360,20 @@ export function TuneNow() {
       <DetectedRigCard compact />
 
       {phase === 'idle' && (
-        <IdleState onStart={startScan} isNative={isNative} />
+        <IdleState
+          onStart={startScan}
+          isNative={isNative}
+          intensity={intensity}
+          targetGame={targetGame}
+          recommendedId={recommendation.profile.id}
+          recommendationReason={recommendation.reason}
+          onIntensityChange={(next) => {
+            setIntensityManuallySelected(true)
+            setProfileAutoSelected(true)
+            setIntensity(next)
+          }}
+          onTargetGameChange={setTargetGame}
+        />
       )}
 
       {(phase === 'scanning' || phase === 'applying' || phase === 'measuring') && (
@@ -321,8 +394,11 @@ export function TuneNow() {
           recommendationReason={recommendation.reason}
           preflight={preflight}
           onIntensityChange={(next) => {
+            setIntensityManuallySelected(true)
+            setProfileAutoSelected(true)
             setIntensity(next)
             setVerification(null)
+            setRepairSummary(null)
           }}
           onTargetGameChange={(next) => {
             setTargetGame(next)
@@ -342,6 +418,7 @@ export function TuneNow() {
           intensity={intensity}
           targetGame={targetGame}
           verification={verification}
+          repairSummary={repairSummary}
           transactionReport={transactionReport}
           ticket={ticket}
           onShowTicket={() => setShowTicket(true)}
@@ -388,20 +465,89 @@ export function TuneNow() {
 // Phase components
 // ────────────────────────────────────────────────────────────────────────
 
-function IdleState({ onStart, isNative }: { onStart: () => void; isNative: boolean }) {
+function IdleState({
+  onStart,
+  isNative,
+  intensity,
+  targetGame,
+  recommendedId,
+  recommendationReason,
+  onIntensityChange,
+  onTargetGameChange,
+}: {
+  onStart: () => void
+  isNative: boolean
+  intensity: TuneIntensity
+  targetGame: GameId | 'any'
+  recommendedId: TuneIntensity
+  recommendationReason: string
+  onIntensityChange: (next: TuneIntensity) => void
+  onTargetGameChange: (next: GameId | 'any') => void
+}) {
+  const options: TuneIntensity[] = ['light', 'competitive', 'aggressive', 'extreme']
+  const profile = tuneProfile(intensity)
   return (
     <section className="surface-card p-6 md:p-8 space-y-4">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Three steps · ~90 seconds total</h2>
+        <h2 className="text-2xl font-bold">Choose the lane first · then scan</h2>
+        <p className="text-sm text-text-muted">
+          Your choice is saved for this run and is visible before any scan or system action starts.
+          Scanning only detects the rig and measures a baseline; it does not apply tweaks.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1">
+          {options.map((id) => {
+            const option = tuneProfile(id)
+            const selected = id === intensity
+            return (
+              <button
+                key={id}
+                onClick={() => onIntensityChange(id)}
+                className={`rounded-md border p-3 text-left transition ${
+                  selected ? 'border-accent bg-accent/10' : 'border-border hover:border-border-glow'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-sm">{option.label}</span>
+                  {id === recommendedId && <span className="text-[10px] uppercase tracking-wider text-emerald-300">recommended</span>}
+                </div>
+                <p className="text-xs text-text-muted mt-1 leading-snug">{option.summary}</p>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-xs text-text-subtle">{recommendationReason}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,18rem)_1fr] gap-3 items-end">
+          <label className="text-xs text-text-muted">
+            <span className="block mb-1 uppercase tracking-wider text-text-subtle">game context</span>
+            <select
+              value={targetGame}
+              onChange={(event) => onTargetGameChange(event.target.value as GameId | 'any')}
+              className="w-full rounded-md border border-border bg-bg-base px-3 py-2 text-sm text-text"
+            >
+              <option value="fortnite">🎯 Fortnite</option>
+              {GAMES.filter((game) => game.id !== 'fortnite').map((game) => (
+                <option key={game.id} value={game.id}>{game.glyph} {game.label}</option>
+              ))}
+              <option value="any">Windows baseline only</option>
+            </select>
+          </label>
+          <p className="text-xs text-text-subtle leading-snug">
+            {profile.label} applies only eligible catalog rows for this rig and context. Game-tagged
+            rows for another title stay out of the run.
+          </p>
+        </div>
+      </div>
+      <div className="border-t border-border pt-4 space-y-1.5">
+        <p className="text-sm font-semibold text-text">Three steps · about 90 seconds</p>
         <ol className="space-y-1.5 text-sm text-text-muted">
           <li>
             <span className="text-accent font-semibold">1.</span> Scan + initial Asta Bench (≈30 s)
           </li>
           <li>
-            <span className="text-accent font-semibold">2.</span> Choose Light, Competitive, Aggressive, or Extreme; the scan explains the tradeoffs before applying anything
+            <span className="text-accent font-semibold">2.</span> Review the exact eligible count and confirmation gates
           </li>
           <li>
-            <span className="text-accent font-semibold">3.</span> Re-bench + see exactly how many composite points you gained, and how many you'd unlock with VIP
+            <span className="text-accent font-semibold">3.</span> Apply once, verify, and re-bench
           </li>
         </ol>
       </div>
@@ -618,6 +764,7 @@ function DoneState({
   intensity,
   targetGame,
   verification,
+  repairSummary,
   transactionReport,
   ticket,
   onShowTicket,
@@ -631,6 +778,7 @@ function DoneState({
   intensity: TuneIntensity
   targetGame: GameId | 'any'
   verification: VerificationSummary | null
+  repairSummary: RepairSummary | null
   transactionReport: TransactionReport | null
   ticket: TuneTicket | null
   onShowTicket: () => void
@@ -672,6 +820,23 @@ function DoneState({
         </section>
       )}
 
+      {repairSummary && (
+        <section className={`surface-card p-5 space-y-2 ${repairSummary.remaining === 0 ? 'border-emerald-500/40' : 'border-amber-500/40'}`}>
+          <p className="text-[11px] uppercase tracking-widest text-text-subtle">persistence guard</p>
+          <p className="text-sm text-text-muted">
+            Tune Now made one bounded repair attempt for {repairSummary.attempted} drifted tweak{repairSummary.attempted === 1 ? '' : 's'} immediately after verification.
+            {repairSummary.remaining === 0
+              ? ' The repaired rows now match the requested state.'
+              : ` ${repairSummary.remaining} still need${repairSummary.remaining === 1 ? 's' : ''} attention in Your Tune.`}
+          </p>
+          {repairSummary.error && <p className="text-xs text-amber-200">{repairSummary.error}</p>}
+          <p className="text-[11px] text-text-subtle">
+            This protects against a race during this run; it cannot prevent Windows Update, a driver
+            utility, or a later manual setting from changing Windows again.
+          </p>
+        </section>
+      )}
+
       {transactionReport && (
         <section className="surface-card p-5 space-y-2">
           <p className="text-[11px] uppercase tracking-widest text-text-subtle">apply integrity</p>
@@ -682,6 +847,8 @@ function DoneState({
           </p>
         </section>
       )}
+
+      <RebootPersistenceCard />
 
       {!isVip && plan.vipLocked.length > 0 && (
         <section
@@ -937,6 +1104,20 @@ function appliedTweakIdsReadyForReapply(rows: AppliedTweak[]): Set<string> {
   return new Set(
     [...latest.values()]
       .filter((row) => row.verificationStatus !== 'mismatch')
+      .map((row) => row.tweakId),
+  )
+}
+
+function mismatchedTweakIds(rows: AppliedTweak[], selectedIds: Set<string>): Set<string> {
+  const latest = new Map<string, AppliedTweak>()
+  for (const row of rows) {
+    if (row.status !== 'applied' || !selectedIds.has(row.tweakId)) continue
+    const prior = latest.get(row.tweakId)
+    if (!prior || row.appliedAt > prior.appliedAt) latest.set(row.tweakId, row)
+  }
+  return new Set(
+    [...latest.values()]
+      .filter((row) => row.verificationStatus === 'mismatch')
       .map((row) => row.tweakId),
   )
 }

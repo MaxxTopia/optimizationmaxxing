@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.10',
+    date: '2026-09-23',
+    highlights: [
+      'FIX **Tune Now asks for intensity and game context before scanning or applying.** Read-only PowerShell probes no longer flash black console windows in the desktop shell.',
+      'FIX **Asta is now a full, rig-aware catalog lane.** Standard actions use verified transactions; higher-risk rows require a second review confirmation, while BIOS/NVRAM/firmware writes remain manual.',
+      'IMPROVE **Persistence is checked instead of assumed.** Tune Now makes one bounded repair attempt for safe drift, Diff keeps re-apply explicit, and both Asta and Tune Now expose two-phase reboot proof.',
+      'FIX **Confirmation fallback.** A stale desktop dialog capability no longer blocks the safety confirmation with an opaque ACL error.',
+      'IMPROVE **Optimization Lab explains its role.** Its ready transaction lane is distinct from guided Tune Now and full-catalog Asta.',
+    ],
+  },
+  {
     version: '0.4.9',
     date: '2026-09-23',
     highlights: [

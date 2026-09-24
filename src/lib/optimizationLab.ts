@@ -146,7 +146,7 @@ export function buildOptimizationPlan(input: OptimizationPlanInput): LabPlanSumm
       reason = `Held above ${profile.label} policy: risk ${tweak.riskLevel}${experimental ? ' / experimental' : ''}.`
     } else {
       state = 'ready'
-      reason = `Matches this rig and ${profile.label} policy; eligible for the existing Tune Now apply/read-back flow.`
+      reason = `Matches this rig and ${profile.label} policy; eligible for the Lab's verified transaction lane or guided Tune Now.`
     }
 
     switch (state) {
