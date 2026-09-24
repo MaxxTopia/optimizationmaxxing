@@ -4,11 +4,21 @@
 
 Follow-up to the already-published v0.4.10 persistence work. This release is
 prepared as v0.4.11 because the existing v0.4.10 tag must not be overwritten.
-At the time this checkpoint was updated, the release changes were local and
-uncommitted on branch `codex/pinnacle-persistence-v0.4.10`; commit, push, CI
-signing, and deployment were still pending. The checkout was clean before the
-feature work; the product files, version/changelog/release workflow, and these
-checkpoints are the scoped changes.
+At the start of this work, the release changes were local on branch
+`codex/pinnacle-persistence-v0.4.10`; the release is now public. Commit
+`b6e9515bb45fc99b12337dc7024ad756e8669a18` is both `origin/main` and tag
+`v0.4.11`. GitHub Actions run `35977029917` completed successfully, publishing
+the Windows installer, its updater signature, and `latest.json`. The public
+updater manifest reports `0.4.11` for both Windows x86_64 platform entries with
+signatures present. The MaxxTopia release sync and Cloudflare Pages run
+`35977740724` completed successfully; the public product page responds HTTP 200
+and links to the v0.4.11 installer. The latest-installer URL responds HTTP 200.
+
+Local `npm run tauri:build` compiled the app and created the installer, but
+ended at updater signing because this PC has no local
+`TAURI_SIGNING_PRIVATE_KEY`. CI signing succeeded and is the published artifact
+proof. The product files, version/changelog/release workflow, and continuity
+notes were the scoped release changes.
 
 ## Changes
 
@@ -46,7 +56,7 @@ checkpoints are the scoped changes.
 ## Not proven / next step
 
 No installed-client or physical Windows test has been run. Diggy should install
-the resulting CI-signed build when it is intentionally released, preview the
+the public CI-signed v0.4.11 build, preview the
 Asta plan, verify that a deliberately changed setting causes activation to
 pause for renewed review, apply a small reversible selection, and then use the
 existing reboot-persistence card plus Match Scan on the same Fortnite scene.
@@ -55,8 +65,6 @@ Windows, drivers, policies, or another utility from later changing a setting.
 
 ## Best next move
 
-Complete the authorized v0.4.11 commit/tag push and verify CI publishes all
-signed updater assets and updates the download page. For a real PC, validate the
-new preview and stale-readback stop before relying on the full Asta catalog.
-Keep an off-machine copy of the continuity snapshot for actual disaster
-recovery.
+Install the public v0.4.11 build on the gaming PC and run the field test above.
+Validate Asta preview and stale-readback stop before relying on the full catalog.
+Keep an off-machine copy of the continuity snapshot for actual disaster recovery.

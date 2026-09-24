@@ -31,11 +31,26 @@ opaque confirmation failures, and drift that was reported but not repaired.
 ## Release
 
 - Version: `0.4.11` (the prior `v0.4.10` tag is already published and must not be overwritten)
-- Intended tag: `v0.4.11`
+- Published tag: `v0.4.11`
 - Scoped source: this worktree's frontend/native tuning changes, release notes,
   version metadata, and continuity notes only.
 - The canonical optimizationmaxxing checkout may contain unrelated work; it is
   not used as a staging source for this release.
+
+## Published verification
+
+- Commit `b6e9515bb45fc99b12337dc7024ad756e8669a18` is `origin/main` and tag
+  `v0.4.11`; the release worktree was clean after publishing.
+- GitHub Actions release run `35977029917` succeeded, including signed updater
+  assets: the Windows NSIS installer, `.sig`, and `latest.json`.
+- The public updater manifest reports version `0.4.11`; both Windows x86_64
+  entries point to the v0.4.11 installer and have signatures.
+- MaxxTopia release sync and Cloudflare Pages run `35977740724` succeeded. The
+  public Optimizationmaxxing page returned HTTP 200 and linked the versioned
+  v0.4.11 installer; the latest-installer URL also returned HTTP 200.
+- Local `npm run tauri:build` reached installer creation but exited at updater
+  signing because this PC has no local signing key. CI signing and published
+  signature are the release proof; do not describe local signing as passed.
 
 ## Verification boundary
 
@@ -56,6 +71,6 @@ interference, or reboot persistence on Diggy's physical PC.
 
 ## Best next move
 
-Install the CI-signed `v0.4.11` artifact on the gaming PC and run the field test above.
+Install the public CI-signed `v0.4.11` artifact on the gaming PC and run the field test above.
 If the real machine still shows drift, capture the exact tweak receipt and live
 read-back rather than reapplying the whole catalog.
