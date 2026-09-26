@@ -8,7 +8,7 @@ The work was performed in the isolated worktree:
 
 `C:/Users/Diggy/projects/optimizationmaxxing-hardening`
 
-It is detached at `origin/main` (`1940776`, v0.4.12). The original checkout at `C:/Users/Diggy/projects/optimizationmaxxing` was already dirty and was not reset, cleaned, overwritten, committed, pushed, installed, or deployed.
+It was released from the isolated checkout at commit `c550aef77bad1868ee5fac121e5060abca63ec79` as v0.4.13. The original checkout at `C:/Users/Diggy/projects/optimizationmaxxing` was already dirty and was not reset, cleaned, overwritten, committed, pushed, installed, or deployed.
 
 ## Locked decisions
 
@@ -41,7 +41,8 @@ It is detached at `origin/main` (`1940776`, v0.4.12). The original checkout at `
 - `npm run test:bios-evidence` - passed; 9 checks.
 - `npx tsc --noEmit` - passed.
 - `npm run build` - passed; Vite build completed with the existing large-chunk warning.
-- `cargo test --lib --manifest-path src-tauri/Cargo.toml --target-dir E:/CodexTemp/optimizationmaxxing-hardening-target -j 1` - passed; 98 tests, 0 failures. The fresh redirected build took 104m 07s because the old generated C: target was full.
+- `cargo test --manifest-path src-tauri/Cargo.toml --target-dir E:/CodexTemp/optimizationmaxxing-hardening-target -j 1` - passed; 98 tests, 0 failures. The redirected verification completed successfully.
+- `npm run tauri:build` - passed locally and produced an unsigned v0.4.13 NSIS installer; local signing keys were intentionally absent, so signing remained in CI.
 - `git diff --check` - no whitespace errors; Git only reports expected LF/CRLF conversion warnings.
 - The isolated `node_modules` junction was temporarily restored for the web build and remains an untracked dependency link; isolated `src-tauri/target` does not exist after verification.
 
@@ -54,8 +55,10 @@ The original checkout's generated Rust target had consumed about 14 GB on C:. On
 - No signed installed-build smoke test, UAC test, reboot persistence test, or real NIC/Intel advanced-property test has been run.
 - No physical Fortnite benchmark or controlled P-core/E-core CPU-set A/B result exists.
 - No real NVPI export/import reproduction has been run in this isolated source pass; the actual NVIDIA Profile Inspector dialog still needs a field test on the NVIDIA PC.
-- No commit, push, release, deployment, or installed-client proof exists.
+- GitHub Actions release run `36222429397` passed in 9m36s. Public release `v0.4.13` is non-draft with the signed NSIS installer, `.sig`, and `latest.json`; the manifest reports version `0.4.13`.
+- MaxxTopia repository-dispatch sync `36222911785` and Cloudflare Pages deploy `36222929810` both passed. Cache-busted `https://maxxtopia.com/optimizationmaxxing/` now reports v0.4.13 and links the v0.4.13 installer.
+- The remaining proof boundary is on the user's NVIDIA Windows PC: signed installation/UAC, actual NVPI import/apply, real NIC/Intel advanced-property behavior, and reboot persistence have not been run here.
 
 ## Best next action
 
-Review this isolated diff, then build/install the signed candidate on the test PC. Apply a small reversible preset, capture the receipt, reboot, re-read every action, and test NVPI and NIC flows before any release decision. Keep the original dirty checkout separate until that field pass is complete.
+Install v0.4.13 on the test PC. Apply a small reversible preset, capture the receipt, reboot, re-read every action, and test NVPI and NIC flows. Keep the original dirty checkout separate until that field pass is complete.
