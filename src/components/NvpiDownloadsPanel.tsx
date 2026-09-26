@@ -44,12 +44,12 @@ const PROFILES: NipProfile[] = [
     settingsCount: 9,
     experimental: true,
     blurb:
-      'Nine-setting aggressive-but-standard driver experiment: high-performance filtering, FXAA/MFAA off, and texture-sample optimizations. It can add shimmer or image-quality loss; it does not remove foliage, clouds, terrain, or alter visibility.',
+      'Nine-setting aggressive-but-standard driver experiment for the same Fortnite profile as the latency baseline. Import only one Fortnite variant at a time; it can add shimmer or image-quality loss and does not remove foliage, clouds, terrain, or alter visibility.',
   },
   {
     filename: 'valorant.nip',
     label: 'Valorant',
-    exes: 'VALORANT-Win64-Shipping.exe, vgc.exe',
+    exes: 'VALORANT-Win64-Shipping.exe',
     settingsCount: 6,
     blurb: 'Six driver-profile settings for a controlled test. Not an anti-cheat approval or a guaranteed latency improvement.',
   },
@@ -141,11 +141,11 @@ export function NvpiDownloadsPanel() {
     >
       <div>
         <p className="text-[10px] uppercase tracking-widest text-accent">driver profile lab</p>
-        <h3 className="text-base font-semibold">Install NVPI, then import a profile</h3>
+        <h3 className="text-base font-semibold">NVPI setup — backup, import, verify, apply</h3>
         <p className="text-xs text-text-muted leading-snug mt-1 max-w-2xl">
           NVPI is the separate importer that applies these files. Optimizationmaxxing never
-          silently installs it or changes the NVIDIA driver database. Use the three steps below,
-          export your current profile first, and keep only results that survive a controlled test.
+          silently installs it or changes the NVIDIA driver database. Export your current profile
+          first so you have a rollback file, then follow the same order every time.
         </p>
         <p className="text-[11px] text-amber-200/90 leading-snug mt-2 max-w-2xl">
           These are driver profiles, not Fortnite file edits. We do not ship foliage/cloud/terrain
@@ -175,9 +175,20 @@ export function NvpiDownloadsPanel() {
           </a>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-text-muted leading-snug">
+          <p><strong className="text-text">Before step 2:</strong> In NVPI export the current Fortnite profile and keep that <code>.nip</code> as your backup.</p>
           <p><strong className="text-text">Step 2:</strong> Download one profile below; it saves as a <code>.nip</code> in your normal Downloads folder.</p>
-          <p><strong className="text-text">Step 3:</strong> In NVPI choose <strong className="text-text">File → Import Profile(s)</strong>, verify Fortnite, then click <strong className="text-text">Apply changes</strong>.</p>
+          <p><strong className="text-text">Step 3:</strong> In NVPI choose <strong className="text-text">File → Import Profile(s)</strong>. Select the file; do not paste its text into another field or double-click it.</p>
+          <p><strong className="text-text">Step 4:</strong> When NVPI asks <strong className="text-text">Merge or Replace</strong>, choose <strong className="text-text">Merge</strong> for a normal test. Import only one Fortnite variant, confirm the executable names, then click <strong className="text-text">Apply changes</strong>. Close and reopen NVPI and export again to verify.</p>
         </div>
+      </div>
+
+      <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 text-[11px] text-amber-100 leading-snug">
+        <strong>Common NVPI warnings:</strong>
+        <ul className="list-disc pl-4 mt-1 space-y-1">
+          <li><strong>Application already in use:</strong> that executable is assigned to a different profile. Cancel, remove the old duplicate assignment (often an older “Fortnite (optimizationmaxxing)” profile), then import the current file into the <strong>Fortnite</strong> profile. Never keep the same game executable in two profiles.</li>
+          <li><strong>Unknown format or XML error:</strong> re-download the file from the app and do not edit it in Word or a rich-text editor.</li>
+          <li><strong>Apply/write failed:</strong> run NVPI as Administrator and confirm the NVIDIA driver/GPU is supported. Keep your exported backup until the values survive a close/reopen.</li>
+        </ul>
       </div>
 
       <p className="text-[10px] uppercase tracking-widest text-text-subtle">step 2 · choose one profile</p>

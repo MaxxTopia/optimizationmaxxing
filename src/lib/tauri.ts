@@ -342,6 +342,12 @@ export async function applyTransaction(items: BatchItem[]): Promise<TransactionR
   return invoke<TransactionReport>('apply_transaction', { items })
 }
 
+/** Re-apply independent drifted tweaks with per-tweak verification and
+ * selective rollback. One stale setting no longer undoes unrelated repairs. */
+export async function applyRepairBatch(items: BatchItem[]): Promise<TransactionReport> {
+  return invoke<TransactionReport>('apply_repair_batch', { items })
+}
+
 export async function revertTweak(receiptId: string): Promise<void> {
   return invoke('revert_tweak', { receiptId })
 }

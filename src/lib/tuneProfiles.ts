@@ -16,6 +16,15 @@ export type TuneIntensity = 'light' | 'competitive' | 'aggressive' | 'extreme'
  */
 const NEVER_AUTO_APPLY_IDS = new Set([
   'process.cpu-mitigations.disable-DANGER',
+  'process.fault-tolerant-heap.disable',
+  'process.windows-update.auto-disable',
+  'process.microsoft-store.disable',
+  'process.background-apps.disable',
+  'process.sysmain.disable',
+  'process.windows-search.disable',
+  'network.delivery-optimization.peer-sharing.disable',
+  'power.device-idle.performance',
+  'privacy.lock-screen-spotlight.disable',
   'privacy.smartscreen.disable',
   'vbs.hvci.disable',
   'bcd.hypervisorlaunchtype.off',

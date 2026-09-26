@@ -102,12 +102,28 @@ export function CpuPinningSection() {
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-lg font-semibold">Game CPU Set experiment</h2>
-        <p className="text-sm text-text-muted max-w-3xl leading-snug">
-          Windows CPU Sets can guide a process toward selected processors; they do not reserve
-          cores or guarantee lower input delay. Leave the native scheduler as your baseline and
-          keep a narrower selection only if repeatable game captures improve.
-        </p>
+        <h2 className="text-lg font-semibold">Game CPU Sets (advanced experiment)</h2>
+        <div className="text-sm text-text-muted max-w-3xl leading-relaxed space-y-2">
+          <p>
+            A <strong className="text-text">CPU Set</strong> is Windows' name for one
+            schedulable logical processor thread. The count below is not a count of physical
+            cores. A CPU with 8 physical cores and SMT/Hyper-Threading enabled can expose 16
+            logical processors; a system with E-cores disabled may expose fewer.
+          </p>
+          <p>
+            IDs such as <code className="text-accent">56</code> are opaque Windows CPU Set
+            identifiers. They are not a performance score and are not the core number. Use the
+            <strong className="text-text"> P/E class</strong> and the <strong className="text-text">G/L</strong>
+            label (processor group / logical-processor position) to understand the topology.
+          </p>
+          <p>
+            <strong className="text-text">Best starting point:</strong> select all detected
+            CPU Sets, or press Restore native scheduler. That gives Windows freedom to place the
+            game. On a hybrid Intel CPU, test P-core-only as an A/B comparison only if you want
+            to investigate scheduling variance; it can reduce E-core involvement, but it can also
+            reduce available throughput or worsen frame times.
+          </p>
+        </div>
       </div>
 
       <div className="surface-card p-6 space-y-4">
@@ -120,8 +136,12 @@ export function CpuPinningSection() {
               <p className="text-[10px] uppercase tracking-widest text-text-subtle">detected rig</p>
               <p className="text-sm font-semibold text-text">{cpuLabel(cpu)}</p>
               <p className="text-xs text-text-muted">
-                {info.logicalProcessorCount} Windows CPU Sets
-                {info.isHybrid ? ` · heterogeneous classes detected` : ' · one processor class detected'}
+                {info.logicalProcessorCount} logical processors visible to Windows · {info.cpuSetIds.length} CPU Set IDs
+                {info.isHybrid ? ' · hybrid performance classes detected' : ' · one processor class detected'}
+              </p>
+              <p className="text-[11px] text-text-subtle mt-1">
+                If this count is lower than expected, check BIOS E-core/SMT settings and Windows
+                processor limits. The app reports what Windows exposes; it does not disable cores.
               </p>
             </div>
 
@@ -131,7 +151,7 @@ export function CpuPinningSection() {
                 disabled={busy}
                 className="px-3 py-1.5 rounded-md border border-border text-xs text-text-muted hover:text-text"
               >
-                Select all detected CPU Sets
+                Use all detected (native-equivalent baseline)
               </button>
               {info.isHybrid && info.highPerformanceIds.length > 0 && (
                 <button
@@ -140,7 +160,7 @@ export function CpuPinningSection() {
                   title="A/B test only: compare against the native scheduler with the same match, settings, and capture method."
                   className="px-3 py-1.5 rounded-md border border-emerald-500/40 text-xs text-emerald-300 hover:bg-emerald-500/10"
                 >
-                  Fortnite · P-core-only A/B test
+                  Test highest-performance class only
                 </button>
               )}
               <button
@@ -148,7 +168,7 @@ export function CpuPinningSection() {
                 disabled={busy}
                 className="px-3 py-1.5 rounded-md border border-border text-xs text-text-subtle hover:text-text"
               >
-                Clear selection
+                Clear pin / use native scheduler
               </button>
             </div>
 
@@ -190,7 +210,7 @@ export function CpuPinningSection() {
                 disabled={busy || selectedIds.length === 0}
                 className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold disabled:opacity-40"
               >
-                {busy ? 'Applying…' : 'Apply selected to foreground game'}
+                {busy ? 'Applying…' : 'Apply selection to focused game'}
               </button>
               <button
                 onClick={() => void applyToForeground([])}
@@ -200,7 +220,8 @@ export function CpuPinningSection() {
                 Restore native scheduler
               </button>
               <span className="text-[11px] text-text-subtle">
-                Focus the game first. An empty CPU Set list restores Windows defaults for that process.
+                Focus the game first. Empty means Windows default for that process; a selection is
+                soft guidance, not a reserved-core guarantee.
               </span>
             </div>
 
@@ -211,7 +232,7 @@ export function CpuPinningSection() {
                   {pinned.map((item) => (
                     <li key={item.pid} className="flex items-baseline justify-between gap-3 text-xs">
                       <span className="font-mono text-text">
-                        PID {item.pid} · {item.processName || '(unknown name)'} · CPU Set IDs [{item.cores.join(', ')}]
+                        PID {item.pid} · {item.processName || '(unknown name)'} · selected Windows IDs [{item.cores.join(', ')}]
                       </span>
                       <button
                         onClick={() => void clearPin(item.pid)}
@@ -263,7 +284,7 @@ function CpuSetGroup({
   return (
     <div className="space-y-1.5">
       <p className="text-[10px] uppercase tracking-widest text-text-subtle">
-        {title} · {sets.length}
+        {title} · {sets.length} logical processors
       </p>
       <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
         {sets.map((set) => {
@@ -273,14 +294,14 @@ function CpuSetGroup({
               key={`${set.group}-${set.id}`}
               onClick={() => onToggle(set.id)}
               disabled={disabled}
-              title={`CPU Set ID ${set.id} · group ${set.group} · logical processor ${set.logicalProcessorIndex} · core ${set.coreIndex} · efficiency class ${set.efficiencyClass}`}
+              title={`Windows CPU Set ID ${set.id}. Group ${set.group}, logical processor ${set.logicalProcessorIndex}, physical-core index ${set.coreIndex}, efficiency class ${set.efficiencyClass}. The ID is an identifier, not a speed rating.`}
               className={`px-2 py-1 text-[10px] rounded border font-mono text-center disabled:opacity-50 ${
                 selected
                   ? 'bg-accent text-bg-base border-accent'
                   : `bg-bg-card text-text-muted ${border} hover:border-border-glow`
               }`}
             >
-              ID {set.id}
+              <span className="block">ID {set.id}</span>
               <span className="block text-[9px] opacity-80">G{set.group} · LP{set.logicalProcessorIndex}</span>
             </button>
           )

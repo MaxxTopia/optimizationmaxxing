@@ -128,13 +128,25 @@ export function AutoPinSection() {
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="text-lg font-semibold">Auto-pin games (CPU Sets daemon)</h2>
-        <div className="text-sm text-text-muted max-w-3xl leading-snug space-y-2">
+        <h2 className="text-lg font-semibold">Automatic game CPU-set rules</h2>
+        <div className="text-sm text-text-muted max-w-3xl leading-relaxed space-y-2">
           <p>
-            Add Fortnite, choose <strong className="text-text">all detected CPU Sets</strong>
-            for the no-subset baseline or try the Intel P-core preset as an A/B test, then start
-            the daemon. It polls while this app is open; the saved rules return when the app is
-            reopened, but this is not a Windows service and does not start the app at boot.
+            This feature watches for the exact game process name and applies the saved CPU Set
+            selection when that process appears. A <strong className="text-text">CPU Set</strong>
+            is a Windows scheduler label for a logical processor thread; an ID such as 56 is not
+            a core number or a speed rating.
+          </p>
+          <p>
+            <strong className="text-text">How to use it:</strong> add Fortnite, keep
+            <strong className="text-text"> All detected sets</strong> as the baseline, then
+            press Start. You do not need to press Edit after the automatic choice. Use Edit only
+            to change the IDs manually or to run a P-core A/B test.
+          </p>
+          <p>
+            “Daemon” means a small background watcher inside this app. It polls every few seconds
+            while the app is open and enabled; it is not a Windows service and it does not launch
+            this app after a reboot. The rules are saved, but you must open the app before the
+            game (or add the app to Windows startup separately) for the watcher to run.
           </p>
         </div>
 
@@ -145,12 +157,12 @@ export function AutoPinSection() {
             background: 'rgba(255, 215, 0, 0.04)',
           }}
         >
-          <p className="font-semibold text-text mb-1">Fortnite preset</p>
+          <p className="font-semibold text-text mb-1">Fortnite starting choice</p>
           <p className="text-text-muted">
-            On Intel hybrid CPUs, the P-core button selects the IDs Windows actually reports.
-            It is an experiment, not a universal Fortnite optimization. Compare identical matches
-            and frametime captures against the all-CPU-Set baseline; keep whichever wins
-            repeatably. Other CPUs start with all detected CPU Sets.
+            Use all detected sets first. On Intel hybrid CPUs, the highest-performance button
+            selects the P-core class Windows actually reports. That is an optional experiment,
+            not a universal Fortnite recommendation. Compare identical matches and frametime
+            captures against the all-set baseline; keep the result only if it wins repeatedly.
           </p>
         </div>
 
@@ -161,11 +173,12 @@ export function AutoPinSection() {
             background: 'rgba(226, 91, 255, 0.05)',
           }}
         >
-          <p className="font-semibold text-text mb-1">Limits</p>
+          <p className="font-semibold text-text mb-1">What it changes</p>
           <p className="text-text-muted">
-            CPU Sets are soft scheduling guidance, not core reservations or a latency guarantee.
-            A title or anti-cheat may reject or override the request; use the native scheduler if
-            behavior changes or results do not improve.
+            The app calls Windows’ soft CPU-Set preference for matching processes. It does not
+            reserve cores, turn E-cores on or off, change BIOS settings, or promise lower input
+            delay. A title may ignore or override the preference; restore the native scheduler if
+            behavior or measurements get worse.
           </p>
         </div>
       </div>
@@ -174,9 +187,9 @@ export function AutoPinSection() {
 
         <div className="flex items-baseline justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-text-subtle">daemon</p>
+            <p className="text-[10px] uppercase tracking-widest text-text-subtle">background watcher</p>
             <p className="text-base font-semibold">
-              {config?.enabled ? (
+              {status?.running ? (
                 <span className="text-emerald-300">Running</span>
               ) : (
                 <span className="text-text-muted">Off</span>
@@ -222,7 +235,7 @@ export function AutoPinSection() {
         </div>
 
         <div className="space-y-2 pt-3 border-t border-border">
-          <p className="text-[10px] uppercase tracking-widest text-text-subtle">rules ({config?.rules.length ?? 0})</p>
+          <p className="text-[10px] uppercase tracking-widest text-text-subtle">saved rules ({config?.rules.length ?? 0})</p>
           {config?.rules.length === 0 && (
             <p className="text-xs text-text-subtle italic">
               No rules configured. Add a game from the quick-picker below or type a custom .exe name.
@@ -321,7 +334,19 @@ function RuleRow({
   onAutoPick: () => void
   onPcorePreset?: () => void
 }) {
-  const autoPickLabel = 'All detected sets'
+  const autoPickLabel = 'Use all detected'
+  const visibleCount = info?.cpuSetIds.length ?? 0
+  const selectedHighCount = info
+    ? rule.cores.filter((id) => info.highPerformanceIds.includes(id)).length
+    : 0
+  const selectionSummary =
+    visibleCount > 0 && rule.cores.length === visibleCount
+      ? `All ${visibleCount} detected logical processors`
+      : info?.isHybrid && selectedHighCount === info.highPerformanceIds.length && rule.cores.length === selectedHighCount
+        ? `Highest-performance class only (${selectedHighCount})`
+        : rule.cores.length > 0
+          ? `Custom subset (${rule.cores.length})`
+          : 'Native scheduler / no pin'
   return (
     <div className="border border-border rounded-md p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-3">
@@ -331,7 +356,8 @@ function RuleRow({
             {isPinned && <span className="text-[10px] text-emerald-300 ml-2">PINNED NOW</span>}
           </p>
           <p className="text-[11px] text-text-subtle">
-            CPU Set IDs [{rule.cores.join(', ')}]{' '}
+            <span className="text-text-muted">{selectionSummary}</span>{' · '}
+            Windows IDs [{rule.cores.join(', ')}]{' '}
             {rule.cores.length === 0 && <span className="text-amber-300">— no cores selected, won't pin</span>}
           </p>
         </div>
@@ -349,7 +375,12 @@ function RuleRow({
               Fortnite P-core test
             </button>
           )}
-          <button onClick={onEditToggle} disabled={busy} className="text-text-muted hover:text-text underline">
+          <button
+            onClick={onEditToggle}
+            disabled={busy}
+            title="Edit changes the selected Windows CPU Set IDs; it is not required after using the all-detected preset."
+            className="text-text-muted hover:text-text underline"
+          >
             {isEditing ? 'done' : 'edit'}
           </button>
           <button onClick={onRemove} disabled={busy} className="text-text-subtle hover:text-accent underline">
@@ -392,12 +423,12 @@ function CoreGrid({
     info.isHybrid
       ? [
           {
-            label: `Highest performance class (${info.highPerformanceIds.length})`,
+            label: `Highest-performance class / usually Intel P-cores (${info.highPerformanceIds.length})`,
             sets: info.cpuSets.filter((set) => highIds.has(set.id)),
             tag: 'high',
           },
           {
-            label: `Other efficiency classes (${info.lowerPerformanceIds.length})`,
+            label: `Other classes / usually Intel E-cores (${info.lowerPerformanceIds.length})`,
             sets: info.cpuSets.filter((set) => !highIds.has(set.id)),
             tag: 'other',
           },
@@ -407,7 +438,7 @@ function CoreGrid({
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between flex-wrap gap-2">
-        <p className="text-[10px] uppercase tracking-widest text-text-subtle">cores</p>
+        <p className="text-[10px] uppercase tracking-widest text-text-subtle">Windows CPU Set IDs</p>
         <div className="flex items-center gap-2 text-[10px]">
           {info.isHybrid && info.highPerformanceIds.length > 0 && (
             <button
@@ -435,6 +466,11 @@ function CoreGrid({
           </button>
         </div>
       </div>
+
+      <p className="text-[11px] text-text-subtle leading-snug">
+        IDs are labels assigned by Windows. G is the processor group and L is the logical
+        processor position inside that group; neither is an FPS or latency score.
+      </p>
 
       {sections.map((section) => (
         <div key={section.label} className="space-y-1">

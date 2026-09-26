@@ -4,11 +4,12 @@ import { auditMany, type TweakAudit } from '../lib/audit'
 import { catalog, type TweakRecord } from '../lib/catalog'
 import {
   applyBatch,
-  applyTransaction,
+  applyRepairBatch,
   inTauri,
   verifyApplied,
   type AppliedTweak,
   type BatchItem,
+  type TransactionReport,
 } from '../lib/tauri'
 import { confirmAction } from '../lib/confirm'
 import { isTransactionActionEligible } from '../lib/optimizationSession'
@@ -121,7 +122,9 @@ export function Diff() {
     setErr(null)
     try {
       const items: BatchItem[] = tweak.actions.map((action) => ({ tweakId: tweak.id, action }))
-      await applyReapplyItems(items)
+      const report = await applyReapplyItems(items)
+      const message = repairReportMessage(report)
+      if (message) setErr(`Re-apply completed with a partial result for ${tweak.title}: ${message}`)
       await refresh()
     } catch (e) {
       setErr(`Re-apply failed for ${tweak.title}: ${e instanceof Error ? e.message : String(e)}`)
@@ -155,7 +158,9 @@ export function Diff() {
           items.push({ tweakId: r.tweak.id, action })
         }
       }
-      await applyReapplyItems(items)
+      const report = await applyReapplyItems(items)
+      const message = repairReportMessage(report)
+      if (message) setErr(`Re-apply completed with a partial result: ${message}`)
       await refresh()
     } catch (e) {
       setErr(`Re-apply all failed: ${e instanceof Error ? e.message : String(e)}`)
@@ -419,19 +424,29 @@ function DiffRowCard({
   )
 }
 
-/** Re-apply the reversible/read-back lane transactionally. Legacy or
+/** Re-apply the reversible/read-back lane with per-tweak isolation. Legacy or
  * unverifiable PowerShell remains an explicit batch because the native engine
  * cannot honestly promise rollback for it. */
-async function applyReapplyItems(items: BatchItem[]): Promise<void> {
+async function applyReapplyItems(items: BatchItem[]): Promise<TransactionReport | null> {
   const transactional = items.filter((item) => isTransactionActionEligible(item.action))
   const explicit = items.filter((item) => !isTransactionActionEligible(item.action))
+  let report: TransactionReport | null = null
 
   if (transactional.length > 0) {
-    const report = await applyTransaction(transactional)
-    if (report.status !== 'committed') {
-      const detail = [...report.errors, ...report.rollbackErrors].join(' ')
-      throw new Error(`Verified re-apply ${report.status}.${detail ? ` ${detail}` : ''}`)
-    }
+    report = await applyRepairBatch(transactional)
   }
   if (explicit.length > 0) await applyBatch(explicit)
+  return report
+}
+
+function repairReportMessage(report: TransactionReport | null): string | null {
+  if (!report || report.status === 'committed') return null
+  const kept = report.items.filter(
+    (item) => item.applied && !item.rolledBack && item.verificationStatus === 'verified',
+  ).length
+  const reverted = report.items.filter((item) => item.rolledBack).length
+  const detail = [...report.errors, ...report.rollbackErrors].join(' ')
+  return `${kept} action${kept === 1 ? '' : 's'} verified and kept; ${reverted} action${
+    reverted === 1 ? '' : 's'
+  } reverted to the captured state.${detail ? ` ${detail}` : ''}`
 }

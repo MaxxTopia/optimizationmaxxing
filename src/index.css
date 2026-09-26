@@ -715,7 +715,8 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   font-weight: 700;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
-  font-size: 1rem;
+  font-size: 1.2rem;
+  line-height: 1.25;
 }
 .research-body h3,
 .research-body h4 {
@@ -723,10 +724,12 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   font-weight: 600;
   margin-top: 1rem;
   margin-bottom: 0.25rem;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
+  line-height: 1.35;
 }
 .research-body p {
-  margin: 0.5rem 0;
+  margin: 0.75rem 0;
+  line-height: 1.7;
 }
 .research-body ul,
 .research-body ol {
@@ -740,8 +743,9 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   list-style: decimal;
 }
 .research-body li {
-  margin: 0.15rem 0;
+  margin: 0.3rem 0;
   padding-left: 0.25rem;
+  line-height: 1.6;
 }
 .research-body code {
   background: var(--bg-raised);
@@ -762,14 +766,15 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
   width: 100%;
   margin: 0.75rem 0;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 .research-body th,
 .research-body td {
   border: 1px solid var(--border);
-  padding: 0.4rem 0.6rem;
+  padding: 0.6rem 0.7rem;
   text-align: left;
   vertical-align: top;
+  line-height: 1.5;
 }
 .research-body th {
   background: var(--bg-raised);

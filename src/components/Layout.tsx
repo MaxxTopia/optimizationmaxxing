@@ -17,7 +17,6 @@ const NAV_LINKS = [
   { to: '/toolkit', label: 'Toolkit' },
   { to: '/diagnostics', label: 'Diagnostics' },
   { to: '/match-scan', label: 'Match Scan' },
-  { to: '/session', label: 'Session' },
   { to: '/profile', label: 'Profile' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/settings', label: 'Settings' },

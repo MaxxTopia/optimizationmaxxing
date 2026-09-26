@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { GAMES, type GameId } from '../lib/games'
-import { getUpgradeTestGuide } from '../lib/upgradeAdvisor'
+import { getUpgradeRecommendations, getUpgradeTestGuide } from '../lib/upgradeAdvisor'
 import type { SpecProfile } from '../lib/tauri'
 
 /**
@@ -12,6 +12,7 @@ export function UpgradeAdvisor({ spec }: { spec: SpecProfile }) {
   const [gameId, setGameId] = useState<GameId>('fortnite')
   const game = GAMES.find((item) => item.id === gameId) ?? GAMES[0]
   const guide = getUpgradeTestGuide(gameId)
+  const recommendations = getUpgradeRecommendations(spec)
   const reportedMemorySpeed = spec.ram.configuredSpeedMts ?? spec.ram.speedMts
 
   return (
@@ -22,6 +23,32 @@ export function UpgradeAdvisor({ spec }: { spec: SpecProfile }) {
         Your scan identifies parts; it does not benchmark the game, detect every bottleneck, or
         predict an upgrade gain. Pick a game for a controlled comparison plan.
       </p>
+
+      <div className="mt-5 space-y-3">
+        <div>
+          <h3 className="text-base font-bold text-text">Potential upgrade paths for these parts</h3>
+          <p className="text-xs text-text-muted leading-relaxed mt-1">
+            These are decision paths, not a shopping list. Read the compatibility line first: a
+            CPU from another vendor normally requires a new motherboard, and often new memory.
+          </p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          {recommendations.map((recommendation) => (
+            <article key={recommendation.title} className="rounded-lg border border-border bg-bg-raised/40 p-4 space-y-2">
+              <h4 className="text-sm font-bold text-text">{recommendation.title}</h4>
+              <AdvisorLine label="Why" value={recommendation.why} />
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-text-subtle">Parts needed</p>
+                <ul className="mt-1 list-disc list-inside text-xs text-text-muted leading-relaxed">
+                  {recommendation.parts.map((part) => <li key={part}>{part}</li>)}
+                </ul>
+              </div>
+              <AdvisorLine label="Compatibility check" value={recommendation.compatibility} />
+              <AdvisorLine label="Best next step" value={recommendation.nextStep} />
+            </article>
+          ))}
+        </div>
+      </div>
 
       <label className="flex flex-col gap-1.5 mt-5 max-w-sm text-xs text-text-muted">
         Game
@@ -60,6 +87,14 @@ export function UpgradeAdvisor({ spec }: { spec: SpecProfile }) {
       </ul>
       <p className="text-[11px] text-text-subtle mt-3">If the measured difference is within run-to-run variation, save the money and keep the current part.</p>
     </section>
+  )
+}
+
+function AdvisorLine({ label, value }: { label: string; value: string }) {
+  return (
+    <p className="text-xs text-text-muted leading-relaxed">
+      <span className="font-semibold text-text">{label}:</span> {value}
+    </p>
   )
 }
 

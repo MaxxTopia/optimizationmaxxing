@@ -27,7 +27,7 @@ export type HardwareCategory =
 export type HardwareTier = 'goat' | 'pro' | 'budget' | 'principle'
 
 /** Copy review date; prices, stock, and player usage are not live data. */
-export const HARDWARE_COPY_REVIEWED = '2026-09-20'
+export const HARDWARE_COPY_REVIEWED = '2026-09-25'
 
 export interface HardwareItem {
   /** Display name. */
@@ -401,8 +401,8 @@ export const HARDWARE: HardwareSection[] = [
     items: [
       {
         name: 'Logitech G PRO X2 SUPERSTRIKE',
-        price: '$179.99 (checked Sep 20, 2026)',
-        priceUrl: 'https://www.logitechg.com/en-us/shop/p/pro-x2-superstrike-mouse.910-007700',
+        price: '$179.99 (checked Sep 25, 2026)',
+        priceUrl: 'https://www.logitechg.com/en-us/shop/p/pro-x2-superstrike-wireless-mouse',
         tier: 'goat',
         why:
           'Listed on Peterbot\'s ProSettings profile updated Aug 31, 2026. That is one player\'s current preference, not evidence of lower latency or a universal best mouse. Check current availability and compatibility before buying.',
@@ -427,13 +427,21 @@ export const HARDWARE: HardwareSection[] = [
         link: 'https://www.razer.com/gaming-mice/razer-viper-v3-pro',
       },
       {
-        name: 'Finalmouse UltralightX Prophecy',
-        price: '$199',
+        name: 'Razer DeathAdder V4 Pro',
+        price: '$169.99',
         tier: 'pro',
         why:
-          "**33g**, 8000 Hz, proprietary sensor, 3 sizes (classic / medium / small). The lightest serious competitive mouse you can buy. Configures entirely in your browser at **xpanel.finalmouse.com** — no driver install, no daemon to kill, settings save to the mouse. Same idea as Wooting's wootility-web for keyboards. Pick this if Synapse / G HUB / pulsarfusion eating background memory annoys you.",
-        link: 'https://finalmouse.com/products/ulx-pro-series-overview',
-        caveat: 'Finalmouse drops are notoriously limited — check stock before falling in love. Resale prices on out-of-stock SKUs get silly.',
+          'Current ergonomic flagship with a 56-58g body, Focus Pro sensor, and up to 8000 Hz wireless polling. A strong option when a right-handed palm/claw shape fits better than an ambidextrous Viper; shape and polling stability matter more than the headline number.',
+        link: 'https://www.razer.com/gaming-mice/razer-deathadder-v4-pro',
+      },
+      {
+        name: 'Finalmouse SLX Nightfall',
+        price: '$189-199 (stock varies)',
+        tier: 'pro',
+        why:
+          'The newer Finalmouse SLX family is the current Finalmouse reference here, with a lightweight shell, high-polling support, and browser-based configuration. It is a shape and availability choice, not proof of lower latency than a stable 1000 Hz mouse.',
+        link: 'https://finalmouse.com/products/slx-nightfall',
+        caveat: 'Finalmouse stock is limited and can change quickly; verify the exact size, price, warranty, and return policy before buying.',
       },
       {
         name: 'Pulsar X2 V2 / Lamzu Atlantis Mini',
@@ -498,13 +506,22 @@ export const HARDWARE: HardwareSection[] = [
       'Hall-effect / magnetic switches expose adjustable actuation and rapid-trigger behavior. They can change key feel and release timing, but the useful result depends on the game, firmware, settings, and your control; no fixed millisecond gain is guaranteed.',
     items: [
       {
-        name: 'Wooting 60HE+ / Wooting 80HE',
+        name: 'Wooting 60HE v2 / 80HE+',
         price: '$200-260',
         tier: 'goat',
         why:
           'Magnetic switches with adjustable actuation and rapid-trigger features. These change key behavior, not guaranteed Fortnite input latency; follow current game rules for SOCD/snap-tap features and configure only permitted options.',
-        link: 'https://wooting.io/wooting-60he',
-        caveat: '60HE+ is sometimes hard to source US-side — wooting.io ships from EU. 80HE has wider US retail.',
+        link: 'https://wooting.io/',
+        caveat: 'Compare the current 60HE v2 and 80HE+ by layout, stock, and firmware feature set before ordering.',
+      },
+      {
+        name: 'Razer Huntsman V3 HE Magnetic 8KHz',
+        price: '$199.99',
+        tier: 'goat',
+        why:
+          'Current Hall-effect option with adjustable actuation, Rapid Trigger, and true 8000 Hz polling. A serious alternative to Wooting when the layout, switch feel, and Razer ecosystem fit; the feature list alone is not a measured Fortnite advantage.',
+        link: 'https://www.razer.com/gaming-keyboards/razer-huntsman-v3-pro-8khz',
+        caveat: 'Check the exact V3 HE size/layout and current firmware before purchase; competitive rule sets can restrict input-manipulation features.',
       },
       {
         name: 'SteelSeries Apex Pro TKL Gen 3',

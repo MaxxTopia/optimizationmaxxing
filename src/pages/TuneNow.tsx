@@ -695,6 +695,12 @@ function ReadyState({
             look like a tweak that did not stick.
           </p>
         )}
+        {preflight?.pendingReboot && !preflight.windowsUpdateActive && (
+          <p className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100">
+            <strong className="text-amber-200">Pending Windows restart:</strong> Tune Now can apply.
+            Restart before checking reboot persistence so Windows can finish the pending update.
+          </p>
+        )}
       </section>
 
       <section className="surface-card p-5 space-y-3">

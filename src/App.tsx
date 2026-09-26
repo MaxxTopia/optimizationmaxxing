@@ -126,6 +126,8 @@ export default function App() {
           <Route path="/changelog" element={<Changelog />} />
           <Route path="/diagnostics" element={<Diagnostics />} />
           <Route path="/match-scan" element={<MatchScan />} />
+          {/* Optional recovery utility; deliberately hidden from primary navigation because it is
+              not a required optimization step and suspending processes is user-controlled. */}
           <Route path="/session" element={<Session />} />
         </Routes>
         <WhatsNewModal />

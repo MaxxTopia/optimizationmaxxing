@@ -29,10 +29,12 @@ export const PRESETS: PresetBundle[] = [
     glyph: '⚡',
     tagline: 'Latency-focused · ranked matches',
     description:
-      'A measured-core bundle for ranked play: max refresh rate, mouse acceleration off, Game DVR off, and sticky-keys protection. Device interrupts, boot flags, security changes, and other experiments stay out of this default lane.',
+      'A measured-core bundle for ranked play: max refresh rate, the named Ultimate Performance desktop plan, mouse acceleration off, Game Mode on, Game DVR off, and sticky-keys protection. Device interrupts, boot flags, security changes, and other experiments stay out of this default lane.',
     tweakIds: [
       'display.refresh.maximize',
+      'ps.power.dt-tournament',
       'ui.mouse.disable-acceleration',
+      'ui.gamemode.enable',
       'ui.gamedvr.disable',
       'ui.sticky-keys.disable',
     ],
@@ -45,11 +47,10 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🎯',
     tagline: 'Max FPS · stable 1% lows · endgame stability',
     description:
-      'Frees the resources that actually spike in endgame storms: RGB-software DPC/RAM tax killed, Windows Search indexer off, Game DVR off, game pinned to High priority. v1.9.0: dropped MMCSS GPU-priority + visual-fx + SystemResponsiveness — efficacy audit found these don\'t reach the game (folklore / desktop-only).',
+      'Frees the resources that actually spike in endgame storms: RGB-software DPC/RAM tax reduced, Game DVR off, and the game pinned to High priority. Windows Search remains opt-in because selective indexing is safer than disabling it globally. v1.9.0: dropped MMCSS GPU-priority + visual-fx + SystemResponsiveness — efficacy audit found these don\'t reach the game (folklore / desktop-only).',
     tweakIds: [
       'ui.gamedvr.disable',
       'peripherals.rgb-control-apps.autostart-disable',
-      'process.windows-search.disable',
       'process.fortnite.priority-high',
     ],
     vipGate: 'vip',

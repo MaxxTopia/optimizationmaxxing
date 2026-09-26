@@ -388,6 +388,33 @@ export function NetworkAuditCard() {
         </p>
       </div>
 
+      <div className="rounded-md border border-sky-400/30 bg-sky-400/5 p-3 space-y-2">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest text-sky-200 font-semibold">
+            Ethernet adapter baseline
+          </p>
+          <p className="text-xs text-text-muted leading-relaxed mt-1">
+            Do not uncheck every binding. The safe baseline is IPv4, IPv6 when your network uses it,
+            Client for Microsoft Networks when you use file shares, and QoS Packet Scheduler
+            (ms_pacer). VPN, Hyper-V, WSL, VirtualBox, Teaming, and vendor filter bindings are
+            optional: disable them only when you know that feature is unused and have recorded how
+            to restore it.
+          </p>
+        </div>
+        <div className="grid gap-1.5 text-[11px] leading-relaxed sm:grid-cols-2">
+          <p><span className="text-emerald-300 font-semibold">Keep on:</span> RSS; Speed &amp; Duplex = Auto Negotiation; IPv4/IPv6 and QoS bindings that your network uses.</p>
+          <p><span className="text-amber-200 font-semibold">Good desktop test:</span> Energy Efficient Ethernet / Green Ethernet off if you see link wake stalls or hitching.</p>
+          <p><span className="text-text font-semibold">Leave default first:</span> checksum offload, LSO, receive/transmit buffers, flow control, and interrupt moderation. These are workload/driver dependent, not universal latency wins.</p>
+          <p><span className="text-text font-semibold">Usually off unless needed:</span> Jumbo Frames, VLAN/Priority tagging, and unused VPN/virtual-switch filters. Jumbo Frames must match the whole LAN.</p>
+        </div>
+        <p className="text-[10px] text-text-subtle leading-relaxed border-t border-sky-400/20 pt-2">
+          For Intel Ethernet Controller advanced properties, start with the Intel driver defaults,
+          RSS enabled, Auto Negotiation, and EEE off only on a wired desktop you can test. The
+          explicit NIC tweaks below change only named properties; they do not silently remove
+          bindings or touch virtual adapters.
+        </p>
+      </div>
+
       {err && <p className="text-xs text-red-300">Probe failed: {err}</p>}
 
       {audit && checks.length > 0 && (

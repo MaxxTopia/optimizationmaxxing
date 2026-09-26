@@ -484,7 +484,6 @@ export function Asta() {
             {preflight?.blocksAutoApply && (
               <div className="mt-3 rounded-md border border-red-500/50 bg-red-500/10 px-3 py-2 text-xs text-red-100 leading-snug">
                 <strong className="text-red-200">Windows stability gate:</strong> {preflight.detail}{' '}
-                Finish the update and re-scan before activating Asta Mode.
                 <button
                   type="button"
                   onClick={() => {
@@ -497,9 +496,17 @@ export function Asta() {
               </div>
             )}
 
+            {preflight?.pendingReboot && !preflight.windowsUpdateActive && (
+              <div className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-snug">
+                <strong className="text-amber-200">Pending Windows restart:</strong> Asta can apply now.
+                Restart before using the reboot-persistence check so Windows can finish the pending update.
+              </div>
+            )}
+
             {preflight &&
               !preflight.blocksAutoApply &&
-              preflight.buildChangedSinceLastApply && (
+              preflight.buildChangedSinceLastApply &&
+              !preflight.pendingReboot && (
                 <div className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-snug">
                   <strong className="text-amber-200">The OS build differs from the last recorded tune.</strong>{' '}
                   This can follow Windows servicing or a reinstall; the app cannot identify what

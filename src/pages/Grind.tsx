@@ -1,9 +1,19 @@
 import { useMemo, useState } from 'react'
 import { GRIND_ENTRIES, GRIND_LAST_REVIEWED, type GrindEntry, type GrindKind } from '../lib/grind'
 
+/**
+ * /grind — curated knowledge channel from the pros + creators who actually
+ * know what it costs. Receipts of how the people you're chasing actually
+ * train. Per-entry: credential + voice + cited insights + rig snapshot
+ * when public.
+ *
+ * Tier visual weight: 'goat' gets the centerpiece treatment (Peterbot today).
+ * 'top' gets normal cards. 'standard' is reserved for future scaling-down
+ * entries we add but don't want hogging top-of-page.
+ */
 const KINDS: Array<{ id: GrindKind | 'all'; label: string }> = [
   { id: 'all', label: 'all' },
-  { id: 'pro', label: 'players' },
+  { id: 'pro', label: 'pros' },
   { id: 'creator', label: 'creators' },
 ]
 
@@ -16,168 +26,259 @@ export function Grind() {
     return GRIND_ENTRIES.filter((entry) => {
       if (kind !== 'all' && entry.kind !== kind) return false
       if (!normalized) return true
-      const snapshotText = entry.snapshot
-        ? Object.entries(entry.snapshot).map(([key, value]) => `${key} ${value}`).join(' ')
-        : ''
       const haystack = [
         entry.name,
-        entry.summary,
-        entry.result?.event,
-        entry.result?.placement,
-        entry.snapshot?.mouse,
-        entry.snapshot?.keyboard,
-        entry.snapshot?.monitor,
-        snapshotText,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
+        entry.credential,
+        entry.voice,
+        entry.games.join(' '),
+        ...entry.insights.map((insight) => insight.text),
+      ].join(' ').toLowerCase()
       return haystack.includes(normalized)
     })
   }, [kind, query])
 
+  const goat = filtered.find((e) => e.tier === 'goat')
+  const rest = filtered.filter((e) => e.tier !== 'goat')
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <header>
-        <p className="text-xs uppercase tracking-[0.25em] text-accent font-bold">competitive reference</p>
+        <p className="text-xs uppercase tracking-[0.25em] text-accent font-bold">channel</p>
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-accent via-secondary to-accent bg-clip-text text-transparent">
           Grind
         </h1>
-        <p className="text-sm md:text-base text-text-muted max-w-3xl mt-2 leading-relaxed">
-          Dated player results and public gear snapshots. Event finishes are not season rankings;
-          gear settings are references, not proof of lower latency or better performance.
+        <p className="text-text text-base md:text-lg max-w-2xl mt-2 leading-relaxed font-medium">
+          <span className="text-accent font-bold">Receipts. Not vibes.</span> Curated insights from
+          documented pros + creators — what they did, what is transferable, and what is only a
+          historical or personal choice.
         </p>
-        <p className="text-[11px] text-text-subtle mt-2">
-          Source review: <time dateTime={GRIND_LAST_REVIEWED}>{GRIND_LAST_REVIEWED}</time>
+        <p className="text-[11px] text-text-subtle mt-2 leading-snug">
+          Reviewed <span className="font-mono text-accent">{GRIND_LAST_REVIEWED}</span>. We favor
+          official event records, direct interviews, config databases, and linked primary sources;
+          stale claims stay labeled instead of being presented as live meta.
         </p>
       </header>
 
-      <nav className="flex flex-wrap gap-2 items-center" aria-label="Filter Grind entries">
-        {KINDS.map((item) => (
+      <nav className="flex flex-wrap gap-2 items-center">
+        {KINDS.map((k) => (
           <button
-            key={item.id}
-            type="button"
-            aria-pressed={kind === item.id}
-            onClick={() => setKind(item.id)}
+            key={k.id}
+            onClick={() => setKind(k.id)}
             className={`px-3 py-1.5 rounded-md text-xs uppercase tracking-widest transition border ${
-              kind === item.id
+              kind === k.id
                 ? 'bg-accent text-bg-base border-accent'
                 : 'bg-bg-card text-text-muted border-border hover:border-border-glow hover:text-text'
             }`}
           >
-            {item.label}
+            {k.label}
           </button>
         ))}
         <label className="flex-1 min-w-[220px] md:max-w-sm md:ml-auto">
-          <span className="sr-only">Search players, events, and equipment</span>
+          <span className="sr-only">Search Grind</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search players, events, or gear"
+            placeholder="Search a player, game, or lesson"
             className="w-full px-3 py-1.5 rounded-md bg-bg-card border border-border text-xs text-text outline-none focus:border-border-glow"
           />
         </label>
       </nav>
 
-      <div className="space-y-3">
-        {filtered.map((entry) => <PlayerCard key={entry.id} entry={entry} />)}
+      {goat && kind === 'all' && <GoatCard entry={goat} />}
+
+      <div className="space-y-4">
+        {rest.map((e) => (
+          <GrindCard key={e.id} entry={e} />
+        ))}
+        {kind !== 'all' && goat && <GrindCard entry={goat} />}
         {filtered.length === 0 && (
-          <div className="surface-card p-5 text-sm text-text-muted">
-            No entries match that search.
+          <div className="surface-card p-6 text-sm text-text-muted">
+            No sourced entries match that search. Try a player, game, or lesson keyword.
           </div>
         )}
+      </div>
+
+      <p className="text-[11px] text-text-subtle pt-3 border-t border-border leading-snug">
+        Want a creator added? Drop the name + a link to one cited interview where they say
+        something concrete. We don\'t add anyone whose insights we can\'t source.
+      </p>
+    </div>
+  )
+}
+
+function GoatCard({ entry }: { entry: GrindEntry }) {
+  return (
+    <section
+      className="surface-card p-6 md:p-8 relative overflow-hidden"
+      style={{
+        borderColor: 'rgba(255, 215, 0, 0.45)',
+        boxShadow: '0 0 28px rgba(255, 215, 0, 0.18)',
+      }}
+    >
+      <div className="hero-gradient pointer-events-none opacity-40" />
+      <div className="relative">
+        <p
+          className="text-[10px] uppercase tracking-widest mb-1 font-semibold inline-flex items-center gap-1 px-1.5 py-0.5 rounded"
+          style={{
+            background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #cc9900 100%)',
+            color: '#3a2a00',
+            border: '1px solid rgba(255, 215, 0, 0.65)',
+          }}
+        >
+          <span aria-hidden="true">👑</span> THE GOAT
+        </p>
+        <h2 className="text-3xl md:text-4xl font-bold mt-2">{entry.name}</h2>
+        <p className="text-sm text-text-muted mt-1">{entry.credential}</p>
+        <p className="text-base text-text mt-4 leading-relaxed max-w-3xl italic">
+          "{entry.voice}"
+        </p>
+        <RigSnapshot entry={entry} />
+        <Routine entry={entry} />
+        <Insights entry={entry} />
+        {entry.link && (
+          <a
+            href={entry.link}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block mt-4 text-xs underline hover:text-text text-accent"
+          >
+            {entry.link} ↗
+          </a>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function GrindCard({ entry }: { entry: GrindEntry }) {
+  return (
+    <article className="surface-card p-5 space-y-3 border-l-4 border-l-accent">
+      <div className="flex items-baseline justify-between gap-3 flex-wrap">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold">
+            {entry.kind} · {entry.games.join(' · ')}
+          </p>
+          <h3 className="text-2xl font-extrabold tracking-tight">{entry.name}</h3>
+          <p className="text-sm text-text-muted font-medium">{entry.credential}</p>
+        </div>
+        {entry.link && (
+          <a
+            href={entry.link}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[11px] underline hover:text-text text-accent"
+          >
+            visit ↗
+          </a>
+        )}
+      </div>
+      <p className="text-base md:text-lg text-text leading-relaxed italic font-medium border-l-2 border-accent pl-3">
+        "{entry.voice}"
+      </p>
+      <RigSnapshot entry={entry} />
+      <Routine entry={entry} />
+      <Insights entry={entry} />
+    </article>
+  )
+}
+
+function Routine({ entry }: { entry: GrindEntry }) {
+  const r = entry.dailyRoutine
+  if (!r) return null
+  const blocks: Array<{ label: string; items?: string[] }> = [
+    { label: 'morning', items: r.morning },
+    { label: 'afternoon', items: r.afternoon },
+    { label: 'evening', items: r.evening },
+    { label: 'recovery', items: r.recovery },
+  ].filter((b) => b.items && b.items.length > 0)
+  if (blocks.length === 0) return null
+  return (
+    <details className="pt-3 border-t border-border group">
+      <summary className="cursor-pointer text-[11px] uppercase tracking-widest text-text-subtle hover:text-text flex items-center gap-2 select-none">
+        <span aria-hidden="true">⏱</span> Daily routine
+        <span className="text-text-subtle group-open:hidden">+</span>
+        <span className="text-text-subtle hidden group-open:inline">−</span>
+      </summary>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+        {blocks.map((b) => (
+          <div key={b.label}>
+            <p className="text-[10px] uppercase tracking-widest text-accent font-semibold mb-1">{b.label}</p>
+            <ul className="space-y-1 text-xs text-text-muted leading-snug">
+              {b.items!.map((it, i) => (
+                <li key={i} className="flex gap-1.5">
+                  <span className="text-text-subtle shrink-0">·</span>
+                  <span>{it}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </details>
+  )
+}
+
+function RigSnapshot({ entry }: { entry: GrindEntry }) {
+  if (!entry.rig) return null
+  const items = [
+    entry.rig.dpi && { label: 'DPI', value: entry.rig.dpi },
+    entry.rig.sensitivity && { label: 'Sens', value: entry.rig.sensitivity },
+    entry.rig.pollingHz && { label: 'Poll', value: `${entry.rig.pollingHz} Hz` },
+    entry.rig.monitor && { label: 'Monitor', value: entry.rig.monitor },
+    entry.rig.controller && { label: 'Controller', value: entry.rig.controller },
+    entry.rig.mouse && { label: 'Mouse', value: entry.rig.mouse },
+    entry.rig.keyboard && { label: 'Keyboard', value: entry.rig.keyboard },
+  ].filter(Boolean) as Array<{ label: string; value: string }>
+  if (items.length === 0) return null
+  return (
+    <div className="pt-3 border-t border-border">
+      <div className="flex items-baseline justify-between gap-3 flex-wrap mb-2">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold">Setup / settings</p>
+          <p className="text-xs text-text-muted leading-relaxed">A dated public configuration snapshot — useful for context, not a universal performance prescription.</p>
+        </div>
+        <span className="text-[10px] uppercase tracking-widest text-text-subtle">reported gear</span>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+        {items.map((it) => (
+          <div key={it.label} className="min-w-0">
+            <p className="text-[10px] uppercase tracking-widest text-accent font-bold">{it.label}</p>
+            <p className="text-sm text-text font-bold leading-snug break-words">{it.value}</p>
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-function PlayerCard({ entry }: { entry: GrindEntry }) {
+function Insights({ entry }: { entry: GrindEntry }) {
+  if (!entry.insights || entry.insights.length === 0) return null
   return (
-    <article className="surface-card p-5 space-y-4 border-l-4 border-l-accent">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold">
-            {entry.kind === 'pro' ? 'player' : 'creator'}
-          </p>
-          <h2 className="text-2xl font-extrabold tracking-tight">{entry.name}</h2>
-          <p className="text-sm text-text-muted">{entry.summary}</p>
-        </div>
-        {entry.profileUrl && (
-          <SourceLink href={entry.profileUrl} label={entry.profileLabel ?? 'Profile'} />
-        )}
-      </div>
-
-      {entry.result && (
-        <section className="pt-3 border-t border-border" aria-label={`${entry.name} event result`}>
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-[10px] uppercase tracking-widest text-accent font-bold">
-              Event result
-            </h3>
-            <time className="text-[11px] text-text-subtle" dateTime={entry.result.date}>
-              {entry.result.date}
-            </time>
-          </div>
-          <p className="text-sm font-semibold text-text mt-1">{entry.result.event}</p>
-          <p className="text-sm text-text">{entry.result.placement}</p>
-          <p className="text-[11px] text-text-subtle mt-1">{entry.result.context}</p>
-          <SourceLink href={entry.result.sourceUrl} label={entry.result.sourceLabel} />
-        </section>
-      )}
-
-      {entry.snapshot && <GearSnapshot entry={entry} />}
-    </article>
-  )
-}
-
-function GearSnapshot({ entry }: { entry: GrindEntry }) {
-  const snapshot = entry.snapshot
-  if (!snapshot) return null
-
-  const items: Array<{ label: string; value?: string | number }> = [
-    { label: 'DPI', value: snapshot.dpi },
-    { label: 'Polling', value: snapshot.pollingHz ? `${snapshot.pollingHz} Hz` : undefined },
-    { label: 'Sensitivity', value: snapshot.sensitivity },
-    { label: 'Monitor', value: snapshot.monitor },
-    { label: 'Mouse', value: snapshot.mouse },
-    { label: 'Keyboard', value: snapshot.keyboard },
-    { label: 'Controller', value: snapshot.controller },
-  ].filter((item) => item.value !== undefined)
-
-  return (
-    <section className="pt-3 border-t border-border" aria-label={`${entry.name} dated gear snapshot`}>
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-[10px] uppercase tracking-widest text-accent font-bold">
-          Public gear snapshot
-        </h3>
-        <time className="text-[11px] text-text-subtle" dateTime={snapshot.updatedAt}>
-          Profile date: {snapshot.updatedAt}
-        </time>
-      </div>
-      <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2 mt-2">
-        {items.map((item) => (
-          <div key={item.label}>
-            <dt className="text-[10px] uppercase tracking-widest text-text-subtle">{item.label}</dt>
-            <dd className="text-xs text-text font-medium">{item.value}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="text-[11px] text-text-subtle mt-2">
-        A dated profile entry; equipment and settings can change and are not a performance test.
-      </p>
-      <SourceLink href={snapshot.sourceUrl} label={snapshot.sourceLabel} />
-    </section>
-  )
-}
-
-function SourceLink({ href, label }: { href: string; label: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-block mt-2 text-[11px] underline text-accent hover:text-text"
-    >
-      {label} ↗
-    </a>
+    <ul className="space-y-3 mt-4">
+      {entry.insights.map((ins, i) => (
+        <li key={i} className="flex gap-3 text-[15px] md:text-base text-text leading-relaxed font-medium">
+          <span className="text-accent text-lg leading-none shrink-0" aria-hidden="true">▸</span>
+          <span>
+            {ins.text}
+            {ins.citation && (
+              <span className="block text-[11px] text-text-subtle mt-0.5">
+                — {ins.citation.url ? (
+                  <a
+                    href={ins.citation.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline hover:text-text"
+                  >
+                    {ins.citation.label} ↗
+                  </a>
+                ) : (
+                  ins.citation.label
+                )}
+              </span>
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
   )
 }

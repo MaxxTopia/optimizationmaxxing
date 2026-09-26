@@ -38,10 +38,13 @@ pub struct TunePreflight {
 /// A pure policy helper kept separate from registry/process reads so the gate
 /// remains easy to test and its blocking contract stays obvious.
 pub fn should_hold_auto_apply(
-    pending_reboot: bool,
+    _pending_reboot: bool,
     windows_update_active: bool,
 ) -> bool {
-    pending_reboot || windows_update_active
+    // A pending restart is a persistence warning, not an active race. The
+    // user explicitly asked to tune now; only an installer currently writing
+    // state should block that action.
+    windows_update_active
 }
 
 pub fn read(state: &SnapshotStore) -> TunePreflight {
@@ -81,24 +84,14 @@ pub fn read(state: &SnapshotStore) -> TunePreflight {
         matches!((os_build, last_applied_build), (Some(now), Some(last)) if now != last);
     let blocks_auto_apply = should_hold_auto_apply(pending_reboot, windows_update_active);
 
-    let mut reasons = Vec::new();
-    if pending_reboot {
-        reasons.push("Windows has a pending restart from an update or installer");
-    }
-    if windows_update_active {
-        reasons.push("Windows Update is actively installing or uninstalling an update");
-    }
-    let detail = if reasons.is_empty() {
-        if build_changed_since_last_apply {
-            "The OS build differs from the last recorded tune, but no update installation or pending restart is detected. The cause is unknown; re-applying can proceed after checking live state, then verify persistence after reboot.".into()
-        } else {
-            "No pending Windows restart or active Windows Update installation was detected. Updates that are merely available or queued do not block Asta.".into()
-        }
+    let detail = if windows_update_active {
+        "Automatic tuning is paused because Windows Update is actively installing or uninstalling an update. Wait for that operation to finish, then re-scan before applying tweaks.".into()
+    } else if pending_reboot {
+        "Windows has a pending restart from an update or installer. Asta can apply now; restart before checking reboot persistence so Windows can finish the pending work.".into()
+    } else if build_changed_since_last_apply {
+        "The OS build differs from the last recorded tune, but no update installation or pending restart is detected. The cause is unknown; re-applying can proceed after checking live state, then verify persistence after reboot.".into()
     } else {
-        format!(
-            "Automatic tuning is paused because {}. Finish Windows Update, restart if requested, then re-scan before applying tweaks.",
-            reasons.join("; ")
-        )
+        "No active Windows Update installation was detected. Updates that are merely available or queued do not block Asta.".into()
     };
 
     TunePreflight {
@@ -174,8 +167,8 @@ mod tests {
     }
 
     #[test]
-    fn pending_update_blocks() {
-        assert!(should_hold_auto_apply(true, false));
+    fn pending_restart_is_advisory() {
+        assert!(!should_hold_auto_apply(true, false));
     }
 
     #[test]

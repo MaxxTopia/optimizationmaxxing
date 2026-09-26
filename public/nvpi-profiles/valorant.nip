@@ -4,7 +4,6 @@
     <ProfileName>VALORANT</ProfileName>
     <Executeables>
       <string>VALORANT-Win64-Shipping.exe</string>
-      <string>vgc.exe</string>
     </Executeables>
     <Settings>
       <ProfileSetting>

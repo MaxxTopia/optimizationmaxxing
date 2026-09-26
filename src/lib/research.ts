@@ -285,9 +285,9 @@ export const RESEARCH: ResearchArticle[] = [
   // ── Tier 3: niche / troubleshooting ──────────────────────────────────
   {
     id: 'winring0-av-exclusion',
-    title: 'AV blocking WinRing0 / LHM? Add this exclusion',
+    title: 'WinRing0 blocked — what it is and what to check',
     blurb:
-      "If Live Thermals shows 'probe failed' or CPU package temp won't appear after Enable, your AV is blocking the WinRing0 driver. Add-MpPreference snippet inside.",
+      'WinRing0 is the privileged sensor driver used for CPU package temperature and voltage readings. Start with the narrowest vendor-approved allow rule; keep fallback sensors if you do not trust it.',
     badge: 'TROUBLESHOOTING',
     body: winring0AvExclusion,
   },
@@ -322,15 +322,15 @@ export const RESEARCH: ResearchArticle[] = [
   },
   {
     id: 'os-comparison',
-    title: 'Lightweight Windows distros — Atlas, X-Lite, Tiny11, Ghost Spectre, ReviOS',
+    title: 'Custom OS review — Fortnite benchmarks',
     blurb:
-      'Side-by-side: anticheat compat, update story, idle RAM, install effort, recommended-for. Includes our verdict on whether building a maxxer-OS makes sense.',
+      'A short comparison table and a repeatable Fortnite benchmark sheet for stock Windows, Atlas, X-Lite, Tiny11, Ghost Spectre, ReviOS, and IoT LTSC.',
     badge: 'OS',
     body: osComparison,
     perGameCallouts: {
-      fortnite: 'EAC behavior varies by build; tournament rigs should start from a supported, fully patched Windows 11 install and verify Epic\'s current requirements.',
-      valorant: 'Vanguard commonly requires Secure Boot + TPM on Windows 11. Stripped builds may remove them or alter updates — verify the actual install before ranked play.',
-      cs2: 'VAC is permissive — any distro works. CS2 is GPU-bound; lightweight OS gain is small.',
+      fortnite: 'Run the same Creative route three times on each image and compare average FPS, 1% lows, and P95 frame time.',
+      valorant: 'Use the same method for Valorant if it is part of your rig; record launch, update, and ranked-play behavior separately from FPS.',
+      cs2: 'Use the same demo or workshop run; a synthetic OS score is not a CS2 frame-time result.',
     },
   },
 ]

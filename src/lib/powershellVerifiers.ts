@@ -28,6 +28,8 @@ export const POWERSHELL_VERIFIERS: Record<string, string> = {
     "$found=0; foreach($a in @(Get-NetAdapter -Physical | Where-Object Status -eq 'Up')){$r=Get-NetAdapterRss -Name $a.Name -ErrorAction Stop; if(-not $r -or -not [bool]$r.Enabled){exit 1}; $found++}; if($found -gt 0){exit 0}; exit 1",
   'process.core-parking.disable':
     "$q=powercfg /query SCHEME_CURRENT SUB_PROCESSOR 0cc5b647-c1df-4637-891a-dec35c318583 | Out-String; if([regex]::Matches($q,'0x00000064').Count -ge 2){exit 0}; exit 1",
+  'power.device-idle.performance':
+    "$q=powercfg /query SCHEME_CURRENT SUB_NONE 4faab71a-92e5-4726-b531-224559672d19 | Out-String; if([regex]::Matches($q,'0x00000000').Count -ge 2){exit 0}; exit 1",
   'power.pcie.link-state.off':
     "$q=powercfg /query SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 | Out-String; if([regex]::Matches($q,'0x00000000').Count -ge 2){exit 0}; exit 1",
   'power.usb3.link-power.disable':

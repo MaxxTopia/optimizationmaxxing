@@ -95,19 +95,21 @@ export function ResearchCard({
       </button>
       {open && (
         <div className="px-5 pb-5 space-y-4">
-          {/* Quick Noob-Friendly Summary & Evidence Card */}
+          {/* Readable summary: do not imply that every article contains a measured benchmark. */}
           <div className="rounded-md border border-accent/30 bg-accent/5 p-3.5 space-y-1.5 text-xs">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <span className="text-[10px] uppercase tracking-widest text-accent font-semibold flex items-center gap-1">
-                🔰 Quick TL;DR & Evidence
+                Quick summary
               </span>
-              <span className="text-[10px] text-text-subtle">Verified 2026 Gaming Standard</span>
+              <span className="text-[10px] text-text-subtle">Read the evidence below</span>
             </div>
             <p className="text-text font-medium leading-snug">
               {article.blurb}
             </p>
             <p className="text-text-muted leading-snug text-[11px]">
-              <strong className="text-text">Why it matters:</strong> Tested & benchmarked on competitive titles (Fortnite, Valorant, CS2). Follow the step-by-step breakdown below for exact clicks.
+              <strong className="text-text">Use:</strong> Follow the steps below. A measured
+              result is shown only when this guide or the local lab contains one; otherwise this
+              is guidance, not a performance claim.
             </p>
           </div>
 

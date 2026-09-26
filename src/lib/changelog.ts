@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.13',
+    date: '2026-09-25',
+    highlights: [
+      'IMPROVE **Hardening is clearer and safer.** Re-apply verifies each eligible tweak and reports selective rollback instead of treating drift as a mystery failure; Windows Update and pending-restart states are explained before changes run.',
+      'IMPROVE **CPU-set and network guidance.** Windows CPU-set IDs, auto-pin behavior, Ethernet adapter settings, and the Ultimate Performance plan now have straightforward explanations and safer recommendations.',
+      'FIX **NVPI imports.** Fortnite profiles now share one profile name, generated imports match the expected format, duplicate-executable warnings are explained, and Valorant no longer includes the service executable.',
+      'IMPROVE **Guides, Grind, Hardware, and Upgrade Advisor.** Facts and setup/settings are easier to scan, custom OS and WinRing0 guidance is concise, current mouse and keyboard choices are listed, and Intel-to-AMD upgrades include the motherboard requirement.',
+    ],
+  },
+  {
     version: '0.4.12',
     date: '2026-09-24',
     highlights: [

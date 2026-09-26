@@ -724,6 +724,385 @@ fn transaction_report(
     }
 }
 
+struct RepairGroup {
+    states: Vec<TransactionState>,
+    failed: bool,
+    errors: Vec<String>,
+}
+
+impl RepairGroup {
+    fn new() -> Self {
+        Self {
+            states: Vec::new(),
+            failed: false,
+            errors: Vec::new(),
+        }
+    }
+
+    fn fail(&mut self, message: String) {
+        self.failed = true;
+        self.errors.push(message);
+    }
+}
+
+/// Re-apply drifted tweaks without letting one stale or externally-owned
+/// setting undo unrelated repairs. Actions are grouped by tweak id so a
+/// multi-action tweak remains atomic, while independent tweaks can survive a
+/// verification mismatch in another group.
+#[tauri::command]
+async fn apply_repair_batch(
+    state: tauri::State<'_, SnapshotStore>,
+    items: Vec<BatchItem>,
+) -> Result<TransactionReport, String> {
+    let store = (*state).clone();
+    tokio::task::spawn_blocking(move || -> Result<TransactionReport, String> {
+        let transaction_id = format!(
+            "repair-{}-{}",
+            chrono::Utc::now().timestamp_millis(),
+            std::process::id()
+        );
+        let mut groups: Vec<RepairGroup> = Vec::new();
+
+        // Capture each action before mutating anything. A failed capture marks
+        // only that tweak group as unavailable; unrelated groups can still be
+        // repaired with their own pre-state.
+        for item in items {
+            let group_index = groups
+                .iter()
+                .position(|group| {
+                    group
+                        .states
+                        .first()
+                        .map(|state| state.item.tweak_id == item.tweak_id)
+                        .unwrap_or(false)
+                })
+                .unwrap_or_else(|| {
+                    groups.push(RepairGroup::new());
+                    groups.len() - 1
+                });
+            let group = &mut groups[group_index];
+
+            if group.failed {
+                group.states.push(TransactionState {
+                    item,
+                    pre_state: serde_json::Value::Null,
+                    attempted: false,
+                    applied: false,
+                    rolled_back: false,
+                    verification: None,
+                    receipt: None,
+                    detail: "Skipped because another action in this tweak group could not be prepared."
+                        .into(),
+                });
+                continue;
+            }
+
+            if !transaction_action_supported(&item.action) {
+                let message = format!(
+                    "{} ({}) has no verified repair contract; use the explicit review flow.",
+                    item.tweak_id,
+                    item.action.kind()
+                );
+                group.states.push(TransactionState {
+                    item,
+                    pre_state: serde_json::Value::Null,
+                    attempted: false,
+                    applied: false,
+                    rolled_back: false,
+                    verification: None,
+                    receipt: None,
+                    detail: message.clone(),
+                });
+                group.fail(message);
+                continue;
+            }
+
+            let tweak_id = item.tweak_id.clone();
+            match engine::capture_pre_state(&item.action) {
+                Ok(pre_state) => group.states.push(TransactionState {
+                    item,
+                    pre_state,
+                    attempted: false,
+                    applied: false,
+                    rolled_back: false,
+                    verification: None,
+                    receipt: None,
+                    detail: String::new(),
+                }),
+                Err(error) => {
+                    let message = format!("{} pre-state capture failed: {:#}", tweak_id, error);
+                    group.states.push(TransactionState {
+                        item,
+                        pre_state: serde_json::Value::Null,
+                        attempted: false,
+                        applied: false,
+                        rolled_back: false,
+                        verification: None,
+                        receipt: None,
+                        detail: message.clone(),
+                    });
+                    group.fail(message);
+                }
+            }
+        }
+
+        // Apply unelevated actions group by group. A failure poisons only its
+        // own tweak group; later groups still get their chance to repair.
+        for group in &mut groups {
+            if group.failed {
+                continue;
+            }
+            let mut failures = Vec::new();
+            for state in &mut group.states {
+                if state.item.action.requires_admin() {
+                    continue;
+                }
+                state.attempted = true;
+                match engine::apply_unelevated(&state.item.action) {
+                    Ok(_) => {
+                        state.applied = true;
+                        state.detail = "Applied in-process; awaiting live verification.".into();
+                    }
+                    Err(error) => {
+                        state.detail = format!("Apply failed: {:#}", error);
+                        failures.push(format!("{}: {}", state.item.tweak_id, state.detail));
+                        break;
+                    }
+                }
+            }
+            for failure in failures {
+                group.fail(failure);
+            }
+        }
+
+        // Keep one UAC prompt for all elevated actions that made it through
+        // their group's local apply phase. The runner may report an aggregate
+        // error, so live verification below remains the source of truth for
+        // each individual action.
+        let elevated_indices = groups
+            .iter()
+            .enumerate()
+            .flat_map(|(group_index, group)| {
+                group
+                    .states
+                    .iter()
+                    .enumerate()
+                    .filter_map(move |(state_index, state)| {
+                        (!group.failed && state.item.action.requires_admin())
+                            .then_some((group_index, state_index))
+                    })
+            })
+            .collect::<Vec<_>>();
+        for (group_index, state_index) in &elevated_indices {
+            groups[*group_index].states[*state_index].attempted = true;
+        }
+        let elevated_error = if elevated_indices.is_empty() {
+            None
+        } else {
+            let actions = elevated_indices
+                .iter()
+                .map(|(group_index, state_index)| {
+                    &groups[*group_index].states[*state_index].item.action
+                })
+                .collect::<Vec<_>>();
+            let create_rp = store
+                .kv_get("restore_point_before_apply")
+                .ok()
+                .flatten()
+                .map(|value| value != "false")
+                .unwrap_or(true);
+            match engine::elevation::run_elevated_batch_with_restore_point(&actions, create_rp) {
+                Ok(_) => {
+                    for (group_index, state_index) in &elevated_indices {
+                        let state = &mut groups[*group_index].states[*state_index];
+                        state.applied = true;
+                        state.detail =
+                            "Applied under one UAC prompt; awaiting live verification.".into();
+                    }
+                    None
+                }
+                Err(error) => Some(format!("elevated repair batch: {:#}", error)),
+            }
+        };
+
+        // Verify every action that was attempted. A mismatch or unknown result
+        // fails only the containing tweak group and triggers selective rollback.
+        for group in &mut groups {
+            let mut failures = Vec::new();
+            for state in &mut group.states {
+                if !state.attempted {
+                    continue;
+                }
+                let verification = engine::verify(&state.item.action);
+                if verification.status != VerificationStatus::Verified {
+                    failures.push(format!(
+                        "{} verification {:?}: {}",
+                        state.item.tweak_id, verification.status, verification.detail
+                    ));
+                    state.detail = format!("Live verification failed: {}", verification.detail);
+                } else {
+                    state.applied = true;
+                    state.detail = "Applied and verified in the live system.".into();
+                }
+                state.verification = Some(verification);
+            }
+            for failure in failures {
+                group.fail(failure);
+            }
+        }
+
+        // The native elevated runner reports one aggregate error for a shell
+        // that may contain several lines. If every line independently verified
+        // successfully, retain the live result instead of rolling back good
+        // tweaks because an unrelated line was rejected. If a group failed,
+        // preserve the aggregate diagnostic alongside its specific mismatch.
+        if let Some(error) = elevated_error {
+            if groups.iter().any(|group| group.failed) {
+                if let Some(group) = groups.iter_mut().find(|group| group.failed) {
+                    group.fail(error);
+                }
+            }
+        }
+
+        // Record attempted actions, including failed groups, so Diff has a
+        // durable audit trail and selective rollback can mark those receipts.
+        for group in &mut groups {
+            let mut failures = Vec::new();
+            for state in &mut group.states {
+                if !state.attempted {
+                    continue;
+                }
+                let verification = state.verification.clone().unwrap_or(engine::VerificationResult {
+                    status: VerificationStatus::Unknown,
+                    detail: "The action was attempted but no live verification was available."
+                        .into(),
+                });
+                match store.record_apply(
+                    &state.item.tweak_id,
+                    &state.item.action,
+                    &state.pre_state,
+                    &verification,
+                ) {
+                    Ok(receipt) => state.receipt = Some(receipt),
+                    Err(error) => failures.push(format!(
+                        "{} receipt could not be saved: {:#}",
+                        state.item.tweak_id, error
+                    )),
+                }
+            }
+            for failure in failures {
+                group.fail(failure);
+            }
+        }
+
+        let mut rollback_errors = Vec::new();
+        // Restore only failed unelevated groups. Verified independent groups
+        // stay in place and do not get caught in a broad rollback.
+        for group in groups.iter_mut().rev() {
+            if !group.failed {
+                continue;
+            }
+            for state in group.states.iter_mut().rev() {
+                if !state.attempted || state.item.action.requires_admin() {
+                    continue;
+                }
+                match engine::revert_unelevated(&state.item.action, &state.pre_state) {
+                    Ok(_) => {
+                        state.rolled_back = true;
+                        if let Some(receipt) = &state.receipt {
+                            let _ = store.mark_reverted(&receipt.receipt_id);
+                        }
+                    }
+                    Err(error) => rollback_errors.push(format!(
+                        "{} rollback failed: {:#}",
+                        state.item.tweak_id, error
+                    )),
+                }
+            }
+        }
+
+        let elevated_revert_pairs = groups
+            .iter()
+            .rev()
+            .filter(|group| group.failed)
+            .flat_map(|group| {
+                group
+                    .states
+                    .iter()
+                    .rev()
+                    .filter(|state| state.attempted && state.item.action.requires_admin())
+                    .map(|state| (&state.item.action, &state.pre_state))
+            })
+            .collect::<Vec<_>>();
+        if !elevated_revert_pairs.is_empty() {
+            match engine::elevation::run_elevated_revert_batch(&elevated_revert_pairs) {
+                Ok(_) => {
+                    for group in &mut groups {
+                        if !group.failed {
+                            continue;
+                        }
+                        for state in &mut group.states {
+                            if state.attempted && state.item.action.requires_admin() {
+                                state.rolled_back = true;
+                                if let Some(receipt) = &state.receipt {
+                                    let _ = store.mark_reverted(&receipt.receipt_id);
+                                }
+                            }
+                        }
+                    }
+                }
+                Err(error) => rollback_errors.push(format!("elevated repair rollback failed: {:#}", error)),
+            }
+        }
+
+        let mut errors = groups
+            .iter()
+            .flat_map(|group| group.errors.iter().cloned())
+            .collect::<Vec<_>>();
+        let successful_groups = groups.iter().filter(|group| !group.failed).count();
+        let failed_groups = groups.iter().filter(|group| group.failed).count();
+        let status = if failed_groups == 0 {
+            if let Some(build) = current_os_build() {
+                let _ = store.kv_set("last_applied_build", &build.to_string());
+            }
+            "committed"
+        } else if successful_groups > 0 && rollback_errors.is_empty() {
+            "partial"
+        } else if rollback_errors.is_empty() {
+            "rolled_back"
+        } else {
+            "partial"
+        };
+        if successful_groups > 0 && failed_groups > 0 {
+            errors.insert(
+                0,
+                format!(
+                    "{} independent tweak group(s) verified; {} group(s) stayed rolled back.",
+                    successful_groups, failed_groups
+                ),
+            );
+        }
+        let states = groups
+            .into_iter()
+            .flat_map(|group| group.states)
+            .collect::<Vec<_>>();
+        let report = transaction_report(
+            transaction_id,
+            status,
+            states,
+            errors,
+            rollback_errors,
+        );
+        let _ = store.kv_set(
+            "last_transaction",
+            &serde_json::to_string(&report).unwrap_or_default(),
+        );
+        Ok(report)
+    })
+    .await
+    .map_err(|e| format!("repair transaction task failed: {e}"))?
+}
+
 #[cfg(test)]
 mod transaction_tests {
     use super::{
@@ -1791,6 +2170,7 @@ pub fn run() {
             apply_tweak,
             apply_batch,
             apply_transaction,
+            apply_repair_batch,
             kv_get,
             kv_set,
             get_reboot_validation,

@@ -1,7 +1,7 @@
 {
-  "version": "v1.9.2",
-  "generated_at": "2026-09-17",
-  "revision_notes": "v1.9.2: hardware-aware RAM readiness, per-DIMM inventory, read-only PowerShell verification contracts, active DT Tournament plan selection, and honest NVIDIA profile variants with RMInstLoc/visual-exploit exclusions.",
+  "version": "v1.9.3",
+  "generated_at": "2026-09-25",
+  "revision_notes": "v1.9.3: transactional drift repair, idempotent Ultimate Performance selection, explicit Windows policy boundaries, core-isolation safety copy, and readable mechanism-first tweak guidance.",
   "source": "Curated from diggy-tweaks Discord exports + 5 YouTube creator transcripts (fr33thy/lecctron/xilly/lestripez/reknotic) via Gemini 2.5 Flash extraction, hand-reviewed before promotion. v1.8.3 introduces the first non-registry/non-script native action (display_refresh) shipping in v0.1.80. v1.8.4 adds peripherals.rgb-control-apps.autostart-disable (kills background polling tax from Aura/iCUE/Mystic Light/Synapse/G-Hub/T-Force Blitz/NZXT CAM/etc.) with companion rgb-shutoff articleware for persistent LED-off via save-to-flash. v1.8.5 (2026-06-11 audit): removed duplicate MPO tweak display.mpo.disable (identical OverlayTestMode=5 write to monitor.mpo.disable; AC tags merged onto the survivor) and rewrote network.tcp.ack-nodelay copy with an honest UDP caveat (the big shooters run gameplay over UDP, so this only helps TCP launcher/login/download/voice traffic, not in-match ping). Catalog now 99 tweaks. v1.8.6 (2026-06-18 SOTA audit): added power.fast-startup.disable (HiberbootEnabled=0 - disables Fast Startup while keeping hibernation, unlike powercfg /hibernate off); de-recommended net.throttling.disable (2026 instrumented testing shows no FPS/latency gain vs default) and bcd.disabledynamictick.yes (Microsoft debug-only flag tied to Win11 mouse-input desync) by rewriting their copy and removing both from all default presets; gated disabledynamictick to Win10 via osMaxBuild; reframed monitor.mpo.disable as a conditional flicker fix (not an FPS lever) and added OverlayMinFPS=0 for 24H2 reliability. Catalog now 100 tweaks. v1.8.7 (2026-06-21 T1 Fortnite gap audit): added net.nic.eee-powersave.disable (Energy Efficient Ethernet / Green Ethernet + 'allow computer to turn off this device' off across all up-physical NICs) - the one network change with a real reproducible win for a single competitive UDP flow (kills PHY wake-up micro-stalls / random connection hitches); the rest of NIC registry tuning stays placebo since ping/jitter are ISP/route-dominated. Catalog now 101 tweaks. v1.8.8 (2026-06-21): added nvidia.nvpi.fortnite-profile - generates a verified per-game NVIDIA Profile Inspector .nip (Prefer Max Performance / Texture Filtering High Perf / VSync Force Off / Max Pre-Rendered Frames defer-to-app) for one-click import; we write the profile + open the folder but never touch the driver DB ourselves (NVPI does the import), so it cannot break drivers. SettingIDs/values verified against the Orbmu2k/nvidiaProfileInspector source + a real export. Catalog now 102 tweaks. v1.8.9 (2026-06-25 expert audit): fixed monitor.windowed-game-opt.disable (was writing the unrecognized token GlobalOptimizationsFlags=0 - inert; corrected to SwapEffectUpgradeEnable=0;VRROptimizeEnable=0; and reframed as a conditional 24H2 stutter-fix); removed the AllowAutoGameMode=0 action from ui.gamedvr.disable (it silently disabled Windows Game Mode, which snake-oil-tweaks.md says keep ON); de-recommended process.hpet.disable + bcd.useplatformclock.disable (modern Windows already runs invariant TSC so useplatformclock=no is a no-op, and disabling HPET risks TSC clock-skew that anti-cheats can read as a speedhack) and removed both from the Frame Pacing preset; added formFactor:[desktop] gate to process.connected-standby.disable; softened the overstated NIC interrupt-moderation claim; added audio.comms-ducking.disable (UserDuckingPreference=3 - stops Windows dropping game audio 80% on voice-chat activity). Catalog now 103 tweaks. v1.9.0 (2026-06-26 efficacy/honesty pass): added per-tweak evidenceTier (measured/mechanism/situational/cosmetic). CUT placebo/harmful: hid.mouse+keyboard.queue-size (queue depth != drain rate; drops inputs under burst), process.exception-chain-validation.disable (security debit, 0 gain), net.nic.checksum-offload.disable (no in-match mechanism). Fixed: CS2 autoexec dead sub-tick netcode block removed; fortnite.gus FullscreenMode=0 relabeled true Fullscreen; fortnite.engine Performance-Mode note; pinnacle USB uncited LDAT figure stripped. Added audio.sample-rate.match (real competitive-audio win). Demoted folklore to situational/cosmetic tiers (MMCSS GPU-priority, SystemResponsiveness, PrioritySeparation=38, tscsyncpolicy, core-parking, TCP-only NIC knobs, smartscreen-off). Catalog now 100 tweaks.",
   "tweaks": [
     {
@@ -83,18 +83,43 @@
       "actions": [
         {
           "kind": "powershell_script",
-          "apply": "$games = @(@{N='optmaxxing-fortnite';P='FortniteClient-Win64-Shipping.exe'},@{N='optmaxxing-cs2';P='cs2.exe'},@{N='optmaxxing-valorant';P='VALORANT-Win64-Shipping.exe'},@{N='optmaxxing-apex';P='r5apex.exe'}); foreach ($g in $games) { try { Remove-NetQosPolicy -Name $g.N -Confirm:$false -ErrorAction SilentlyContinue; New-NetQosPolicy -Name $g.N -AppPathNameMatchCondition $g.P -DSCPAction 46 -NetworkProfile All -Confirm:$false | Out-Null } catch { Write-Output \"WARN: $($g.N): $($_.Exception.Message)\" } }; Write-Output 'OK'",
+          "apply": "$ErrorActionPreference='Stop'; $games = @(@{N='optmaxxing-fortnite';P='FortniteClient-Win64-Shipping.exe'},@{N='optmaxxing-cs2';P='cs2.exe'},@{N='optmaxxing-valorant';P='VALORANT-Win64-Shipping.exe'},@{N='optmaxxing-apex';P='r5apex.exe'}); $created = @(); try { foreach ($g in $games) { Remove-NetQosPolicy -Name $g.N -Confirm:$false -ErrorAction SilentlyContinue; New-NetQosPolicy -Name $g.N -AppPathNameMatchCondition $g.P -DSCPAction 46 -NetworkProfile All -Confirm:$false -ErrorAction Stop | Out-Null; $created += $g.N } } catch { foreach ($name in $created) { Remove-NetQosPolicy -Name $name -Confirm:$false -ErrorAction SilentlyContinue }; throw }; Write-Output 'OK'",
           "revert": "foreach ($n in @('optmaxxing-fortnite','optmaxxing-cs2','optmaxxing-valorant','optmaxxing-apex')) { try { Remove-NetQosPolicy -Name $n -Confirm:$false -ErrorAction SilentlyContinue } catch {} }; Write-Output 'OK'"
         }
       ],
       "evidenceTier": "situational"
     },
     {
+      "id": "network.delivery-optimization.peer-sharing.disable",
+      "title": "Delivery Optimization: disable peer sharing",
+      "category": "network",
+      "description": "Sets Delivery Optimization to Simple mode so Windows Update and Store downloads use direct HTTP instead of sharing update content with other PCs.",
+      "rationale": "Useful when you do not want Windows using upload bandwidth for peer delivery. It does not improve in-game ping or FPS, and Windows Update/Store downloads still work. This is a bandwidth/privacy choice, not a latency tweak.",
+      "riskLevel": 1,
+      "experimental": true,
+      "experimentalWarning": "Removes peer-to-peer delivery. Revert if downloads become slower on a constrained connection or managed network.",
+      "expectedImpact": "Less background upload traffic; no expected in-match latency improvement.",
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization",
+          "name": "DODownloadMode",
+          "value_type": "dword",
+          "value": 99
+        }
+      ],
+      "evidenceTier": "mechanism"
+    },
+    {
       "id": "ui.gamedvr.disable",
-      "title": "Disable Game DVR & Game Bar",
+      "title": "Disable Game DVR background capture",
       "category": "process",
-      "description": "Stops Windows from running background recording for Game DVR / Xbox Game Bar. Frees CPU + GPU cycles that would otherwise idle-record your gameplay.",
-      "rationale": "Disabling background Game DVR capture removes recording hooks and can reduce contention when capture is not needed. The frame-time effect is workload- and driver-dependent; it is not a guaranteed FPS percentage. Source: diggy-tweaks/cpu, validated by paragontweaks + hone.gg presets.",
+      "description": "Stops background Game DVR capture. It does not disable Windows Game Mode, which should normally remain enabled.",
+      "rationale": "Capture hooks can add contention when you never record clips. Keep Game Mode enabled separately; compare frame-time and capture behavior because this is not a guaranteed FPS improvement.",
       "riskLevel": 1,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -107,6 +132,36 @@
           "name": "GameDVR_Enabled",
           "value_type": "dword",
           "value": 0
+        }
+      ],
+      "evidenceTier": "mechanism"
+    },
+    {
+      "id": "ui.gamemode.enable",
+      "title": "Keep Windows Game Mode enabled",
+      "category": "process",
+      "description": "Enables Windows Game Mode for the current user while leaving Game DVR capture independent. Windows may prioritize game scheduling and background-maintenance behavior.",
+      "rationale": "Game Mode is the safer default baseline than disabling it. It is a scheduling hint, not a frame-rate guarantee, and should be measured per game and Windows build.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\GameBar",
+          "name": "AutoGameModeEnabled",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\GameBar",
+          "name": "AllowAutoGameMode",
+          "value_type": "dword",
+          "value": 1
         }
       ],
       "evidenceTier": "mechanism"
@@ -806,7 +861,7 @@
       "id": "process.cpu-mitigations.disable-DANGER",
       "title": "Disable Spectre/Meltdown Mitigations (DANGER)",
       "category": "process",
-      "description": "Turns off selected Windows Spectre v2 + Meltdown mitigations. It may reduce workload-specific overhead on some Intel systems but re-exposes side-channel vulnerabilities; it is never part of automatic Tune Now.",
+      "description": "Turns off only the selected Windows Spectre v2 + Meltdown mitigations. This is not a command to disable every Windows exploit mitigation, and it is never part of automatic Tune Now.",
       "rationale": "Cross-validated across fr33thy + lecctron + xilly. **Audited 2026-05-07**: `FeatureSettingsOverride=3 + Mask=3` is the original 2018 KB4072698 guidance — covers Spectre v2 + Meltdown ONLY. Does NOT cover MDS / Downfall / L1TF / Retbleed (those need different bit values like Override=72 or 8264 per current MS guidance). Pure performance tradeoff. Apply ONLY on dedicated gaming PCs with no untrusted browsers / mail / VMs. NEVER on shared/work machines. Almost no win on AMD (Meltdown didn't affect AMD); we hard-target Intel.",
       "riskLevel": 4,
       "experimental": true,
@@ -848,6 +903,31 @@
           "name": "FeatureSettingsOverrideMask",
           "value_type": "dword",
           "value": 3
+        }
+      ],
+      "evidenceTier": "situational"
+    },
+    {
+      "id": "process.fault-tolerant-heap.disable",
+      "title": "Disable Fault-Tolerant Heap recovery (troubleshooting only)",
+      "category": "process",
+      "description": "Stops Windows Diagnostic Policy Service from applying its Fault-Tolerant Heap recovery path for handled heap-corruption scenarios. It does not make games faster.",
+      "rationale": "Fault-Tolerant Heap exists to keep unstable legacy applications running and to aid diagnosis. Disabling it can remove a compatibility safety net; only use it to reproduce a specific application problem, then revert.",
+      "riskLevel": 4,
+      "experimental": true,
+      "experimentalWarning": "Compatibility and stability tradeoff. Do not use as a general gaming optimization; keep it off the automatic presets.",
+      "expectedImpact": "No expected FPS or input-latency gain. May change how a faulty application fails.",
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WDI\\{dc42ff48-e40d-4a60-8675-e71f7e64aa9a}",
+          "name": "ScenarioExecutionEnabled",
+          "value_type": "dword",
+          "value": 0
         }
       ],
       "evidenceTier": "situational"
@@ -969,7 +1049,7 @@
       "id": "ps.power.dt-tournament",
       "title": "Add 'DT Tournament' Power Plan",
       "category": "powerplan",
-      "description": "Duplicates the hidden Ultimate Performance scheme, renames it to 'DT Tournament', and activates the clone after creation. Same primitives as Ultimate Performance — full CPU/disk idle throttling off — while BIOS thermal limits and per-core boost protections remain active. Revert removes only the named clone.",
+      "description": "Idempotently activates a named clone of the hidden Ultimate Performance scheme. If 'DT Tournament' already exists, the action reuses it instead of creating duplicates. Same Windows power primitives as Ultimate Performance; BIOS thermal limits and per-core boost protections remain active. Revert removes only the named clone.",
       "rationale": "Win10/11 ships Ultimate Performance hidden unless on Enterprise/Workstation SKUs. We duplicate, then rename the clone so users can see at a glance which plan came from us. NOTE: 'doesn't fry the PC' is misleading — neither this plan nor any power plan can override BIOS thermal/power limits. The motherboard's PL1/PL2/IccMax + the CPU's thermal trip-point are still active. We just stop Windows from voluntarily under-clocking.",
       "riskLevel": 1,
       "vipGate": "free",
@@ -978,7 +1058,7 @@
       "actions": [
         {
           "kind": "powershell_script",
-          "apply": "$out = powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61; if ($out -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { $g = $matches[1]; powercfg /changename $g 'DT Tournament' 'optimizationmaxxing-tuned for tournament play. Clones Ultimate Performance + custom name. BIOS thermal limits still active.' | Out-Null; powercfg /setactive $g | Out-Null }",
+          "apply": "$ErrorActionPreference='Stop'; $line = powercfg /list | Select-String 'DT Tournament' | Select-Object -First 1; if ($line -and $line.ToString() -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { powercfg /setactive $matches[1] | Out-Null; if($LASTEXITCODE -ne 0){throw 'Existing DT Tournament plan could not be activated.'}; Write-Output 'OK'; exit 0 }; $out = (powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 2>&1 | Out-String); if ($out -notmatch '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { throw 'Ultimate Performance scheme could not be duplicated.' }; $g = $matches[1]; powercfg /changename $g 'DT Tournament' 'optimizationmaxxing-tuned for tournament play. Clones Ultimate Performance + custom name. BIOS thermal limits still active.' | Out-Null; if($LASTEXITCODE -ne 0){throw 'DT Tournament plan could not be named.'}; powercfg /setactive $g | Out-Null; if($LASTEXITCODE -ne 0){throw 'DT Tournament plan could not be activated.'}; Write-Output 'OK'",
           "revert": "$plans = powercfg /list | Select-String 'DT Tournament'; foreach ($line in $plans) { if ($line -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { powercfg /delete $matches[1] | Out-Null } }"
         }
       ],
@@ -1051,9 +1131,12 @@
       "id": "process.sysmain.disable",
       "title": "Disable SysMain (Superfetch)",
       "category": "process",
-      "description": "Sets the SysMain service start type to Disabled. Stops Windows from preloading 'predicted' app data — the legacy Superfetch behavior that hurts SSDs more than it helps.",
-      "rationale": "Superfetch's predictive disk reads were a real win on HDDs but waste IO bandwidth on NVMe. Default-on for compatibility; off for any post-2020 build.",
+      "description": "Stops the SysMain service. SysMain is the modern name for Superfetch and its value depends on the drive, workload, and Windows build.",
+      "rationale": "Microsoft documents cases where SysMain can spike CPU, but there is no universal NVMe or FPS win from disabling it. Treat this as an advanced diagnostic switch: measure disk activity, frametimes, and app launch behavior before keeping it.",
       "riskLevel": 2,
+      "experimental": true,
+      "experimentalWarning": "Advanced compatibility experiment. Re-enable SysMain if application launches, caching, or background behavior worsens.",
+      "expectedImpact": "May reduce a specific SysMain CPU spike; no general gaming-performance guarantee.",
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
@@ -1073,9 +1156,12 @@
       "id": "process.windows-search.disable",
       "title": "Disable Windows Search Indexer",
       "category": "process",
-      "description": "Sets the WSearch service to Disabled. Stops the always-on indexing process that scans new files on every save.",
-      "rationale": "Windows Search indexer is one of the heaviest background CPU consumers on a stock install — especially noticeable during gameplay when titles write to AppData. Modern Everything / Voidtools-style search tools cover the same ground without the constant background load.",
+      "description": "Stops the WSearch indexing service. This removes automatic indexing but also makes Windows search results slower or incomplete until indexing is restored.",
+      "rationale": "Microsoft recommends reducing indexed locations and excluding high-churn folders before disabling indexing globally. Use this only when measured indexing activity is a real problem and you have another search workflow.",
       "riskLevel": 2,
+      "experimental": true,
+      "experimentalWarning": "Advanced background-activity experiment. Prefer selective indexing/exclusions for a normal Windows installation.",
+      "expectedImpact": "May remove indexing disk/CPU activity; no guaranteed FPS or input-latency gain.",
       "vipGate": "free",
       "anticheatRisk": "none",
       "rebootRequired": "reboot",
@@ -1131,6 +1217,81 @@
           "name": "BackgroundModeEnabled",
           "value_type": "dword",
           "value": 0
+        }
+      ],
+      "evidenceTier": "cosmetic"
+    },
+    {
+      "id": "process.background-apps.disable",
+      "title": "Disable Microsoft Store app background activity",
+      "category": "process",
+      "description": "Applies the Windows policy that denies background execution for Store apps. Traditional desktop applications are not controlled by this policy.",
+      "rationale": "Useful for a deliberately quiet gaming profile, but it can affect notifications, sync, Search/Cortana, and other Store-based components. It is a background-activity choice, not a guaranteed FPS improvement.",
+      "riskLevel": 2,
+      "experimental": true,
+      "experimentalWarning": "May suppress notifications, synchronization, and background features. Keep this explicit and revert if an app stops updating or notifying.",
+      "expectedImpact": "Fewer Store-app background tasks; no guaranteed in-game latency gain.",
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\AppPrivacy",
+          "name": "LetAppsRunInBackground",
+          "value_type": "dword",
+          "value": 2
+        }
+      ],
+      "evidenceTier": "situational"
+    },
+    {
+      "id": "process.windows-update.auto-disable",
+      "title": "Disable automatic Windows Update (advanced)",
+      "category": "process",
+      "description": "Writes the Windows Update policy that disables automatic update scanning. It is not a permanent guarantee: Windows, device management, and policy refreshes can change it, and it also blocks important security fixes.",
+      "rationale": "There is no supported forever-pause mode. Use only when you accept manual patching and have a maintenance plan. Prefer pausing/deferring updates around competition rather than disabling security servicing indefinitely.",
+      "riskLevel": 4,
+      "experimental": true,
+      "experimentalWarning": "High maintenance and security cost. You must manually check, install, and restart for security updates; managed PCs may ignore or overwrite this policy.",
+      "expectedImpact": "Fewer update interruptions; no FPS or input-latency gain.",
+      "vipGate": "vip",
+      "anticheatRisk": "medium",
+      "rebootRequired": "none",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+          "name": "NoAutoUpdate",
+          "value_type": "dword",
+          "value": 1
+        }
+      ],
+      "evidenceTier": "mechanism"
+    },
+    {
+      "id": "process.microsoft-store.disable",
+      "title": "Disable Microsoft Store (advanced)",
+      "category": "process",
+      "description": "Blocks the Microsoft Store application through the Windows policy used by Pro/Enterprise management. Store app updates and Store UI access stop until reverted.",
+      "rationale": "This can keep an intentionally minimal machine from opening Store surfaces, but it has no expected gaming-performance benefit and may interfere with Store-delivered apps or updates. winget and other installers may still work.",
+      "riskLevel": 3,
+      "experimental": true,
+      "experimentalWarning": "Blocks Store access and Store updates. Do not use if you rely on Xbox, Store, or Store-delivered app updates.",
+      "expectedImpact": "Less Store UI/background activity; no expected FPS or input-latency gain.",
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\WindowsStore",
+          "name": "RemoveWindowsStore",
+          "value_type": "dword",
+          "value": 1
         }
       ],
       "evidenceTier": "cosmetic"
@@ -1349,7 +1510,7 @@
       "title": "Disable Cloud-Content Promos + 3rd-Party Suggestions",
       "category": "privacy",
       "description": "Disables CloudContent consumer features (movie/app promos, OS feature pushes) and third-party Start-menu suggestions. Reduces network calls + promo surfaces.",
-      "rationale": "Audited 2026-05-07: prior catalog framed this as 'lock-screen Spotlight off' — these two keys target CloudContent / 3rd-party suggestions, NOT the Spotlight image rotation. Lock-screen image rotation is killed by `DisableWindowsSpotlightFeatures=1` + per-user `RotatingLockScreenEnabled=0` (separate tweak owed). Current entry is still useful (kills the Start-menu app suggestions + Office trial promos) but doesn't change the lock-screen image.",
+      "rationale": "This entry removes consumer promos and third-party suggestions; it does not change lock-screen image rotation. Use the separate lock-screen Spotlight entry when that is the actual goal. The performance effect is cosmetic.",
       "riskLevel": 1,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -1370,6 +1531,44 @@
           "name": "DisableThirdPartySuggestions",
           "value_type": "dword",
           "value": 1
+        }
+      ],
+      "evidenceTier": "cosmetic"
+    },
+    {
+      "id": "privacy.lock-screen-spotlight.disable",
+      "title": "Disable Windows Spotlight on the lock screen",
+      "category": "privacy",
+      "description": "Stops rotating Windows Spotlight images and suggestions on the lock screen. This is separate from the Start-menu consumer-content policy above.",
+      "rationale": "A cosmetic/privacy choice with no meaningful gaming-performance mechanism. Use it if you want a static lock screen and fewer suggestion surfaces, not as an FPS tweak.",
+      "riskLevel": 1,
+      "vipGate": "free",
+      "anticheatRisk": "none",
+      "rebootRequired": "logout",
+      "actions": [
+        {
+          "kind": "registry_set",
+          "hive": "hklm",
+          "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+          "name": "DisableWindowsSpotlightFeatures",
+          "value_type": "dword",
+          "value": 1
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "name": "RotatingLockScreenEnabled",
+          "value_type": "dword",
+          "value": 0
+        },
+        {
+          "kind": "registry_set",
+          "hive": "hkcu",
+          "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+          "name": "RotatingLockScreenOverlayEnabled",
+          "value_type": "dword",
+          "value": 0
         }
       ],
       "evidenceTier": "cosmetic"
@@ -1400,8 +1599,8 @@
       "id": "process.wake-timers.disable",
       "title": "Disable Wake Timers",
       "category": "powerplan",
-      "description": "Stops scheduled tasks + Windows Update from waking the PC out of sleep. Sleep stays sleep until you press a key.",
-      "rationale": "Wake timers are a hidden cause of 'why did my fans spin up at 3am' — Windows Update + maintenance tasks fire on a wake schedule. Off = predictable idle. Pairs well with Connected Standby disable.",
+      "description": "Stops scheduled tasks and Windows Update from waking the PC out of sleep. It does not disable sleep itself.",
+      "rationale": "Use this when unexpected wake-ups are the problem. Sleep Study is a diagnostic report, not a performance tweak; run powercfg /sleepstudy to identify wake and residency causes before changing sleep policy.",
       "riskLevel": 1,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -1527,8 +1726,8 @@
       "id": "ps.hibernation.disable",
       "title": "Disable Hibernation",
       "category": "powerplan",
-      "description": "Turns off hibernation entirely. Removes hiberfil.sys (frees 4-32GB disk depending on RAM) and the fast-startup overhead that interferes with full-shutdown reboots.",
-      "rationale": "Hibernation matters on laptops only — desktops gain disk space + a clean shutdown path that drivers actually re-init from. Cross-validated by fr33thy + xilly + lestripez.",
+      "description": "Turns off hibernation and removes hiberfil.sys. This also removes Fast Startup, so use it only when you specifically want the disk space or a true full shutdown.",
+      "rationale": "There is no general gaming-performance win. Keep hibernation on when you use hibernate or Fast Startup; on a desktop, disabling it is an optional clean-shutdown/storage choice.",
       "riskLevel": 1,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -1546,8 +1745,8 @@
       "id": "process.driver-auto-updates.disable",
       "title": "Disable Automatic Windows Driver Updates",
       "category": "process",
-      "description": "Stops Windows Update from pushing driver updates alongside quality updates. Lets you keep manually-installed drivers (NVIDIA Studio, Realtek custom audio) without WU silently regressing them.",
-      "rationale": "Win Update will silently swap your hand-picked driver for a generic Microsoft one on every quality update — a known cause of audio crackling + VR headset disconnects after a 'cumulative update'. Pro+studio rigs always disable this.",
+      "description": "Stops Windows Update from automatically installing device drivers through its driver-update policy. It does not disable Windows quality or security updates.",
+      "rationale": "Useful when you intentionally stage GPU, audio, or chipset drivers yourself. Keep a manual driver-maintenance plan; this policy can leave devices on an old driver.",
       "riskLevel": 1,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -1812,6 +2011,33 @@
       "evidenceTier": "situational"
     },
     {
+      "id": "power.device-idle.performance",
+      "title": "Power: prefer performance for device idle",
+      "category": "powerplan",
+      "description": "Sets the current power plan's hidden Device Idle Policy to Performance on AC and DC. This is not a CPU C-state disable and does not prevent Windows from idling the processor.",
+      "rationale": "Use only when device wake/resume behavior is a measured problem. Windows still manages CPU idle states; forcing every device to stay fully active can raise idle power and heat without improving a game.",
+      "riskLevel": 2,
+      "experimental": true,
+      "experimentalWarning": "Advanced power-plan experiment. It can increase idle power, heat, and laptop battery drain; keep the normal Balanced/Ultimate defaults unless testing shows a benefit.",
+      "expectedImpact": "May reduce device power-state transitions; no general FPS, ping, or input-latency guarantee.",
+      "vipGate": "vip",
+      "anticheatRisk": "none",
+      "rebootRequired": "none",
+      "targets": {
+        "formFactor": [
+          "desktop"
+        ]
+      },
+      "actions": [
+        {
+          "kind": "powershell_script",
+          "apply": "$ErrorActionPreference='Stop'; powercfg /setacvalueindex SCHEME_CURRENT SUB_NONE 4faab71a-92e5-4726-b531-224559672d19 0 | Out-Null; if($LASTEXITCODE -ne 0){throw 'AC Device Idle Policy could not be set.'}; powercfg /setdcvalueindex SCHEME_CURRENT SUB_NONE 4faab71a-92e5-4726-b531-224559672d19 0 | Out-Null; if($LASTEXITCODE -ne 0){throw 'DC Device Idle Policy could not be set.'}; powercfg /setactive SCHEME_CURRENT | Out-Null; if($LASTEXITCODE -ne 0){throw 'The current power plan could not be reactivated.'}; Write-Output 'OK'",
+          "revert": "$ErrorActionPreference='Stop'; powercfg /setacvalueindex SCHEME_CURRENT SUB_NONE 4faab71a-92e5-4726-b531-224559672d19 1 | Out-Null; if($LASTEXITCODE -ne 0){throw 'AC Device Idle Policy could not be restored.'}; powercfg /setdcvalueindex SCHEME_CURRENT SUB_NONE 4faab71a-92e5-4726-b531-224559672d19 1 | Out-Null; if($LASTEXITCODE -ne 0){throw 'DC Device Idle Policy could not be restored.'}; powercfg /setactive SCHEME_CURRENT | Out-Null; if($LASTEXITCODE -ne 0){throw 'The current power plan could not be reactivated.'}; Write-Output 'OK'"
+        }
+      ],
+      "evidenceTier": "situational"
+    },
+    {
       "id": "power.pcie.link-state.off",
       "title": "Disable PCIe Link State Power Management (ASPM Off)",
       "category": "powerplan",
@@ -1913,8 +2139,8 @@
       "id": "vbs.hvci.disable",
       "title": "Disable HVCI / Memory Integrity (VBS off)",
       "category": "process",
-      "description": "Disables Hypervisor-Enforced Code Integrity at the registry-policy level. Companion to `bcd.hypervisorlaunchtype.off` — both are needed for VBS to fully cost 0%. Settings → Device security → Core isolation → Memory Integrity must also be flipped manually if it's on (we can't toggle it programmatically without trust-store risk).",
-      "rationale": "Microsoft documents HVCI as a security feature with workload-dependent performance cost; this app does not promise a fixed FPS or CPU recovery. Competitive requirements vary by title, organizer, and anti-cheat revision, so check the current game's rules before changing it. Pair with `bcd.hypervisorlaunchtype.off` only for an explicit lab test and reboot; check the VBS Status card on /diagnostics afterward.",
+      "description": "Disables Hypervisor-Enforced Code Integrity at the registry-policy level. Keep Core isolation and Memory integrity enabled by default; use this only when a specific, incompatible driver or controlled benchmark requires it.",
+      "rationale": "Core isolation protects kernel and driver paths. Microsoft warns that turning Memory integrity off can allow a blocked driver to load but removes that protection; any performance difference is workload-dependent, not a guaranteed FPS gain. Change it only for an explicit lab test, then restore it and reboot.",
       "riskLevel": 3,
       "experimental": true,
       "experimentalWarning": "Experimental security change. It reduces Windows virtualization-based protection and may stop Valorant, FACEIT, BattlEye, or other security-sensitive software from qualifying.",
@@ -2163,8 +2389,8 @@
       "id": "service.geolocation.disable",
       "title": "Disable Geolocation service",
       "category": "privacy",
-      "description": "Sets lfsvc Start = 4. Stops the Windows Location Service from pinging WiFi-positioning + GPS.",
-      "rationale": "Privacy + idle-CPU win. Disables location for any app that uses Win32 location API. If you actually use location-aware apps (Weather widget, Find My Device), keep on.",
+      "description": "Stops the Windows Location Service. Location-aware apps such as Maps, Weather, and Find My Device may stop working or lose accuracy.",
+      "rationale": "This is a privacy and background-activity choice, not a reliable gaming-latency tweak. Keep it enabled if you use location-aware apps or device recovery.",
       "riskLevel": 1,
       "vipGate": "free",
       "anticheatRisk": "none",
@@ -2380,7 +2606,7 @@
       "id": "nvidia.nvpi.fortnite-profile",
       "title": "Fortnite: generate NVIDIA Profile Inspector profile (.nip)",
       "category": "nvidia",
-      "description": "Writes a conservative, verified per-game NVIDIA driver profile for FortniteClient-Win64-Shipping.exe to %LOCALAPPDATA%\\optmaxxing\\nvpi\\Fortnite.nip and opens the folder. Profile sets: Power Management = Prefer Maximum Performance (pins clocks, improves frametime consistency), Texture Filtering Quality = High Performance, Vertical Sync = Force Off, Max Pre-Rendered Frames (Low Latency) = use 3D-app default (defer to in-game Reflex). This driver-layer baseline remains applicable to Fortnite Chapter 7 Season 4: Override, but major season and driver updates still require a same-scene re-test. After export, open NVIDIA Profile Inspector and import it explicitly; the app does not launch NVPI or write its driver database. Revert deletes the generated file.",
+      "description": "Writes a conservative, verified per-game NVIDIA driver profile for the Fortnite profile (FortniteClient-Win64-Shipping.exe + FortniteLauncher.exe) to %LOCALAPPDATA%\\optmaxxing\\nvpi\\Fortnite.nip and opens the folder. Profile sets: Power Management = Prefer Maximum Performance (pins clocks, improves frametime consistency), Texture Filtering Quality = High Performance, Vertical Sync = Force Off, Max Pre-Rendered Frames (Low Latency) = use 3D-app default (defer to in-game Reflex). This driver-layer baseline remains applicable to Fortnite Chapter 7 Season 4: Override, but major season and driver updates still require a same-scene re-test. After export, open NVIDIA Profile Inspector and import it explicitly; the app does not launch NVPI or write its driver database. Revert deletes the generated file.",
       "rationale": "Source: Epic 2026 competitive guide + prosettings.net consensus; SettingIDs/values verified against the Orbmu2k/nvidiaProfileInspector source DB + a real .nip export. 'Prefer Maximum Performance' is the high-confidence win -- it stops the GPU downclocking between frames, which is a frametime-consistency (1% low) improvement, not a guaranteed average-FPS gain. We deliberately leave the driver DB untouched and hand you a ready profile instead. Open NVIDIA Profile Inspector yourself, import the file, and Apply changes; do not assume a downloaded file has changed the driver. Leave driver Low Latency Mode at the app default and let in-game Reflex own latency -- driver queue overrides can fight native Reflex. See the NVIDIA Profile Inspector guide for the full walkthrough. Reverse it by importing NVIDIA's defaults in NVPI; deleting the file here just removes our copy.",
       "riskLevel": 1,
       "vipGate": "vip",
@@ -2404,7 +2630,7 @@
       "actions": [
         {
           "kind": "powershell_script",
-          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\\nvpi\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $p = \"$d\\Fortnite.nip\"; $xml = \"<?xml version='1.0' encoding='utf-16'?><ArrayOfProfile><Profile><ProfileName>Fortnite (optimizationmaxxing)</ProfileName><Executeables><string>FortniteClient-Win64-Shipping.exe</string></Executeables><Settings><ProfileSetting><SettingID>274197361</SettingID><SettingValue>1</SettingValue></ProfileSetting><ProfileSetting><SettingID>13510289</SettingID><SettingValue>20</SettingValue></ProfileSetting><ProfileSetting><SettingID>11041231</SettingID><SettingValue>138504007</SettingValue></ProfileSetting><ProfileSetting><SettingID>8102046</SettingID><SettingValue>0</SettingValue></ProfileSetting></Settings></Profile></ArrayOfProfile>\"; [System.IO.File]::WriteAllText($p, $xml, [System.Text.Encoding]::Unicode); Start-Process explorer.exe $d",
+          "apply": "$d = \"$env:LOCALAPPDATA\\optmaxxing\\nvpi\"; if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }; $p = \"$d\\Fortnite.nip\"; $xml = \"<?xml version='1.0' encoding='utf-16'?><ArrayOfProfile xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema'><Profile><ProfileName>Fortnite</ProfileName><Executeables><string>FortniteClient-Win64-Shipping.exe</string><string>FortniteLauncher.exe</string></Executeables><Settings><ProfileSetting><SettingNameInfo>Power management mode</SettingNameInfo><SettingID>274197361</SettingID><SettingValue>1</SettingValue><ValueType>Dword</ValueType></ProfileSetting><ProfileSetting><SettingNameInfo>Texture filtering - Quality</SettingNameInfo><SettingID>13510289</SettingID><SettingValue>20</SettingValue><ValueType>Dword</ValueType></ProfileSetting><ProfileSetting><SettingNameInfo>Vertical Sync</SettingNameInfo><SettingID>11041231</SettingID><SettingValue>138504007</SettingValue><ValueType>Dword</ValueType></ProfileSetting><ProfileSetting><SettingNameInfo>Maximum pre-rendered frames</SettingNameInfo><SettingID>8102046</SettingID><SettingValue>0</SettingValue><ValueType>Dword</ValueType></ProfileSetting></Settings></Profile></ArrayOfProfile>\"; [System.IO.File]::WriteAllText($p, $xml, [System.Text.Encoding]::Unicode); Start-Process explorer.exe $d",
           "revert": "$p = \"$env:LOCALAPPDATA\\optmaxxing\\nvpi\\Fortnite.nip\"; if (Test-Path $p) { Remove-Item $p -Force }"
         }
       ],

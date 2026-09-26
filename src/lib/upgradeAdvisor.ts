@@ -1,8 +1,91 @@
 import type { GameId } from './games'
+import type { SpecProfile } from './tauri'
 
 export interface UpgradeTestGuide {
   scene: string
   metrics: string
+}
+
+export interface UpgradeRecommendation {
+  title: string
+  why: string
+  parts: string[]
+  compatibility: string
+  nextStep: string
+}
+
+/**
+ * Return explainable platform paths from the detected inventory. The native
+ * scan does not expose CPU socket/chipset support, so this intentionally names
+ * the compatibility checks instead of pretending one exact CPU is guaranteed
+ * to fit the current board.
+ */
+export function getUpgradeRecommendations(spec: SpecProfile): UpgradeRecommendation[] {
+  const vendor = `${spec.cpu.vendor} ${spec.cpu.marketing} ${spec.cpu.model}`.toLowerCase()
+  const memoryType = spec.ram.modules?.map((module) => module.memoryType).find(Boolean) ?? null
+  const memory = memoryType
+    ? `Confirm whether the current kit is ${memoryType}; AM5 requires DDR5.`
+    : 'Confirm whether the current kit is DDR4 or DDR5; AM5 requires DDR5.'
+
+  if (spec.mobo.isLaptop) {
+    return [
+      {
+        title: 'Laptop platform replacement',
+        why: 'Laptop CPU and GPU upgrades are usually not socketed or board-compatible upgrades.',
+        parts: ['Compare a newer complete laptop or desktop platform', 'Move storage and peripherals only after checking compatibility'],
+        compatibility: 'The scan cannot identify a safe internal CPU upgrade path for this laptop.',
+        nextStep: 'Measure the game limit first, then compare a complete replacement against the cost of a desktop upgrade.',
+      },
+    ]
+  }
+
+  if (/intel|genuineintel/.test(vendor)) {
+    return [
+      {
+        title: 'Same-platform Intel CPU upgrade',
+        why: 'A faster compatible Intel CPU may be the least disruptive route if the current board and BIOS support it.',
+        parts: ['Compatible Intel CPU', 'BIOS update if the board vendor requires it', 'Possibly a stronger cooler or power delivery'],
+        compatibility: 'Check the motherboard socket, chipset support list, BIOS version, cooler mount, and power limits. The scan does not expose those socket details yet.',
+        nextStep: 'Identify the exact motherboard model and compare its CPU support list before buying anything.',
+      },
+      {
+        title: 'AMD Ryzen X3D platform switch',
+        why: 'This is the cross-platform gaming path the old advisor showed: an AMD CPU is a potential route, but it is not a drop-in Intel replacement.',
+        parts: ['AMD Ryzen X3D-class CPU', 'AM5 motherboard', 'DDR5 memory', 'Cooler with the correct AM5 mounting hardware'],
+        compatibility: `The current Intel motherboard cannot accept an AMD CPU. ${memory} Also check case clearance and PSU connectors.`,
+        nextStep: 'Compare the full CPU + motherboard + memory + cooler cost against the measured CPU-limited result in your game.',
+      },
+    ]
+  }
+
+  if (/amd|authenticamd/.test(vendor)) {
+    return [
+      {
+        title: 'Compatible AMD X3D upgrade',
+        why: 'A newer gaming-focused AMD CPU may be a drop-in path only when the current socket, board power, and BIOS support it.',
+        parts: ['Compatible AMD CPU', 'BIOS update if required', 'Possibly a stronger cooler'],
+        compatibility: 'Check the exact socket and motherboard CPU support list. AM4-to-AM5 is a platform change, not a CPU-only swap.',
+        nextStep: 'Record the exact motherboard model and socket support, then benchmark the current CPU-limited route before choosing a chip.',
+      },
+      {
+        title: 'Intel platform alternative',
+        why: 'A move to Intel is possible, but it is a full platform comparison rather than a drop-in upgrade.',
+        parts: ['Intel CPU', 'Compatible Intel motherboard', 'Memory choice that matches that board'],
+        compatibility: `The current AMD motherboard cannot accept an Intel CPU. ${memory}`,
+        nextStep: 'Compare total platform cost and measured game results, not CPU names in isolation.',
+      },
+    ]
+  }
+
+  return [
+    {
+      title: 'Platform details needed before recommending a part',
+      why: 'The scan did not identify the CPU vendor reliably enough to claim a compatible upgrade.',
+      parts: ['Exact CPU model', 'Exact motherboard model and socket', 'Memory type and kit details'],
+      compatibility: 'A CPU recommendation without the socket and board support list can lead to an incompatible purchase.',
+      nextStep: 'Refresh the hardware scan or enter the exact CPU and motherboard models, then run the controlled game comparison.',
+    },
+  ]
 }
 
 /** Repeatable in-game comparisons; these are test recipes, not performance claims. */
