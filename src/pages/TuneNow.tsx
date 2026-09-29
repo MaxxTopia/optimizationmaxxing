@@ -14,6 +14,7 @@ import { useIsVip } from '../store/useVipStore'
 import { useRigStore } from '../store/useRigStore'
 import {
   applyBatch,
+  applyRepairBatch,
   applyTransaction,
   getTunePreflight,
   inTauri,
@@ -267,14 +268,17 @@ export function TuneNow() {
       for (const t of plan.applyFree) {
         for (const a of t.actions) items.push({ tweakId: t.id, action: a })
       }
-      const report = await applyTransaction(items)
+      // Use independent per-tweak repair semantics for the automatic lane.
+      // One externally-owned or race-prone row must not undo unrelated rows
+      // that applied and verified successfully.
+      const report = await applyRepairBatch(items)
       setTransactionReport(report)
       let live = await verifyApplied()
       setVerification(
         summarizeVerification(live.filter((row) => selectedIds.has(row.tweakId))),
       )
       setAppliedIds(appliedTweakIdsReadyForReapply(live))
-      if (report.status !== 'committed') {
+      if (report.status !== 'committed' && report.status !== 'partial') {
         const details = [...report.errors, ...report.rollbackErrors].join(' ')
         const outcome =
           report.status === 'rolled_back'
@@ -303,7 +307,7 @@ export function TuneNow() {
         }
         if (repairItems.length > 0) {
           try {
-            const repairReport = await applyTransaction(repairItems)
+            const repairReport = await applyRepairBatch(repairItems)
             live = await verifyApplied()
             const remaining = mismatchedTweakIds(live, selectedIds)
             setRepairSummary({
@@ -1434,6 +1438,9 @@ function explicitReviewReason(tweak: TweakRecord): string {
 
   if (id.includes('mitigation') || id.includes('hvci') || id.includes('smartscreen')) {
     return 'Reduces a Windows security boundary or mitigation. The possible latency upside is hardware-dependent and the security cost is real.'
+  }
+  if (id === 'network.tcp.ack-nodelay') {
+    return 'TCP-only and reboot-tagged: Fortnite gameplay uses UDP, so this cannot lower in-match ping. Keep it out of the automatic batch; select it only if you specifically want to test launcher, login, download, browser, or other TCP traffic.'
   }
   if (id.includes('hypervisor') || actionKinds.has('bcdedit_set') || id.startsWith('bcd.')) {
     return 'Changes boot or virtualization policy. It may affect drivers, security features, or boot behavior and normally needs a restart.'

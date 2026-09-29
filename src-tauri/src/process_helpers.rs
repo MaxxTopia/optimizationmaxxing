@@ -8,6 +8,8 @@
 //! suppressing the console there can cause the prompt to fall behind other
 //! windows or never paint.
 
+use std::ffi::OsString;
+use std::path::PathBuf;
 use std::process::Command;
 
 #[cfg(windows)]
@@ -18,9 +20,33 @@ use std::os::windows::process::CommandExt;
 #[cfg(windows)]
 pub const CREATE_NO_WINDOW: u32 = 0x08000000;
 
+/// Resolve the inbox Windows PowerShell 5.1 executable explicitly.
+///
+/// The tuning engine runs catalog scripts through both `cmd.exe` and a
+/// read-back process. Resolving `powershell.exe` through PATH is not stable:
+/// App Execution Aliases, developer shells, or a bundled PowerShell 7 can
+/// change which host receives the action. The catalog scripts rely on the
+/// Windows PowerShell networking cmdlets, so keep their host deterministic.
+pub fn powershell_program() -> OsString {
+    #[cfg(windows)]
+    {
+        if let Some(system_root) = std::env::var_os("SystemRoot") {
+            let path = PathBuf::from(system_root)
+                .join("System32")
+                .join("WindowsPowerShell")
+                .join("v1.0")
+                .join("powershell.exe");
+            if path.is_file() {
+                return path.into_os_string();
+            }
+        }
+    }
+    OsString::from("powershell.exe")
+}
+
 /// `powershell.exe` configured to run silently — no visible console.
 pub fn hidden_powershell() -> Command {
-    let mut c = Command::new("powershell.exe");
+    let mut c = Command::new(powershell_program());
     #[cfg(windows)]
     c.creation_flags(CREATE_NO_WINDOW);
     c
@@ -74,6 +100,11 @@ mod tests {
     fn hidden_powershell_targets_powershell_exe() {
         let cmd = hidden_powershell();
         let program = cmd.get_program().to_string_lossy().to_string();
+        #[cfg(windows)]
+        assert!(program.to_ascii_lowercase().ends_with(
+            r"\system32\windowspowershell\v1.0\powershell.exe"
+        ));
+        #[cfg(not(windows))]
         assert_eq!(program, "powershell.exe");
     }
 

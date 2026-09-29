@@ -15,8 +15,7 @@ use super::actions::{Hive, RegValueType, TweakAction};
 use super::bcdedit;
 use super::file_write;
 use super::powershell;
-
-const PS_HEADER: &str = "-NoProfile";
+use crate::process_helpers::powershell_program;
 
 fn hive_short(h: Hive) -> &'static str {
     match h {
@@ -209,7 +208,10 @@ pub fn run_elevated_batch(actions: &[&TweakAction]) -> anyhow::Result<()> {
 fn restore_point_preamble() -> Vec<String> {
     vec![
         r#"reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 0 /f"#.to_string(),
-        r#"powershell -NoProfile -ExecutionPolicy Bypass -Command "Checkpoint-Computer -Description 'optimizationmaxxing apply' -RestorePointType 'MODIFY_SETTINGS'""#.to_string(),
+        format!(
+            r#"{} -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "Checkpoint-Computer -Description 'optimizationmaxxing apply' -RestorePointType 'MODIFY_SETTINGS'""#,
+            powershell::CMD_POWERSHELL
+        ),
     ]
 }
 
@@ -326,8 +328,8 @@ fn run_elevated_lines(preamble: &[String], lines: &[String]) -> anyhow::Result<(
         "Start-Process -FilePath cmd.exe -ArgumentList @('/c','\"{}\"') -Verb RunAs -Wait -WindowStyle Hidden -PassThru | ForEach-Object {{ exit $_.ExitCode }}",
         script_path.to_string_lossy().replace('\'', "''"),
     );
-    let status = Command::new("powershell.exe")
-        .arg(PS_HEADER)
+    let status = Command::new(powershell_program())
+        .args(["-NoLogo", "-NoProfile", "-NonInteractive"])
         .arg("-Command")
         .arg(&outer)
         .status()

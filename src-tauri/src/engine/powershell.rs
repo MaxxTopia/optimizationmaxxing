@@ -15,6 +15,13 @@ use anyhow::{anyhow, Result};
 use super::actions::TweakAction;
 use crate::process_helpers::hidden_powershell;
 
+/// `%SystemRoot%` is expanded by the elevated cmd.exe script. Keeping this
+/// path explicit makes apply/revert use the same Windows PowerShell 5.1 host
+/// as the native verifier instead of whichever `powershell.exe` happens to be
+/// first on PATH.
+pub const CMD_POWERSHELL: &str =
+    r#""%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe""#;
+
 /// Base64-encode UTF-16-LE bytes for `powershell -EncodedCommand`.
 pub fn encode_for_ps(script: &str) -> String {
     let mut bytes: Vec<u8> = Vec::with_capacity(script.len() * 2);
@@ -54,7 +61,8 @@ pub fn apply_cmd_line(action: &TweakAction) -> Result<String> {
         return Err(anyhow!("apply_cmd_line called on non-powershell action"));
     };
     Ok(format!(
-        "powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand {}",
+        "{} -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {}",
+        CMD_POWERSHELL,
         encode_for_ps(apply)
     ))
 }
@@ -71,7 +79,8 @@ pub fn revert_cmd_line(action: &TweakAction) -> Result<String> {
         ));
     };
     Ok(format!(
-        "powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand {}",
+        "{} -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {}",
+        CMD_POWERSHELL,
         encode_for_ps(r)
     ))
 }
@@ -146,7 +155,8 @@ mod tests {
             verify: None,
         };
         let line = apply_cmd_line(&a).unwrap();
-        assert!(line.starts_with("powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand "));
+        assert!(line.starts_with(CMD_POWERSHELL));
+        assert!(line.contains("-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand "));
     }
 
     #[test]

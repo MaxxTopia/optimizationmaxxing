@@ -23,6 +23,11 @@ const NEVER_AUTO_APPLY_IDS = new Set([
   'process.sysmain.disable',
   'process.windows-search.disable',
   'network.delivery-optimization.peer-sharing.disable',
+  // TCP-only and reboot-tagged. It cannot change Fortnite's UDP gameplay
+  // path, and a per-interface read-back can race a NIC reset during a broad
+  // automatic batch. Keep it visible in the explicit review lane instead of
+  // allowing one situational row to roll back the rest of Tune Now.
+  'network.tcp.ack-nodelay',
   'power.device-idle.performance',
   'privacy.lock-screen-spotlight.disable',
   'privacy.smartscreen.disable',

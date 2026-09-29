@@ -16,6 +16,7 @@ use std::fs;
 use std::path::Path;
 
 use super::actions::TweakAction;
+use super::powershell::CMD_POWERSHELL;
 
 /// Snapshot cap. Files larger than this refuse to apply — we treat them as
 /// log/database paths the catalog shouldn't be trying to write anyway.
@@ -236,7 +237,8 @@ pub fn apply_cmd_line(action: &TweakAction) -> Result<String> {
         ps_quote(contents_b64),
     );
     Ok(format!(
-        "powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand {}",
+        "{} -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {}",
+        CMD_POWERSHELL,
         encode_for_ps(&script)
     ))
 }
@@ -274,7 +276,8 @@ pub fn revert_cmd_line(action: &TweakAction, pre_state: &serde_json::Value) -> R
         )
     };
     Ok(format!(
-        "powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand {}",
+        "{} -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {}",
+        CMD_POWERSHELL,
         encode_for_ps(&script)
     ))
 }

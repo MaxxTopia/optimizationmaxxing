@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.15',
+    date: '2026-09-29',
+    highlights: [
+      'FIX **Tune Now keeps verified tweaks when one live setting drifts.** Automatic tuning now repairs independently instead of rolling back the whole batch after a single verification mismatch.',
+      'FIX **TCP ACK/Nagle read-back uses the actual IP-bound adapter profile.** Apply and verification share one selector and the action checks its own registry result before returning.',
+      'IMPROVE **PowerShell execution is deterministic.** Elevated actions, file writes, restore points, and read-back use the Windows PowerShell 5.1 executable instead of PATH-dependent resolution.',
+    ],
+  },
+  {
     version: '0.4.14',
     date: '2026-09-28',
     highlights: [

@@ -9,7 +9,7 @@
 
 export const POWERSHELL_VERIFIERS: Record<string, string> = {
   'network.tcp.ack-nodelay':
-    "$ErrorActionPreference='Stop'; $root='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces'; $guids=@(Get-NetAdapter -Physical -ErrorAction Stop | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceGuid } | ForEach-Object { $_.InterfaceGuid.ToString().Trim('{}') }); if($guids.Count -eq 0){exit 1}; foreach($guid in $guids){ $path=Join-Path $root ('{'+$guid+'}'); if(-not (Test-Path -LiteralPath $path)){exit 1}; $p=Get-ItemProperty -LiteralPath $path -ErrorAction Stop; if($p.TcpAckFrequency -ne 1 -or $p.TCPNoDelay -ne 1){exit 1} }; exit 0",
+    "$ErrorActionPreference='Stop'; $root='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces'; $paths=@(Get-ChildItem -LiteralPath $root -ErrorAction Stop | ForEach-Object { $p=Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction SilentlyContinue; $ips=@($p.IPAddress)+@($p.DhcpIPAddress); if(@($ips | Where-Object { $_ -and $_ -ne '0.0.0.0' -and $_ -ne '::' -and $_ -ne '127.0.0.1' -and $_ -ne '::1' }).Count -gt 0){ $_.PSPath } }); if($paths.Count -eq 0){exit 1}; foreach($path in $paths){ $p=Get-ItemProperty -LiteralPath $path -ErrorAction Stop; if([int]$p.TcpAckFrequency -ne 1 -or [int]$p.TCPNoDelay -ne 1){exit 1} }; exit 0",
   'network.qos.dscp-tag':
     "$names=@('optmaxxing-fortnite','optmaxxing-cs2','optmaxxing-valorant','optmaxxing-apex'); $p=@(Get-NetQosPolicy -ErrorAction Stop); foreach($n in $names){$x=$p | Where-Object Name -eq $n; if(-not $x -or [int]$x.DSCPAction -ne 46){exit 1}}; exit 0",
   'ps.mmagent.disable-mc':
