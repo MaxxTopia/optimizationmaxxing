@@ -15,9 +15,31 @@
 //! The frontend renders pass/fail/unknown per check.
 
 use anyhow::{Context, Result};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::process_helpers::hidden_powershell;
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NetworkAdapterSettings {
+    /// Adapter selected by the default IPv4 route. This is the adapter that
+    /// carries normal game traffic; virtual and disconnected adapters are not
+    /// included in this read-back.
+    pub adapter_name: String,
+    pub rss_enabled: Option<bool>,
+    pub rsc_ipv4_enabled: Option<bool>,
+    pub rsc_ipv6_enabled: Option<bool>,
+    pub lso_ipv4_enabled: Option<bool>,
+    pub lso_ipv6_enabled: Option<bool>,
+    pub interrupt_moderation: Option<String>,
+    pub flow_control: Option<String>,
+    pub energy_efficient_ethernet: Option<String>,
+    pub allow_computer_to_turn_off_device: Option<String>,
+    pub speed_duplex: Option<String>,
+    pub jumbo_packet: Option<String>,
+    pub receive_buffers: Option<String>,
+    pub transmit_buffers: Option<String>,
+}
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -51,6 +73,10 @@ pub struct NetworkAudit {
     /// WAS-110 management IP). If false the user needs a static route to
     /// reach the stick's web UI.
     pub stick_subnet_reachable: Option<bool>,
+    /// Read-only live values for the default-route physical adapter. This is
+    /// deliberately a snapshot, not an apply path: users can verify what the
+    /// catalog changed without us guessing at vendor-specific defaults.
+    pub adapter_settings: Vec<NetworkAdapterSettings>,
 }
 
 /// Bundled OUI → vendor mapping. Curated to the routers a competitive
@@ -181,6 +207,17 @@ $out = [ordered]@{
     gatewayMac      = $null
     gatewayRttMs    = $null
     publicIpv4      = $null
+    adapterSettings  = @()
+}
+
+function Get-AdvancedDisplayValue([string]$adapterName, [string[]]$displayNames) {
+    foreach ($displayName in $displayNames) {
+        try {
+            $property = Get-NetAdapterAdvancedProperty -Name $adapterName -DisplayName $displayName -ErrorAction Stop | Select-Object -First 1
+            if ($null -ne $property) { return [string]$property.DisplayValue }
+        } catch { }
+    }
+    return $null
 }
 
 try {
@@ -200,6 +237,58 @@ try {
             $out.adapterName = [string]$adapter.InterfaceDescription
             $out.mediaType   = [string]$adapter.MediaType
             $out.localMac    = [string]$adapter.MacAddress
+
+            # Read back only the adapter selected by the default route. These
+            # values are vendor-dependent, so missing properties stay null
+            # instead of being presented as a failed or guessed setting.
+            $nic = [ordered]@{
+                adapterName = [string]$adapter.InterfaceDescription
+                rssEnabled = $null
+                rscIpv4Enabled = $null
+                rscIpv6Enabled = $null
+                lsoIpv4Enabled = $null
+                lsoIpv6Enabled = $null
+                interruptModeration = $null
+                flowControl = $null
+                energyEfficientEthernet = $null
+                allowComputerToTurnOffDevice = $null
+                speedDuplex = $null
+                jumboPacket = $null
+                receiveBuffers = $null
+                transmitBuffers = $null
+            }
+            try {
+                $rss = Get-NetAdapterRss -Name $adapter.Name -ErrorAction Stop | Select-Object -First 1
+                if ($null -ne $rss) { $nic.rssEnabled = [bool]$rss.Enabled }
+            } catch { }
+            try {
+                $rsc = Get-NetAdapterRsc -Name $adapter.Name -ErrorAction Stop | Select-Object -First 1
+                if ($null -ne $rsc) {
+                    $nic.rscIpv4Enabled = [bool]$rsc.IPv4Enabled
+                    $nic.rscIpv6Enabled = [bool]$rsc.IPv6Enabled
+                }
+            } catch { }
+            try {
+                $lso = Get-NetAdapterLso -Name $adapter.Name -ErrorAction Stop | Select-Object -First 1
+                if ($null -ne $lso) {
+                    $nic.lsoIpv4Enabled = [bool]$lso.IPv4Enabled
+                    $nic.lsoIpv6Enabled = [bool]$lso.IPv6Enabled
+                }
+            } catch { }
+            $nic.interruptModeration = Get-AdvancedDisplayValue $adapter.Name @('Interrupt Moderation')
+            $nic.flowControl = Get-AdvancedDisplayValue $adapter.Name @('Flow Control')
+            $nic.energyEfficientEthernet = Get-AdvancedDisplayValue $adapter.Name @('Energy Efficient Ethernet', 'Energy-Efficient Ethernet', 'Green Ethernet', 'EEE', 'Advanced EEE', 'Power Saving Mode', 'Gigabit Lite', 'Ultra Low Power Mode')
+            $nic.speedDuplex = Get-AdvancedDisplayValue $adapter.Name @('Speed & Duplex', 'Speed Duplex')
+            $nic.jumboPacket = Get-AdvancedDisplayValue $adapter.Name @('Jumbo Packet', 'Jumbo Frames')
+            $nic.receiveBuffers = Get-AdvancedDisplayValue $adapter.Name @('Receive Buffers', 'Receive Buffer')
+            $nic.transmitBuffers = Get-AdvancedDisplayValue $adapter.Name @('Transmit Buffers', 'Transmit Buffer')
+            try {
+                $pm = Get-NetAdapterPowerManagement -Name $adapter.Name -ErrorAction Stop | Select-Object -First 1
+                if ($null -ne $pm -and $null -ne $pm.AllowComputerToTurnOffDevice) {
+                    $nic.allowComputerToTurnOffDevice = [string]$pm.AllowComputerToTurnOffDevice
+                }
+            } catch { }
+            $out.adapterSettings = @($nic)
         }
         # CIM Win32_NetworkAdapter.Speed is always Uint64 bps. Get-NetAdapter's
         # LinkSpeed is variably a string ("1 Gbps") or uint64 across PS 5.1/7
@@ -294,6 +383,7 @@ $out | ConvertTo-Json -Compress
             public_ipv4: None,
             cgnat: None,
             stick_subnet_reachable: None,
+            adapter_settings: Vec::new(),
         });
     }
 
@@ -317,6 +407,8 @@ $out | ConvertTo-Json -Compress
         gateway_rtt_ms: Option<f32>,
         #[serde(rename = "publicIpv4")]
         public_ipv4: Option<String>,
+        #[serde(rename = "adapterSettings", default)]
+        adapter_settings: Vec<NetworkAdapterSettings>,
     }
 
     let raw: Raw = serde_json::from_str(&stdout)
@@ -342,6 +434,7 @@ $out | ConvertTo-Json -Compress
         public_ipv4: raw.public_ipv4.filter(|s| !s.is_empty()),
         cgnat,
         stick_subnet_reachable,
+        adapter_settings: raw.adapter_settings,
     })
 }
 

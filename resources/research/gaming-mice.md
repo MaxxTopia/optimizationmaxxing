@@ -115,7 +115,7 @@ default profile. Same for Endgame Gear's surface tuning.
 | [Endgame Gear OP1 8K v2](https://endgamegear.com/products/op1-8k-v2-wired-gaming-mouse) | 52 g | 8000 Hz | PAW3950 U+ | Minimal shape, hardcore. Current shipping revision (v2): custom PAW3950 U+, Kailh GX hot-swap switches, <70 µs click latency. |
 | [Razer DeathAdder V4 Pro](https://www.razer.com/gaming-mice/razer-deathadder-v4-pro) | 56–57 g | 8000 Hz | Focus Pro 45K | Modern lightweight 8K ergo — true 8000 Hz wireless, 900 IPS / 85 G, optical scroll. ~6.13% of Valorant pros (Jun 2026). Fills the gap the heavy 1000 Hz EC-CW leaves. |
 | [ZOWIE EC2-CW / EC3-CW](https://zowie.benq.com/en-us/peripheral/mouse.html) | 70–77 g | 1000 Hz | 3370 | CS-tier classic ergo — but ~15–20 g heavier and 8× lower polling than the DeathAdder V4 Pro above. Pick it for the shape/feel, not the specs. |
-| **Finalmouse UltralightX Prophecy** | 33 g | 8000 Hz | proprietary | **Lightest serious competitive mouse — and configures via [xpanel.finalmouse.com](https://xpanel.finalmouse.com) in your browser, no software install. Same model in 3 sizes (classic / medium / small).** |
+| [Finalmouse SLX Nightfall](https://finalmouse.com/products/slx-nightfall) | Lightweight; size/revision varies | High polling | proprietary | **The newer Finalmouse reference in this guide — browser-configured with no always-on desktop daemon. Verify the available size, stock, warranty, and return policy before buying.** |
 
 **Why the Finalmouse XPANEL matters:** zero driver/daemon to install, kill,
 or babysit. Settings (DPI, LOD, polling, Motion Sync) save to the mouse
@@ -165,16 +165,14 @@ first quick swipe.
 3. Kill the daemon — Process Lasso → "Always Disabled" on G_HUB.exe /
    RzSynapse.exe / pulsarfusion.exe. Settings persist on the mouse.
 
-Finalmouse skips this step entirely — XPANEL is browser-based, nothing
-to kill.
+Finalmouse skips this step entirely — its SLX browser configurator is
+browser-based, so there is no desktop daemon to kill.
 
 ## What our catalog does for you
 
 - `ui.mouse.disable-acceleration` — Windows pointer accel off.
 - `hid.mouse.priority-realtime` — kernel mouse-class thread runs at
   realtime priority. Catches under-load polling jitter.
-- `hid.mouse.queue-size.optimize` — caps the mouse driver event queue at
-  20 events so packets get drained sooner.
 
 ## What we'd LOVE to do but can't
 
@@ -199,4 +197,4 @@ to kill.
 - **VLR.gg** — Valorant pro-config aggregator.
 - **r/MouseReview** — community consensus on skates + sensors + niche shapes.
 - **[Finalmouse XPANEL](https://xpanel.finalmouse.com)** — browser-based
-  configurator for the UltralightX Prophecy line.
+  configurator for Finalmouse mice, including the SLX family.

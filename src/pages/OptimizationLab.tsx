@@ -41,6 +41,7 @@ import {
   isTransactionActionEligible,
   sessionProfileFor,
 } from '../lib/optimizationSession'
+import { FortniteLatencyPlan } from '../components/FortniteLatencyPlan'
 
 const LAST_SCAN_KEY = 'optmaxxing-lab-last-scan-v1'
 const RUN_HISTORY_KEY = 'optmaxxing-lab-runs-v1'
@@ -431,6 +432,8 @@ export function OptimizationLab() {
           </Link>
         </div>
       </header>
+
+      <FortniteLatencyPlan />
 
       <section className="surface-card p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

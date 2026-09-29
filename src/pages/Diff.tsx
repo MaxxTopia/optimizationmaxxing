@@ -36,6 +36,13 @@ interface DiffRow {
   audit: TweakAudit | null
 }
 
+interface DiffCoverage {
+  catalogTotal: number
+  activeActionReceipts: number
+  activeCatalogTweaks: number
+  unknownActiveTweaks: number
+}
+
 function aggregateApplied(rows: AppliedTweak[]): AppliedTweak {
   if (rows.length === 0) {
     throw new Error('Cannot aggregate an empty applied-tweak group')
@@ -61,6 +68,7 @@ export function Diff() {
   const [search, setSearch] = useState('')
   const [reapplying, setReapplying] = useState<Set<string>>(new Set())
   const [reapplyAllBusy, setReapplyAllBusy] = useState(false)
+  const [coverage, setCoverage] = useState<DiffCoverage | null>(null)
 
   async function refresh() {
     if (!isNative) {
@@ -69,6 +77,7 @@ export function Diff() {
     }
     setLoading(true)
     setErr(null)
+    setCoverage(null)
     try {
       // The persisted receipt is history; verifyApplied() is the live truth.
       // Group action receipts so a multi-action tweak is not represented by
@@ -82,6 +91,15 @@ export function Diff() {
         byTweakId.set(row.tweakId, group)
       }
       const activeIds = new Set(byTweakId.keys())
+      const catalogIds = new Set(catalog.tweaks.map((t) => t.id))
+      const activeCatalogTweaks = [...activeIds].filter((id) => catalogIds.has(id)).length
+      const unknownActiveTweaks = [...activeIds].filter((id) => !catalogIds.has(id)).length
+      setCoverage({
+        catalogTotal: catalog.tweaks.length,
+        activeActionReceipts: active.length,
+        activeCatalogTweaks,
+        unknownActiveTweaks,
+      })
       const tweaks = catalog.tweaks.filter((t) => activeIds.has(t.id))
       const auditByTweakId = await auditMany(tweaks)
       const composed: DiffRow[] = tweaks.map((t) => ({
@@ -228,12 +246,25 @@ export function Diff() {
 
       {!loading && rows && rows.length === 0 && (
         <div className="surface-card p-8 text-center">
-          <p className="text-text font-semibold">No tweaks applied yet.</p>
-          <p className="text-text-muted text-sm mt-1">
-            Apply a preset from <Link to="/presets" className="text-accent hover:underline">/presets</Link>{' '}
-            or pick individual tweaks from{' '}
-            <Link to="/tweaks" className="text-accent hover:underline">/tweaks</Link> first.
-          </p>
+          {coverage?.unknownActiveTweaks ? (
+            <>
+              <p className="text-text font-semibold">Active receipts need catalog reconciliation.</p>
+              <p className="text-text-muted text-sm mt-1">
+                {coverage.unknownActiveTweaks} active tweak ID{coverage.unknownActiveTweaks === 1 ? '' : 's'}
+                {coverage.unknownActiveTweaks === 1 ? ' is' : ' are'} not in this catalog version, so
+                this page cannot safely render their details yet. Opening this page did not change Windows.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-text font-semibold">No tweaks applied yet.</p>
+              <p className="text-text-muted text-sm mt-1">
+                Apply a preset from <Link to="/presets" className="text-accent hover:underline">/presets</Link>{' '}
+                or pick individual tweaks from{' '}
+                <Link to="/tweaks" className="text-accent hover:underline">/tweaks</Link> first.
+              </p>
+            </>
+          )}
         </div>
       )}
 
@@ -247,8 +278,27 @@ export function Diff() {
               className="flex-1 min-w-64 px-3 py-2 rounded-md bg-bg-card border border-border focus:border-border-glow outline-none text-sm"
             />
             <span className="text-xs text-text-subtle">
-              {filtered.length} of {rows.length} active
+              {search.trim()
+                ? `${filtered.length} of ${coverage?.activeCatalogTweaks ?? rows.length} active`
+                : coverage?.activeCatalogTweaks ?? rows.length}{' '}
+              active catalog tweaks · {coverage?.activeActionReceipts ?? '—'} active action receipts ·{' '}
+              {coverage?.catalogTotal ?? catalog.tweaks.length} in catalog
             </span>
+            <p className="basis-full text-[11px] text-text-subtle leading-snug">
+              The catalog total is the available inventory, not a promise that every row applies to
+              this rig. Active tweak count is unique catalog IDs with a current <code>applied</code>{' '}
+              receipt; a multi-action tweak can create several action receipts. Reverted, rolled-back,
+              filtered, protected, incompatible, or never-applied entries are not active here.{' '}
+              <Link to="/tweaks" className="text-accent hover:underline">Browse the full catalog</Link>.
+            </p>
+            {coverage?.unknownActiveTweaks ? (
+              <p className="basis-full text-[11px] text-amber-300 leading-snug">
+                {coverage.unknownActiveTweaks} active tweak ID{coverage.unknownActiveTweaks === 1 ? '' : 's'}
+                {coverage.unknownActiveTweaks === 1 ? ' is' : ' are'} from an older or different catalog
+                version and {coverage.unknownActiveTweaks === 1 ? 'is' : 'are'} excluded from the detailed
+                rows until it is reconciled.
+              </p>
+            ) : null}
           </div>
           <SummaryStrip
             rows={rows}

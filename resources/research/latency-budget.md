@@ -32,8 +32,9 @@ specific rig or a sum that the app can infer automatically.
 
 ### 1. Input device (0.5–8 ms)
 
-- **Mouse polling rate.** 1000 Hz baseline = 1 ms median latency. 4000 Hz
-  shaves 0.6 ms off median, ~1 ms off worst-case. 8000 Hz another ~0.4 ms.
+- **Mouse polling rate.** Use 1000 Hz as the stable baseline. Higher rates can
+  reduce sampling interval, but they also increase CPU/input processing work on
+  some systems. Keep 2/4/8 kHz only when a repeatable game capture stays smooth.
 - **Wired vs wireless.** Modern flagship wireless (G PRO X Superlight 2,
   Razer Viper V3 Pro, Pulsar X2 V3) is functionally identical to wired —
   Logitech LightSpeed claim < 1 ms link latency, independently measured at
@@ -106,9 +107,11 @@ The leverage is making sure nothing stretches it:
   background software, but it can also remove display, audio, capture, or
   update functionality. Use the vendor package unless a specific component
   is measured as a problem on the target rig.
-- **NVIDIA Profile Inspector.** Force "Maximum Performance" power state
-  + "Threaded Optimization Off" for Fortnite specifically. Saves
-  occasional frametime spikes.
+- **NVIDIA per-game profile.** Use the in-game Reflex control when Fortnite
+  exposes it. Do not treat "Threaded Optimization Off", forced driver queue
+  settings, or a permanent maximum-performance state as universal wins. Compare
+  the default profile and the targeted setting while watching clocks, thermals,
+  frametime spikes, and the same scene.
 - **Game configuration.** Only use settings documented for the current game
   build and preserve a rollback copy. A setting that lowers visual cost can
   change visibility, streaming, or anti-cheat behavior; no fixed FPS or
@@ -133,12 +136,10 @@ on its scanout pattern.
   monitor stops waiting for V-sync between frames. Saves the difference
   between worst-case and best-case scanout — a real 1–3 ms.
   ([NVIDIA G-Sync research](https://blurbusters.com/gsync/gsync101-input-lag-tests-and-settings/) — Blur Busters)
-  - **Fortnite-pro caveat:** at 240+ Hz with stable FPS above refresh, pros
-    run VRR **OFF** + V-Sync off + NVIDIA Reflex On+BOOST + uncapped (or
-    refresh-3 cap). G-Sync adds ~1 ms versus raw V-Sync-off rendering, and
-    tearing is essentially invisible at that frame rate — pros prefer the
-    marginal latency win. For lower-refresh monitors or unstable FPS the
-    standard G-Sync stack still wins.
+- **Fortnite comparison tracks:** test VRR off with VSync off and a stable
+  high-FPS path against VRR with a cap below refresh. The second can reduce
+  tearing and queue saturation; the first can be lower latency when the system
+  stays well above refresh. Monitor, cap, driver, and workload decide the result.
 - **Monitor input lag mode.** Vendor menu setting. Almost always called
   something different per vendor (ASUS = "Display Boost Off", LG =
   "Low Latency", Dell = "Low Input Lag"). 1–4 ms savings, free.

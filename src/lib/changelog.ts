@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.14',
+    date: '2026-09-28',
+    highlights: [
+      'FIX **Tune Now tells the truth about coverage.** Active catalog tweaks, legacy receipts, excluded rows, and explicit review actions are now separated so a partial tune cannot look like the whole catalog was applied.',
+      'IMPROVE **Network tuning is measurable.** Read back the active Ethernet adapter, run one reversible NIC experiment with before/after latency and DPC probes, and automatically revert a clear regression or unusable result.',
+      'IMPROVE **Fortnite scheduling and persistence guidance.** CPU-set IDs, background watcher behavior, power-plan selection, adapter settings, and the lowest-latency decision path explain what changes and what still needs a real Windows test.',
+      'FIX **Profile and hardware guidance stays current.** The older platform-aware Upgrade Advisor, current mouse and keyboard research, and concise setup/settings and guide explanations are restored without hiding the limits of proxy evidence.',
+    ],
+  },
+  {
     version: '0.4.13',
     date: '2026-09-25',
     highlights: [

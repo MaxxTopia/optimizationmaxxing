@@ -5,6 +5,7 @@ import {
   openExternal,
   type NetworkAudit,
 } from '../lib/tauri'
+import { NetworkExperimentCard } from './NetworkExperimentCard'
 
 /**
  * NetworkAuditCard — competitive-Fortnite network setup punch-list.
@@ -309,6 +310,14 @@ const VERDICT_GLYPH: Record<Verdict, string> = {
   unknown: '◇',
 }
 
+function boolSetting(value: boolean | null): string {
+  return value == null ? 'not reported' : value ? 'enabled' : 'disabled'
+}
+
+function textSetting(value: string | null): string {
+  return value?.trim() || 'not reported'
+}
+
 export function NetworkAuditCard() {
   const isNative = inTauri()
   const [audit, setAudit] = useState<NetworkAudit | null>(null)
@@ -414,6 +423,49 @@ export function NetworkAuditCard() {
           bindings or touch virtual adapters.
         </p>
       </div>
+
+      {audit && audit.adapterSettings.length > 0 && (
+        <div className="rounded-md border border-border bg-bg-raised/30 p-3 space-y-2">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-text-subtle font-semibold">
+              Live adapter settings
+            </p>
+            <p className="text-[11px] text-text-muted leading-relaxed mt-1">
+              Read-only values from the physical adapter carrying the default route. Use this to
+              confirm a tweak actually changed the intended Intel/Ethernet device; a missing value
+              means that driver does not expose that property, not that it is disabled.
+            </p>
+          </div>
+          {audit.adapterSettings.map((settings) => (
+            <div key={settings.adapterName} className="space-y-2">
+              <p className="text-xs font-mono text-text">{settings.adapterName}</p>
+              <div className="grid gap-x-4 gap-y-1.5 text-[11px] sm:grid-cols-2 lg:grid-cols-3">
+                <p><span className="text-text-subtle">RSS:</span> {boolSetting(settings.rssEnabled)}</p>
+                <p><span className="text-text-subtle">RSC:</span> IPv4 {boolSetting(settings.rscIpv4Enabled)} · IPv6 {boolSetting(settings.rscIpv6Enabled)}</p>
+                <p><span className="text-text-subtle">LSO:</span> IPv4 {boolSetting(settings.lsoIpv4Enabled)} · IPv6 {boolSetting(settings.lsoIpv6Enabled)}</p>
+                <p><span className="text-text-subtle">Interrupt moderation:</span> {textSetting(settings.interruptModeration)}</p>
+                <p><span className="text-text-subtle">Flow control:</span> {textSetting(settings.flowControl)}</p>
+                <p><span className="text-text-subtle">EEE / Green Ethernet:</span> {textSetting(settings.energyEfficientEthernet)}</p>
+                <p><span className="text-text-subtle">Windows power-off permission:</span> {textSetting(settings.allowComputerToTurnOffDevice)}</p>
+                <p><span className="text-text-subtle">Speed / Duplex:</span> {textSetting(settings.speedDuplex)}</p>
+                <p><span className="text-text-subtle">Jumbo packet:</span> {textSetting(settings.jumboPacket)}</p>
+                <p><span className="text-text-subtle">Receive buffers:</span> {textSetting(settings.receiveBuffers)}</p>
+                <p><span className="text-text-subtle">Transmit buffers:</span> {textSetting(settings.transmitBuffers)}</p>
+              </div>
+            </div>
+          ))}
+          <p className="text-[10px] text-text-subtle leading-relaxed border-t border-border pt-2">
+            These are not universal "lower is better" switches. Keep RSS and Auto Negotiation on;
+            test EEE, interrupt moderation, RSC, LSO, and flow control one at a time while watching
+            packet loss, DPC load, and frame-time variance. Fortnite gameplay is primarily UDP, so
+            TCP ACK/Nagle changes will not lower in-match ping.
+          </p>
+        </div>
+      )}
+
+      {audit && (
+        <NetworkExperimentCard audit={audit} onAuditUpdated={setAudit} />
+      )}
 
       {err && <p className="text-xs text-red-300">Probe failed: {err}</p>}
 

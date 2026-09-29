@@ -12,8 +12,10 @@ import {
 } from '../lib/tauri'
 
 /**
- * Per-game-name CPU Set rules. The configuration survives app restarts, but
- * the polling daemon runs only while the app is open and enabled.
+ * Per-game-name CPU Set rules. The configuration survives app restarts. The
+ * optional Windows sign-in launcher keeps the polling daemon alive while the
+ * UI is hidden, which is the only way this runtime feature can act before a
+ * game launches.
  *
  * Pairs with the click-to-pin section above (CpuPinningSection) — that's
  * one-shot for whatever's in the foreground; this is set-and-forget for
@@ -82,6 +84,15 @@ export function AutoPinSection() {
     persist({ ...config, enabled: !config.enabled })
   }
 
+  function handleToggleStartup() {
+    if (!config) return
+    persist({
+      ...config,
+      // The native side also normalizes this off when the watcher is stopped.
+      startWithWindows: !config.startWithWindows,
+    })
+  }
+
   function handleAddRule(exe: string) {
     if (!config || !info) return
     const cores = recommendCoresForRig(info, exe)
@@ -137,16 +148,17 @@ export function AutoPinSection() {
             a core number or a speed rating.
           </p>
           <p>
-            <strong className="text-text">How to use it:</strong> add Fortnite, keep
-            <strong className="text-text"> All detected sets</strong> as the baseline, then
-            press Start. You do not need to press Edit after the automatic choice. Use Edit only
-            to change the IDs manually or to run a P-core A/B test.
+            <strong className="text-text">Use it in three steps:</strong> (1) add Fortnite,
+            (2) leave <strong className="text-text">All detected sets</strong> selected as the
+            baseline, and (3) press Start. You do not need to press Edit after that. Edit is only
+            for a deliberate P-core A/B test or a custom Windows-ID selection.
           </p>
           <p>
-            “Daemon” means a small background watcher inside this app. It polls every few seconds
-            while the app is open and enabled; it is not a Windows service and it does not launch
-            this app after a reboot. The rules are saved, but you must open the app before the
-            game (or add the app to Windows startup separately) for the watcher to run.
+            <strong className="text-text">Persistence:</strong> the rule is saved to this PC,
+            but CPU-set pinning is a live process action. Turn on{' '}
+            <strong className="text-text">Run watcher at Windows sign-in</strong> if you want a
+            hidden watcher to start after reboot and catch Fortnite without opening the UI first.
+            Ordinary registry, BCD, power-plan, and service tweaks do not need this app process.
           </p>
         </div>
 
@@ -233,6 +245,23 @@ export function AutoPinSection() {
             </button>
           </div>
         </div>
+
+        <label className="flex items-start gap-2 pt-3 border-t border-border text-xs text-text-muted">
+          <input
+            type="checkbox"
+            checked={Boolean(config?.startWithWindows)}
+            onChange={handleToggleStartup}
+            disabled={busy || !config?.enabled}
+            className="mt-0.5 accent-accent"
+          />
+          <span>
+            <span className="block text-text font-semibold">Run watcher at Windows sign-in</span>
+            <span className="block text-[11px] text-text-subtle leading-snug">
+              Starts this app hidden after reboot so saved rules can detect Fortnite before it
+              opens. Start the watcher first; this option is disabled while it is stopped.
+            </span>
+          </span>
+        </label>
 
         <div className="space-y-2 pt-3 border-t border-border">
           <p className="text-[10px] uppercase tracking-widest text-text-subtle">saved rules ({config?.rules.length ?? 0})</p>
@@ -468,8 +497,10 @@ function CoreGrid({
       </div>
 
       <p className="text-[11px] text-text-subtle leading-snug">
-        IDs are labels assigned by Windows. G is the processor group and L is the logical
-        processor position inside that group; neither is an FPS or latency score.
+        Windows reported <strong className="text-text">{info.cpuSets.length} CPU Set records</strong>{' '}
+        in this scan. That count is not a recommendation or a core number. IDs such as 56 are
+        labels assigned by Windows; G is the processor group and L is the logical processor
+        position inside that group. None of these numbers is an FPS or latency score.
       </p>
 
       {sections.map((section) => (

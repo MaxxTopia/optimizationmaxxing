@@ -11,6 +11,28 @@ supported modes and tournament eligibility:
 - [Epic PC requirements](https://www.epicgames.com/help/en-US/c-Category_Fortnite/c-Fortnite_PlayerBehavior/what-are-the-system-requirements-for-fortnite-on-pc-and-mac-a5720377103003)
 - [Epic anti-cheat update](https://www.fortnite.com/news/fortnite-anti-cheat-update-february-27-2025)
 
+## Shortest useful test order
+
+1. Compare the current renderer with **Enhanced DX12 Performance Mode** when the installed
+   Fortnite build exposes it. Epic describes the new DX12 Performance renderer as a current
+   path to test for performance and stability; do not assume it wins on every rig.
+2. On NVIDIA, compare **Reflex On** and **On + Boost** in the same scene. Reflex changes the
+   render queue; it is not a Windows registry tweak and it does not guarantee a fixed number of
+   milliseconds.
+3. Compare two display tracks: uncapped/VSync-off, and a stable cap with the monitor's VRR
+   path. Keep the one with better worst frametime and control. There is no universal
+   refresh-minus-three rule.
+4. Start at **1000 Hz mouse polling**. Try higher polling only if the same scene stays smooth.
+5. On a hybrid Intel CPU, leave all detected CPU Set records selected for the first test. The
+   IDs are Windows scheduler labels, not core numbers; the Auto Pin watcher is a soft preference
+   and must be compared against a no-watcher baseline.
+6. Validate the result with three comparable Match Scan captures. Keep a change only when the
+   worst frametime and control are repeatably better, not because a command reported success.
+
+The app's Optimization Lab shows this order in the UI. It is deliberately separate from the
+automatic Tune Now lane: a lower-risk Windows change can be applied and read back, but only the
+actual game/display path can establish a lower click-to-pixel result.
+
 ## What optimizationmaxxing changes
 
 The catalog's engine/config actions are snapshot-backed and reversible. Tune Now now asks for

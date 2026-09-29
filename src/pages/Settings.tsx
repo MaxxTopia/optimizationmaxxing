@@ -5,6 +5,8 @@ import { PROFILE_ORDER, profiles } from '../theme/profiles'
 import { useProfileStore } from '../store/useProfileStore'
 import {
   enableSystemProtection,
+  activeActionReceiptCount,
+  activeTweakCount,
   inTauri,
   kvGet,
   kvSet,
@@ -31,6 +33,7 @@ export function Settings() {
   const setProfile = useProfileStore((s) => s.setProfile)
 
   const [activeCount, setActiveCount] = useState(0)
+  const [activeReceiptCount, setActiveReceiptCount] = useState(0)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [lastReport, setLastReport] = useState<RevertAllReport | null>(null)
@@ -39,14 +42,18 @@ export function Settings() {
   useEffect(() => {
     if (!inTauri()) return
     listApplied()
-      .then((rows) => setActiveCount(rows.filter((r) => r.status === 'applied').length))
+      .then((rows) => {
+        setActiveCount(activeTweakCount(rows))
+        setActiveReceiptCount(activeActionReceiptCount(rows))
+      })
       .catch(() => {})
   }, [])
 
   async function refreshCount() {
     try {
       const rows = await listApplied()
-      setActiveCount(rows.filter((r) => r.status === 'applied').length)
+      setActiveCount(activeTweakCount(rows))
+      setActiveReceiptCount(activeActionReceiptCount(rows))
     } catch {
       /* ignore */
     }
@@ -121,9 +128,14 @@ export function Settings() {
           <div className="flex-1 min-w-0">
             <div className="text-sm text-text-muted">Currently applied tweaks</div>
             <div className="text-3xl font-bold mt-1">{activeCount}</div>
+            {activeReceiptCount !== activeCount && (
+              <div className="mt-1 text-xs text-text-subtle">
+                {activeReceiptCount} action receipts are retained for exact undo.
+              </div>
+            )}
             {lastReport && (
               <div className="mt-3 text-xs text-text-subtle">
-                Last revert: {lastReport.reverted}/{lastReport.totalActive} reverted
+                Last revert: {lastReport.reverted}/{lastReport.totalActive} action receipts reverted
                 {lastReport.failedReceiptIds.length > 0 && (
                   <span className="text-accent">
                     {' '}
@@ -163,7 +175,7 @@ export function Settings() {
           <div className="surface-card p-6 max-w-md w-full space-y-4">
             <h3 className="text-lg font-semibold">Revert {activeCount} applied tweak{activeCount === 1 ? '' : 's'}?</h3>
             <p className="text-sm text-text-muted">
-              This walks every applied receipt newest-first and replays the captured pre-state.
+              This walks all {activeReceiptCount} active action receipt{activeReceiptCount === 1 ? '' : 's'} newest-first and replays each captured pre-state.
               Privileged reverts will trigger a single UAC prompt. Reverts that fail (e.g. removed
               registry keys) stay marked as applied.
             </p>

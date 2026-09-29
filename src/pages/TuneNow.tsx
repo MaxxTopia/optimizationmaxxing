@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
+import {
+  catalog,
+  experimentalWarningFor,
+  isExperimentalTweak,
+  tweakMatchesSpec,
+  type TweakRecord,
+} from '../lib/catalog'
 import { GAMES, type GameId } from '../lib/games'
 import { runBench, score } from '../lib/astaBench'
 import { loadImpactStore } from '../lib/benchImpact'
 import { useIsVip } from '../store/useVipStore'
 import { useRigStore } from '../store/useRigStore'
 import {
+  applyBatch,
   applyTransaction,
   getTunePreflight,
   inTauri,
@@ -47,10 +54,10 @@ import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
  * dedicated tweaks for) because the core ~70 rig-level + Windows-level
  * tweaks compound regardless of title.
  *
- * Applies only actions inside the selected profile. Security-degrading,
+ * Applies the safe, profile-matching lane automatically. Security-degrading,
  * cosmetic-only, tournament-breaking, and high anti-cheat-risk tweaks remain
- * protected even in Extreme; the user can inspect those from /tweaks or Asta
- * with an explicit per-tweak decision.
+ * protected from silent application, but are surfaced below the plan in an
+ * explicit review lane so the user can understand and choose them here.
  */
 
 type Phase = 'idle' | 'scanning' | 'ready' | 'applying' | 'measuring' | 'done' | 'error'
@@ -62,10 +69,12 @@ interface PlanBuckets {
   vipLocked: TweakRecord[]
   /** Already-applied tweaks (not re-applied). */
   alreadyApplied: TweakRecord[]
-  /** Never auto-applied because they need explicit security, eligibility, or readback review. */
+  /** Eligible for this rig/context, but require a visible per-tweak decision. */
   skippedDanger: TweakRecord[]
   /** Valid catalog matches outside the selected intensity. */
   skippedByProfile: TweakRecord[]
+  /** Catalog rows whose hardware/OS targeting does not match this rig. */
+  skippedBySpec: TweakRecord[]
   /** Tagged for a different game context and therefore not part of this run. */
   skippedOtherGame: TweakRecord[]
 }
@@ -106,6 +115,9 @@ export function TuneNow() {
   const [transactionReport, setTransactionReport] = useState<TransactionReport | null>(null)
   const [ticket, setTicket] = useState<TuneTicket | null>(() => readTuneTicket())
   const [showTicket, setShowTicket] = useState(false)
+  const [explicitSelectedIds, setExplicitSelectedIds] = useState<Set<string>>(new Set())
+  const [explicitApplying, setExplicitApplying] = useState(false)
+  const [explicitNotice, setExplicitNotice] = useState<string | null>(null)
 
   useEffect(() => {
     void ensureLoaded()
@@ -132,6 +144,17 @@ export function TuneNow() {
     () => buildPlan(catalog.tweaks, spec, appliedIds, isVip, tuneProfile(intensity), targetGame),
     [spec, appliedIds, isVip, intensity, targetGame],
   )
+
+  useEffect(() => {
+    // Intensity/game changes can replace the review list. Do not leave a
+    // hidden selection armed for a different plan.
+    const available = new Set(plan.skippedDanger.map((tweak) => tweak.id))
+    setExplicitSelectedIds((previous) => {
+      const next = new Set([...previous].filter((id) => available.has(id)))
+      if (next.size === previous.size && [...previous].every((id) => next.has(id))) return previous
+      return next
+    })
+  }, [plan.skippedDanger])
 
   const recommendation = useMemo(() => recommendedTuneProfile(spec), [spec])
   const profile = tuneProfile(intensity)
@@ -164,6 +187,8 @@ export function TuneNow() {
     setTransactionReport(null)
     setVerification(null)
     setRepairSummary(null)
+    setExplicitSelectedIds(new Set())
+    setExplicitNotice(null)
     setProgress('Detecting rig…')
     try {
       const detected = await refreshRig()
@@ -344,6 +369,117 @@ export function TuneNow() {
     }
   }
 
+  async function applyExplicitSelected() {
+    const selected = plan.skippedDanger.filter((tweak) => explicitSelectedIds.has(tweak.id))
+    if (selected.length === 0) {
+      setExplicitNotice('Select at least one review row first. Nothing was changed.')
+      return
+    }
+    if (!isNative) {
+      setExplicitNotice('The explicit review lane requires the desktop app shell.')
+      return
+    }
+
+    // The same Windows-update stability gate applies to the review lane. A
+    // deliberate choice does not make a concurrent servicing operation safe.
+    try {
+      const latestPreflight = await getTunePreflight()
+      setPreflight(latestPreflight)
+      if (latestPreflight.blocksAutoApply) {
+        setExplicitNotice(`Review apply is paused: ${latestPreflight.detail}`)
+        return
+      }
+    } catch {
+      // Older installed shells may not expose this read-only command. The
+      // native apply/read-back path remains the compatibility fallback.
+    }
+
+    let confirmed = false
+    try {
+      confirmed = await confirmAction(
+        `You selected ${selected.length} explicit-review tweak${selected.length === 1 ? '' : 's'}. Some may weaken Windows security, change boot/update behavior, affect compatibility or anti-cheat eligibility, or lack deterministic read-back. Tune Now will show the result and keep the normal revert path where one exists. Continue only after reading each selected row?`,
+      )
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+      setPhase('error')
+      return
+    }
+    if (!confirmed) return
+
+    setExplicitApplying(true)
+    setExplicitNotice(null)
+    setError(null)
+    setTransactionReport(null)
+    setProgress(`Applying ${selected.length} explicitly selected tweak${selected.length === 1 ? '' : 's'}…`)
+    const selectedIds = new Set(selected.map((tweak) => tweak.id))
+
+    try {
+      const transactional: BatchItem[] = []
+      const explicit: BatchItem[] = []
+      for (const tweak of selected) {
+        for (const action of tweak.actions) {
+          const item = { tweakId: tweak.id, action }
+          if (isTransactionActionEligible(action)) transactional.push(item)
+          else explicit.push(item)
+        }
+      }
+
+      let requestedActions = 0
+      if (transactional.length > 0) {
+        const report = await applyTransaction(transactional)
+        setTransactionReport(report)
+        requestedActions += transactional.length
+        if (report.status !== 'committed') {
+          const detail = [...report.errors, ...report.rollbackErrors].join(' ')
+          throw new Error(`The verified review lane ${report.status}.${detail ? ` ${detail}` : ''}`)
+        }
+      }
+      if (explicit.length > 0) {
+        const receipts = await applyBatch(explicit)
+        requestedActions += receipts.length
+      }
+
+      const live = await verifyApplied()
+      const selectedLive = live.filter((row) => selectedIds.has(row.tweakId))
+      setVerification(summarizeVerification(selectedLive))
+      setAppliedIds(appliedTweakIdsReadyForReapply(live))
+      const verified = selectedLive.filter((row) => row.verificationStatus === 'verified').length
+      const mismatch = selectedLive.filter((row) => row.verificationStatus === 'mismatch').length
+      const unknown = selectedLive.filter((row) => row.verificationStatus === 'unknown').length
+      const readback =
+        mismatch > 0 || unknown > 0
+          ? `${mismatch} mismatch and ${unknown} unknown; inspect Diff/Settings before relying on them.`
+          : 'Every selected action returned a verified read-back.'
+      setExplicitNotice(
+        `Review lane applied ${selected.length} tweak${selected.length === 1 ? '' : 's'} (${requestedActions} action${requestedActions === 1 ? '' : 's'}): ${verified} verified. ${readback}`,
+      )
+      setExplicitSelectedIds(new Set())
+      telemetrySendEvent('tweak.applied', {
+        tweakId: '__tune_now_explicit_review__',
+        tweakCount: selected.length,
+        actionCount: requestedActions,
+        verified,
+        mismatch,
+        unknown,
+      })
+    } catch (e) {
+      // Keep the next plan grounded in live state even if a mixed review batch
+      // partially applied before the native engine reported an error.
+      try {
+        const live = await verifyApplied()
+        setVerification(summarizeVerification(live.filter((row) => selectedIds.has(row.tweakId))))
+        setAppliedIds(appliedTweakIdsReadyForReapply(live))
+      } catch {
+        // Preserve the original apply error when the follow-up read-back also fails.
+      }
+      setError(e instanceof Error ? e.message : String(e))
+      setPhase('error')
+    } finally {
+      setExplicitApplying(false)
+      setProgress('')
+    }
+  }
+
   return (
     <div className="space-y-5">
       <header className="space-y-1">
@@ -399,12 +535,30 @@ export function TuneNow() {
             setIntensity(next)
             setVerification(null)
             setRepairSummary(null)
+            setExplicitSelectedIds(new Set())
+            setExplicitNotice(null)
           }}
           onTargetGameChange={(next) => {
             setTargetGame(next)
             setVerification(null)
+            setExplicitSelectedIds(new Set())
+            setExplicitNotice(null)
           }}
           onApply={applyAll}
+          explicitSelectedIds={explicitSelectedIds}
+          explicitApplying={explicitApplying}
+          explicitNotice={explicitNotice}
+          onToggleExplicit={(id) => {
+            setExplicitSelectedIds((previous) => {
+              const next = new Set(previous)
+              if (next.has(id)) next.delete(id)
+              else next.add(id)
+              return next
+            })
+          }}
+          onSelectAllExplicit={() => setExplicitSelectedIds(new Set(plan.skippedDanger.map((tweak) => tweak.id)))}
+          onClearExplicit={() => setExplicitSelectedIds(new Set())}
+          onApplyExplicit={applyExplicitSelected}
         />
       )}
 
@@ -559,9 +713,9 @@ function IdleState({
         {isNative ? 'Start tune →' : 'Requires the desktop app'}
       </button>
       <p className="text-[11px] text-text-subtle">
-        Tournament-breaking and high anti-cheat-risk actions are never auto-applied. Experimental
-        actions only enter Aggressive/Extreme after an explicit confirmation. You can inspect every
-        catalog item from{' '}
+        Tournament-breaking, high anti-cheat-risk, and other explicit-review actions are never
+        silently applied. The scan shows those rows below with a short explanation and an opt-in
+        button. You can inspect every catalog item from{' '}
         <Link to="/tweaks" className="underline hover:text-text">/tweaks</Link>. Every applied
         changes with a recorded inverse are one-click reversible from{' '}
         <Link to="/settings" className="underline hover:text-text">Settings</Link>.
@@ -597,6 +751,13 @@ function ReadyState({
   onTargetGameChange,
   preflight,
   onApply,
+  explicitSelectedIds,
+  explicitApplying,
+  explicitNotice,
+  onToggleExplicit,
+  onSelectAllExplicit,
+  onClearExplicit,
+  onApplyExplicit,
 }: {
   spec: SpecProfile
   beforeComposite: number
@@ -612,6 +773,13 @@ function ReadyState({
   onTargetGameChange: (next: GameId | 'any') => void
   preflight: TunePreflight | null
   onApply: () => void
+  explicitSelectedIds: Set<string>
+  explicitApplying: boolean
+  explicitNotice: string | null
+  onToggleExplicit: (id: string) => void
+  onSelectAllExplicit: () => void
+  onClearExplicit: () => void
+  onApplyExplicit: () => void
 }) {
   const options: TuneIntensity[] = ['light', 'competitive', 'aggressive', 'extreme']
   return (
@@ -709,6 +877,10 @@ function ReadyState({
           <h2 className="text-xl font-bold">
             {plan.applyFree.length} {profile.label.toLowerCase()} tweaks ready to apply
           </h2>
+          <p className="text-xs text-text-subtle mt-1">
+            {catalog.tweaks.length} catalog entries were evaluated. Only entries that match this
+            rig, game context, profile, and safety policy are included in the automatic run.
+          </p>
         </header>
         <ul className="space-y-1.5 text-sm text-text-muted">
           <li>
@@ -720,11 +892,16 @@ function ReadyState({
             </li>
           )}
           <li>
-            <span className="text-amber-300 font-semibold">{plan.skippedDanger.length}</span> protected by security, eligibility, or readback policy (never auto-applied)
+            <span className="text-amber-300 font-semibold">{plan.skippedDanger.length}</span> require explicit review — shown below with an explanation instead of being silently skipped
           </li>
           {plan.skippedByProfile.length > 0 && (
             <li>
               <span className="text-text-subtle font-semibold">{plan.skippedByProfile.length}</span> outside this profile's risk allowance
+            </li>
+          )}
+          {plan.skippedBySpec.length > 0 && (
+            <li>
+              <span className="text-text-subtle font-semibold">{plan.skippedBySpec.length}</span> target a different CPU, GPU, Windows build, RAM tier, or form factor
             </li>
           )}
           {plan.skippedOtherGame.length > 0 && (
@@ -757,7 +934,168 @@ function ReadyState({
           </Link>
         </div>
       </section>
+
+      {plan.skippedDanger.length > 0 && (
+        <ExplicitReviewSection
+          tweaks={plan.skippedDanger}
+          selectedIds={explicitSelectedIds}
+          applying={explicitApplying}
+          notice={explicitNotice}
+          blocked={Boolean(preflight?.blocksAutoApply)}
+          onToggle={onToggleExplicit}
+          onSelectAll={onSelectAllExplicit}
+          onClear={onClearExplicit}
+          onApply={onApplyExplicit}
+        />
+      )}
+      {explicitNotice && plan.skippedDanger.length === 0 && (
+        <p className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100 leading-relaxed">
+          {explicitNotice}
+        </p>
+      )}
     </div>
+  )
+}
+
+function ExplicitReviewSection({
+  tweaks,
+  selectedIds,
+  applying,
+  notice,
+  blocked,
+  onToggle,
+  onSelectAll,
+  onClear,
+  onApply,
+}: {
+  tweaks: TweakRecord[]
+  selectedIds: Set<string>
+  applying: boolean
+  notice: string | null
+  blocked: boolean
+  onToggle: (id: string) => void
+  onSelectAll: () => void
+  onClear: () => void
+  onApply: () => void
+}) {
+  const selectedCount = tweaks.filter((tweak) => selectedIds.has(tweak.id)).length
+  return (
+    <section className="surface-card p-5 space-y-4 border-amber-500/40">
+      <header className="space-y-1">
+        <p className="text-xs uppercase tracking-widest text-amber-300">explicit review lane</p>
+        <h2 className="text-xl font-bold">{tweaks.length} eligible rows need your decision</h2>
+        <p className="text-sm text-text-muted leading-relaxed">
+          These are applicable to this rig and game context, but Tune Now will not change them
+          silently. Select only the rows whose tradeoff you understand. Some security, boot,
+          update, compatibility, anti-cheat, or read-back risks cannot be made safe by putting them
+          behind a bigger preset.
+        </p>
+      </header>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={onSelectAll}
+          disabled={applying || blocked}
+          className="btn-chrome px-3 py-1.5 rounded-md border border-amber-500/50 text-amber-100 text-xs font-semibold disabled:opacity-50"
+        >
+          Select all review rows
+        </button>
+        <button
+          type="button"
+          onClick={onClear}
+          disabled={applying || selectedCount === 0}
+          className="btn-chrome px-3 py-1.5 rounded-md border border-border text-text-muted text-xs disabled:opacity-50"
+        >
+          Clear selection
+        </button>
+        <span className="text-xs text-text-subtle">{selectedCount} selected</span>
+      </div>
+
+      <div className="space-y-2">
+        {tweaks.map((tweak) => {
+          const checked = selectedIds.has(tweak.id)
+          const warning = explicitReviewReason(tweak)
+          return (
+            <label
+              key={tweak.id}
+              className={`block rounded-md border p-3 cursor-pointer transition ${
+                checked
+                  ? 'border-amber-400/70 bg-amber-500/10'
+                  : 'border-border hover:border-amber-500/50'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => onToggle(tweak.id)}
+                  disabled={applying || blocked}
+                  className="mt-1 accent-amber-400"
+                />
+                <div className="min-w-0 space-y-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-sm text-text">{tweak.title}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-amber-200 border border-amber-500/40 rounded px-1.5 py-0.5">
+                      risk {tweak.riskLevel}
+                    </span>
+                    {isExperimentalTweak(tweak) && (
+                      <span className="text-[10px] uppercase tracking-wider text-red-200 border border-red-500/40 rounded px-1.5 py-0.5">
+                        experimental
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-text-muted leading-snug">{tweak.description}</p>
+                  <p className="text-xs text-amber-100/90 leading-snug">
+                    <strong>Why review:</strong> {warning}
+                  </p>
+                  {tweak.expectedImpact && (
+                    <p className="text-xs text-text-subtle leading-snug">
+                      <strong className="text-text-muted">Tradeoff:</strong> {tweak.expectedImpact}
+                    </p>
+                  )}
+                  {isExperimentalTweak(tweak) && (
+                    <p className="text-xs text-text-subtle leading-snug">
+                      {experimentalWarningFor(tweak)}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-text-subtle">
+                    {tweak.actions.length} action{tweak.actions.length === 1 ? '' : 's'} ·{' '}
+                    {tweak.rebootRequired === 'none' ? 'no reboot tagged' : `${tweak.rebootRequired} may be required`} ·{' '}
+                    {tweak.anticheatRisk === 'none' ? 'no documented anti-cheat interaction' : `${tweak.anticheatRisk} anti-cheat interaction`}
+                  </p>
+                </div>
+              </div>
+            </label>
+          )
+        })}
+      </div>
+
+      {notice && (
+        <p className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-100 leading-relaxed">
+          {notice}
+        </p>
+      )}
+      <div className="flex items-center gap-3 flex-wrap">
+        <button
+          type="button"
+          onClick={onApply}
+          disabled={applying || blocked || selectedCount === 0}
+          className="btn-chrome px-5 py-2.5 rounded-md bg-amber-400 text-bg-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {blocked
+            ? 'Finish Windows Update, then re-scan'
+            : applying
+            ? 'Applying selected review rows…'
+            : selectedCount > 0
+            ? `Apply ${selectedCount} selected with review (UAC) →`
+            : 'Select rows to apply'}
+        </button>
+        <Link to="/diff" className="text-xs underline text-text-muted hover:text-text">
+          Review active state / revert path ↗
+        </Link>
+      </div>
+    </section>
   )
 }
 
@@ -1037,10 +1375,14 @@ function buildPlan(
   const alreadyApplied: TweakRecord[] = []
   const skippedDanger: TweakRecord[] = []
   const skippedByProfile: TweakRecord[] = []
+  const skippedBySpec: TweakRecord[] = []
   const skippedOtherGame: TweakRecord[] = []
 
   for (const t of all) {
-    if (!tweakMatchesSpec(t, spec)) continue
+    if (!tweakMatchesSpec(t, spec)) {
+      skippedBySpec.push(t)
+      continue
+    }
     if (!tweakMatchesGame(t, targetGame)) {
       skippedOtherGame.push(t)
       continue
@@ -1049,10 +1391,17 @@ function buildPlan(
       alreadyApplied.push(t)
       continue
     }
+    // Keep the existing VIP gate authoritative even when a row also needs
+    // explicit review. Otherwise a hard-blocked VIP row could accidentally
+    // bypass the normal entitlement check through the review lane.
+    if ((profile.vipRequired || t.vipGate === 'vip') && !isVip) {
+      vipLocked.push(t)
+      continue
+    }
     // Security-degrading, cosmetic-only, tournament-breaking, high
     // anti-cheat-risk, and script-only actions without a native read-back
-    // contract are never part of automatic Tune Now, including Extreme. The
-    // individual tweak page can explain the explicit risk and recovery path.
+    // contract are never part of automatic Tune Now, including Extreme. They
+    // remain visible in the explicit lane with a reason and opt-in control.
     if (isHardBlockedForAutoTune(t)) {
       skippedDanger.push(t)
       continue
@@ -1064,19 +1413,53 @@ function buildPlan(
       skippedByProfile.push(t)
       continue
     }
-    if ((profile.vipRequired || t.vipGate === 'vip') && !isVip) {
-      vipLocked.push(t)
-      continue
-    }
     applyFree.push(t)
   }
-  return { applyFree, vipLocked, alreadyApplied, skippedDanger, skippedByProfile, skippedOtherGame }
+  return { applyFree, vipLocked, alreadyApplied, skippedDanger, skippedByProfile, skippedBySpec, skippedOtherGame }
 }
 
 function tweakMatchesGame(tweak: TweakRecord, targetGame: GameId | 'any'): boolean {
   const tagged = tweak.applicableGames && tweak.applicableGames.length > 0
   if (!tagged) return true
   return targetGame !== 'any' && tweak.applicableGames!.includes(targetGame)
+}
+
+/** Keep the review lane useful without making users open every row in /tweaks. */
+function explicitReviewReason(tweak: TweakRecord): string {
+  const id = tweak.id.toLowerCase()
+  const actionKinds = new Set(tweak.actions.map((action) => action.kind))
+  const hasUnreadableScript = tweak.actions.some(
+    (action) => action.kind === 'powershell_script' && (!action.verify || !action.revert),
+  )
+
+  if (id.includes('mitigation') || id.includes('hvci') || id.includes('smartscreen')) {
+    return 'Reduces a Windows security boundary or mitigation. The possible latency upside is hardware-dependent and the security cost is real.'
+  }
+  if (id.includes('hypervisor') || actionKinds.has('bcdedit_set') || id.startsWith('bcd.')) {
+    return 'Changes boot or virtualization policy. It may affect drivers, security features, or boot behavior and normally needs a restart.'
+  }
+  if (id.includes('windows-update') || id.includes('delivery-optimization') || id.includes('microsoft-store')) {
+    return 'Changes Windows servicing or Store behavior. It can reduce background activity, but it can also delay updates or break app maintenance.'
+  }
+  if (id.includes('search') || id.includes('spotlight') || id.includes('background-apps') || id.includes('sysmain')) {
+    return 'Changes a Windows background feature. The benefit depends on whether that feature is contending with your game; the usability tradeoff is intentional.'
+  }
+  if (tweak.tournamentCompliance && Object.values(tweak.tournamentCompliance).some((value) => value === 'breaks')) {
+    return 'The catalog marks this as tournament-breaking for at least one supported game. Keep it off any competitive install unless you have checked the current rules.'
+  }
+  if (tweak.anticheatRisk === 'high') {
+    return 'The catalog marks this as high anti-cheat risk. Test only outside ranked/tournament play and review the current game rules first.'
+  }
+  if (hasUnreadableScript) {
+    return 'The native engine cannot prove or fully reverse at least one command. The live result must be checked manually after applying.'
+  }
+  if (actionKinds.has('file_write')) {
+    return 'Writes a game or system configuration file. The game may overwrite it, and the final result should be checked in-game.'
+  }
+  if (isExperimentalTweak(tweak)) {
+    return 'Marked experimental because the result is configuration-dependent or carries a compatibility, power, or restore tradeoff.'
+  }
+  return 'Tune Now requires a deliberate choice because this row is not covered by the safe automatic read-back policy.'
 }
 
 function gameContextLabel(targetGame: GameId | 'any'): string {

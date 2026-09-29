@@ -365,8 +365,14 @@ export function redactLabScan(scan: LabScan): PersistedLabSummary {
     memory: value('memory'),
     board: value('board'),
     os: value('os'),
-    appliedCount: scan.applied.filter((item) => item.status === 'applied').length,
-    verifiedCount: scan.applied.filter((item) => item.status === 'applied' && item.verificationStatus === 'verified').length,
+    appliedCount: new Set(
+      scan.applied.filter((item) => item.status === 'applied').map((item) => item.tweakId),
+    ).size,
+    verifiedCount: new Set(
+      scan.applied
+        .filter((item) => item.status === 'applied' && item.verificationStatus === 'verified')
+        .map((item) => item.tweakId),
+    ).size,
     rebootStatus: scan.reboot?.status ?? 'unknown',
   }
 }

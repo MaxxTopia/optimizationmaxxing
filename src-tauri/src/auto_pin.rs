@@ -14,7 +14,7 @@
 //! `%LOCALAPPDATA%\optmaxxing\auto-pin.json`. Frontend reads/writes config
 //! via Tauri commands; the daemon polls the file mtime to pick up changes.
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -41,6 +41,12 @@ pub struct AutoPinConfig {
     pub enabled: bool,
     pub poll_seconds: u32,
     pub rules: Vec<AutoPinRule>,
+    /// When true, the app launches hidden at the current user's Windows sign-in
+    /// so the runtime watcher is alive before a configured game starts.
+    /// This is deliberately opt-in: ordinary registry/BCD/power-plan tweaks do
+    /// not need the app process to remain open.
+    #[serde(default)]
+    pub start_with_windows: bool,
 }
 
 impl Default for AutoPinConfig {
@@ -49,6 +55,7 @@ impl Default for AutoPinConfig {
             enabled: false,
             poll_seconds: 5,
             rules: Vec::new(),
+            start_with_windows: false,
         }
     }
 }
@@ -97,7 +104,21 @@ pub fn init(config_path: PathBuf) {
     let _ = CONFIG_PATH.set(config_path.clone());
     if let Ok(bytes) = std::fs::read(&config_path) {
         if let Ok(loaded) = serde_json::from_slice::<AutoPinConfig>(&bytes) {
-            *cfg_lock().lock() = loaded;
+            let mut loaded = loaded;
+            // A startup entry without an enabled daemon would only launch a
+            // hidden, idle app. Normalize old/manual JSON to the same rule the
+            // UI uses and repair the entry below when it is enabled.
+            if !loaded.enabled {
+                loaded.start_with_windows = false;
+            }
+            *cfg_lock().lock() = loaded.clone();
+            // Reconcile both sides of the opt-in state. This also removes a
+            // stale Run entry left by an older config that was later disabled.
+            // The installed executable path can change after an update, so an
+            // enabled entry is rewritten to the current executable. Startup
+            // repair is best effort because init cannot surface a Tauri
+            // command error yet.
+            let _ = set_startup_entry(loaded.start_with_windows);
         }
     }
 }
@@ -190,10 +211,12 @@ fn poll_once(rules: &[AutoPinRule]) -> Result<()> {
                 }
                 Ok(report) => {
                     if first_error.is_none() {
-                        first_error = report.error.or_else(|| Some(format!(
-                            "Windows did not apply CPU Sets to {} (PID {pid_u32})",
-                            rule.process_name
-                        )));
+                        first_error = report.error.or_else(|| {
+                            Some(format!(
+                                "Windows did not apply CPU Sets to {} (PID {pid_u32})",
+                                rule.process_name
+                            ))
+                        });
                     }
                 }
                 Err(error) => {
@@ -229,20 +252,93 @@ pub fn get_config() -> AutoPinConfig {
     cfg_lock().lock().clone()
 }
 
-pub fn set_config(new_cfg: AutoPinConfig) -> Result<AutoPinConfig> {
-    {
-        let mut cfg = cfg_lock().lock();
-        *cfg = new_cfg.clone();
+pub fn set_config(mut new_cfg: AutoPinConfig) -> Result<AutoPinConfig> {
+    if !new_cfg.enabled {
+        new_cfg.start_with_windows = false;
     }
-    // Persist to disk for next launch.
+
+    let previous = cfg_lock().lock().clone();
+    let startup_changed = previous.start_with_windows != new_cfg.start_with_windows;
+    if startup_changed {
+        set_startup_entry(new_cfg.start_with_windows)?;
+    }
+
+    // Persist to disk before publishing the new in-memory config. If either
+    // write fails, leave the old runtime configuration intact and best-effort
+    // restore the previous Run entry so a reboot cannot produce a half-save.
     if let Some(path) = CONFIG_PATH.get() {
-        let json = serde_json::to_vec_pretty(&new_cfg)?;
-        if let Some(parent) = path.parent() {
-            let _ = std::fs::create_dir_all(parent);
+        let persist_result = (|| -> Result<()> {
+            let json = serde_json::to_vec_pretty(&new_cfg)?;
+            if let Some(parent) = path.parent() {
+                std::fs::create_dir_all(parent).with_context(|| {
+                    format!("create auto-pin config directory {}", parent.display())
+                })?;
+            }
+            std::fs::write(path, json)
+                .with_context(|| format!("write auto-pin config {}", path.display()))?;
+            Ok(())
+        })();
+        if let Err(error) = persist_result {
+            if startup_changed {
+                let _ = set_startup_entry(previous.start_with_windows);
+            }
+            return Err(error);
         }
-        std::fs::write(path, json)?;
     }
+
+    *cfg_lock().lock() = new_cfg.clone();
     Ok(new_cfg)
+}
+
+#[cfg(windows)]
+const STARTUP_RUN_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
+
+#[cfg(windows)]
+const STARTUP_RUN_VALUE: &str = "Optimizationmaxxing AutoPin Watcher";
+
+/// Manage the opt-in per-user launcher for the runtime CPU-set watcher.
+///
+/// This uses HKCU rather than a scheduled task or a service: it needs no
+/// administrator approval, follows the signed-in user's profile, and can be
+/// removed exactly when the user turns the option off.
+#[cfg(windows)]
+fn set_startup_entry(enabled: bool) -> Result<()> {
+    use winreg::enums::HKEY_CURRENT_USER;
+    use winreg::RegKey;
+
+    let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+    let (run_key, _) = hkcu
+        .create_subkey(STARTUP_RUN_KEY)
+        .context("open the current-user Windows startup key")?;
+
+    if !enabled {
+        match run_key.delete_value(STARTUP_RUN_VALUE) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => {
+                return Err(error).context("remove the Optimizationmaxxing startup entry")
+            }
+        }
+        return Ok(());
+    }
+
+    let exe = std::env::current_exe().context("resolve the Optimizationmaxxing executable path")?;
+    let command = format!("\"{}\" --background", exe.display());
+    run_key
+        .set_value(STARTUP_RUN_VALUE, &command)
+        .context("write the Optimizationmaxxing startup entry")?;
+    Ok(())
+}
+
+#[cfg(not(windows))]
+fn set_startup_entry(enabled: bool) -> Result<()> {
+    if enabled {
+        Err(anyhow!(
+            "Windows sign-in startup is only available on Windows"
+        ))
+    } else {
+        Ok(())
+    }
 }
 
 fn now_iso() -> String {
@@ -250,7 +346,6 @@ fn now_iso() -> String {
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let dt = chrono::DateTime::<chrono::Utc>::from_timestamp(now as i64, 0)
-        .unwrap_or_default();
+    let dt = chrono::DateTime::<chrono::Utc>::from_timestamp(now as i64, 0).unwrap_or_default();
     dt.to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
 }

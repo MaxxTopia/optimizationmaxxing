@@ -9,7 +9,7 @@
 
 export const POWERSHELL_VERIFIERS: Record<string, string> = {
   'network.tcp.ack-nodelay':
-    "$active=0; foreach($k in Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces'){ $p=Get-ItemProperty -Path $k.PsPath -ErrorAction SilentlyContinue; $ips=@($p.IPAddress)+@($p.DhcpIPAddress); $hasIp=@($ips | Where-Object { $_ -and $_ -ne '0.0.0.0' }).Count -gt 0; if($hasIp){$active++; if($p.TcpAckFrequency -ne 1 -or $p.TCPNoDelay -ne 1){exit 1}} }; if($active -gt 0){exit 0}; exit 1",
+    "$ErrorActionPreference='Stop'; $root='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces'; $guids=@(Get-NetAdapter -Physical -ErrorAction Stop | Where-Object { $_.Status -eq 'Up' -and $_.InterfaceGuid } | ForEach-Object { $_.InterfaceGuid.ToString().Trim('{}') }); if($guids.Count -eq 0){exit 1}; foreach($guid in $guids){ $path=Join-Path $root ('{'+$guid+'}'); if(-not (Test-Path -LiteralPath $path)){exit 1}; $p=Get-ItemProperty -LiteralPath $path -ErrorAction Stop; if($p.TcpAckFrequency -ne 1 -or $p.TCPNoDelay -ne 1){exit 1} }; exit 0",
   'network.qos.dscp-tag':
     "$names=@('optmaxxing-fortnite','optmaxxing-cs2','optmaxxing-valorant','optmaxxing-apex'); $p=@(Get-NetQosPolicy -ErrorAction Stop); foreach($n in $names){$x=$p | Where-Object Name -eq $n; if(-not $x -or [int]$x.DSCPAction -ne 46){exit 1}}; exit 0",
   'ps.mmagent.disable-mc':

@@ -63,8 +63,9 @@ export function Tweaks() {
     try {
       const list = await listApplied()
       const byId: Record<string, AppliedTweak> = {}
+      const catalogIds = new Set(catalog.tweaks.map((tweak) => tweak.id))
       for (const a of list) {
-        if (a.status === 'applied' && !byId[a.tweakId]) {
+        if (a.status === 'applied' && catalogIds.has(a.tweakId) && !byId[a.tweakId]) {
           byId[a.tweakId] = a
         }
       }

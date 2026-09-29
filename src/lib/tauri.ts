@@ -226,6 +226,29 @@ export interface AppliedTweak {
   verificationDetail: string
 }
 
+/**
+ * The native store keeps one receipt per action so every action has its own
+ * captured pre-state. A single catalog tweak can therefore produce several
+ * active receipts. Use these helpers for user-facing "tweak" counts so a
+ * multi-action row is not accidentally counted as several tweaks.
+ */
+export function activeTweakIds(rows: AppliedTweak[]): Set<string> {
+  return new Set(rows.filter((row) => row.status === 'applied').map((row) => row.tweakId))
+}
+
+export function activeTweakCount(rows: AppliedTweak[]): number {
+  return activeTweakIds(rows).size
+}
+
+export function activeCatalogTweakCount(rows: AppliedTweak[], catalogIds: Iterable<string>): number {
+  const knownIds = new Set(catalogIds)
+  return [...activeTweakIds(rows)].filter((id) => knownIds.has(id)).length
+}
+
+export function activeActionReceiptCount(rows: AppliedTweak[]): number {
+  return rows.filter((row) => row.status === 'applied').length
+}
+
 export interface BootstrapPayload {
   catalogVersion: string
   appliedTweakIds: string[]
@@ -971,6 +994,23 @@ export async function scewinParseDump(content: string): Promise<ScewinDump> {
   return invoke<ScewinDump>('scewin_parse_dump', { content })
 }
 
+export interface NetworkAdapterSettings {
+  adapterName: string
+  rssEnabled: boolean | null
+  rscIpv4Enabled: boolean | null
+  rscIpv6Enabled: boolean | null
+  lsoIpv4Enabled: boolean | null
+  lsoIpv6Enabled: boolean | null
+  interruptModeration: string | null
+  flowControl: string | null
+  energyEfficientEthernet: string | null
+  allowComputerToTurnOffDevice: string | null
+  speedDuplex: string | null
+  jumboPacket: string | null
+  receiveBuffers: string | null
+  transmitBuffers: string | null
+}
+
 export interface NetworkAudit {
   adapterName: string | null
   /** "Ethernet" | "Wifi" | "Other" — bucketed from the WMI media type. */
@@ -989,6 +1029,8 @@ export interface NetworkAudit {
   /** True if the local subnet is `192.168.11.0/24` — the WAS-110 stick's
    *  default mgmt subnet. False = need a static route to reach the stick. */
   stickSubnetReachable: boolean | null
+  /** Read-only advanced-property snapshot for the default-route adapter. */
+  adapterSettings: NetworkAdapterSettings[]
 }
 
 /** Probes default gateway, adapter, link speed, public IP, CGNAT, and
@@ -1295,6 +1337,7 @@ export interface AutoPinConfig {
   enabled: boolean
   pollSeconds: number
   rules: AutoPinRule[]
+  startWithWindows: boolean
 }
 
 export interface AutoPinPinnedProc {

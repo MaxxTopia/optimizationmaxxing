@@ -1,0 +1,33 @@
+﻿========================================================================
+ IF YOU LOSE ACCESS TO CLAUDE - HOW TO KEEP "optimizationmaxxing-hardening" GOING
+========================================================================
+
+STEP 1 - GET YOUR CONTEXT BACK
+  Open any AI (ChatGPT, Gemini, a new Claude, a local model) and paste in
+  these files, then say "help me continue this project":
+    - _CONTINUITY\snapshot\claude-md\optimizationmaxxing-hardening.CLAUDE.md   (the build rules)
+    - plus any matching notes in _CONTINUITY\snapshot\claude-memory\
+
+STEP 2 - GET THE CODE
+  Already here: C:\Users\Diggy\projects\optimizationmaxxing-hardening
+  Fresh PC?  git clone git@github.com:MaxxTopia/optimizationmaxxing.git
+
+STEP 3 - BUILD / RUN / SHIP AN UPDATE
+  This is a TAURI desktop app (Rust + web frontend).
+    1. npm install
+    2. npm run tauri:dev       # run the real desktop app locally
+    3. cargo test (in src-tauri\) and  npm run build  to verify
+    4. npm run tauri:build     # build installers locally, OR:
+    5. bump version, commit, tag vX.Y.Z, push --tags -> release.yml builds the installers.
+    GitHub Actions workflows present: release.yml
+
+STEP 4 - WHEN SOMETHING BREAKS / YOU GET AN ALERT
+  Read TROUBLESHOOTING.md in the project root - a runbook of the most
+  likely failures, exact fixes, and what any automated alerts mean.
+  Written for ANY human or AI: paste it in and say "help me handle this."
+
+------------------------------------------------------------------------
+Full backup hub: C:\Users\Diggy\projects\_CONTINUITY\  (read START-HERE.txt)
+Secrets -> how to regenerate: _CONTINUITY\SECRETS-ROTATION-MAP.txt
+Refresh this backup anytime: run _CONTINUITY\backup.ps1
+========================================================================

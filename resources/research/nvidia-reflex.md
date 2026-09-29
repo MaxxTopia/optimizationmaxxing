@@ -38,7 +38,7 @@ fixed millisecond gain from the switch alone.
 
 | Game | In-game setting | Notes |
 |---|---|---|
-| **Fortnite** | `NVIDIA Reflex Low Latency = On + Boost` | A reasonable test baseline on supported GeForce systems. Measure the current Fortnite build; do not assume a fixed gain or copy a creator's result. |
+| **Fortnite** | `NVIDIA Reflex Low Latency = On`, then compare `On + Boost` | On + Boost is a reasonable second test on supported GeForce systems, especially when the GPU is close to its power/clock limit. Measure the current Fortnite build; do not assume a fixed gain or copy a creator's result. |
 | Valorant | `NVIDIA Reflex Low Latency = On + Boost` | GPU-bound at competitive settings — bigger delta. |
 | Apex Legends | `NVIDIA Reflex Low Latency = On + Boost` | Engine-integrated since 2021. |
 | CS2 | `NVIDIA Reflex Low Latency = Enabled + Boost` | Source 2 integration shipped 2023. |
@@ -58,20 +58,27 @@ This is the kernel of truth behind "Reflex doesn't work in-game, you have to set
 - **NVCP → Power management mode**: compare the default and per-game options;
   `Prefer maximum performance` trades power and heat for fewer clock-state
   transitions and is not automatically better.
-- **NVCP → Vertical sync**: `Off` (in-game vsync also off — vsync re-introduces queue latency Reflex spent ms removing).
+- **NVCP → Vertical sync**: choose this with the display path. A tear-tolerant
+  competitive test can use VSync off, while a VRR/G-SYNC test commonly pairs
+  the driver's VSync behavior with a cap below refresh. Keep the cap, VRR, and
+  VSync choices together; there is no single correct setting for every monitor.
 
 In-game Reflex is the canonical path and works correctly when NVCP isn't actively undermining it.
 
 ## Common confusion sources
 
 - **"Reflex adds latency" pre-render myth**: came from `Maximum Pre-Rendered Frames` in old NVCP. That setting (now `Low Latency Mode`) at value 1 vs OFF can hurt frame pacing on CPU-bound titles. Reflex's in-game integration sidesteps this entirely.
-- **"Boost makes it worse" myth**: Boost only affects GPU clocks during GPU-bound segments. Power draw goes up; latency goes down. No frame-pacing penalty.
+- **"Boost makes it worse" myth**: Boost changes power-state behavior, not a
+  guaranteed latency direction. Power draw and heat can rise; keep it only if
+  the same capture shows better frametime/input behavior without throttling.
 - **"It doesn't work in Fortnite because Fortnite is CPU-bound"**: CPU-bound
   and capped workloads can leave less queue to remove. Test the current build
   instead of assuming a positive or negative result.
 
 ## Citations
 
+- [NVIDIA Reflex platform overview](https://www.nvidia.com/en-sg/geforce/news/reflex-low-latency-platform/)
+- [NVIDIA system latency optimization guide](https://www.nvidia.com/en-gb/geforce/guides/system-latency-optimization-guide/)
 - NVIDIA Reflex SDK whitepaper (developer.nvidia.com/reflex)
 - Battle(non)sense YouTube series on input-lag measurement
 - Hardware Unboxed Reflex deep-dive (Aug 2021)

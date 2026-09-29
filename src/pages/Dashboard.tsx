@@ -15,7 +15,8 @@ import { SystemHealth } from '../components/SystemHealth'
 import { WhyUs } from '../components/WhyUs'
 import { DetectedRigCard } from '../components/DetectedRigCard'
 import { useMetrics } from '../store/useMetrics'
-import { listApplied } from '../lib/tauri'
+import { activeActionReceiptCount, activeCatalogTweakCount, activeTweakCount, listApplied } from '../lib/tauri'
+import { catalog } from '../lib/catalog'
 import { useRigStore } from '../store/useRigStore'
 
 const APP_VERSION = (import.meta.env.VITE_APP_VERSION as string) || '0.1'
@@ -23,12 +24,21 @@ const APP_VERSION = (import.meta.env.VITE_APP_VERSION as string) || '0.1'
 export function Dashboard() {
   const spec = useRigStore((s) => s.spec)
   const [appliedCount, setAppliedCount] = useState(0)
+  const [activeReceiptCount, setActiveReceiptCount] = useState(0)
+  const [unknownActiveCount, setUnknownActiveCount] = useState(0)
   const metrics = useMetrics(2000)
 
   useEffect(() => {
     let cancelled = false
     listApplied()
-      .then((list) => !cancelled && setAppliedCount(list.filter((a) => a.status === 'applied').length))
+      .then((list) => {
+        if (cancelled) return
+        const uniqueActive = activeTweakCount(list)
+        const knownActive = activeCatalogTweakCount(list, catalog.tweaks.map((tweak) => tweak.id))
+        setAppliedCount(knownActive)
+        setActiveReceiptCount(activeActionReceiptCount(list))
+        setUnknownActiveCount(uniqueActive - knownActive)
+      })
       .catch(() => undefined)
     return () => {
       cancelled = true
@@ -40,7 +50,7 @@ export function Dashboard() {
   const ramUsed = metrics ? `${metrics.ramUsedGb.toFixed(1)} GB` : '—'
   const ramTotal = metrics ? `of ${metrics.ramTotalGb.toFixed(0)} GB` : ''
   const cpuHint = spec ? truncate(spec.cpu.model, 28) : 'Detecting…'
-  const tweakPct = appliedCount > 0 ? Math.min(100, (appliedCount / 30) * 100) : 0
+  const tweakPct = appliedCount > 0 ? Math.min(100, (appliedCount / catalog.tweaks.length) * 100) : 0
 
   return (
     <div className="space-y-10">
@@ -104,7 +114,15 @@ export function Dashboard() {
           label="TWEAKS APPLIED"
           percent={tweakPct}
           value={String(appliedCount)}
-          hint={appliedCount === 0 ? 'Browse the catalog →' : 'Reverts available in /tweaks'}
+          hint={
+            appliedCount === 0
+              ? unknownActiveCount > 0
+                ? `${catalog.tweaks.length} in catalog · ${unknownActiveCount} legacy active`
+                : `${catalog.tweaks.length} in catalog · browse →`
+              : `${appliedCount}/${catalog.tweaks.length} unique · ${activeReceiptCount} action receipts${
+                  unknownActiveCount > 0 ? ` · ${unknownActiveCount} legacy` : ''
+                }`
+          }
         />
       </section>
 

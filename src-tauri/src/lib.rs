@@ -26,6 +26,11 @@ pub use specs::SpecProfile;
 
 const REBOOT_VALIDATION_KEY: &str = "reboot_validation";
 
+/// True when the per-user startup launcher opened the app only to host the
+/// runtime CPU-set watcher. The main window stays hidden in this mode.
+#[derive(Debug, Clone, Copy)]
+struct BackgroundMode(bool);
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BootstrapPayload {
@@ -1991,10 +1996,6 @@ async fn driver_health() -> Result<drivers::DriverHealthReport, String> {
     .map_err(|e| format!("driver_health task failed: {e}"))?
 }
 
-/// Closes the splash window and shows the main window. Called by the React
-/// app from its first-mount useEffect. The 1200ms delay on the React side
-/// guarantees the neon-ripple animation gets at least one full sweep before
-/// the splash blinks out, even on fast hardware.
 #[tauri::command]
 async fn list_session_candidates() -> Result<Vec<toolkit::ProcessEntry>, String> {
     tokio::task::spawn_blocking(|| Ok(toolkit::list_session_candidates()))
@@ -2016,10 +2017,19 @@ async fn session_resume(pids: Vec<u32>) -> Result<Vec<toolkit::SuspendResult>, S
         .map_err(|e| format!("resume task failed: {e}"))?
 }
 
+/// Closes the splash window and shows the main window for a normal launch.
+/// A hidden `--background` launch closes the splash but keeps the main window
+/// hidden so the CPU-set watcher can run without opening the UI.
 #[tauri::command]
-async fn close_splashscreen(app: tauri::AppHandle) -> Result<(), String> {
+async fn close_splashscreen(
+    app: tauri::AppHandle,
+    background: tauri::State<'_, BackgroundMode>,
+) -> Result<(), String> {
     if let Some(splash) = app.get_webview_window("splash") {
         let _ = splash.close();
+    }
+    if background.0 {
+        return Ok(());
     }
     if let Some(main) = app.get_webview_window("main") {
         // Open maximized (fills the screen, keeps window controls). The window
@@ -2144,6 +2154,8 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .setup(|app| {
+            let background_mode = std::env::args().any(|arg| arg == "--background");
+            app.manage(BackgroundMode(background_mode));
             let dir = app
                 .path()
                 .app_local_data_dir()
