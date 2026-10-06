@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   applyBatch,
+  applyTransaction,
   listApplied,
   revertTweak,
   telemetrySendEvent,
@@ -21,6 +22,8 @@ import { RainbowSixSiegePackGuide } from '../components/RainbowSixSiegePackGuide
 /**
  * Curated preset bundles + user-built custom presets. Apply / Revert in
  * batch via the apply_batch Tauri command (one UAC for the whole bundle).
+ * The Siege pack uses the transactional command so a verification mismatch
+ * cannot leave a half-applied performance setup behind.
  * Custom presets persist to localStorage and export/import as JSON.
  */
 export function Presets() {
@@ -90,7 +93,19 @@ export function Presets() {
         if (appliedById[t.id]) continue
         for (const action of t.actions) items.push({ tweakId: t.id, action })
       }
-      if (items.length > 0) await applyBatch(items)
+      if (items.length > 0) {
+        if (presetId === 'preset.rainbow-six-siege') {
+          const report = await applyTransaction(items)
+          if (report.status !== 'committed' || report.verifiedCount !== report.itemCount) {
+            const detail = [...report.errors, ...report.rollbackErrors].slice(0, 2).join(' ')
+            throw new Error(
+              `Siege setup ${report.status}: ${detail || `${report.verifiedCount}/${report.itemCount} actions verified.`}`,
+            )
+          }
+        } else {
+          await applyBatch(items)
+        }
+      }
       await refreshApplied()
       telemetrySendEvent('preset.applied', {
         presetId,
@@ -193,7 +208,7 @@ export function Presets() {
           <p className="text-xs uppercase tracking-widest text-text-subtle">bundles</p>
           <h1 className="text-2xl font-bold">Presets</h1>
           <p className="text-text-muted text-sm max-w-xl">
-            Curated bundles + your own custom presets. Each apply runs as one batched UAC.
+            Curated bundles + your own custom presets. Each apply runs as one batched UAC; Siege also verifies every supported action and rolls back on mismatch.
           </p>
         </div>
         <div className="flex gap-2">
@@ -329,6 +344,12 @@ export function Presets() {
             const allApplied = tweaks.length > 0 && tweaks.every((t) => appliedById[t.id])
             const anyApplied = allPresetTweaks.some((t) => appliedById[t.id])
             const adminCount = tweaks.filter(tweakRequiresAdmin).length
+            const actionCount = tweaks.reduce((total, tweak) => total + tweak.actions.length, 0)
+            const detectedFormFactor = rigSpec?.mobo?.isLaptop === true
+              ? 'laptop'
+              : rigSpec?.mobo
+                ? 'desktop'
+                : 'unknown'
             const lockedByVip = p.vipGate === 'vip' && !isVip
             const busy = busyId === p.id
             const rigScanPending = isSiegePack && (rigStatus === 'idle' || rigStatus === 'loading')
@@ -378,15 +399,20 @@ export function Presets() {
                 )}
                 {isSiegePack && excluded.length > 0 && (
                   <div className="rounded-md border border-border bg-bg-base/60 px-3 py-2 text-xs text-text-muted leading-relaxed">
-                    <strong className="text-text">Skipped for this rig:</strong>{' '}
+                    <strong className="text-text">Not applicable on this rig:</strong>{' '}
                     {excluded.map((t) => t.id === 'process.hags.enable'
                       ? 'HAGS needs a supported Windows build'
                       : t.id === 'ps.power.dt-tournament'
-                        ? 'the gaming power plan is desktop-only'
+                        ? detectedFormFactor === 'laptop'
+                          ? 'the desktop Ultimate Performance clone is skipped on laptops to preserve OEM battery and thermal policy'
+                          : detectedFormFactor === 'unknown'
+                            ? 'the Ultimate Performance clone needs a confirmed desktop chassis'
+                            : 'the Ultimate Performance clone could not be confirmed for this chassis'
                         : t.title).join('; ')}.
                     {rigStatus === 'error' || rigStatus === 'unavailable'
-                      ? ' Rig detection is unavailable, so actions requiring hardware confirmation were skipped.'
+                      ? ' Rig detection is unavailable, so actions requiring hardware confirmation were skipped; re-scan this PC before applying again.'
                       : ''}
+                    <span className="block mt-1 text-text-subtle">This is a compatibility skip, not a failed apply. The remaining {tweaks.length} verified settings stay available to apply.</span>
                   </div>
                 )}
                 <ul className="text-xs text-text-subtle space-y-1">
@@ -404,7 +430,7 @@ export function Presets() {
                 <div className="flex items-center justify-between text-xs text-text-subtle">
                   <span>
                     {isSiegePack
-                      ? `${tweaks.length} Windows changes · ${excluded.length} skipped${adminCount > 0 ? ` · ${adminCount} admin` : ''}`
+                      ? `${tweaks.length} verified settings · ${actionCount} actions · ${excluded.length} skipped${adminCount > 0 ? ` · ${adminCount} admin` : ''}`
                       : `${tweaks.length} eligible · ${excluded.length} skipped · ${experimental.length} experimental · ${adminCount > 0 ? `${adminCount} admin` : 'no admin'}`}
                   </span>
                   <span>
@@ -427,7 +453,7 @@ export function Presets() {
                           : busy
                             ? 'Applying…'
                             : isSiegePack
-                              ? anyApplied ? 'Apply remaining Windows changes' : 'Apply Windows baseline'
+                              ? anyApplied ? 'Apply remaining verified settings' : 'Apply verified baseline'
                               : anyApplied ? 'Apply remaining' : 'Apply preset'}
                     </button>
                   )}

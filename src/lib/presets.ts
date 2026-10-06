@@ -30,7 +30,7 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🛡️',
     tagline: 'Stable frame times · lower latency · free',
     description:
-      'A free, reversible Siege performance pack. Apply the Windows baseline in one click; unsupported OS and laptop-only-inappropriate actions are skipped. The included setup card gives ready-to-use Siege, NVIDIA, overlay, networking, thermal, and frame-pacing defaults.',
+      'A free, reversible Siege performance pack. One transaction applies the verified Windows, power, USB/HID, background-policy, RGB-autostart, and supported Ethernet baseline for this PC. The setup card separately gives the exact Siege, NVIDIA, overlay, advanced NIC, thermal, FPS-cap, and frame-pacing values that still belong in their official controls.',
     tweakIds: [
       'display.refresh.maximize',
       'ui.mouse.disable-acceleration',
@@ -39,6 +39,14 @@ export const PRESETS: PresetBundle[] = [
       'ui.gamedvr.appcapture.disable',
       'process.hags.enable',
       'ps.power.dt-tournament',
+      'process.power-throttling.disable',
+      'process.usb-power-mgmt.disable',
+      'process.hid-power-mgmt.disable',
+      'process.edge.background-disable',
+      'process.background-apps.disable',
+      'peripherals.rgb-control-apps.autostart-disable',
+      'net.nic.rss.enable',
+      'net.nic.eee-powersave.disable',
     ],
     vipGate: 'free',
   },

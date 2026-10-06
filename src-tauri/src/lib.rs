@@ -319,7 +319,7 @@ async fn validate_reboot_persistence(
 fn bootstrap(state: tauri::State<'_, SnapshotStore>) -> Result<BootstrapPayload, String> {
     let applied = state.list_applied().map_err(|e| format!("{:#}", e))?;
     Ok(BootstrapPayload {
-        catalog_version: "v1.9.2".into(),
+        catalog_version: "v1.9.4".into(),
         applied_tweak_ids: applied
             .into_iter()
             .filter(|a| a.status == "applied")

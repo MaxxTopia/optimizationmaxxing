@@ -106,15 +106,16 @@ export function RainbowSixSiegePackGuide({ gpuVendor }: Props) {
           Siege performance pack
         </h2>
         <p className="max-w-4xl text-sm leading-relaxed text-text-muted">
-          Apply the reversible Windows changes once. The cards below give the recommended game, driver,
-          network, and thermal values directly. There are no benchmark or A/B-test steps.
-          Rig detection skips actions the detected OS or form factor does not support.
+          This is a complete two-layer setup: one click applies the reversible settings this app can
+          verify, and the cards below give the exact values for Siege, NVIDIA, overlays, NIC options,
+          thermals, FPS caps, and frame pacing. Manual cards are never counted as applied. There are no
+          benchmark or A/B-test steps, and rig detection skips settings the PC cannot support.
         </p>
       </header>
 
       <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-semibold text-text">Applied with one click</h3>
+          <h3 className="font-semibold text-text">Applied and verified by the preset</h3>
           <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
             Free · receipt-backed · revert available
           </span>
@@ -126,11 +127,40 @@ export function RainbowSixSiegePackGuide({ gpuVendor }: Props) {
           <li><strong className="text-text">Game DVR and auto-capture off</strong><br />Stops background Windows recording. Xbox background clips will not be available.</li>
           <li><strong className="text-text">HAGS preference on</strong><br />Compatible Windows builds only; requires restart and a supporting graphics driver.</li>
           <li><strong className="text-text">Ultimate Performance power plan</strong><br />Desktop only. Revert restores the previous plan and removes only this app’s clone.</li>
+          <li><strong className="text-text">Background power throttling off</strong><br />Removes EcoQoS throttling for background processes; it can increase idle power use.</li>
+          <li><strong className="text-text">USB and HID power management off</strong><br />Reduces device power-state transitions for mice, keyboards, and controllers.</li>
+          <li><strong className="text-text">Background-policy cleanup</strong><br />Disables Windows background app activity and Edge background mode; the app asks before the experimental policy.</li>
+          <li><strong className="text-text">Recognized RGB startup entries off</strong><br />Targets known controller apps/tasks only; it does not kill overlays, audio, security, or GPU services.</li>
+          <li><strong className="text-text">RSS on and Ethernet power saving off</strong><br />Uses the active physical adapters’ exposed controls and stores exact pre-state for rollback.</li>
         </ul>
         <p className="mt-3 text-xs leading-relaxed text-text-subtle">
           HAGS is a Windows preference and needs a supported graphics driver and restart. The plan is
-          desktop-only. “Applied” means the requested setting was written and read back; it is not an FPS
-          or latency guarantee.
+          desktop-only. Ethernet and RGB actions are hardware-dependent and say “verified” only when the
+          captured target state matches after the write. “Applied” means the requested setting was written
+          and read back; it is not an FPS, ping, or latency guarantee. On laptops, the desktop power-plan
+          clone is intentionally skipped; use the manufacturer’s plugged-in performance mode instead.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-semibold text-text">Configured in the official game or driver controls</h3>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-200">
+            Guided · not falsely counted
+          </span>
+        </div>
+        <ul className="mt-3 grid gap-3 text-sm text-text-muted sm:grid-cols-2 lg:grid-cols-3">
+          <li><strong className="text-text">Siege graphics</strong><br />Fullscreen, native resolution, 100% render scale, costly effects Low, and motion blur/lens effects Off.</li>
+          <li><strong className="text-text">NVIDIA Reflex and profile</strong><br />Reflex On + Boost when available; Siege-only Prefer maximum performance; leave shader cache Driver Default.</li>
+          <li><strong className="text-text">Overlays and startup</strong><br />Close recording and overlays you do not use, while keeping audio, GPU, peripheral, and security components you need.</li>
+          <li><strong className="text-text">Advanced NIC bindings</strong><br />Keep IPv4, IPv6, QoS Packet Scheduler, and required driver bindings enabled; do not uncheck them blindly.</li>
+          <li><strong className="text-text">Thermals and firmware</strong><br />Use the motherboard/GPU performance profile and clear airflow; safe firmware protections and fan curves stay in control.</li>
+          <li><strong className="text-text">FPS cap and 1% lows</strong><br />Use one limiter. With VRR, start 3 FPS below refresh; keep the render path consistent instead of stacking limiters.</li>
+        </ul>
+        <p className="mt-3 text-xs leading-relaxed text-text-subtle">
+          The app cannot safely edit NVIDIA’s driver database, Siege’s per-account graphics file, arbitrary
+          overlay processes, or firmware fan curves with a universal rollback guarantee. Those controls are
+          still part of this pack, but the setup stays honest about who owns the setting.
         </p>
       </div>
 
@@ -190,13 +220,13 @@ export function RainbowSixSiegePackGuide({ gpuVendor }: Props) {
       </div>
 
       <div className="rounded-lg border border-border bg-bg-base/40 p-4">
-        <h3 className="font-semibold text-text">Controls this preset cannot safely write</h3>
+        <h3 className="font-semibold text-text">Why some parts stay guided</h3>
         <p className="mt-2 text-sm leading-relaxed text-text-muted">
           {isNvidia
-            ? 'Set the Siege and NVIDIA values above in the game and NVIDIA Control Panel. Startup choices, NVIDIA profiles, Siege’s per-account file, and NIC advanced properties are not written by this app; the apply button changes only the receipt-backed Windows baseline.'
+            ? 'Set the Siege and NVIDIA values above in the game and NVIDIA Control Panel. The apply button changes the verified Windows/NIC baseline; this guide covers the remaining game, driver, overlay, thermal, FPS-cap, and frame-pacing choices without pretending it changed them.'
             : gpuVendor
-              ? `Detected GPU: ${gpuVendor}. NVIDIA-only steps are hidden. Game graphics, VRR, vendor driver settings, startup choices, and NIC advanced properties stay in their official menus; the apply button changes only the receipt-backed Windows baseline.`
-              : 'Game graphics, VRR, driver settings, startup choices, and NIC advanced properties stay in their official menus; the apply button changes only the receipt-backed Windows baseline.'}
+              ? `Detected GPU: ${gpuVendor}. NVIDIA-only steps are hidden. Game graphics, VRR, vendor driver settings, startup choices, and advanced NIC bindings stay in their official menus; the apply button changes the verified Windows/NIC baseline.`
+              : 'Game graphics, VRR, driver settings, startup choices, and advanced NIC bindings stay in their official menus; the apply button changes the verified Windows/NIC baseline.'}
         </p>
       </div>
 

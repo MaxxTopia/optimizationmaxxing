@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.17',
+    date: '2026-10-06',
+    highlights: [
+      'ADD **Siege is now a real two-layer performance pack.** The free preset adds receipt-backed power, USB/HID, background-policy, RGB-autostart, RSS, and exact Ethernet power settings to the Windows baseline.',
+      'FIX **Siege setup no longer overstates coverage.** The UI separates settings the app applied and verified from Siege graphics, NVIDIA/shader cache, overlay, advanced NIC, thermal/fan, FPS-cap, and frame-pacing controls that remain guided in their official menus.',
+      'FIX **NIC actions preserve the user’s prior state.** RSS and EEE/NIC power changes now keep an ownership stash, verify the targeted adapters, and restore the captured values instead of blindly re-enabling every property.',
+      'FIX **Siege compatibility skips are explained.** Laptop users now see that the desktop power-plan clone was intentionally withheld for OEM thermal/battery safety, not reported as a failed tune.',
+    ],
+  },
+  {
     version: '0.4.16',
     date: '2026-10-05',
     highlights: [
