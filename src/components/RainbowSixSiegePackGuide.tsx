@@ -121,24 +121,27 @@ export function RainbowSixSiegePackGuide({ gpuVendor }: Props) {
           </span>
         </div>
         <ul className="mt-3 grid gap-3 text-sm text-text-muted sm:grid-cols-2 lg:grid-cols-3">
-          <li><strong className="text-text">Highest supported display refresh</strong><br />Uses the current resolution and saves the prior display mode.</li>
+          <li><strong className="text-text">Highest supported display refresh</strong><br />Desktop lane only; laptop refresh/VSync coupling is left unchanged automatically.</li>
           <li><strong className="text-text">Mouse acceleration off</strong><br />Sets predictable 1:1 Windows pointer movement; logs out to fully take effect.</li>
           <li><strong className="text-text">Game Mode on</strong><br />Keeps Windows’ game scheduling feature enabled.</li>
           <li><strong className="text-text">Game DVR and auto-capture off</strong><br />Stops background Windows recording. Xbox background clips will not be available.</li>
-          <li><strong className="text-text">HAGS preference on</strong><br />Compatible Windows builds only; requires restart and a supporting graphics driver.</li>
+          <li><strong className="text-text">HAGS preference on</strong><br />Desktop lane only; compatible builds still require restart and a supporting graphics driver.</li>
           <li><strong className="text-text">Ultimate Performance power plan</strong><br />Desktop only. Revert restores the previous plan and removes only this app’s clone.</li>
           <li><strong className="text-text">Background power throttling off</strong><br />Removes EcoQoS throttling for background processes; it can increase idle power use.</li>
           <li><strong className="text-text">USB and HID power management off</strong><br />Reduces device power-state transitions for mice, keyboards, and controllers.</li>
-          <li><strong className="text-text">Background-policy cleanup</strong><br />Disables Windows background app activity and Edge background mode; the app asks before the experimental policy.</li>
-          <li><strong className="text-text">Recognized RGB startup entries off</strong><br />Targets known controller apps/tasks only; it does not kill overlays, audio, security, or GPU services.</li>
+          <li><strong className="text-text">Background-policy cleanup</strong><br />Desktop lane can disable Windows background app activity; Edge background mode remains available on supported rigs.</li>
+          <li><strong className="text-text">Recognized RGB startup entries off</strong><br />Desktop lane only; laptop OEM fan, boost, MUX, and performance-control startup stays untouched.</li>
           <li><strong className="text-text">RSS on and Ethernet power saving off</strong><br />Uses the active physical adapters’ exposed controls and stores exact pre-state for rollback.</li>
         </ul>
         <p className="mt-3 text-xs leading-relaxed text-text-subtle">
           HAGS is a Windows preference and needs a supported graphics driver and restart. The plan is
           desktop-only. Ethernet and RGB actions are hardware-dependent and say “verified” only when the
           captured target state matches after the write. “Applied” means the requested setting was written
-          and read back; it is not an FPS, ping, or latency guarantee. On laptops, the desktop power-plan
-          clone is intentionally skipped; use the manufacturer’s plugged-in performance mode instead.
+          and read back; it is not an FPS, ping, or latency guarantee. On laptops, the preset also leaves
+          display refresh, HAGS, the experimental background-app policy, and the broad RGB/OEM startup
+          sweep unchanged so the manufacturer’s plugged-in performance mode and control center keep owning
+          those decisions. Use the laptop maker’s Turbo/Performance mode, then set refresh, VSync, and HAGS
+          deliberately in the official controls if you want to change them.
         </p>
       </div>
 

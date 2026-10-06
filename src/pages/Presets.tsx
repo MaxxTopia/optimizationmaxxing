@@ -10,7 +10,13 @@ import {
 } from '../lib/tauri'
 import { confirmAction } from '../lib/confirm'
 import { catalog, isExperimentalTweak, tweakRequiresAdmin, type TweakRecord } from '../lib/catalog'
-import { PRESETS, presetMissingTweakIds, presetTweaks, presetTweaksForRig } from '../lib/presets'
+import {
+  PRESETS,
+  presetMissingTweakIds,
+  presetTweaks,
+  presetTweaksForRig,
+  siegeLaptopDeferredReason,
+} from '../lib/presets'
 import { useIsVip } from '../store/useVipStore'
 import { useRigStore } from '../store/useRigStore'
 import { useCustomPresets, type CustomPreset } from '../store/useCustomPresets'
@@ -343,11 +349,12 @@ export function Presets() {
             const missing = presetMissingTweakIds(p)
             const allApplied = tweaks.length > 0 && tweaks.every((t) => appliedById[t.id])
             const anyApplied = allPresetTweaks.some((t) => appliedById[t.id])
+            const deferredApplied = excluded.filter((t) => appliedById[t.id])
             const adminCount = tweaks.filter(tweakRequiresAdmin).length
             const actionCount = tweaks.reduce((total, tweak) => total + tweak.actions.length, 0)
             const detectedFormFactor = rigSpec?.mobo?.isLaptop === true
               ? 'laptop'
-              : rigSpec?.mobo
+              : rigSpec?.mobo?.isLaptop === false
                 ? 'desktop'
                 : 'unknown'
             const lockedByVip = p.vipGate === 'vip' && !isVip
@@ -400,19 +407,34 @@ export function Presets() {
                 {isSiegePack && excluded.length > 0 && (
                   <div className="rounded-md border border-border bg-bg-base/60 px-3 py-2 text-xs text-text-muted leading-relaxed">
                     <strong className="text-text">Not applicable on this rig:</strong>{' '}
-                    {excluded.map((t) => t.id === 'process.hags.enable'
-                      ? 'HAGS needs a supported Windows build'
-                      : t.id === 'ps.power.dt-tournament'
-                        ? detectedFormFactor === 'laptop'
-                          ? 'the desktop Ultimate Performance clone is skipped on laptops to preserve OEM battery and thermal policy'
-                          : detectedFormFactor === 'unknown'
-                            ? 'the Ultimate Performance clone needs a confirmed desktop chassis'
-                            : 'the Ultimate Performance clone could not be confirmed for this chassis'
-                        : t.title).join('; ')}.
+                    {excluded.map((t) => siegeLaptopDeferredReason(t.id, detectedFormFactor)
+                      ?? (t.id === 'process.hags.enable'
+                        ? 'HAGS needs a supported Windows build'
+                        : t.id === 'ps.power.dt-tournament'
+                          ? detectedFormFactor === 'laptop'
+                            ? 'the desktop Ultimate Performance clone is skipped on laptops to preserve OEM battery and thermal policy'
+                            : detectedFormFactor === 'unknown'
+                              ? 'the Ultimate Performance clone needs a confirmed desktop chassis'
+                              : 'the Ultimate Performance clone could not be confirmed for this chassis'
+                          : t.title)).join('; ')}.
                     {rigStatus === 'error' || rigStatus === 'unavailable'
                       ? ' Rig detection is unavailable, so actions requiring hardware confirmation were skipped; re-scan this PC before applying again.'
                       : ''}
                     <span className="block mt-1 text-text-subtle">This is a compatibility skip, not a failed apply. The remaining {tweaks.length} verified settings stay available to apply.</span>
+                  </div>
+                )}
+                {isSiegePack && deferredApplied.length > 0 && (
+                  <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-relaxed">
+                    <strong className="text-amber-200">Older laptop settings are still active.</strong>{' '}
+                    This version will not apply them again, but the previous release left {deferredApplied.length} deferred setting{deferredApplied.length === 1 ? '' : 's'} with an app receipt. Restore only those saved values before applying the safe laptop baseline.
+                    <button
+                      type="button"
+                      onClick={() => void handleRevert(p.id, deferredApplied)}
+                      disabled={busy}
+                      className="mt-2 block rounded-md border border-amber-300/50 px-2.5 py-1.5 text-xs font-semibold text-amber-100 hover:border-amber-200 disabled:opacity-50"
+                    >
+                      {busy ? 'Restoring…' : 'Restore deferred laptop settings'}
+                    </button>
                   </div>
                 )}
                 <ul className="text-xs text-text-subtle space-y-1">

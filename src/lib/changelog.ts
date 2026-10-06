@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.18',
+    date: '2026-10-06',
+    highlights: [
+      'FIX **Laptop Siege setup no longer forces laptop-sensitive settings.** Automatic refresh changes, HAGS, the experimental background-app policy, and the broad RGB/OEM startup sweep now stay unchanged unless the rig is confirmed as a desktop.',
+      'FIX **OEM performance controls stay available.** Laptop fan, boost, MUX, and manufacturer performance-mode apps are no longer caught by the one-click Siege baseline, reducing the chance of a preset silently moving a laptop into a lower-power mode after logon.',
+      'IMPROVE **The skip state is explicit.** The preset card and guide explain exactly which laptop settings were deferred and keep the remaining reversible Windows, USB/HID, RSS, and supported network actions available.',
+    ],
+  },
+  {
     version: '0.4.17',
     date: '2026-10-06',
     highlights: [

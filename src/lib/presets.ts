@@ -30,7 +30,7 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🛡️',
     tagline: 'Stable frame times · lower latency · free',
     description:
-      'A free, reversible Siege performance pack. One transaction applies the verified Windows, power, USB/HID, background-policy, RGB-autostart, and supported Ethernet baseline for this PC. The setup card separately gives the exact Siege, NVIDIA, overlay, advanced NIC, thermal, FPS-cap, and frame-pacing values that still belong in their official controls.',
+      'A free, reversible Siege performance pack. One transaction applies the verified Windows, power, USB/HID, background-policy, RGB-autostart, and supported Ethernet baseline for this PC. Laptop-sensitive refresh, HAGS, OEM-control, and Store-app policy changes stay unchanged automatically; the setup card separately gives the exact Siege, NVIDIA, overlay, advanced NIC, thermal, FPS-cap, and frame-pacing values that still belong in their official controls.',
     tweakIds: [
       'display.refresh.maximize',
       'ui.mouse.disable-acceleration',
@@ -156,6 +156,39 @@ export function presetTweaks(p: PresetBundle): TweakRecord[] {
     .filter((t): t is TweakRecord => !!t)
 }
 
+// Laptop OEM control centers can own fan/boost/MUX/performance mode. These
+// settings are still available as deliberate, manual choices elsewhere, but
+// the one-click Siege baseline must not change them without a confirmed
+// desktop chassis. A refresh-mode change can also introduce a VSync/FPS-cap
+// interaction, while HAGS and the background-app policy are driver/OEM
+// dependent. Leaving these four alone reduces the chance of a safe preset
+// creating a laptop FPS regression after reboot or logon.
+const LAPTOP_SIEGE_DEFERRED_IDS = new Set([
+  'display.refresh.maximize',
+  'process.hags.enable',
+  'process.background-apps.disable',
+  'peripherals.rgb-control-apps.autostart-disable',
+])
+
+export function siegeLaptopDeferredReason(
+  tweakId: string,
+  formFactor: 'laptop' | 'desktop' | 'unknown',
+): string | null {
+  if (formFactor === 'desktop' || !LAPTOP_SIEGE_DEFERRED_IDS.has(tweakId)) return null
+  switch (tweakId) {
+    case 'display.refresh.maximize':
+      return 'automatic display-refresh changes are deferred on laptops to avoid changing VSync or an in-game frame cap'
+    case 'process.hags.enable':
+      return 'HAGS is left unchanged on laptops because driver and game behavior is hardware-dependent'
+    case 'process.background-apps.disable':
+      return 'the background-app policy is deferred so OEM control-center apps can keep working'
+    case 'peripherals.rgb-control-apps.autostart-disable':
+      return 'the RGB startup sweep is deferred so OEM fan, boost, MUX, and performance controls can keep working'
+    default:
+      return 'this setting needs a confirmed desktop chassis before automatic application'
+  }
+}
+
 /** The Siege pack fails closed for rig-targeted actions when a snapshot is
  * unavailable or missing a field needed to prove compatibility. Universal
  * actions remain available; callers should show excluded entries explicitly. */
@@ -167,6 +200,10 @@ export function presetTweaksForRig(
   if (p.id !== 'preset.rainbow-six-siege') return { eligible: all, excluded: [] }
 
   const matchesKnownTargets = (tweak: TweakRecord) => {
+    // Do not infer that an unknown chassis is a desktop. The remaining
+    // universal, low-risk baseline can still be shown, but laptop-sensitive
+    // controls stay out until the rig snapshot proves a desktop system.
+    if (LAPTOP_SIEGE_DEFERRED_IDS.has(tweak.id) && spec?.mobo?.isLaptop !== false) return false
     const targets = tweak.targets
     if (!targets) return true
     if (!spec) return false
