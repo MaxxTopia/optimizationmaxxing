@@ -4,7 +4,8 @@
  * save custom presets + share via export/import.
  */
 import type { TweakRecord } from './catalog'
-import { catalog, isExperimentalTweak } from './catalog'
+import { catalog, isExperimentalTweak, tweakMatchesSpec } from './catalog'
+import type { SpecProfile } from './tauri'
 
 export interface PresetBundle {
   id: string
@@ -22,6 +23,25 @@ export interface PresetBundle {
 }
 
 export const PRESETS: PresetBundle[] = [
+  {
+    id: 'preset.rainbow-six-siege',
+    name: 'Rainbow Six Siege',
+    archetype: 'Shooter',
+    glyph: '🛡️',
+    tagline: 'Stable frame times · lower latency · free',
+    description:
+      'A free, reversible Siege performance pack. Apply the Windows baseline in one click; unsupported OS and laptop-only-inappropriate actions are skipped. The included setup card gives ready-to-use Siege, NVIDIA, overlay, networking, thermal, and frame-pacing defaults.',
+    tweakIds: [
+      'display.refresh.maximize',
+      'ui.mouse.disable-acceleration',
+      'ui.gamemode.enable',
+      'ui.gamedvr.disable',
+      'ui.gamedvr.appcapture.disable',
+      'process.hags.enable',
+      'ps.power.dt-tournament',
+    ],
+    vipGate: 'free',
+  },
   {
     id: 'preset.esports',
     name: 'Esports',
@@ -126,6 +146,37 @@ export function presetTweaks(p: PresetBundle): TweakRecord[] {
   return p.tweakIds
     .map((id) => byId.get(id))
     .filter((t): t is TweakRecord => !!t)
+}
+
+/** The Siege pack fails closed for rig-targeted actions when a snapshot is
+ * unavailable or missing a field needed to prove compatibility. Universal
+ * actions remain available; callers should show excluded entries explicitly. */
+export function presetTweaksForRig(
+  p: PresetBundle,
+  spec: SpecProfile | null,
+): { eligible: TweakRecord[]; excluded: TweakRecord[] } {
+  const all = presetTweaks(p)
+  if (p.id !== 'preset.rainbow-six-siege') return { eligible: all, excluded: [] }
+
+  const matchesKnownTargets = (tweak: TweakRecord) => {
+    const targets = tweak.targets
+    if (!targets) return true
+    if (!spec) return false
+    if (targets.cpuVendor?.length && !spec.cpu.vendor) return false
+    if (targets.gpuVendor?.length && !spec.gpu.vendor) return false
+    if (
+      (targets.osMinBuild != null || targets.osMaxBuild != null) &&
+      (!Number.isFinite(spec.os?.build) || (spec.os?.build ?? 0) <= 0)
+    ) return false
+    if (targets.ramMinGb != null && (!Number.isFinite(spec.ram?.totalGb) || (spec.ram?.totalGb ?? 0) <= 0)) return false
+    if (targets.formFactor?.length && typeof spec.mobo?.isLaptop !== 'boolean') return false
+    return tweakMatchesSpec(tweak, spec)
+  }
+
+  return {
+    eligible: all.filter(matchesKnownTargets),
+    excluded: all.filter((tweak) => !matchesKnownTargets(tweak)),
+  }
 }
 
 export function presetMissingTweakIds(p: PresetBundle): string[] {

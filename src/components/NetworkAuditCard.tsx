@@ -412,15 +412,17 @@ export function NetworkAuditCard() {
         </div>
         <div className="grid gap-1.5 text-[11px] leading-relaxed sm:grid-cols-2">
           <p><span className="text-emerald-300 font-semibold">Keep on:</span> RSS; Speed &amp; Duplex = Auto Negotiation; IPv4/IPv6 and QoS bindings that your network uses.</p>
-          <p><span className="text-amber-200 font-semibold">Good desktop test:</span> Energy Efficient Ethernet / Green Ethernet off if you see link wake stalls or hitching.</p>
-          <p><span className="text-text font-semibold">Leave default first:</span> checksum offload, LSO, receive/transmit buffers, flow control, and interrupt moderation. These are workload/driver dependent, not universal latency wins.</p>
-          <p><span className="text-text font-semibold">Usually off unless needed:</span> Jumbo Frames, VLAN/Priority tagging, and unused VPN/virtual-switch filters. Jumbo Frames must match the whole LAN.</p>
+          <p><span className="text-amber-200 font-semibold">Wired gaming baseline:</span> Energy Efficient Ethernet / Green Ethernet off; Jumbo Frames off unless every device on the LAN supports the same MTU.</p>
+          <p><span className="text-text font-semibold">Keep driver defaults:</span> checksum offload, LSO, receive/transmit buffers, and Flow Control. Disabling them can move work onto the CPU or hurt another workload.</p>
+          <p><span className="text-text font-semibold">Interrupt moderation:</span> Off can reduce local packet batching but raises interrupt work; it cannot lower ISP or server latency. Asta keeps unsupported driver scripts in review.</p>
+          <p><span className="text-text font-semibold">Wake on Magic Packet:</span> wakes a sleeping PC from the network. It does not change active-game packet handling; leave it off if you do not use Wake-on-LAN.</p>
+          <p><span className="text-text font-semibold">Usually off unless needed:</span> VLAN/Priority tagging and unused VPN/virtual-switch filters. Do not remove bindings your network uses.</p>
         </div>
         <p className="text-[10px] text-text-subtle leading-relaxed border-t border-sky-400/20 pt-2">
-          For Intel Ethernet Controller advanced properties, start with the Intel driver defaults,
-          RSS enabled, Auto Negotiation, and EEE off only on a wired desktop you can test. The
-          explicit NIC tweaks below change only named properties; they do not silently remove
-          bindings or touch virtual adapters.
+          For Intel Ethernet Controller advanced properties, use RSS enabled, Auto Negotiation,
+          EEE off, and Jumbo Frames off as the gaming baseline. Keep other driver defaults unless
+          a specific property is listed in Asta with a verified restore path. These settings do
+          not control your ISP route or guarantee lower in-match ping.
         </p>
       </div>
 
@@ -455,10 +457,10 @@ export function NetworkAuditCard() {
             </div>
           ))}
           <p className="text-[10px] text-text-subtle leading-relaxed border-t border-border pt-2">
-            These are not universal "lower is better" switches. Keep RSS and Auto Negotiation on;
-            test EEE, interrupt moderation, RSC, LSO, and flow control one at a time while watching
-            packet loss, DPC load, and frame-time variance. Fortnite gameplay is primarily UDP, so
-            TCP ACK/Nagle changes will not lower in-match ping.
+            These values describe the selected physical adapter; unsupported properties are not
+            necessarily disabled. Keep RSS and Auto Negotiation on. Wake-on-Magic-Packet is a
+            sleep/wake feature, not an active-game latency control. Fortnite gameplay is primarily
+            UDP, so TCP ACK/Nagle changes will not lower in-match ping.
           </p>
         </div>
       )}

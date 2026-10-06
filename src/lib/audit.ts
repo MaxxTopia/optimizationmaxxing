@@ -7,7 +7,7 @@
  * Pure frontend — relies on the existing previewTweak Tauri command.
  */
 import type { TweakRecord } from './catalog'
-import { previewTweak, type TweakAction, type TweakPreview } from './tauri'
+import { previewTweak, verifyAction, type TweakAction, type TweakPreview } from './tauri'
 
 export type ActionAuditStatus = 'matches' | 'differs' | 'unknown' | 'error'
 
@@ -123,19 +123,31 @@ export function auditAction(
 
 /** Audits one tweak. Runs previewTweak for each action in parallel. */
 export async function auditTweak(tweak: TweakRecord): Promise<TweakAudit> {
-  try {
-    const previews = await Promise.all(tweak.actions.map((a) => previewTweak(a)))
-    const actions = tweak.actions.map((a, i) => auditAction(a, previews[i], i))
-    return aggregate(actions)
-  } catch (e) {
-    return {
-      status: 'error',
-      actions: [],
-      matchCount: 0,
-      total: tweak.actions.length,
-      scannedAt: new Date().toISOString(),
+  const actions = await Promise.all(tweak.actions.map(async (action, index) => {
+    try {
+      if (action.kind === 'powershell_script' && action.verify?.trim()) {
+        const result = await verifyAction(action)
+        return {
+          index,
+          status: result.status === 'verified'
+            ? 'matches' as const
+            : result.status === 'mismatch'
+              ? 'differs' as const
+              : 'unknown' as const,
+          detail: result.detail,
+        }
+      }
+      const preview = await previewTweak(action)
+      return auditAction(action, preview, index)
+    } catch (e) {
+      return {
+        index,
+        status: 'error' as const,
+        detail: e instanceof Error ? e.message : String(e),
+      }
     }
-  }
+  }))
+  return aggregate(actions)
 }
 
 /** Audits many tweaks with bounded concurrency. */
@@ -166,12 +178,14 @@ function aggregate(actions: ActionAudit[]): TweakAudit {
   const matches = actions.filter((a) => a.status === 'matches').length
   const differs = actions.filter((a) => a.status === 'differs').length
   const unknown = actions.filter((a) => a.status === 'unknown').length
+  const errors = actions.filter((a) => a.status === 'error').length
   const total = actions.length
   let status: TweakAuditStatus
   if (total === 0) status = 'unknown'
   else if (matches === total) status = 'matches'
   else if (differs === total) status = 'differs'
   else if (matches === 0 && unknown === total) status = 'unknown'
+  else if (errors === total) status = 'error'
   else status = 'partial'
   return {
     status,

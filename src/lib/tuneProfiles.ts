@@ -28,6 +28,10 @@ const NEVER_AUTO_APPLY_IDS = new Set([
   // automatic batch. Keep it visible in the explicit review lane instead of
   // allowing one situational row to roll back the rest of Tune Now.
   'network.tcp.ack-nodelay',
+  // Situational evidence depends on this PC, driver, network, and workload.
+  // Keep these out of one-click profiles until a repeatable local A/B shows
+  // a gain; the Lab can surface them as Test first instead of hiding them.
+  'network.qos.dscp-tag',
   'power.device-idle.performance',
   'privacy.lock-screen-spotlight.disable',
   'privacy.smartscreen.disable',
@@ -146,6 +150,7 @@ export function isHardBlockedForAutoTune(t: {
   actions?: Array<{ kind?: string; path?: string; verify?: string; revert?: string | null }>
 }): boolean {
   if (t.id && NEVER_AUTO_APPLY_IDS.has(t.id)) return true
+  if (t.evidenceTier === 'situational') return true
   if ((t.riskLevel ?? 0) >= 4) return true
   if (t.evidenceTier === 'cosmetic') return true
   if (t.anticheatRisk === 'high') return true

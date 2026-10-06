@@ -12,7 +12,7 @@
 
 use anyhow::{anyhow, Result};
 
-use super::actions::TweakAction;
+use super::actions::{TweakAction, VerificationResult, VerificationStatus};
 use crate::process_helpers::hidden_powershell;
 
 /// `%SystemRoot%` is expanded by the elevated cmd.exe script. Keeping this
@@ -90,7 +90,7 @@ pub fn revert_cmd_line(action: &TweakAction) -> Result<String> {
 /// requested state is present, without mutating Windows. Encoding keeps the
 /// script out of cmd.exe quoting and the catalog remains the only source of
 /// executable PowerShell.
-pub fn verify(action: &TweakAction) -> Result<bool> {
+pub fn verify(action: &TweakAction) -> Result<VerificationResult> {
     let TweakAction::PowershellScript { verify, .. } = action else {
         return Err(anyhow!("verify called on non-powershell action"));
     };
@@ -100,7 +100,10 @@ pub fn verify(action: &TweakAction) -> Result<bool> {
         ));
     };
 
-    let wrapped = format!("$ErrorActionPreference='Stop'; & {{ {} }}", script);
+    let wrapped = format!(
+        "$ProgressPreference='SilentlyContinue'; $ErrorActionPreference='Stop'; & {{ {} }}",
+        script
+    );
     let encoded = encode_for_ps(&wrapped);
     let output = hidden_powershell()
         .args([
@@ -115,7 +118,48 @@ pub fn verify(action: &TweakAction) -> Result<bool> {
         .output()
         .map_err(|e| anyhow!("could not start PowerShell verifier: {e}"))?;
 
-    Ok(output.status.success())
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let detail = [stdout.trim(), stderr.trim()]
+        .into_iter()
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join(" | ");
+    let detail = if detail.is_empty() {
+        if output.status.success() {
+            "PowerShell read-back passed.".to_string()
+        } else {
+            format!(
+                "PowerShell read-back exited with code {} without a diagnostic message.",
+                output.status.code().map_or_else(|| "unknown".into(), |code| code.to_string())
+            )
+        }
+    } else {
+        detail.chars().take(2000).collect()
+    };
+
+    Ok(VerificationResult {
+        status: classify_verification_status(output.status.success(), &stdout, &stderr),
+        detail,
+    })
+}
+
+/// A verifier must explicitly label a failed read-back as `MISMATCH:`.
+/// Other non-zero exits (for example, a missing cmdlet or access denied) are
+/// inability-to-read, not proof that the Windows value differs.
+fn classify_verification_status(success: bool, stdout: &str, stderr: &str) -> VerificationStatus {
+    if success {
+        return VerificationStatus::Verified;
+    }
+    if stdout
+        .lines()
+        .chain(stderr.lines())
+        .any(|line| line.trim_start().starts_with("MISMATCH:"))
+    {
+        VerificationStatus::Mismatch
+    } else {
+        VerificationStatus::Unknown
+    }
 }
 
 #[cfg(test)]
@@ -167,5 +211,21 @@ mod tests {
             verify: None,
         };
         assert!(revert_cmd_line(&a).is_err());
+    }
+
+    #[test]
+    fn verifier_distinguishes_drift_from_read_errors() {
+        assert_eq!(
+            classify_verification_status(true, "Verified target", ""),
+            VerificationStatus::Verified
+        );
+        assert_eq!(
+            classify_verification_status(false, "MISMATCH: policy missing", ""),
+            VerificationStatus::Mismatch
+        );
+        assert_eq!(
+            classify_verification_status(false, "", "Get-NetQosPolicy: Access denied"),
+            VerificationStatus::Unknown
+        );
     }
 }

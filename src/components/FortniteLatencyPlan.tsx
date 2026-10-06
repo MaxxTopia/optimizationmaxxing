@@ -1,85 +1,65 @@
 import { Link } from 'react-router-dom'
 
-/**
- * A short, evidence-first order of operations for Fortnite. This is guidance,
- * not an auto-apply preset: the result depends on the current game build,
- * driver, display path, and whether the rig is CPU- or GPU-bound.
- */
+/** Practical A/B guidance; none of these settings is a universal preset. */
 export function FortniteLatencyPlan() {
   return (
     <section className="surface-card p-5 space-y-4 border-sky-500/30">
       <div>
-        <p className="text-xs uppercase tracking-widest text-sky-300/80">Fortnite latency order</p>
-        <h2 className="text-xl font-bold">Test the big levers before the tiny tweaks</h2>
-        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-text-muted">
-          Faster edits and shots come from the whole click-to-pixel path. This order keeps the
-          changes understandable and makes it harder to mistake a successful command for a
-          measured latency win.
+        <p className="text-xs uppercase tracking-widest text-sky-300/80">Fortnite setup</p>
+        <h2 className="text-xl font-bold">Start with these three controlled tests</h2>
+        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-text-muted">
+          Change one thing at a time. Keep the setting only when the same in-game test improves
+          more than normal run-to-run variation.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        <div className="rounded-md border border-border bg-bg-base/40 p-3 space-y-1.5">
-          <p className="text-xs font-semibold text-text">1. Renderer and Reflex</p>
-          <p className="text-[11px] leading-relaxed text-text-muted">
-            If the current Fortnite build exposes Enhanced DX12 Performance Mode, compare it
-            with the mode you use now. On NVIDIA, start with Reflex On, then compare On + Boost
-            only if clocks or GPU-bound sections justify the extra power.
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="rounded-md border border-border bg-bg-base/40 p-4 space-y-2">
+          <p className="text-base font-semibold text-text">1. Render mode, Reflex, and cap</p>
+          <p className="text-sm leading-relaxed text-text-muted">
+            Compare the render modes available in your installed Fortnite build. On NVIDIA,
+            test Reflex On against On + Boost; compare frame cap and VRR separately. A higher
+            average FPS is not a win if worst frametimes or control feel get worse. Epic describes
+            Performance Mode as an option for low frame rates, not a best setting for every PC.
           </p>
+          <a href="https://www.epicgames.com/help/c-32735058/a20197720?lang=en-US" target="_blank" rel="noreferrer" className="inline-flex text-sm text-accent hover:underline">Epic: Fortnite Performance Mode ↗</a>
+          <a href="https://www.nvidia.com/en-us/geforce/news/gfecnt/202009/fortnite-rtx-on-ray-tracing-nvidia-dlss-reflex/" target="_blank" rel="noreferrer" className="block text-sm text-accent hover:underline">NVIDIA: Reflex in Fortnite ↗</a>
         </div>
-        <div className="rounded-md border border-border bg-bg-base/40 p-3 space-y-1.5">
-          <p className="text-xs font-semibold text-text">2. Cap and display path</p>
-          <p className="text-[11px] leading-relaxed text-text-muted">
-            Compare uncapped/VSync-off against a stable cap, and compare the VRR path separately.
-            Keep the option with the lower worst frametime and better control on your monitor;
-            there is no universal refresh-minus-three answer.
+        <div className="rounded-md border border-border bg-bg-base/40 p-4 space-y-2">
+          <p className="text-base font-semibold text-text">2. CPU sets and background watcher</p>
+          <p className="text-sm leading-relaxed text-text-muted">
+            Start with Windows scheduling and every detected CPU Set available. An ID like 56 is
+            a Windows logical-processor label—not core 56, a speed rank, or a setting to guess.
+            CPU-set assignment is a soft preference. If you test the watcher, start it, launch
+            Fortnite, confirm it sees the game, and compare the same scene with the watcher off.
+            Leave manual pinning alone unless repeated captures show a clear win.
           </p>
+          <a href="https://learn.microsoft.com/en-us/windows/win32/procthread/cpu-sets" target="_blank" rel="noreferrer" className="inline-flex text-sm text-accent hover:underline">Microsoft: how CPU Sets work ↗</a>
         </div>
-        <div className="rounded-md border border-border bg-bg-base/40 p-3 space-y-1.5">
-          <p className="text-xs font-semibold text-text">3. Input stability</p>
-          <p className="text-[11px] leading-relaxed text-text-muted">
-            Use 1000 Hz as the baseline. Test 2/4/8 kHz only when the same scene stays smooth;
-            a higher polling number is not a win if it adds CPU work or frametime variance.
+        <div className="rounded-md border border-border bg-bg-base/40 p-4 space-y-2">
+          <p className="text-base font-semibold text-text">3. Ethernet, power, and temperatures</p>
+          <p className="text-sm leading-relaxed text-text-muted">
+            Keep required adapter bindings such as IPv4/IPv6 and QoS Packet Scheduler. DSCP is
+            only a packet label; this PC's read-back cannot prove your router or game path honors
+            it. Keep NIC defaults first, test one driver option at a time, and watch for clock or
+            temperature throttling. More aggressive settings can reduce stability without helping.
           </p>
-        </div>
-        <div className="rounded-md border border-border bg-bg-base/40 p-3 space-y-1.5">
-          <p className="text-xs font-semibold text-text">4. Hybrid CPU sets</p>
-          <p className="text-[11px] leading-relaxed text-text-muted">
-            Leave all detected CPU Set records selected first. IDs such as 56 are Windows labels,
-            not core numbers or a performance score. The watcher is a soft preference, not a hard
-            reservation; compare it against the no-watcher baseline before keeping it.
-          </p>
-        </div>
-        <div className="rounded-md border border-border bg-bg-base/40 p-3 space-y-1.5">
-          <p className="text-xs font-semibold text-text">5. Power and thermals</p>
-          <p className="text-[11px] leading-relaxed text-text-muted">
-            The Ultimate Performance/Tournament plan can be a useful dedicated-session baseline,
-            but keep it only if clocks remain stable without thermal throttling. More power draw
-            is not automatically lower latency.
-          </p>
-        </div>
-        <div className="rounded-md border border-border bg-bg-base/40 p-3 space-y-1.5">
-          <p className="text-xs font-semibold text-text">6. Network and NIC</p>
-          <p className="text-[11px] leading-relaxed text-text-muted">
-            Use Ethernet and fix loaded latency with router SQM/bufferbloat control. Fortnite
-            gameplay is UDP, so TCP/Nagle tweaks do not lower in-match ping. Change one Intel NIC
-            property at a time; never uncheck every binding or blindly disable offloads.
-          </p>
+          <a href="https://learn.microsoft.com/en-us/powershell/module/netqos/get-netqospolicy?view=windowsserver2025-ps" target="_blank" rel="noreferrer" className="inline-flex text-sm text-accent hover:underline">Microsoft: inspect QoS policies ↗</a>
         </div>
       </div>
 
-      <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 space-y-1.5">
-        <p className="text-xs font-semibold text-text">What counts as a win</p>
-        <p className="text-[11px] leading-relaxed text-text-muted">
-          Keep the same Fortnite build, driver, map or Creative route, resolution, cap, display
-          mode, mouse polling rate, and background load. Run at least three comparable captures,
-          then check PresentMon frametimes and the worst spike in Match Scan. A registry read-back,
-          synthetic ping, or higher FPS average alone cannot prove faster click-to-photon input.
+      <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-4 space-y-1.5">
+        <p className="text-base font-semibold text-text">How to decide</p>
+        <p className="text-sm leading-relaxed text-text-muted">
+          Use the same build, driver, Creative route, graphics, cap, display, and background apps.
+          Compare at least three captures in Match Scan; check 1%/0.1% lows and worst frametime.
+          A successful command, synthetic ping, or higher average FPS alone does not prove lower
+          input latency. Repeat after reboot to verify persistence.
         </p>
       </div>
 
-      <Link to="/match-scan" className="inline-flex text-xs text-accent hover:underline">
-        Open Match Scan / Fight Capture for the real-game check →
+      <Link to="/match-scan" className="inline-flex text-sm font-semibold text-accent hover:underline">
+        Open Match Scan for a real-game comparison →
       </Link>
     </section>
   )

@@ -52,6 +52,36 @@ export async function openExternal(url: string): Promise<void> {
   window.open(url, '_blank', 'noopener')
 }
 
+/** Windows Settings destinations used by the Siege setup guide. Keep this
+ * allowlisted: callers choose a named page, never an arbitrary URI. */
+export type WindowsSettingsPage =
+  | 'display'
+  | 'gameMode'
+  | 'gameBar'
+  | 'gameDvr'
+  | 'startupApps'
+  | 'ethernet'
+
+const WINDOWS_SETTINGS_URIS: Record<WindowsSettingsPage, string> = {
+  display: 'ms-settings:display-advanced',
+  gameMode: 'ms-settings:gaming-gamemode',
+  gameBar: 'ms-settings:gaming-gamebar',
+  gameDvr: 'ms-settings:gaming-gamedvr',
+  startupApps: 'ms-settings:startupapps',
+  ethernet: 'ms-settings:network-ethernet',
+}
+
+export async function openWindowsSettingsPage(page: WindowsSettingsPage): Promise<void> {
+  const uri = WINDOWS_SETTINGS_URIS[page]
+  if (!uri) throw new Error('Unsupported Windows Settings page.')
+  if (inTauri()) {
+    const { open } = await import('@tauri-apps/plugin-shell')
+    await open(uri)
+    return
+  }
+  window.location.href = uri
+}
+
 // ---------- Spec types ----------
 
 export interface CpuInfo {
@@ -200,6 +230,11 @@ export type TweakAction =
 
 export type VerificationStatus = 'verified' | 'mismatch' | 'unknown'
 
+export interface VerificationResult {
+  status: VerificationStatus
+  detail: string
+}
+
 export interface TweakPreview {
   kind: string
   requiresAdmin: boolean
@@ -314,6 +349,11 @@ export async function detectSpecs(refresh = false): Promise<SpecProfile> {
 
 export async function previewTweak(action: TweakAction): Promise<TweakPreview> {
   return invoke<TweakPreview>('preview_tweak', { action })
+}
+
+/** Read the live state without applying or mutating the catalog action. */
+export async function verifyAction(action: TweakAction): Promise<VerificationResult> {
+  return invoke<VerificationResult>('verify_action', { action })
 }
 
 export async function applyTweak(

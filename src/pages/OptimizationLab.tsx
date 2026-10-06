@@ -4,7 +4,7 @@ import { catalog } from '../lib/catalog'
 import { GAMES, type GameId } from '../lib/games'
 import { runBenchMedian, score, type BenchScored, type BenchStage } from '../lib/astaBench'
 import {
-  applyTransaction,
+  applyRepairBatch,
   biosAuditProbe,
   dpcSnapshot,
   driverHealth,
@@ -70,6 +70,7 @@ function readJson<T>(key: string, fallback: T): T {
 function stateLabel(state: LabPlanState): string {
   const labels: Record<LabPlanState, string> = {
     ready: 'Ready',
+    'test-first': 'Test first',
     vip: 'VIP',
     manual: 'Manual',
     review: 'Review',
@@ -86,6 +87,7 @@ function stateLabel(state: LabPlanState): string {
 function stateClass(state: LabPlanState): string {
   switch (state) {
     case 'ready': return 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+    case 'test-first': return 'border-amber-500/40 bg-amber-500/10 text-amber-200'
     case 'applied': return 'border-sky-500/40 bg-sky-500/10 text-sky-300'
     case 'vip': return 'border-amber-500/40 bg-amber-500/10 text-amber-300'
     case 'review':
@@ -120,7 +122,7 @@ function PlanRow({ row }: { row: LabPlanRow }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-medium text-sm text-text truncate">{row.tweak.title}</p>
-          <p className="text-[11px] text-text-subtle mt-0.5">
+          <p className="text-xs text-text-subtle mt-1">
             {String(row.tweak.category)} · risk {row.tweak.riskLevel} · evidence {tier}
           </p>
         </div>
@@ -128,12 +130,12 @@ function PlanRow({ row }: { row: LabPlanRow }) {
           {stateLabel(row.state)}
         </span>
       </div>
-      <p className="text-xs text-text-muted leading-relaxed">{row.reason}</p>
+      <p className="text-sm text-text-muted leading-relaxed">{row.reason}</p>
       {row.tweak.expectedImpact && (
-        <p className="text-[11px] text-text-subtle">Expected impact: {row.tweak.expectedImpact}</p>
+        <p className="text-xs text-text-subtle leading-relaxed">Expected impact: {row.tweak.expectedImpact}</p>
       )}
       {row.experimental && (
-        <p className="text-[11px] text-amber-300/90">
+        <p className="text-xs text-amber-300/90 leading-relaxed">
           Experimental lane — measure before/after and keep a rollback path.
         </p>
       )}
@@ -212,7 +214,7 @@ export function OptimizationLab() {
   )
 
   const visiblePlanRows = useMemo(() => {
-    const order: LabPlanState[] = ['ready', 'drifted', 'review', 'vip', 'manual', 'held', 'applied']
+    const order: LabPlanState[] = ['ready', 'test-first', 'drifted', 'review', 'vip', 'manual', 'held', 'applied']
     return plan.rows
       .filter((row) => !['other-game', 'not-matched', 'needs-scan'].includes(row.state))
       .sort((a, b) => order.indexOf(a.state) - order.indexOf(b.state))
@@ -379,7 +381,7 @@ export function OptimizationLab() {
     setTransactionError(null)
     setTransactionReport(null)
     try {
-      const report = await applyTransaction(items)
+      const report = await applyRepairBatch(items)
       setTransactionReport(report)
       if (report.status === 'committed') {
         const applied = await verifyApplied()
@@ -408,28 +410,16 @@ export function OptimizationLab() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <p className="text-xs uppercase tracking-widest text-text-subtle">rig intelligence</p>
-        <h1 className="text-3xl font-bold">Optimization Lab</h1>
-        <p className="text-sm text-text-muted max-w-3xl">
-          One place to scan the actual PC, choose the tuning depth, see the exact reasons behind
-          every recommendation, and measure before/after. The Lab is the evidence/planning cockpit:
-          its ready transactional lane can apply only captured, verified, rollback-capable actions.
-          Tune Now is the guided safe-by-default lane; Asta is the full applicable catalog with
-          explicit review gates.
+        <p className="text-xs uppercase tracking-widest text-sky-300/80">Fortnite performance</p>
+        <h1 className="text-3xl font-bold">Performance Setup</h1>
+        <p className="text-base text-text-muted max-w-3xl leading-relaxed">
+          Scan this PC, apply only reversible settings with read-back, then compare the same Fortnite route.
+          Experimental network and CPU options stay out of one-click tuning until a local test proves they help.
         </p>
-        <div className="grid gap-2 pt-2 md:grid-cols-3">
-          <div className="rounded-md border border-accent/30 bg-accent/5 p-3">
-            <p className="text-xs font-semibold text-text">Optimization Lab · measure and plan</p>
-            <p className="mt-1 text-[11px] leading-relaxed text-text-muted">Scan this PC, inspect why a recommendation exists, then compare controlled before/after evidence. It is not an auto-apply-all button.</p>
-          </div>
-          <Link to="/tune" className="rounded-md border border-border bg-bg-base/40 p-3 transition hover:border-border-glow">
-            <p className="text-xs font-semibold text-text">Tune Now · guided lane →</p>
-            <p className="mt-1 text-[11px] leading-relaxed text-text-muted">Choose intensity and game first; apply the eligible policy rows with live verification.</p>
-          </Link>
-          <Link to="/asta" className="rounded-md border border-border bg-bg-base/40 p-3 transition hover:border-border-glow">
-            <p className="text-xs font-semibold text-text">Asta · full reviewed catalog →</p>
-            <p className="mt-1 text-[11px] leading-relaxed text-text-muted">Preview current values, select rows, and confirm higher-risk actions separately. Firmware stays manual.</p>
-          </Link>
+        <div className="flex flex-wrap gap-3 pt-2">
+          <Link to="/tune" className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-bg-base transition hover:brightness-110">Open Tune Now</Link>
+          <Link to="/asta" className="rounded-md border border-border px-4 py-2 text-sm text-text transition hover:border-border-glow">Review Asta settings</Link>
+          <Link to="/match-scan" className="rounded-md border border-border px-4 py-2 text-sm text-text transition hover:border-border-glow">Compare Fortnite in Match Scan</Link>
         </div>
       </header>
 
@@ -469,13 +459,11 @@ export function OptimizationLab() {
         )}
       </section>
 
-      <section className="surface-card p-5 space-y-4">
-        <div>
-          <p className="text-sm font-semibold text-text">2. Choose the lane</p>
-          <p className="text-xs text-text-muted mt-1">The lane changes what the planner will consider; it never turns uncertain folklore into a measured claim.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <label className="text-xs text-text-muted">
+      <details className="surface-card p-5 space-y-4">
+        <summary className="cursor-pointer text-sm font-semibold text-text">Advanced filters <span className="font-normal text-text-muted">· {profile.label} · {GAMES.find((game) => game.id === targetGame)?.label ?? 'Any game'}</span></summary>
+        <p className="text-sm text-text-muted leading-relaxed">These controls filter the review list. They do not make uncertain settings safe or improve performance by themselves.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <label className="text-sm text-text-muted">
             Tune intensity
             <select
               value={level}
@@ -488,7 +476,7 @@ export function OptimizationLab() {
               <option value="extreme">Extreme — expose every eligible experiment for review</option>
             </select>
           </label>
-          <label className="text-xs text-text-muted">
+          <label className="text-sm text-text-muted">
             Target game
             <select
               value={targetGame}
@@ -503,10 +491,10 @@ export function OptimizationLab() {
             </select>
           </label>
         </div>
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-100 leading-relaxed">
+        <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm text-amber-100 leading-relaxed">
           <strong>{profile.label}:</strong> {profile.summary} {level === 'extreme' && 'Extreme makes security-degrading and undocumented-style entries visible as Review items; it does not silently apply them.'}
         </div>
-      </section>
+      </details>
 
       {scan && (
         <section className="space-y-3">
@@ -525,7 +513,7 @@ export function OptimizationLab() {
                   <span className={`text-[10px] uppercase ${passportClass(row.state)}`}>{row.state}</span>
                 </div>
                 <p className="text-sm font-semibold text-text mt-1">{row.value}</p>
-                <p className="text-[11px] text-text-muted leading-relaxed mt-1">{row.detail}</p>
+                <p className="text-sm text-text-muted leading-relaxed mt-1">{row.detail}</p>
               </div>
             ))}
           </div>
@@ -541,20 +529,20 @@ export function OptimizationLab() {
                 <p className="text-sm font-semibold text-text">Exact hardware profile</p>
                 <span className="text-[10px] uppercase tracking-widest text-sky-300">{hardwareProfile.status}</span>
               </div>
-              <p className="text-xs text-text-muted">
+              <p className="text-sm text-text-muted leading-relaxed">
                 {hardwareProfile.profile
                   ? `${hardwareProfile.profile.boardLabel} · evidence checked ${hardwareProfile.profile.lastChecked} · CPU support ${hardwareProfile.cpuStatus}`
                   : 'This board is not in the exact evidence catalog, so no nearby-board recipe is substituted.'}
               </p>
               {hardwareProfile.memoryIdentity && (
-                <p className="text-[11px] text-text-subtle">SPD identity: <span className="text-text">{hardwareProfile.memoryIdentity}</span> · {hardwareProfile.memoryStatus}</p>
+                <p className="text-sm text-text-subtle">SPD identity: <span className="text-text">{hardwareProfile.memoryIdentity}</span> · {hardwareProfile.memoryStatus}</p>
               )}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-text-muted">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm text-text-muted">
                 {hardwareProfile.recommendations.slice(0, 4).map((recommendation) => (
                   <p key={recommendation}>• {recommendation}</p>
                 ))}
               </div>
-              <p className="text-[11px] text-amber-200/80">{hardwareProfile.manualFallback}</p>
+              <p className="text-sm text-amber-200/80 leading-relaxed">{hardwareProfile.manualFallback}</p>
             </div>
           )}
         </section>
@@ -571,21 +559,27 @@ export function OptimizationLab() {
             <Link to="/tweaks" className="px-3 py-1.5 rounded-md border border-border text-xs text-text hover:border-border-glow">Inspect Tweaks</Link>
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-          <CountCard label="Ready" value={plan.counts.ready} tone="text-emerald-300" />
-          <CountCard label="Applied" value={plan.counts.applied} tone="text-sky-300" />
-          <CountCard label="VIP" value={plan.counts.vip} tone="text-amber-300" />
-          <CountCard label="Review" value={plan.counts.review} tone="text-red-300" />
-          <CountCard label="Drifted" value={plan.counts.drifted} tone="text-red-300" />
-          <CountCard label="Manual" value={plan.counts.manual} tone="text-purple-300" />
-          <CountCard label="Held" value={plan.counts.held} tone="text-purple-300" />
-        </div>
+        <details className="rounded-md border border-border bg-bg-base/30 p-3">
+          <summary className="cursor-pointer text-sm font-semibold text-text">
+            Plan counts · {plan.counts.ready} ready · {plan.counts.testFirst} test first · {plan.counts.applied} applied
+          </summary>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-3">
+            <CountCard label="Ready" value={plan.counts.ready} tone="text-emerald-300" />
+            <CountCard label="Test first" value={plan.counts.testFirst} tone="text-amber-200" />
+            <CountCard label="Applied" value={plan.counts.applied} tone="text-sky-300" />
+            <CountCard label="VIP" value={plan.counts.vip} tone="text-amber-300" />
+            <CountCard label="Review" value={plan.counts.review} tone="text-red-300" />
+            <CountCard label="Drifted" value={plan.counts.drifted} tone="text-red-300" />
+            <CountCard label="Manual" value={plan.counts.manual} tone="text-purple-300" />
+            <CountCard label="Held" value={plan.counts.held} tone="text-purple-300" />
+          </div>
+        </details>
         <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-2">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div>
-              <p className="text-sm font-semibold text-text">Transactional apply</p>
-              <p className="text-[11px] text-text-muted mt-0.5">
-                {transactionRows.length} ready tweak{transactionRows.length === 1 ? '' : 's'} · {transactionActionCount} native action{transactionActionCount === 1 ? '' : 's'} · unsupported scripts are excluded
+              <p className="text-sm font-semibold text-text">Ready to apply</p>
+              <p className="text-sm text-text-muted mt-0.5">
+                {transactionRows.length} tweaks · {transactionActionCount} reversible actions · unsupported scripts excluded
               </p>
             </div>
             <button
@@ -594,15 +588,15 @@ export function OptimizationLab() {
               className="btn-chrome px-3 py-1.5 rounded-md bg-emerald-400 text-bg-base text-xs font-semibold disabled:opacity-40"
               title="Capture pre-state, apply, verify, and restore on failure"
             >
-              {transactionRunning ? 'Applying + verifying…' : 'Apply ready transaction lane'}
+              {transactionRunning ? 'Applying + verifying…' : 'Apply ready settings'}
             </button>
           </div>
-          <p className="text-[11px] text-text-muted leading-relaxed">
-            This is the new evidence-backed path. It captures every pre-state before mutation, applies one transaction, reads each setting back, and attempts reverse-order rollback if any action fails or mismatches. It does not promise rollback for arbitrary PowerShell or firmware changes.
+          <p className="text-sm text-text-muted leading-relaxed">
+            Each tweak is applied and verified as its own group. Native settings use their captured pre-state; eligible scripts use their declared revert action. If one group fails, the app tries that group's rollback and continues with unrelated ready settings.
           </p>
-          {transactionError && <p className="rounded border border-red-500/40 bg-red-500/10 px-2 py-1.5 text-[11px] text-red-300">{transactionError}</p>}
+          {transactionError && <p className="rounded border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{transactionError}</p>}
           {transactionReport && (
-            <div className="rounded border border-border bg-bg-base/40 px-2 py-1.5 text-[11px] text-text-muted">
+            <div className="rounded border border-border bg-bg-base/40 px-3 py-2 text-sm text-text-muted">
               Result: <span className="text-text font-semibold">{transactionReport.status}</span> · {transactionReport.verifiedCount}/{transactionReport.itemCount} verified · {transactionReport.rolledBackCount} rolled back.
               {transactionReport.errors.length > 0 && <span className="block text-red-300 mt-1">{transactionReport.errors.join(' · ')}</span>}
               {transactionReport.rollbackErrors.length > 0 && <span className="block text-red-200 mt-1">Rollback needs attention: {transactionReport.rollbackErrors.join(' · ')}</span>}
@@ -620,26 +614,22 @@ export function OptimizationLab() {
         )}
       </section>
 
-      <section className="surface-card p-5 space-y-3 border-amber-500/30">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-amber-300/80">Extreme review lane</p>
-          <h2 className="text-xl font-bold">Undocumented-style and security tradeoffs stay visible, not disguised</h2>
-        </div>
-        <p className="text-xs text-text-muted leading-relaxed">
-          The catalog already contains aggressive entries such as SmartScreen/HVCI changes, CPU-mitigation changes, Hyper-V boot changes, timer flags, NIC interrupt moderation, MSI mode, and service cleanup. This lab surfaces them as Review when their security, compatibility, anti-cheat, tournament, or read-back risk is material. A creator saying “pros use it” is not a measurement, so these rows need an explicit per-tweak decision, a restore path, native read-back, and a same-condition A/B result.
+      <details className="surface-card p-5 space-y-3 border-amber-500/30">
+        <summary className="cursor-pointer text-sm font-semibold text-text">Higher-risk settings · {reviewRows.length} to review</summary>
+        <p className="text-sm text-text-muted leading-relaxed">
+          These are not silently included because their security, compatibility, or performance tradeoff needs an explicit decision and a rollback/test plan.
         </p>
         {reviewRows.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {reviewRows.slice(0, 10).map((row) => (
-              <span key={row.tweak.id} className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1 text-[11px] text-red-200">{row.tweak.title}</span>
+              <span key={row.tweak.id} className="rounded border border-red-500/30 bg-red-500/5 px-2 py-1 text-sm text-red-200">{row.tweak.title}</span>
             ))}
-            {reviewRows.length > 10 && <span className="text-[11px] text-text-subtle self-center">+{reviewRows.length - 10} more in Tweaks</span>}
+            {reviewRows.length > 10 && <span className="text-sm text-text-subtle self-center">+{reviewRows.length - 10} more in Tweaks</span>}
           </div>
         ) : (
-          <p className="text-xs text-text-subtle">Run a native scan and select Extreme to populate this review set.</p>
+          <p className="text-sm text-text-subtle">Run a scan and raise the review filter to populate this list.</p>
         )}
-        <p className="text-[11px] text-text-subtle">No anti-cheat bypasses, visual exploits, voltage overrides, or thermal-limit writes are part of this lane.</p>
-      </section>
+      </details>
 
       <section className="surface-card p-5 space-y-4">
         <div className="flex flex-wrap items-baseline justify-between gap-3">

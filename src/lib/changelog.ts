@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.16',
+    date: '2026-10-05',
+    highlights: [
+      'FIX **Tune Now and Asta repair independently.** A single live-state mismatch no longer makes unrelated verified tweaks appear to have failed; unreadable actions are explained before they are skipped.',
+      'IMPROVE **Network and performance setup.** Ethernet guidance, persistence/read-back reporting, power-plan selection, and the 108-tweak catalog are clearer about what is applied, already at target, review-only, or manual.',
+      'ADD **Rainbow Six Siege Performance Pack.** A reversible free preset guide covers stable FPS, frame-time/1% lows, input latency, Windows/game settings, NVIDIA setup, networking, and thermal checks without claiming hardware results that were not measured.',
+    ],
+  },
+  {
     version: '0.4.15',
     date: '2026-09-29',
     highlights: [

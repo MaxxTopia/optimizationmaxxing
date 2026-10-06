@@ -79,12 +79,22 @@ pub fn apply(action: &TweakAction) -> anyhow::Result<serde_json::Value> {
 /// typed verifier. PowerShell is only verifiable when the catalog supplied an
 /// explicit read-only verifier; arbitrary scripts remain `unknown`.
 pub fn verify(action: &TweakAction) -> VerificationResult {
+    if matches!(action, TweakAction::PowershellScript { .. }) {
+        return match powershell::verify(action) {
+            Ok(result) => result,
+            Err(e) => VerificationResult {
+                status: VerificationStatus::Unknown,
+                detail: format!("Live state could not be verified: {e:#}"),
+            },
+        };
+    }
+
     let result = match action {
         TweakAction::RegistrySet { .. } | TweakAction::RegistryDelete { .. } => {
             registry::verify(action)
         }
         TweakAction::BcdeditSet { .. } => bcdedit::verify(action),
-        TweakAction::PowershellScript { .. } => powershell::verify(action),
+        TweakAction::PowershellScript { .. } => unreachable!("handled above"),
         TweakAction::FileWrite { .. } => file_write::verify(action),
         TweakAction::DisplayRefresh { .. } => display::verify(action),
     };

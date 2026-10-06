@@ -78,8 +78,10 @@ pub enum TweakAction {
         revert: Option<String>,
         /// Optional read-only verifier. The catalog owns this script and the
         /// engine executes it unelevated after apply/drift scans. Exit code 0
-        /// means the requested state is present; any other exit code is a
-        /// mismatch. Scripts without this contract remain explicit-only.
+        /// means the requested state is present. A failed check is a mismatch
+        /// only when the script emits a line beginning `MISMATCH:`; other
+        /// failures mean the live state could not be read. Scripts without
+        /// this contract remain explicit-only.
         #[serde(default)]
         verify: Option<String>,
     },

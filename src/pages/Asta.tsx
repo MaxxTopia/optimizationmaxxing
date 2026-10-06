@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useIsVip } from '../store/useVipStore'
 import {
   applyBatch,
-  applyTransaction,
+  applyRepairBatch,
   getTunePreflight,
   inTauri,
   verifyApplied,
@@ -66,6 +66,9 @@ export function Asta() {
     mismatch: number
     unknown: number
     skipped: number
+    alreadyAtTarget: number
+    preflightSkipped: number
+    preflightSkipDetails: string[]
     transactional: number
     explicit: number
     reviewSkipped: number
@@ -73,6 +76,7 @@ export function Asta() {
     otherGame: number
     notMatched: number
     transactionStatus?: TransactionReport['status']
+    errors: string[]
     ts: string
   } | null>(null)
   const [quoteIdx, setQuoteIdx] = useState(0)
@@ -240,38 +244,86 @@ export function Asta() {
 
       let transactionStatus: TransactionReport['status'] | undefined
       let requested = 0
+      let alreadyAtTarget = 0
+      const applyErrors: string[] = []
       const appliedReceiptIds = new Set<string>()
-      if (transactional.length > 0) {
-        const report = await applyTransaction(transactional)
-        transactionStatus = report.status
-        requested += transactional.length
-        if (report.status !== 'committed') {
-          const detail = [...report.errors, ...report.rollbackErrors].join(' ')
-          throw new Error(`Verified Asta lane ${report.status}.${detail ? ` ${detail}` : ''}`)
+      const alreadyMatchingIds = new Set(executionTweaks
+        .filter((tweak) => freshAudit[tweak.id]?.status === 'matches')
+        .map((tweak) => tweak.id))
+      alreadyAtTarget = alreadyMatchingIds.size
+      const transactionalIds = new Set([
+        ...transactional,
+        ...reviewTransactional,
+      ].map((item) => item.tweakId))
+      const unreadableTransactionalIds = new Set(executionTweaks
+        .filter((tweak) => transactionalIds.has(tweak.id))
+        .filter((tweak) => freshAudit[tweak.id]?.actions.some((action) =>
+          action.status === 'unknown' || action.status === 'error',
+        ))
+        .map((tweak) => tweak.id))
+      const preflightSkipDetails = executionTweaks
+        .filter((tweak) => unreadableTransactionalIds.has(tweak.id))
+        .map((tweak) => {
+          const detail = freshAudit[tweak.id]?.actions
+            .filter((action) => action.status === 'unknown' || action.status === 'error')
+            .map((action) => action.detail)
+            .filter(Boolean)
+            .join(' ')
+          return `${tweak.id}: ${detail || 'Live state could not be verified before writing.'}`
+        })
+      const excludeAlreadyMatching = (items: BatchItem[]) =>
+        items.filter((item) =>
+          !alreadyMatchingIds.has(item.tweakId) && !unreadableTransactionalIds.has(item.tweakId),
+        )
+      const activeTransactional = excludeAlreadyMatching(transactional)
+      const activeExplicit = excludeAlreadyMatching(explicit)
+      const activeReviewTransactional = applyReview
+        ? excludeAlreadyMatching(reviewTransactional)
+        : []
+      const activeReviewExplicit = applyReview
+        ? excludeAlreadyMatching(reviewExplicit)
+        : []
+
+      const keepRepairReport = (report: TransactionReport) => {
+        if (!transactionStatus || transactionStatus === 'committed') {
+          transactionStatus = report.status
+        } else if (report.status !== 'committed') {
+          transactionStatus = transactionStatus === 'partial' || report.status === 'partial'
+            ? 'partial'
+            : transactionStatus === 'rolled_back' || report.status === 'rolled_back'
+              ? 'rolled_back'
+              : 'failed'
         }
+        applyErrors.push(...report.errors, ...report.rollbackErrors)
         for (const item of report.items) {
-          if (item.applied && item.receiptId) appliedReceiptIds.add(item.receiptId)
+          if (item.applied && !item.rolledBack && item.receiptId) {
+            appliedReceiptIds.add(item.receiptId)
+          }
+          if (item.attempted && !item.applied && item.detail) {
+            applyErrors.push(`${item.tweakId}: ${item.detail}`)
+          }
         }
       }
-      if (explicit.length > 0) {
-        const receipts = await applyBatch(explicit)
+
+      // Each catalog tweak is one atomic group, but a mismatch in one group
+      // no longer rolls back unrelated tweaks in the lane.
+      if (activeTransactional.length > 0) {
+        const report = await applyRepairBatch(activeTransactional)
+        requested += activeTransactional.length
+        keepRepairReport(report)
+      }
+      if (activeExplicit.length > 0) {
+        const receipts = await applyBatch(activeExplicit)
         requested += receipts.length
         for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
       }
-      if (applyReview && reviewTransactional.length > 0) {
-        const report = await applyTransaction(reviewTransactional)
-        transactionStatus = report.status
-        requested += reviewTransactional.length
-        if (report.status !== 'committed') {
-          const detail = [...report.errors, ...report.rollbackErrors].join(' ')
-          throw new Error(`Review lane ${report.status}.${detail ? ` ${detail}` : ''}`)
-        }
-        for (const item of report.items) {
-          if (item.applied && item.receiptId) appliedReceiptIds.add(item.receiptId)
-        }
+      if (activeReviewTransactional.length > 0) {
+        const report = await applyRepairBatch(activeReviewTransactional)
+        requested += activeReviewTransactional.length
+        keepRepairReport(report)
       }
-      if (applyReview && reviewExplicit.length > 0) {
-        const receipts = await applyBatch(reviewExplicit)
+      if (activeReviewExplicit.length > 0) {
+        const receipts = await applyBatch(activeReviewExplicit)
         requested += receipts.length
         for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
       }
@@ -284,14 +336,18 @@ export function Asta() {
         verified: live.filter((receipt) => receipt.verificationStatus === 'verified').length,
         mismatch: live.filter((receipt) => receipt.verificationStatus === 'mismatch').length,
         unknown: live.filter((receipt) => receipt.verificationStatus === 'unknown').length,
-        skipped: plan.alreadyApplied.length,
-        transactional: transactional.length,
-        explicit: explicit.length,
+        skipped: plan.alreadyApplied.length + alreadyAtTarget,
+        alreadyAtTarget,
+        preflightSkipped: unreadableTransactionalIds.size,
+        preflightSkipDetails,
+        transactional: activeTransactional.length + activeReviewTransactional.length,
+        explicit: activeExplicit.length + activeReviewExplicit.length,
         reviewSkipped: applyReview ? 0 : chosenReview.length,
         manual: plan.manual.length,
         otherGame: plan.otherGame.length,
         notMatched: plan.notMatched.length,
         transactionStatus,
+        errors: [...new Set(applyErrors)],
         ts: new Date().toLocaleTimeString(),
       })
       setReviewedPlan(null)
@@ -349,6 +405,13 @@ export function Asta() {
               Reversible/read-back-capable actions use the transactional lane; unsupported scripts
               are visibly separated into an explicit review lane and may need a second UAC prompt.
               BIOS/NVRAM/firmware changes never become automatic.
+            </p>
+            <p className="mt-2 rounded-md border border-sky-300/20 bg-sky-300/5 px-3 py-2 text-xs leading-relaxed text-text-muted">
+              <strong className="text-text">Ethernet note:</strong> Asta includes cataloged RSS, EEE,
+              and interrupt-moderation controls when they match the rig. Driver scripts without
+              exact read-back and restore handling stay in the separate review lane. Wake on Magic
+              Packet only wakes a sleeping PC; it is not an active-game latency setting, so Asta
+              does not toggle it as a performance tweak.
             </p>
 
             {displayPlan && (
@@ -467,15 +530,23 @@ export function Asta() {
             )}
 
             {applied && (
-              <div className="mt-3 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
-                {applied.verified}/{applied.requested} actions matched immediate readback
-                {applied.mismatch > 0 ? ` · ${applied.mismatch} mismatch` : ''}
-                {applied.unknown > 0 ? ` · ${applied.unknown} unverified` : ''} (at {applied.ts}).
-                {applied.skipped > 0 ? ` ${applied.skipped} already-on-target tweaks were skipped.` : ''}
+              <div className={`mt-3 rounded-md border px-3 py-2 text-xs ${applied.errors.length || applied.mismatch || applied.preflightSkipped ? 'border-amber-500/40 bg-amber-500/10 text-amber-100' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'}`}>
+                {applied.requested === 0
+                  ? applied.preflightSkipped > 0
+                    ? 'No settings were changed'
+                    : 'No write was needed for this selection'
+                  : `${applied.verified}/${applied.requested} actions matched immediate readback`}
+                {applied.requested > 0 && applied.mismatch > 0 ? ` · ${applied.mismatch} mismatch` : ''}
+                {applied.requested > 0 && applied.unknown > 0 ? ` · ${applied.unknown} unverified` : ''} (at {applied.ts}).
+                {applied.alreadyAtTarget > 0 ? ` ${applied.alreadyAtTarget} selected tweak${applied.alreadyAtTarget === 1 ? ' was' : 's were'} already at target and left unchanged.` : ''}
+                {applied.skipped > applied.alreadyAtTarget ? ` ${applied.skipped - applied.alreadyAtTarget} previously verified tweak${applied.skipped - applied.alreadyAtTarget === 1 ? ' was' : 's were'} skipped.` : ''}
                 {applied.transactional > 0 ? ` ${applied.transactional} actions used verified transactions.` : ''}
                 {applied.explicit > 0 ? ` ${applied.explicit} actions used explicit review.` : ''}
                 {applied.reviewSkipped > 0 ? ` ${applied.reviewSkipped} higher-risk rows stayed unapplied because the review confirmation was declined.` : ''}
+                {applied.preflightSkipped > 0 ? ` ${applied.preflightSkipped} selected tweak${applied.preflightSkipped === 1 ? ' was' : 's were'} not attempted because its live state did not provide a safe, verified basis for writing.` : ''}
                 {applied.transactionStatus ? ` Transaction status: ${applied.transactionStatus}.` : ''}
+                {applied.preflightSkipDetails.length > 0 && <span className="block mt-1 text-amber-200">Not attempted: {applied.preflightSkipDetails.slice(0, 5).join(' · ')}</span>}
+                {applied.errors.length > 0 && <span className="block mt-1 text-amber-200">Some independent tweaks need attention: {applied.errors.slice(0, 5).join(' · ')}</span>}
                 This does not prove reboot persistence or better gameplay; run the same Asta Bench
                 before and after, then use Your Tune to re-check drift.
               </div>

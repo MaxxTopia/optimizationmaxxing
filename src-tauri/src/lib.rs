@@ -19,8 +19,10 @@ mod toolkit;
 mod tune_preflight;
 mod vip;
 
-pub use engine::{ApplyReceipt, AppliedTweak, SnapshotStore, TweakAction, TweakPreview};
-pub use engine::VerificationStatus;
+pub use engine::{
+    ApplyReceipt, AppliedTweak, SnapshotStore, TweakAction, TweakPreview, VerificationResult,
+    VerificationStatus,
+};
 pub use metrics::PerfSnapshot;
 pub use specs::SpecProfile;
 
@@ -351,6 +353,16 @@ async fn preview_tweak(action: TweakAction) -> Result<TweakPreview, String> {
     })
     .await
     .map_err(|e| format!("preview task failed: {e}"))?
+}
+
+/// Run a catalog-declared read-only verifier before applying. This lets the
+/// frontend recognize externally-managed settings that already match and
+/// avoid rewriting them just to create an app receipt.
+#[tauri::command]
+async fn verify_action(action: TweakAction) -> Result<VerificationResult, String> {
+    tokio::task::spawn_blocking(move || engine::verify(&action))
+        .await
+        .map_err(|e| format!("verify task failed: {e}"))
 }
 
 #[tauri::command]
@@ -2179,6 +2191,7 @@ pub fn run() {
             bootstrap,
             detect_specs,
             preview_tweak,
+            verify_action,
             apply_tweak,
             apply_batch,
             apply_transaction,

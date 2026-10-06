@@ -42,8 +42,11 @@ new lab features are added.
 
 | Risk | Detection signal | Recovery / plan B | Class |
 | --- | --- | --- | --- |
+| A locally stored Fortnite QoS rule is absent from Windows ActiveStore, or the read probe cannot run; an old verifier treats either as drift and Asta rolls back unrelated settings | Compare `Get-NetQosPolicy -PolicyStore localhost` with `ActiveStore`; only an explicit `MISMATCH:` is drift, while other non-zero read exits are `unknown` | Pre-audit and skip the QoS tweak without writing; isolate transactional rollback per tweak so independent verified settings remain applied; leave stored/externally owned policies untouched | REBUILD |
 | PresentMon is missing, cannot attach, or stops mid-capture | Match Scan reports no process, no samples, or an incomplete session | Keep the result unmeasured; fall back to the Asta proxy only as a candidate signal and never call it game proof | HOT |
 | A transaction partially applies or a read-back mismatches | Native verification is not `verified`, the UAC batch returns an error, or receipt creation fails | Restore captured pre-state in reverse order. If any restore fails, report `partial`, retain the receipt, and require user review | HOT / RESTART |
+| A Siege update or GPU-driver change invalidates a recommended profile, cap, HAGS, NIC, or graphics value | The game menu, driver controls, or executable changes after an update | Keep automatic changes limited to receipt-backed Windows settings; show direct current setup values for menus the app cannot write, and review those values when the game or driver changes. Do not claim a performance gain without controlled evidence. | HOT / RESTART |
+| The gaming power-plan ownership record cannot be saved, is malformed, or points to a renamed plan | Read-back cannot match the recorded GUID and app-owned plan name | Save the receipt atomically; remove only a fresh clone if receipt creation fails; refuse to activate or delete a plan whose GUID/name no longer matches; preserve recovery data on rollback failure | HOT / RESTART |
 | A setting drifts after reboot, Windows Update, or a driver install | Reboot validation or the next rig scan reports mismatch/unknown | Mark the receipt drifted, show the exact verifier, and require an explicit reapply; do not silently repair | RESTART |
 | A board or BIOS profile is stale or not exact | SMBIOS identity, revision, or CPU support does not match the catalog | Use the unknown-board path and manual SCEWIN comparison. Never copy a nearby-board recipe | REBUILD |
 | An NVPI/NIC artifact is malformed, stale, or regresses the capture | Hash/revision display, import verification, profile diff, or before/after evidence disagrees | Restore the exported profile or adapter defaults, then rerun the same capture; keep the shipped artifact unchanged | HOT |
@@ -63,6 +66,9 @@ P0 (implemented in this pass):
 - Reject arbitrary PowerShell from the transactional path unless it has both a
   revert script and a read-only verifier.
 - Verify every attempted action and reverse the transaction on failure.
+- Treat PowerShell read/access failures as `unknown`, not `mismatch`; check
+  Fortnite QoS in both local and effective policy stores, pre-skip an
+  unverifiable Asta group, and roll back only the failing tweak group.
 - Show `committed`, `rolled_back`, or `partial` with per-action receipts and
   rollback errors.
 - Keep exact board matching separate from CPU-only or nearby-board guesses.

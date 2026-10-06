@@ -21,6 +21,7 @@ import { resolveBoardEvidence } from './biosEvidenceCatalog'
  * rig, what is proven, and what needs an explicit decision?" */
 export type LabPlanState =
   | 'ready'
+  | 'test-first'
   | 'vip'
   | 'manual'
   | 'review'
@@ -41,6 +42,7 @@ export interface LabPlanRow {
 
 export interface LabPlanCounts {
   ready: number
+  testFirst: number
   vip: number
   manual: number
   review: number
@@ -70,6 +72,7 @@ export interface OptimizationPlanInput {
 function emptyCounts(): LabPlanCounts {
   return {
     ready: 0,
+    testFirst: 0,
     vip: 0,
     manual: 0,
     review: 0,
@@ -136,6 +139,14 @@ export function buildOptimizationPlan(input: OptimizationPlanInput): LabPlanSumm
     } else if (isManualFirmwareRecipe(tweak)) {
       state = 'manual'
       reason = 'Manual firmware path: use the board-specific evidence and SCEWIN workflow; the app never writes BIOS/NVRAM.'
+    } else if (
+      tweak.evidenceTier === 'situational' &&
+      tweak.riskLevel < 4 &&
+      tweak.anticheatRisk !== 'high' &&
+      !Object.values(tweak.tournamentCompliance ?? {}).some((value) => value === 'breaks')
+    ) {
+      state = 'test-first'
+      reason = 'This result depends on the PC, driver, network, or game scene. Change only this setting, compare the same Fortnite route, and revert unless the improvement repeats. Never one-click applied.'
     } else if (hardBlocked) {
       state = 'review'
       reason = experimental
@@ -154,6 +165,7 @@ export function buildOptimizationPlan(input: OptimizationPlanInput): LabPlanSumm
       case 'other-game': counts.otherGame += 1; break
       case 'needs-scan': counts.needsScan += 1; break
       case 'ready': counts.ready += 1; break
+      case 'test-first': counts.testFirst += 1; break
       case 'vip': counts.vip += 1; break
       case 'manual': counts.manual += 1; break
       case 'review': counts.review += 1; break

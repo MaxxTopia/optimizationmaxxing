@@ -9,12 +9,14 @@ import {
 } from '../lib/tauri'
 import { confirmAction } from '../lib/confirm'
 import { catalog, isExperimentalTweak, tweakRequiresAdmin, type TweakRecord } from '../lib/catalog'
-import { PRESETS, presetExperimentalTweaks, presetMissingTweakIds, presetTweaks } from '../lib/presets'
+import { PRESETS, presetMissingTweakIds, presetTweaks, presetTweaksForRig } from '../lib/presets'
 import { useIsVip } from '../store/useVipStore'
+import { useRigStore } from '../store/useRigStore'
 import { useCustomPresets, type CustomPreset } from '../store/useCustomPresets'
 import { CustomPresetBuilder } from '../components/CustomPresetBuilder'
 import { CommunityPresetsModal } from '../components/CommunityPresetsModal'
 import { ComparePresetsModal } from '../components/ComparePresetsModal'
+import { RainbowSixSiegePackGuide } from '../components/RainbowSixSiegePackGuide'
 
 /**
  * Curated preset bundles + user-built custom presets. Apply / Revert in
@@ -32,6 +34,9 @@ export function Presets() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const isVip = useIsVip()
+  const rigSpec = useRigStore((s) => s.spec)
+  const rigStatus = useRigStore((s) => s.status)
+  const ensureRigLoaded = useRigStore((s) => s.ensureLoaded)
   const customPresets = useCustomPresets((s) => s.presets)
   const removeCustom = useCustomPresets((s) => s.remove)
   const importMany = useCustomPresets((s) => s.importMany)
@@ -62,7 +67,8 @@ export function Presets() {
 
   useEffect(() => {
     refreshApplied()
-  }, [])
+    void ensureRigLoaded()
+  }, [ensureRigLoaded])
 
   async function handleApply(presetId: string, tweaks: TweakRecord[]) {
     setBusyId(presetId)
@@ -315,14 +321,17 @@ export function Presets() {
         <h2 className="text-xs uppercase tracking-widest text-text-subtle">curated bundles</h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {PRESETS.map((p) => {
-            const tweaks = presetTweaks(p)
-            const experimental = presetExperimentalTweaks(p)
+            const isSiegePack = p.id === 'preset.rainbow-six-siege'
+            const allPresetTweaks = presetTweaks(p)
+            const { eligible: tweaks, excluded } = presetTweaksForRig(p, rigSpec)
+            const experimental = tweaks.filter(isExperimentalTweak)
             const missing = presetMissingTweakIds(p)
             const allApplied = tweaks.length > 0 && tweaks.every((t) => appliedById[t.id])
-            const anyApplied = tweaks.some((t) => appliedById[t.id])
+            const anyApplied = allPresetTweaks.some((t) => appliedById[t.id])
             const adminCount = tweaks.filter(tweakRequiresAdmin).length
             const lockedByVip = p.vipGate === 'vip' && !isVip
             const busy = busyId === p.id
+            const rigScanPending = isSiegePack && (rigStatus === 'idle' || rigStatus === 'loading')
 
             return (
               <div
@@ -367,6 +376,19 @@ export function Presets() {
                     {missing.length} catalog item{missing.length === 1 ? '' : 's'} unavailable in this build; the preset will not pretend they were applied.
                   </div>
                 )}
+                {isSiegePack && excluded.length > 0 && (
+                  <div className="rounded-md border border-border bg-bg-base/60 px-3 py-2 text-xs text-text-muted leading-relaxed">
+                    <strong className="text-text">Skipped for this rig:</strong>{' '}
+                    {excluded.map((t) => t.id === 'process.hags.enable'
+                      ? 'HAGS needs a supported Windows build'
+                      : t.id === 'ps.power.dt-tournament'
+                        ? 'the gaming power plan is desktop-only'
+                        : t.title).join('; ')}.
+                    {rigStatus === 'error' || rigStatus === 'unavailable'
+                      ? ' Rig detection is unavailable, so actions requiring hardware confirmation were skipped.'
+                      : ''}
+                  </div>
+                )}
                 <ul className="text-xs text-text-subtle space-y-1">
                   {tweaks.map((t) => (
                     <li key={t.id} className="flex items-center gap-2">
@@ -381,7 +403,9 @@ export function Presets() {
                 </ul>
                 <div className="flex items-center justify-between text-xs text-text-subtle">
                   <span>
-                    {tweaks.length} tweaks · {experimental.length} experimental · {adminCount > 0 ? `${adminCount} admin` : 'no admin'}
+                    {isSiegePack
+                      ? `${tweaks.length} Windows changes · ${excluded.length} skipped${adminCount > 0 ? ` · ${adminCount} admin` : ''}`
+                      : `${tweaks.length} eligible · ${excluded.length} skipped · ${experimental.length} experimental · ${adminCount > 0 ? `${adminCount} admin` : 'no admin'}`}
                   </span>
                   <span>
                     {Object.keys(appliedById).length > 0 &&
@@ -389,30 +413,49 @@ export function Presets() {
                   </span>
                 </div>
                 <div className="flex gap-2 mt-auto">
-                  {allApplied || anyApplied ? (
+                  {!allApplied && (
                     <button
-                      onClick={() => handleRevert(p.id, tweaks)}
+                      onClick={() => handleApply(p.id, tweaks)}
+                      disabled={busy || lockedByVip || rigScanPending || tweaks.length === 0}
+                      title={lockedByVip ? 'VIP unlocks this preset' : rigScanPending ? 'Checking this PC before selecting compatible settings' : undefined}
+                      className="btn-chrome flex-1 px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {lockedByVip
+                        ? 'VIP only'
+                        : rigScanPending
+                          ? 'Checking this PC…'
+                          : busy
+                            ? 'Applying…'
+                            : isSiegePack
+                              ? anyApplied ? 'Apply remaining Windows changes' : 'Apply Windows baseline'
+                              : anyApplied ? 'Apply remaining' : 'Apply preset'}
+                    </button>
+                  )}
+                  {anyApplied && (
+                    <button
+                      onClick={() => handleRevert(p.id, allPresetTweaks)}
                       disabled={busy}
                       className="flex-1 px-4 py-2 rounded-md border border-border text-sm hover:border-border-glow disabled:opacity-50"
                     >
                       {busy ? 'Reverting…' : 'Revert preset'}
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => handleApply(p.id, tweaks)}
-                      disabled={busy || lockedByVip}
-                      title={lockedByVip ? 'VIP unlocks this preset' : undefined}
-                      className="btn-chrome flex-1 px-4 py-2 rounded-md bg-accent text-bg-base text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {lockedByVip ? 'VIP only' : busy ? 'Applying…' : 'Apply preset'}
-                    </button>
                   )}
                 </div>
+                {isSiegePack && (
+                  <a
+                    href="#rainbow-six-siege-guide"
+                    className="text-center text-xs font-semibold text-accent hover:underline"
+                  >
+                    Open Siege setup values ↓
+                  </a>
+                )}
               </div>
             )
           })}
         </div>
       </section>
+
+      <RainbowSixSiegePackGuide gpuVendor={rigSpec?.gpu.vendor ?? null} />
 
       <CustomPresetBuilder
         open={builderOpen}
