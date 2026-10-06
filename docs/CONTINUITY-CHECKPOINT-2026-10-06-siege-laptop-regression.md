@@ -37,11 +37,12 @@ Scope: Repair the Rainbow Six Siege preset after a laptop client reported a drop
 - npm run build: passed; Vite emitted only the existing large-chunk warning.
 - cargo test: passed; 99 tests passed, 0 failed, using CARGO_TARGET_DIR on E:\CodexTemp\optmaxxing_siege_build_20261004\cargo-target.
 - npm run tauri:build: the optimized binary and unsigned NSIS installer were created on the USB target. Local signing stopped because this checkout has the public key but not TAURI_SIGNING_PRIVATE_KEY; CI owns the signed release artifact.
-- Commit, push, CI, signed assets, updater metadata, and public release are not complete at this checkpoint.
+- Commit `21117a0`, tag `v0.4.18`, push, CI run `37526628908`, signed assets, updater metadata, and public release are complete. The public release is https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.18.
 
 ## Release and field handoff
 
-- Intended version: v0.4.18.
+- Live version: v0.4.18. The signed NSIS installer, `.sig`, and `latest.json` are published; the updater manifest reports version `0.4.18`.
+- Release workflow: GitHub Actions run `37526628908` completed successfully, including the catalog audit, Windows build, artifact signing, publication, and MaxxTopia notification.
 - User is authorized to publish from the earlier explicit push-live request in this thread.
 - After release, affected laptop users should install v0.4.18. If the preset shows Older laptop settings are still active, click Restore deferred laptop settings once, then apply the safe baseline.
 - On laptops, use the OEM plugged-in Turbo or Performance mode deliberately. Do not stack forced HAGS, refresh, VSync, or MUX changes without checking the game and OEM control panel.
@@ -51,3 +52,4 @@ Scope: Repair the Rainbow Six Siege preset after a laptop client reported a drop
 
 - The new lane prevents reapplication of the four sensitive settings, but it cannot know whether an old release changed a setting outside the app receipt or whether another utility changed it.
 - A 150-to-120 FPS report is not causal proof from screenshots alone; the release should describe this as reducing the regression risk, not guaranteeing a particular FPS result.
+- The source/build/release gates do not prove that the affected laptop recovered 150 FPS, that reboot persistence is correct on that device, or that a specific setting caused the original drop.
