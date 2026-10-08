@@ -75,11 +75,21 @@ export const PRESETS: PresetBundle[] = [
     glyph: '🎯',
     tagline: 'Max FPS · stable 1% lows · endgame stability',
     description:
-      'Frees the resources that actually spike in endgame storms: RGB-software DPC/RAM tax reduced, Game DVR off, and the game pinned to High priority. Windows Search remains opt-in because selective indexing is safer than disabling it globally. v1.9.0: dropped MMCSS GPU-priority + visual-fx + SystemResponsiveness — efficacy audit found these don\'t reach the game (folklore / desktop-only).',
+      'The aggressive Fortnite competitive pack: mouse acceleration off, Game Mode and HAGS on, maximum refresh selected, capture and background activity disabled, High process priority at launch, power-throttling removed, RSS enabled, and desktop NIC power-save protection disabled. High is used, never Realtime. Desktop-only settings are skipped on laptops so OEM thermal and battery controls are not destroyed; experimental NIC interrupt/packet-shaping changes remain in the dedicated lab because they can increase latency on the wrong driver or route.',
     tweakIds: [
+      'display.refresh.maximize',
+      'ui.mouse.disable-acceleration',
+      'ui.gamemode.enable',
       'ui.gamedvr.disable',
-      'peripherals.rgb-control-apps.autostart-disable',
+      'ui.gamedvr.appcapture.disable',
+      'process.hags.enable',
       'process.fortnite.priority-high',
+      'ps.power.dt-tournament',
+      'process.power-throttling.disable',
+      'process.background-apps.disable',
+      'process.edge.background-disable',
+      'net.nic.rss.enable',
+      'net.nic.eee-powersave.disable',
     ],
     vipGate: 'vip',
   },
@@ -170,6 +180,11 @@ const LAPTOP_SIEGE_DEFERRED_IDS = new Set([
   'peripherals.rgb-control-apps.autostart-disable',
 ])
 
+// These curated packs contain desktop-only actions. A confirmed laptop keeps
+// its OEM power/thermal policy; an unknown chassis is withheld until a rig
+// scan can prove that applying it is appropriate.
+const RIG_AWARE_PRESET_IDS = new Set(['preset.rainbow-six-siege', 'preset.br'])
+
 export function siegeLaptopDeferredReason(
   tweakId: string,
   formFactor: 'laptop' | 'desktop' | 'unknown',
@@ -189,7 +204,21 @@ export function siegeLaptopDeferredReason(
   }
 }
 
-/** The Siege pack fails closed for rig-targeted actions when a snapshot is
+export function presetDeferredReason(
+  tweak: TweakRecord,
+  formFactor: 'laptop' | 'desktop' | 'unknown',
+): string {
+  const siegeReason = siegeLaptopDeferredReason(tweak.id, formFactor)
+  if (siegeReason) return siegeReason
+  if (tweak.targets?.formFactor?.includes('desktop')) {
+    return formFactor === 'laptop'
+      ? `${tweak.title} is desktop-only, so the laptop's OEM power and thermal policy is preserved`
+      : `${tweak.title} needs a confirmed desktop chassis before automatic application`
+  }
+  return `${tweak.title} needs a compatible rig snapshot before automatic application`
+}
+
+/** Rig-aware packs fail closed for rig-targeted actions when a snapshot is
  * unavailable or missing a field needed to prove compatibility. Universal
  * actions remain available; callers should show excluded entries explicitly. */
 export function presetTweaksForRig(
@@ -197,7 +226,7 @@ export function presetTweaksForRig(
   spec: SpecProfile | null,
 ): { eligible: TweakRecord[]; excluded: TweakRecord[] } {
   const all = presetTweaks(p)
-  if (p.id !== 'preset.rainbow-six-siege') return { eligible: all, excluded: [] }
+  if (!RIG_AWARE_PRESET_IDS.has(p.id)) return { eligible: all, excluded: [] }
 
   const matchesKnownTargets = (tweak: TweakRecord) => {
     // Do not infer that an unknown chassis is a desktop. The remaining

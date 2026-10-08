@@ -5,6 +5,7 @@ import {
   listApplied,
   revertTweak,
   telemetrySendEvent,
+  verifyApplied,
   type AppliedTweak,
   type BatchItem,
 } from '../lib/tauri'
@@ -13,9 +14,9 @@ import { catalog, isExperimentalTweak, tweakRequiresAdmin, type TweakRecord } fr
 import {
   PRESETS,
   presetMissingTweakIds,
+  presetDeferredReason,
   presetTweaks,
   presetTweaksForRig,
-  siegeLaptopDeferredReason,
 } from '../lib/presets'
 import { useIsVip } from '../store/useVipStore'
 import { useRigStore } from '../store/useRigStore'
@@ -26,10 +27,57 @@ import { ComparePresetsModal } from '../components/ComparePresetsModal'
 import { RainbowSixSiegePackGuide } from '../components/RainbowSixSiegePackGuide'
 
 /**
+ * The native store keeps one receipt per action, while the UI renders one row
+ * per catalog tweak. Collapse action receipts without losing the important
+ * distinction between "every action still verifies" and "one action drifted".
+ * A single representative receipt was previously enough to make a partially
+ * drifted multi-action tweak look healthy and skip it on the next apply.
+ */
+function activeReceiptMap(rows: AppliedTweak[]): Record<string, AppliedTweak> {
+  const grouped = new Map<string, AppliedTweak[]>()
+  for (const row of rows) {
+    if (row.status !== 'applied') continue
+    const group = grouped.get(row.tweakId) ?? []
+    group.push(row)
+    grouped.set(row.tweakId, group)
+  }
+
+  const byId: Record<string, AppliedTweak> = {}
+  for (const [tweakId, group] of grouped) {
+    const firstProblem = group.find((row) => row.verificationStatus !== 'verified')
+    const verificationStatus: AppliedTweak['verificationStatus'] = firstProblem
+      ? group.some((row) => row.verificationStatus === 'mismatch')
+        ? 'mismatch'
+        : 'unknown'
+      : 'verified'
+    byId[tweakId] = {
+      ...group[0],
+      verificationStatus,
+      verificationDetail:
+        firstProblem?.verificationDetail ??
+        (group.length > 1 ? `${group.length} actions verified.` : group[0].verificationDetail),
+    }
+  }
+  return byId
+}
+
+function isActiveReceipt(receipt?: AppliedTweak): boolean {
+  return receipt?.status === 'applied'
+}
+
+function isVerifiedReceipt(receipt?: AppliedTweak): boolean {
+  return isActiveReceipt(receipt) && receipt?.verificationStatus === 'verified'
+}
+
+function isDriftedReceipt(receipt?: AppliedTweak): boolean {
+  return isActiveReceipt(receipt) && receipt?.verificationStatus !== 'verified'
+}
+
+/**
  * Curated preset bundles + user-built custom presets. Apply / Revert in
  * batch via the apply_batch Tauri command (one UAC for the whole bundle).
- * The Siege pack uses the transactional command so a verification mismatch
- * cannot leave a half-applied performance setup behind.
+ * The Siege and Battle Royale packs use the transactional command so a
+ * verification mismatch cannot leave a half-applied performance setup behind.
  * Custom presets persist to localStorage and export/import as JSON.
  */
 export function Presets() {
@@ -61,21 +109,22 @@ export function Presets() {
     return p.tweakIds.map((id) => tweaksById.get(id)).filter((t): t is TweakRecord => !!t)
   }
 
-  async function refreshApplied() {
-    try {
-      const list = await listApplied()
-      const byId: Record<string, AppliedTweak> = {}
-      for (const a of list) {
-        if (a.status === 'applied' && !byId[a.tweakId]) byId[a.tweakId] = a
-      }
-      setAppliedById(byId)
-    } catch {
-      /* not in Tauri */
-    }
+  async function refreshApplied(): Promise<Record<string, AppliedTweak>> {
+    // Use native read-back, not only the receipt table. Windows Update,
+    // drivers, Group Policy, or another utility can change a setting after
+    // the original apply and the preset must expose that drift. Do not turn a
+    // verification failure into an empty map: an apply must fail closed rather
+    // than treating every tweak as missing and writing blindly.
+    const byId = activeReceiptMap(await verifyApplied())
+    setAppliedById(byId)
+    return byId
   }
 
   useEffect(() => {
-    refreshApplied()
+    void refreshApplied().catch(() => {
+      // Browser preview has no native receipt store. Apply surfaces report the
+      // same error through handleApply when a real action is attempted.
+    })
     void ensureRigLoaded()
   }, [ensureRigLoaded])
 
@@ -94,18 +143,22 @@ export function Presets() {
       ) {
         return
       }
+      const liveById = await refreshApplied()
       const items: BatchItem[] = []
       for (const t of tweaks) {
-        if (appliedById[t.id]) continue
+        // Only a fresh, fully verified receipt is considered complete. A
+        // mismatch or unknown receipt must be repaired or reported, never
+        // silently skipped as if it were still active.
+        if (isVerifiedReceipt(liveById[t.id])) continue
         for (const action of t.actions) items.push({ tweakId: t.id, action })
       }
       if (items.length > 0) {
-        if (presetId === 'preset.rainbow-six-siege') {
+        if (presetId === 'preset.rainbow-six-siege' || presetId === 'preset.br') {
           const report = await applyTransaction(items)
           if (report.status !== 'committed' || report.verifiedCount !== report.itemCount) {
             const detail = [...report.errors, ...report.rollbackErrors].slice(0, 2).join(' ')
             throw new Error(
-              `Siege setup ${report.status}: ${detail || `${report.verifiedCount}/${report.itemCount} actions verified.`}`,
+              `${presetId === 'preset.br' ? 'Battle Royale' : 'Siege'} setup ${report.status}: ${detail || `${report.verifiedCount}/${report.itemCount} actions verified.`}`,
             )
           }
         } else {
@@ -263,8 +316,9 @@ export function Presets() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {customPresets.map((p) => {
               const tweaks = resolveCustomPreset(p)
-              const allApplied = tweaks.length > 0 && tweaks.every((t) => appliedById[t.id])
-              const anyApplied = tweaks.some((t) => appliedById[t.id])
+              const allApplied = tweaks.length > 0 && tweaks.every((t) => isVerifiedReceipt(appliedById[t.id]))
+              const anyApplied = tweaks.some((t) => isActiveReceipt(appliedById[t.id]))
+              const driftedCount = tweaks.filter((t) => isDriftedReceipt(appliedById[t.id])).length
               const adminCount = tweaks.filter(tweakRequiresAdmin).length
               const busy = busyId === p.id
 
@@ -292,23 +346,27 @@ export function Presets() {
                       </span>
                     )}
                     · {adminCount > 0 ? `${adminCount} admin` : 'no admin'}
+                    {driftedCount > 0 && (
+                      <span className="text-amber-200"> · {driftedCount} need live repair</span>
+                    )}
                   </div>
                   <div className="flex flex-wrap gap-2 mt-auto">
-                    {anyApplied || allApplied ? (
+                    {!allApplied && (
+                      <button
+                        onClick={() => handleApply(p.id, tweaks)}
+                        disabled={busy || tweaks.length === 0}
+                        className="btn-chrome flex-1 px-3 py-2 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-50"
+                      >
+                        {busy ? 'Applying…' : driftedCount > 0 ? 'Repair / apply remaining' : 'Apply'}
+                      </button>
+                    )}
+                    {anyApplied && (
                       <button
                         onClick={() => handleRevert(p.id, tweaks)}
                         disabled={busy}
                         className="flex-1 px-3 py-2 rounded-md border border-border text-xs hover:border-border-glow disabled:opacity-50"
                       >
                         {busy ? 'Reverting…' : 'Revert'}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleApply(p.id, tweaks)}
-                        disabled={busy || tweaks.length === 0}
-                        className="btn-chrome flex-1 px-3 py-2 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-50"
-                      >
-                        {busy ? 'Applying…' : 'Apply'}
                       </button>
                     )}
                     <button
@@ -343,13 +401,16 @@ export function Presets() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {PRESETS.map((p) => {
             const isSiegePack = p.id === 'preset.rainbow-six-siege'
+            const isRigAwarePack = isSiegePack || p.id === 'preset.br'
             const allPresetTweaks = presetTweaks(p)
             const { eligible: tweaks, excluded } = presetTweaksForRig(p, rigSpec)
             const experimental = tweaks.filter(isExperimentalTweak)
             const missing = presetMissingTweakIds(p)
-            const allApplied = tweaks.length > 0 && tweaks.every((t) => appliedById[t.id])
-            const anyApplied = allPresetTweaks.some((t) => appliedById[t.id])
-            const deferredApplied = excluded.filter((t) => appliedById[t.id])
+            const allApplied = tweaks.length > 0 && tweaks.every((t) => isVerifiedReceipt(appliedById[t.id]))
+            const anyApplied = allPresetTweaks.some((t) => isActiveReceipt(appliedById[t.id]))
+            const deferredApplied = excluded.filter((t) => isActiveReceipt(appliedById[t.id]))
+            const driftedCount = tweaks.filter((t) => isDriftedReceipt(appliedById[t.id])).length
+            const verifiedCount = tweaks.filter((t) => isVerifiedReceipt(appliedById[t.id])).length
             const adminCount = tweaks.filter(tweakRequiresAdmin).length
             const actionCount = tweaks.reduce((total, tweak) => total + tweak.actions.length, 0)
             const detectedFormFactor = rigSpec?.mobo?.isLaptop === true
@@ -359,7 +420,7 @@ export function Presets() {
                 : 'unknown'
             const lockedByVip = p.vipGate === 'vip' && !isVip
             const busy = busyId === p.id
-            const rigScanPending = isSiegePack && (rigStatus === 'idle' || rigStatus === 'loading')
+            const rigScanPending = isRigAwarePack && (rigStatus === 'idle' || rigStatus === 'loading')
 
             return (
               <div
@@ -404,23 +465,14 @@ export function Presets() {
                     {missing.length} catalog item{missing.length === 1 ? '' : 's'} unavailable in this build; the preset will not pretend they were applied.
                   </div>
                 )}
-                {isSiegePack && excluded.length > 0 && (
+                {isRigAwarePack && excluded.length > 0 && (
                   <div className="rounded-md border border-border bg-bg-base/60 px-3 py-2 text-xs text-text-muted leading-relaxed">
                     <strong className="text-text">Not applicable on this rig:</strong>{' '}
-                    {excluded.map((t) => siegeLaptopDeferredReason(t.id, detectedFormFactor)
-                      ?? (t.id === 'process.hags.enable'
-                        ? 'HAGS needs a supported Windows build'
-                        : t.id === 'ps.power.dt-tournament'
-                          ? detectedFormFactor === 'laptop'
-                            ? 'the desktop Ultimate Performance clone is skipped on laptops to preserve OEM battery and thermal policy'
-                            : detectedFormFactor === 'unknown'
-                              ? 'the Ultimate Performance clone needs a confirmed desktop chassis'
-                              : 'the Ultimate Performance clone could not be confirmed for this chassis'
-                          : t.title)).join('; ')}.
+                    {excluded.map((t) => presetDeferredReason(t, detectedFormFactor)).join('; ')}.
                     {rigStatus === 'error' || rigStatus === 'unavailable'
                       ? ' Rig detection is unavailable, so actions requiring hardware confirmation were skipped; re-scan this PC before applying again.'
                       : ''}
-                    <span className="block mt-1 text-text-subtle">This is a compatibility skip, not a failed apply. The remaining {tweaks.length} verified settings stay available to apply.</span>
+                    <span className="block mt-1 text-text-subtle">This is a compatibility skip, not a failed apply. The remaining {tweaks.length} eligible settings stay available to apply.</span>
                   </div>
                 )}
                 {isSiegePack && deferredApplied.length > 0 && (
@@ -442,22 +494,31 @@ export function Presets() {
                     <li key={t.id} className="flex items-center gap-2">
                       <span
                         className={`size-1.5 rounded-full ${
-                          appliedById[t.id] ? 'bg-accent' : 'bg-border'
+                          isVerifiedReceipt(appliedById[t.id])
+                            ? 'bg-accent'
+                            : isDriftedReceipt(appliedById[t.id])
+                              ? 'bg-amber-300'
+                              : 'bg-border'
                         }`}
+                        title={
+                          isDriftedReceipt(appliedById[t.id])
+                            ? appliedById[t.id]?.verificationDetail
+                            : undefined
+                        }
                       />
-                      <span className={appliedById[t.id] ? 'text-text' : ''}>{t.title}</span>
+                      <span className={isVerifiedReceipt(appliedById[t.id]) ? 'text-text' : isDriftedReceipt(appliedById[t.id]) ? 'text-amber-100' : ''}>{t.title}</span>
                     </li>
                   ))}
                 </ul>
                 <div className="flex items-center justify-between text-xs text-text-subtle">
                   <span>
                     {isSiegePack
-                      ? `${tweaks.length} verified settings · ${actionCount} actions · ${excluded.length} skipped${adminCount > 0 ? ` · ${adminCount} admin` : ''}`
+                      ? `${tweaks.length} eligible settings · ${actionCount} actions · ${excluded.length} skipped${adminCount > 0 ? ` · ${adminCount} admin` : ''}`
                       : `${tweaks.length} eligible · ${excluded.length} skipped · ${experimental.length} experimental · ${adminCount > 0 ? `${adminCount} admin` : 'no admin'}`}
                   </span>
                   <span>
-                    {Object.keys(appliedById).length > 0 &&
-                      `${tweaks.filter((t) => appliedById[t.id]).length}/${tweaks.length} applied`}
+                    {Object.keys(appliedById).length > 0 && `${verifiedCount}/${tweaks.length} verified`}
+                    {driftedCount > 0 && <span className="text-amber-200"> · {driftedCount} drifted</span>}
                   </span>
                 </div>
                 <div className="flex gap-2 mt-auto">
@@ -474,6 +535,8 @@ export function Presets() {
                           ? 'Checking this PC…'
                           : busy
                             ? 'Applying…'
+                              : driftedCount > 0
+                                ? 'Repair drifted settings'
                             : isSiegePack
                               ? anyApplied ? 'Apply remaining verified settings' : 'Apply verified baseline'
                               : anyApplied ? 'Apply remaining' : 'Apply preset'}

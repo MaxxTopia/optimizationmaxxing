@@ -261,7 +261,9 @@ export function MatchScan() {
             <span className="text-text-muted font-medium">You get back:</span>{' '}
             the throttle flags (GPU thermal/power + CPU clock drop), the lowest
             effective clock under load, and the worst single frametime spike —
-            plus UDP/NIC packet loss, present mode, DPC, and CPU-vs-GPU bound.
+            plus a system UDP/NIC error-counter signal, present mode, DPC, and
+            CPU-vs-GPU bound. That network signal is local evidence, not direct
+            proof of Fortnite packet loss; confirm it with Net Debug Stats.
             For CPU temps behind a throttle, run the CPU deep scan too. If a
             supported game is open it captures frametimes via PresentMon
             (one-time admin prompt).

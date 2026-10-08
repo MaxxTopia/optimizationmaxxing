@@ -1096,8 +1096,10 @@ struct SessionSample {
 }
 
 /// UDP + NIC error/discard counters — snapshotted at Start and again at Stop.
-/// The delta is the packet-LOSS check: loss deletes inputs, latency only delays
-/// them. All driver-free, no admin. (Ported from Desktop\fight-capture.)
+/// The delta is a system-level network-health signal, not a direct measurement
+/// of Fortnite's UDP flow. It can point at a local adapter/driver/cable issue,
+/// but it cannot attribute the counter to game traffic or prove an input was
+/// lost. All driver-free, no admin. (Ported from Desktop\fight-capture.)
 #[derive(Clone, Default)]
 struct NetSnap {
     udp_recv_errors: i64,
@@ -1119,7 +1121,8 @@ struct SessionState {
     /// Rated CPU base clock (MHz) from Win32_Processor.MaxClockSpeed — the
     /// reference the effective clock is throttle-checked against.
     base_clock_mhz: Option<f32>,
-    /// UDP/NIC error counters captured at Start; deltaed at Stop for loss.
+    /// UDP/NIC error counters captured at Start; deltaed at Stop for a local
+    /// network-health signal.
     net_before: Option<NetSnap>,
 }
 
@@ -1827,7 +1830,7 @@ pub fn session_stop() -> MatchScanReport {
         }
     }
 
-    // ── UDP + NIC packet-loss delta (loss deletes inputs; latency only delays) ──
+    // ── UDP + NIC error/discard delta (system-level local signal) ──
     if let Some(before) = st.net_before.clone() {
         if let Some(after) = read_net_snapshot() {
             let udp_err = (after.udp_recv_errors - before.udp_recv_errors).max(0);
@@ -1842,10 +1845,10 @@ pub fn session_stop() -> MatchScanReport {
                     id: "session.net-loss".into(),
                     severity: "warn".into(),
                     title: format!(
-                        "Packets were lost or errored during the match (UDP errors +{udp_err}, NIC bad +{nic_bad})"
+                        "Local UDP/NIC error counters rose during capture (UDP +{udp_err}, NIC +{nic_bad})"
                     ),
-                    cause: "Game traffic is UDP: lost or errored packets DELETE inputs outright — unlike latency, which only delays them. Counters climbing during the fight point at the route / cable / adapter, not your ping.".into(),
-                    fix: "Go wired with a known-good Cat5e/6 cable into a CPU-direct port, drop powerline/MoCA/Wi-Fi extenders, and update the NIC driver. Re-run to confirm the counters stay flat.".into(),
+                    cause: "These are system-wide counters across active physical adapters, not a direct measurement of Fortnite's UDP flow. They can indicate a local adapter, driver, cable, or competing-traffic problem, but they do not prove Fortnite dropped an input. Correlate this with Fortnite Net Debug Stats before changing a NIC setting.".into(),
+                    fix: "First enable Fortnite Net Debug Stats and repeat the capture while the problem is happening. If Fortnite also shows packet loss, check the Ethernet cable/driver, router queue or loaded-connection behavior, and ISP routing; do not stack another NIC tweak until the signal is reproduced.".into(),
                     evidence: Some(format!(
                         "UDP recv-err +{udp_err}, no-port +{udp_np}; NIC rx-disc +{rxd} rx-err +{rxe} tx-disc +{txd} tx-err +{txe}"
                     )),
@@ -1856,10 +1859,13 @@ pub fn session_stop() -> MatchScanReport {
                 findings.push(Finding {
                     id: "session.net-clean".into(),
                     severity: "ok".into(),
-                    title: "No UDP or NIC packet loss during the match".into(),
+                    title: "No local UDP/NIC error-counter increase during capture".into(),
                     cause: String::new(),
                     fix: String::new(),
-                    evidence: Some("no receive errors or adapter discards accrued".into()),
+                    evidence: Some(
+                        "no system-wide UDP receive errors or active-adapter discards accrued"
+                            .into(),
+                    ),
                     tweak_id: None,
                     guide_id: None,
                 });

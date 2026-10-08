@@ -1998,6 +1998,15 @@ async fn network_audit_probe() -> Result<network_audit::NetworkAudit, String> {
 }
 
 #[tauri::command]
+async fn network_traffic_snapshot() -> Result<network_audit::NetworkTrafficSnapshot, String> {
+    tokio::task::spawn_blocking(|| {
+        network_audit::read_network_traffic_snapshot().map_err(|e| format!("{:#}", e))
+    })
+    .await
+    .map_err(|e| format!("network traffic snapshot task failed: {e}"))?
+}
+
+#[tauri::command]
 async fn driver_health() -> Result<drivers::DriverHealthReport, String> {
     tokio::task::spawn_blocking(|| {
         let com_con = wmi::COMLibrary::new().map_err(|e| format!("COM init: {e:#}"))?;
@@ -2245,6 +2254,7 @@ pub fn run() {
             monitor_inventory,
             driver_health,
             network_audit_probe,
+            network_traffic_snapshot,
             bios_audit_probe,
             scewin_parse_dump,
             list_session_candidates,

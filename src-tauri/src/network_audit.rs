@@ -26,6 +26,15 @@ pub struct NetworkAdapterSettings {
     /// carries normal game traffic; virtual and disconnected adapters are not
     /// included in this read-back.
     pub adapter_name: String,
+    /// Stable-ish identity used to make sure an apply/revert targets the
+    /// adapter that carried the default route when the snapshot was taken.
+    pub interface_index: Option<u32>,
+    pub interface_guid: Option<String>,
+    pub pnp_device_id: Option<String>,
+    pub hardware_interface: Option<bool>,
+    pub driver_provider: Option<String>,
+    pub driver_version: Option<String>,
+    pub driver_date: Option<String>,
     pub rss_enabled: Option<bool>,
     pub rsc_ipv4_enabled: Option<bool>,
     pub rsc_ipv6_enabled: Option<bool>,
@@ -77,6 +86,34 @@ pub struct NetworkAudit {
     /// deliberately a snapshot, not an apply path: users can verify what the
     /// catalog changed without us guessing at vendor-specific defaults.
     pub adapter_settings: Vec<NetworkAdapterSettings>,
+}
+
+/// Read-only traffic evidence for the adapter carrying the active IPv4
+/// default route. It intentionally records counters and Fortnite endpoint
+/// counts, never packet payloads or remote endpoint addresses.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NetworkTrafficSnapshot {
+    pub captured_at: String,
+    pub adapter_name: Option<String>,
+    pub interface_index: Option<u32>,
+    pub interface_guid: Option<String>,
+    pub pnp_device_id: Option<String>,
+    pub hardware_interface: Option<bool>,
+    pub adapter_status: Option<String>,
+    pub driver_provider: Option<String>,
+    pub driver_version: Option<String>,
+    pub driver_date: Option<String>,
+    pub received_bytes: Option<u64>,
+    pub sent_bytes: Option<u64>,
+    pub received_packets: Option<u64>,
+    pub sent_packets: Option<u64>,
+    pub received_errors: Option<u64>,
+    pub sent_errors: Option<u64>,
+    pub received_discards: Option<u64>,
+    pub sent_discards: Option<u64>,
+    pub fortnite_running: bool,
+    pub fortnite_udp_endpoints: u32,
 }
 
 /// Bundled OUI → vendor mapping. Curated to the routers a competitive
@@ -225,9 +262,9 @@ try {
     # whose NextHop is 0.0.0.0/:: — those interfaces have no IPv4 + no
     # link speed, which is what caused "could not determine local subnet"
     # in v0.1.97. Real WAN routes always have a concrete NextHop.
-    $route = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction Stop |
-        Where-Object { $_.NextHop -and $_.NextHop -ne '0.0.0.0' -and $_.NextHop -ne '::' } |
-        Sort-Object -Property RouteMetric |
+    $route = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -AddressFamily IPv4 -ErrorAction Stop |
+        Where-Object { $_.NextHop -and $_.NextHop -ne '0.0.0.0' -and $_.NextHop -ne '::' -and $_.InterfaceIndex } |
+        Sort-Object @{Expression='RouteMetric';Ascending=$true}, @{Expression='InterfaceMetric';Ascending=$true} |
         Select-Object -First 1
     if ($null -ne $route) {
         $out.gatewayIpv4 = [string]$route.NextHop
@@ -241,8 +278,47 @@ try {
             # Read back only the adapter selected by the default route. These
             # values are vendor-dependent, so missing properties stay null
             # instead of being presented as a failed or guessed setting.
+            $pnpDeviceId = $null
+            try { $pnpDeviceId = [string]$adapter.PnpDeviceID } catch { }
+            if ([string]::IsNullOrWhiteSpace($pnpDeviceId)) {
+                try {
+                    $pnp = Get-PnpDevice -Class Net -PresentOnly -ErrorAction Stop |
+                        Where-Object { $_.FriendlyName -eq $adapter.InterfaceDescription } |
+                        Select-Object -First 1
+                    if ($null -ne $pnp) { $pnpDeviceId = [string]$pnp.InstanceId }
+                } catch { }
+            }
+            $hardwareInterface = $null
+            try {
+                $physical = Get-NetAdapter -Physical -InterfaceIndex $idx -ErrorAction Stop
+                $hardwareInterface = $null -ne $physical
+            } catch { }
+            $driverProvider = $null
+            $driverVersion = $null
+            $driverDate = $null
+            if (-not [string]::IsNullOrWhiteSpace($pnpDeviceId)) {
+                try {
+                    $driver = Get-CimInstance Win32_PnPSignedDriver -ErrorAction Stop |
+                        Where-Object { $_.DeviceID -eq $pnpDeviceId } |
+                        Select-Object -First 1
+                    if ($null -ne $driver) {
+                        $driverProvider = [string]$driver.DriverProviderName
+                        $driverVersion = [string]$driver.DriverVersion
+                        if ($null -ne $driver.DriverDate) {
+                            $driverDate = ([datetime]$driver.DriverDate).ToUniversalTime().ToString('yyyy-MM-dd')
+                        }
+                    }
+                } catch { }
+            }
             $nic = [ordered]@{
                 adapterName = [string]$adapter.InterfaceDescription
+                interfaceIndex = [int]$idx
+                interfaceGuid = if ($adapter.PSObject.Properties.Name -contains 'InterfaceGuid') { [string]$adapter.InterfaceGuid } else { $null }
+                pnpDeviceId = if ([string]::IsNullOrWhiteSpace($pnpDeviceId)) { $null } else { $pnpDeviceId }
+                hardwareInterface = $hardwareInterface
+                driverProvider = if ([string]::IsNullOrWhiteSpace($driverProvider)) { $null } else { $driverProvider }
+                driverVersion = if ([string]::IsNullOrWhiteSpace($driverVersion)) { $null } else { $driverVersion }
+                driverDate = if ([string]::IsNullOrWhiteSpace($driverDate)) { $null } else { $driverDate }
                 rssEnabled = $null
                 rscIpv4Enabled = $null
                 rscIpv6Enabled = $null
@@ -436,6 +512,156 @@ $out | ConvertTo-Json -Compress
         stick_subnet_reachable,
         adapter_settings: raw.adapter_settings,
     })
+}
+
+/// Reads low-cost adapter counters and Fortnite process/UDP presence without
+/// inspecting packet contents. This is deliberately separate from the full
+/// audit because experiments may sample it several times in a short window.
+pub fn read_network_traffic_snapshot() -> Result<NetworkTrafficSnapshot> {
+    let script = r#"
+$ErrorActionPreference = 'SilentlyContinue'
+$out = [ordered]@{
+    capturedAt = (Get-Date).ToUniversalTime().ToString('o')
+    adapterName = $null
+    interfaceIndex = $null
+    interfaceGuid = $null
+    pnpDeviceId = $null
+    hardwareInterface = $null
+    adapterStatus = $null
+    driverProvider = $null
+    driverVersion = $null
+    driverDate = $null
+    receivedBytes = $null
+    sentBytes = $null
+    receivedPackets = $null
+    sentPackets = $null
+    receivedErrors = $null
+    sentErrors = $null
+    receivedDiscards = $null
+    sentDiscards = $null
+    fortniteRunning = $false
+    fortniteUdpEndpoints = 0
+}
+
+function Get-StatValue([object]$stats, [string[]]$names) {
+    foreach ($name in $names) {
+        try {
+            $property = $stats.PSObject.Properties[$name]
+            if ($null -ne $property -and $null -ne $property.Value) {
+                return [uint64]$property.Value
+            }
+        } catch { }
+    }
+    return $null
+}
+
+try {
+    $route = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -AddressFamily IPv4 -ErrorAction Stop |
+        Where-Object { $_.NextHop -and $_.NextHop -ne '0.0.0.0' -and $_.InterfaceIndex } |
+        Sort-Object @{Expression='RouteMetric';Ascending=$true}, @{Expression='InterfaceMetric';Ascending=$true} |
+        Select-Object -First 1
+    if ($null -ne $route) {
+        $idx = [int]$route.InterfaceIndex
+        $adapter = Get-NetAdapter -InterfaceIndex $idx -ErrorAction Stop | Select-Object -First 1
+        if ($null -ne $adapter) {
+            $out.adapterName = [string]$adapter.InterfaceDescription
+            $out.interfaceIndex = $idx
+            $out.adapterStatus = [string]$adapter.Status
+            if ($adapter.PSObject.Properties.Name -contains 'InterfaceGuid') { $out.interfaceGuid = [string]$adapter.InterfaceGuid }
+            try { $out.pnpDeviceId = [string]$adapter.PnpDeviceID } catch { }
+            try { $out.hardwareInterface = $null -ne (Get-NetAdapter -Physical -InterfaceIndex $idx -ErrorAction Stop) } catch { }
+
+            if ([string]::IsNullOrWhiteSpace([string]$out.pnpDeviceId)) {
+                try {
+                    $pnp = Get-PnpDevice -Class Net -PresentOnly -ErrorAction Stop |
+                        Where-Object { $_.FriendlyName -eq $adapter.InterfaceDescription } |
+                        Select-Object -First 1
+                    if ($null -ne $pnp) { $out.pnpDeviceId = [string]$pnp.InstanceId }
+                } catch { }
+            }
+            if (-not [string]::IsNullOrWhiteSpace([string]$out.pnpDeviceId)) {
+                try {
+                    $driver = Get-CimInstance Win32_PnPSignedDriver -ErrorAction Stop |
+                        Where-Object { $_.DeviceID -eq [string]$out.pnpDeviceId } |
+                        Select-Object -First 1
+                    if ($null -ne $driver) {
+                        $out.driverProvider = [string]$driver.DriverProviderName
+                        $out.driverVersion = [string]$driver.DriverVersion
+                        if ($null -ne $driver.DriverDate) {
+                            $out.driverDate = ([datetime]$driver.DriverDate).ToUniversalTime().ToString('yyyy-MM-dd')
+                        }
+                    }
+                } catch { }
+            }
+
+            try {
+                $stats = Get-NetAdapterStatistics -Name $adapter.Name -ErrorAction Stop | Select-Object -First 1
+                if ($null -ne $stats) {
+                    $out.receivedBytes = Get-StatValue $stats @('ReceivedBytes')
+                    $out.sentBytes = Get-StatValue $stats @('SentBytes','OutboundBytes')
+                    $out.receivedPackets = Get-StatValue $stats @('ReceivedUnicastPackets','ReceivedPackets')
+                    $out.sentPackets = Get-StatValue $stats @('SentUnicastPackets','SentPackets','OutboundPackets')
+                    $out.receivedErrors = Get-StatValue $stats @('ReceivedPacketErrors','ReceivedErrors')
+                    $out.sentErrors = Get-StatValue $stats @('OutboundPacketErrors','SentPacketErrors','SentErrors')
+                    $out.receivedDiscards = Get-StatValue $stats @('ReceivedDiscardedPackets','ReceivedDiscards')
+                    $out.sentDiscards = Get-StatValue $stats @('OutboundDiscardedPackets','SentDiscards')
+                }
+            } catch { }
+        }
+    }
+} catch { }
+
+try {
+    $gameProcesses = @(Get-Process -Name 'FortniteClient-Win64-Shipping','FortniteClient-Win64-Shipping_EAC','FortniteClient-Win64-Shipping_BE' -ErrorAction SilentlyContinue)
+    $out.fortniteRunning = $gameProcesses.Count -gt 0
+    $udpCount = 0
+    foreach ($gameProcess in $gameProcesses) {
+        try { $udpCount += @(Get-NetUDPEndpoint -OwningProcess ([int]$gameProcess.Id) -ErrorAction SilentlyContinue).Count } catch { }
+    }
+    $out.fortniteUdpEndpoints = [int]$udpCount
+} catch { }
+
+$out | ConvertTo-Json -Compress
+"#;
+
+    let output = hidden_powershell()
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            script,
+        ])
+        .output()
+        .context("spawn PowerShell for network traffic snapshot")?;
+    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if stdout.is_empty() {
+        return Ok(NetworkTrafficSnapshot {
+            captured_at: String::new(),
+            adapter_name: None,
+            interface_index: None,
+            interface_guid: None,
+            pnp_device_id: None,
+            hardware_interface: None,
+            adapter_status: None,
+            driver_provider: None,
+            driver_version: None,
+            driver_date: None,
+            received_bytes: None,
+            sent_bytes: None,
+            received_packets: None,
+            sent_packets: None,
+            received_errors: None,
+            sent_errors: None,
+            received_discards: None,
+            sent_discards: None,
+            fortnite_running: false,
+            fortnite_udp_endpoints: 0,
+        });
+    }
+
+    serde_json::from_str(&stdout).with_context(|| format!("parse network traffic JSON: {stdout}"))
 }
 
 #[cfg(test)]

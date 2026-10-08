@@ -164,7 +164,8 @@ pub fn spawn_daemon() {
     });
 }
 
-/// One poll cycle: enumerate processes, pin matching ones, drop dead PIDs.
+/// One poll cycle: reconcile matching processes, clear removed/empty rules,
+/// pin active rules, and drop dead PIDs.
 fn poll_once(rules: &[AutoPinRule]) -> Result<()> {
     let mut sys = System::new();
     sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
@@ -175,15 +176,66 @@ fn poll_once(rules: &[AutoPinRule]) -> Result<()> {
     for (pid, proc_) in sys.processes() {
         let name_lc = proc_.name().to_string_lossy().to_lowercase();
         let pid_u32 = pid.as_u32();
-        for rule in rules {
-            if rule.process_name.trim().is_empty() || rule.cores.is_empty() {
-                continue;
-            }
-            if name_lc != rule.process_name.trim().to_lowercase() {
-                continue;
-            }
-            still_alive.insert(pid_u32, ());
 
+        // Keep a copy of the daemon's previous observation so removing a rule
+        // cannot leave a live process pinned forever. An empty rule is also a
+        // deliberate "restore native scheduler" request, including after an
+        // app restart where STATUS no longer remembers the PID.
+        let was_tracked = {
+            let st = status_lock().lock();
+            st.pinned.iter().any(|p| p.pid == pid_u32)
+        };
+        let matching_rules = rules
+            .iter()
+            .filter(|rule| {
+                !rule.process_name.trim().is_empty()
+                    && name_lc == rule.process_name.trim().to_lowercase()
+            })
+            .collect::<Vec<_>>();
+        let active_rules = matching_rules
+            .iter()
+            .filter(|rule| !rule.cores.is_empty())
+            .copied()
+            .collect::<Vec<_>>();
+
+        // No active rule means native scheduling is the requested state. If
+        // the rule was explicitly emptied, call Windows even when the daemon
+        // has just restarted and has no in-memory receipt for this PID.
+        if active_rules.is_empty() {
+            if !matching_rules.is_empty() || was_tracked {
+                match cpusets::clear_pin(pid_u32) {
+                    Ok(report) if report.ok => {
+                        let mut st = status_lock().lock();
+                        st.pinned.retain(|p| p.pid != pid_u32);
+                    }
+                    Ok(report) => {
+                        if was_tracked {
+                            still_alive.insert(pid_u32, ());
+                        }
+                        if first_error.is_none() {
+                            first_error = report.error.or_else(|| {
+                                Some(format!("Windows did not clear CPU Sets for PID {pid_u32}"))
+                            });
+                        }
+                    }
+                    Err(error) => {
+                        if was_tracked {
+                            still_alive.insert(pid_u32, ());
+                        }
+                        if first_error.is_none() {
+                            first_error = Some(format!(
+                                "could not restore native CPU scheduling for PID {pid_u32}: {error:#}"
+                            ));
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
+        still_alive.insert(pid_u32, ());
+
+        for rule in active_rules {
             // Skip if we already pinned this PID with the same cores.
             let already = {
                 let st = status_lock().lock();

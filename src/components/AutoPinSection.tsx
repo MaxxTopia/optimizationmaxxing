@@ -3,6 +3,7 @@ import {
   autoPinGetConfig,
   autoPinSetConfig,
   autoPinStatus,
+  cpuClearPin,
   cpuSetInfo,
   inTauri,
   type AutoPinConfig,
@@ -120,6 +121,39 @@ export function AutoPinSection() {
     }
     persist(next)
     setEditingIdx(null)
+  }
+
+  async function handleRestoreNative(idx: number) {
+    if (!config) return
+    const rule = config.rules[idx]
+    if (!rule) return
+
+    setBusy(true)
+    setErr(null)
+    try {
+      // Empty CPU Sets mean "do not apply a pin" for future launches, but
+      // that alone cannot undo a SetProcessDefaultCpuSets call already made
+      // to the current PID. Clear both the saved rule and the live process.
+      const saved = await autoPinSetConfig({
+        ...config,
+        rules: config.rules.map((item, i) => (i === idx ? { ...item, cores: [] } : item)),
+      })
+      const matching = (status?.pinned ?? []).filter(
+        (process) => process.processName.toLowerCase() === rule.processName.toLowerCase(),
+      )
+      for (const process of matching) {
+        const report = await cpuClearPin(process.pid)
+        if (!report.ok) {
+          throw new Error(report.error ?? `Windows did not clear CPU Sets for PID ${process.pid}.`)
+        }
+      }
+      setConfig(saved)
+      setStatus(await autoPinStatus())
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
   }
 
   function handleUpdateRule(idx: number, patch: Partial<AutoPinRule>) {
@@ -287,6 +321,11 @@ export function AutoPinSection() {
                   ? () => handleUpdateRule(idx, { cores: info.highPerformanceIds })
                   : undefined
               }
+              onRestoreNative={
+                rule.processName.toLowerCase().includes('fortnite') && rule.cores.length > 0
+                  ? () => void handleRestoreNative(idx)
+                  : undefined
+              }
             />
           ))}
         </div>
@@ -351,6 +390,7 @@ function RuleRow({
   onRemove,
   onAutoPick,
   onPcorePreset,
+  onRestoreNative,
 }: {
   rule: AutoPinRule
   info: CpuSetInfo | null
@@ -362,6 +402,7 @@ function RuleRow({
   onRemove: () => void
   onAutoPick: () => void
   onPcorePreset?: () => void
+  onRestoreNative?: () => void
 }) {
   const autoPickLabel = 'Use all detected'
   const visibleCount = info?.cpuSetIds.length ?? 0
@@ -376,6 +417,7 @@ function RuleRow({
         : rule.cores.length > 0
           ? `Custom subset (${rule.cores.length})`
           : 'Native scheduler / no pin'
+  const narrowedSelection = visibleCount > 0 && rule.cores.length > 0 && rule.cores.length < visibleCount
   return (
     <div className="border border-border rounded-md p-3 space-y-2">
       <div className="flex items-baseline justify-between gap-3">
@@ -388,6 +430,9 @@ function RuleRow({
             <span className="text-text-muted">{selectionSummary}</span>{' · '}
             Windows IDs [{rule.cores.join(', ')}]{' '}
             {rule.cores.length === 0 && <span className="text-amber-300">— no cores selected, won't pin</span>}
+            {narrowedSelection && (
+              <span className="text-amber-300"> — restricted subset; start with all detected sets</span>
+            )}
           </p>
         </div>
         <div className="flex gap-2 text-[11px]">
@@ -402,6 +447,16 @@ function RuleRow({
               className="text-emerald-300 hover:text-text underline"
             >
               Fortnite P-core test
+            </button>
+          )}
+          {onRestoreNative && (
+            <button
+              onClick={onRestoreNative}
+              disabled={busy}
+              title="Clear the saved rule and any live pin so Windows can schedule Fortnite normally."
+              className="text-amber-300 hover:text-text underline"
+            >
+              restore native
             </button>
           )}
           <button

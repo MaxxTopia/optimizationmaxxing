@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.19',
+    date: '2026-10-07',
+    highlights: [
+      'FIX **Tune Now and Asta fail closed on stale or ambiguous live state.** Drifted receipts are repaired or reported instead of being silently counted as applied, with selective rollback when verification cannot prove the requested result.',
+      'IMPROVE **Fortnite network calibration follows the active adapter.** The measured NIC path now binds apply, read-back, traffic evidence, and rollback to the physical adapter serving the active IPv4 route, and automatically reverts on route, identity, error, discard, or regression changes.',
+      'IMPROVE **Competitive setup and CPU-set recovery.** The Battle Royale pack includes the reversible competitive baseline, CPU-set rules can restore native scheduling, and Match Scan labels local UDP/NIC signals without overstating them as Fortnite server loss.',
+    ],
+  },
+  {
     version: '0.4.18',
     date: '2026-10-06',
     highlights: [

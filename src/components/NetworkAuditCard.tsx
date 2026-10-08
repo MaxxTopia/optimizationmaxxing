@@ -442,6 +442,11 @@ export function NetworkAuditCard() {
             <div key={settings.adapterName} className="space-y-2">
               <p className="text-xs font-mono text-text">{settings.adapterName}</p>
               <div className="grid gap-x-4 gap-y-1.5 text-[11px] sm:grid-cols-2 lg:grid-cols-3">
+                <p><span className="text-text-subtle">Interface index:</span> {settings.interfaceIndex ?? '—'}</p>
+                <p><span className="text-text-subtle">Physical hardware:</span> {settings.hardwareInterface == null ? 'Unknown' : settings.hardwareInterface ? 'Yes' : 'No'}</p>
+                <p><span className="text-text-subtle">Driver:</span> {settings.driverProvider ?? 'Unknown'}{settings.driverVersion ? ` · ${settings.driverVersion}` : ''}</p>
+                <p><span className="text-text-subtle">Driver date:</span> {settings.driverDate ?? '—'}</p>
+                <p className="sm:col-span-2 lg:col-span-3 break-all"><span className="text-text-subtle">PnP identity:</span> {settings.pnpDeviceId ?? 'Unavailable'}</p>
                 <p><span className="text-text-subtle">RSS:</span> {boolSetting(settings.rssEnabled)}</p>
                 <p><span className="text-text-subtle">RSC:</span> IPv4 {boolSetting(settings.rscIpv4Enabled)} · IPv6 {boolSetting(settings.rscIpv6Enabled)}</p>
                 <p><span className="text-text-subtle">LSO:</span> IPv4 {boolSetting(settings.lsoIpv4Enabled)} · IPv6 {boolSetting(settings.lsoIpv6Enabled)}</p>

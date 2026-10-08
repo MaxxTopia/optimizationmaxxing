@@ -1036,6 +1036,13 @@ export async function scewinParseDump(content: string): Promise<ScewinDump> {
 
 export interface NetworkAdapterSettings {
   adapterName: string
+  interfaceIndex: number | null
+  interfaceGuid: string | null
+  pnpDeviceId: string | null
+  hardwareInterface: boolean | null
+  driverProvider: string | null
+  driverVersion: string | null
+  driverDate: string | null
   rssEnabled: boolean | null
   rscIpv4Enabled: boolean | null
   rscIpv6Enabled: boolean | null
@@ -1073,11 +1080,40 @@ export interface NetworkAudit {
   adapterSettings: NetworkAdapterSettings[]
 }
 
+export interface NetworkTrafficSnapshot {
+  capturedAt: string
+  adapterName: string | null
+  interfaceIndex: number | null
+  interfaceGuid: string | null
+  pnpDeviceId: string | null
+  hardwareInterface: boolean | null
+  adapterStatus: string | null
+  driverProvider: string | null
+  driverVersion: string | null
+  driverDate: string | null
+  receivedBytes: number | null
+  sentBytes: number | null
+  receivedPackets: number | null
+  sentPackets: number | null
+  receivedErrors: number | null
+  sentErrors: number | null
+  receivedDiscards: number | null
+  sentDiscards: number | null
+  fortniteRunning: boolean
+  fortniteUdpEndpoints: number
+}
+
 /** Probes default gateway, adapter, link speed, public IP, CGNAT, and
  *  whether the WAS-110 stick's 192.168.11.x mgmt subnet is reachable from
  *  this rig. Used by the NetworkAuditCard on /diagnostics. */
 export async function networkAuditProbe(): Promise<NetworkAudit> {
   return invoke<NetworkAudit>('network_audit_probe')
+}
+
+/** Reads active-route adapter counters and Fortnite process/UDP presence.
+ * No packet payloads or remote endpoint addresses are collected. */
+export async function networkTrafficSnapshot(): Promise<NetworkTrafficSnapshot> {
+  return invoke<NetworkTrafficSnapshot>('network_traffic_snapshot')
 }
 
 /** Walks Win32_PnPSignedDriver and reports each signed driver's version +
