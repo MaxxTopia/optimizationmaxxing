@@ -5,7 +5,7 @@ Scope: Investigate a report that Fortnite felt slow, build inputs felt late, and
 
 ## Recovered state
 
-- Release candidate is v0.4.19 in the working tree. No commit, push, deployment, or public release was made because the required native verification did not complete.
+- v0.4.19 was natively verified, committed as `637f6babb77c1003b607426dbc18e913055efdc6`, pushed to `main`, tagged, and published through the documented CI signing path.
 - Working branch: `fix/asta-qos-performance-setup`.
 - The working tree was clean at the start of this audit. The current uncommitted changes are intentional and span the preset, Tune/Asta verification, CPU-set restore, match diagnostics, and the adaptive network path; no unrelated files were reset or cleaned.
 - Screenshots and the user's report do not prove that a single tweak caused the symptom. Yellow or red Fortnite network bars can reflect packet loss, congestion, routing, or loaded-connection behavior; a slow feel can also come from frame-time spikes, DPC/ISR load, throttling, or CPU scheduling.
@@ -48,12 +48,14 @@ Scope: Investigate a report that Fortnite felt slow, build inputs felt late, and
 - Windows storage diagnostics identified E: as the removable `PNY USB 3.2.1 FD` (Disk 1), not an SSD. The system log recorded Disk 1 I/O retries (Event 153), repeated paging I/O errors (Event 51), and an NTFS delayed-write failure for `$Mft` (Event 50) during the Cargo attempts. `chkdsk E: /scan` also stopped producing progress on the same volume and was stopped; the USB is not a trustworthy live Cargo target even though its current health flags say Healthy/OK.
 - The stable workaround used the existing NVMe target after measuring about 12 GiB of ignored generated Cargo output on C: and only about 187 MiB free. The first NVMe retry reached the linker but failed with `LNK1318: Unexpected PDB error` under that low-space condition. `cargo clean --manifest-path src-tauri/Cargo.toml` removed only the ignored generated target cache (14,786 files, 12.1 GiB); no source or user files were changed.
 - The subsequent direct-toolchain native run on the stable C: target used one Cargo job, incremental compilation disabled, test debug info disabled, and `--locked --offline`. It passed: 99 library tests, 0 failures; binary unit tests and doc tests also passed. This is the first complete native verification result for v0.4.19.
-- `npm run tauri:build` was then run on the stable C: target with the direct stable toolchain workaround. TypeScript/Vite passed, the optimized Rust release built, and NSIS produced `C:\\Users\\Diggy\\projects\\optimizationmaxxing-hardening\\src-tauri\\target\\release\\bundle\\nsis\\optimizationmaxxing_0.4.19_x64-setup.exe`. The command exited only at updater signing because the configured public key was present but `TAURI_SIGNING_PRIVATE_KEY` was not; this is the documented CI-signing boundary, not a compile or bundle failure. No release commit, tag, push, or CI publish has been attempted yet.
+- `npm run tauri:build` was then run on the stable C: target with the direct stable toolchain workaround. TypeScript/Vite passed, the optimized Rust release built, and NSIS produced `C:\\Users\\Diggy\\projects\\optimizationmaxxing-hardening\\src-tauri\\target\\release\\bundle\\nsis\\optimizationmaxxing_0.4.19_x64-setup.exe`. The command exited only at updater signing because the configured public key was present but `TAURI_SIGNING_PRIVATE_KEY` was not; this is the documented CI-signing boundary, not a compile or bundle failure. GitHub Actions run `37816704942` then signed and published the release successfully.
+- Public release verification passed: `v0.4.19` is non-draft and non-prerelease at `https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.19`, with `latest.json`, `optimizationmaxxing_0.4.19_x64-setup.exe`, and its `.sig` uploaded. The public `latest.json` reports version `0.4.19`; the MaxxTopia notification step also completed successfully.
 - A repo-wide `cargo fmt --check` remains unsuitable because the repository has pre-existing formatting differences in unrelated native files. The touched Rust files pass file-level rustfmt.
 
 ## Live, unfinished, and field gates
 
-- Live: signed public v0.4.18. The v0.4.19 hardening changes are local and uncommitted; no push, deployment, or release was performed.
+- Live: signed public v0.4.19 from commit `637f6babb77c1003b607426dbc18e913055efdc6`; `main` and tag `v0.4.19` were pushed. The release workflow and MaxxTopia notification completed successfully.
+- USB build path: E: is a removable PNY USB 3.2.1 FD with Event 153/51/50 storage errors, so it is not a reliable Cargo target. The supported workaround is to build on the stable NVMe C: target after clearing only the ignored generated Cargo cache; the app can still be copied to or installed from USB after packaging, but Cargo should not compile there.
 - Not yet proven: UAC behavior, installed-client behavior, reboot persistence, actual Fortnite packet loss, ping under load, frame-time/1% lows, DPC/ISR behavior, or click-to-pixel input latency on the user's PC.
 - The app's network counter is a useful local signal, not a Fortnite-flow capture. It cannot prove that a build input was dropped.
 
@@ -73,4 +75,4 @@ Scope: Investigate a report that Fortnite felt slow, build inputs felt late, and
 
 ## Best next move
 
-Review the intentional diff and run the final pre-ship safety checks, then commit/tag/push v0.4.19 through the documented CI-signing path; do not use the current E: flash drive for live Cargo output. After CI/public-release verification, the target-PC gate is a reboot plus a real Fortnite capture with Net Debug Stats and frame-time/DPC evidence. Do not claim improved gameplay feel from source or build evidence alone.
+The release is shipped. The best next move is the target-PC gate: install v0.4.19, exercise UAC and the installed client, reboot, then run a real Fortnite capture with Net Debug Stats and frame-time/DPC evidence. Do not claim improved gameplay feel from source or build evidence alone. Keep the USB for transfer/install media or backups, not live Cargo output; replace it if it continues to show Disk 1 I/O errors.
