@@ -410,7 +410,9 @@ pub struct TransactionReport {
     /// committed | failed | rolled_back | partial
     pub status: String,
     pub item_count: usize,
+    pub attempted_count: usize,
     pub applied_count: usize,
+    pub committed_count: usize,
     pub verified_count: usize,
     pub rolled_back_count: usize,
     pub errors: Vec<String>,
@@ -702,7 +704,18 @@ fn transaction_report(
                 .as_ref()
                 .map(|verification| verification.status.clone());
             let detail = if state.rolled_back {
-                "The action was reverted to its captured pre-state.".to_string()
+                let reason = state.detail.trim();
+                if reason.is_empty()
+                    || reason.starts_with("Applied in-process")
+                    || reason.starts_with("Applied under one UAC prompt")
+                {
+                    "The action was reverted to its captured pre-state.".to_string()
+                } else {
+                    format!(
+                        "{} The action was reverted to its captured pre-state.",
+                        reason
+                    )
+                }
             } else if !state.detail.is_empty() {
                 state.detail
             } else if !state.attempted {
@@ -722,7 +735,12 @@ fn transaction_report(
             }
         })
         .collect::<Vec<_>>();
+    let attempted_count = items.iter().filter(|item| item.attempted).count();
     let applied_count = items.iter().filter(|item| item.applied).count();
+    let committed_count = items
+        .iter()
+        .filter(|item| item.applied && !item.rolled_back)
+        .count();
     let verified_count = items
         .iter()
         .filter(|item| item.verification_status == Some(VerificationStatus::Verified))
@@ -732,7 +750,9 @@ fn transaction_report(
         transaction_id,
         status: status.to_string(),
         item_count: items.len(),
+        attempted_count,
         applied_count,
+        committed_count,
         verified_count,
         rolled_back_count,
         errors,
@@ -1181,7 +1201,9 @@ mod transaction_tests {
             Vec::new(),
         );
         assert_eq!(report.item_count, 1);
+        assert_eq!(report.attempted_count, 1);
         assert_eq!(report.applied_count, 1);
+        assert_eq!(report.committed_count, 0);
         assert_eq!(report.verified_count, 1);
         assert_eq!(report.rolled_back_count, 1);
         assert_eq!(report.status, "rolled_back");

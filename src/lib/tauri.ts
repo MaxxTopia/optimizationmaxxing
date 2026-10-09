@@ -389,7 +389,9 @@ export interface TransactionReport {
   /** committed | failed | rolled_back | partial */
   status: 'committed' | 'failed' | 'rolled_back' | 'partial' | string
   itemCount: number
+  attemptedCount: number
   appliedCount: number
+  committedCount: number
   verifiedCount: number
   rolledBackCount: number
   errors: string[]

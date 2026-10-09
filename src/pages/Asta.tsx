@@ -36,12 +36,13 @@ const QUOTES = [
   '"Every drop of sweat and every scar can\'t become a lie."',
 ] as const
 
-// These two actions can safely establish their own app-owned restore record
+// These actions can safely establish their own app-owned restore record
 // on first apply when the live target is readable but no prior record exists.
 // Every other ambiguous read-back remains fail-closed.
 const SAFE_FIRST_APPLY_IDS = new Set([
   'ps.power.dt-tournament',
   'net.nic.rss.enable',
+  'net.nic.eee-powersave.disable',
 ])
 
 const ASTA_PHILOSOPHY = `No 4090. No DLSS. No dad-built PC. Just a kid on a stock GPU,
@@ -77,10 +78,14 @@ export function Asta() {
     alreadyAtTarget: number
     firstApplySetup: number
     firstApplySetupDetails: string[]
+    notApplicable: number
+    notApplicableDetails: string[]
     preflightSkipped: number
     preflightSkipDetails: string[]
     transactional: number
     explicit: number
+    committed: number
+    rolledBack: number
     reviewSkipped: number
     manual: number
     otherGame: number
@@ -252,9 +257,11 @@ export function Asta() {
         return
       }
 
-      let transactionStatus: TransactionReport['status'] | undefined
+      const transactionStatuses: TransactionReport['status'][] = []
       let requested = 0
       let alreadyAtTarget = 0
+      let committed = 0
+      let rolledBack = 0
       const applyErrors: string[] = []
       const appliedReceiptIds = new Set<string>()
       const alreadyMatchingIds = new Set(executionTweaks
@@ -269,9 +276,14 @@ export function Asta() {
         isSafeFirstApplyAudit(tweak, freshAudit[tweak.id]),
       )
       const firstApplySetupIds = new Set(firstApplySetupTweaks.map((tweak) => tweak.id))
+      const notApplicableTweaks = executionTweaks.filter((tweak) =>
+        isNotApplicableAudit(freshAudit[tweak.id]),
+      )
+      const notApplicableIds = new Set(notApplicableTweaks.map((tweak) => tweak.id))
       const unreadableTransactionalIds = new Set(executionTweaks
         .filter((tweak) => transactionalIds.has(tweak.id))
         .filter((tweak) => !firstApplySetupIds.has(tweak.id))
+        .filter((tweak) => !notApplicableIds.has(tweak.id))
         .filter((tweak) => freshAudit[tweak.id]?.actions.some((action) =>
           action.status === 'unknown' || action.status === 'error',
         ))
@@ -279,6 +291,13 @@ export function Asta() {
       const firstApplySetupDetails = firstApplySetupTweaks.map((tweak) =>
         `${tweak.id}: first-run restore state will be captured before writing.`,
       )
+      const notApplicableDetails = notApplicableTweaks.map((tweak) => {
+        const detail = freshAudit[tweak.id]?.actions
+          .map((action) => action.detail)
+          .filter(Boolean)
+          .join(' ')
+        return `${tweak.id}: ${formatAstaAuditDetail(tweak.id, detail || 'This rig does not expose the requested capability.')}`
+      })
       const preflightSkipDetails = executionTweaks
         .filter((tweak) => unreadableTransactionalIds.has(tweak.id))
         .map((tweak) => {
@@ -291,7 +310,9 @@ export function Asta() {
         })
       const excludeAlreadyMatching = (items: BatchItem[]) =>
         items.filter((item) =>
-          !alreadyMatchingIds.has(item.tweakId) && !unreadableTransactionalIds.has(item.tweakId),
+          !alreadyMatchingIds.has(item.tweakId)
+          && !unreadableTransactionalIds.has(item.tweakId)
+          && !notApplicableIds.has(item.tweakId),
         )
       const activeTransactional = excludeAlreadyMatching(transactional)
       const activeExplicit = excludeAlreadyMatching(explicit)
@@ -303,21 +324,15 @@ export function Asta() {
         : []
 
       const keepRepairReport = (report: TransactionReport) => {
-        if (!transactionStatus || transactionStatus === 'committed') {
-          transactionStatus = report.status
-        } else if (report.status !== 'committed') {
-          transactionStatus = transactionStatus === 'partial' || report.status === 'partial'
-            ? 'partial'
-            : transactionStatus === 'rolled_back' || report.status === 'rolled_back'
-              ? 'rolled_back'
-              : 'failed'
-        }
+        transactionStatuses.push(report.status)
+        committed += report.items.filter((item) => item.applied && !item.rolledBack).length
+        rolledBack += report.items.filter((item) => item.rolledBack).length
         applyErrors.push(...report.errors, ...report.rollbackErrors)
         for (const item of report.items) {
           if (item.applied && !item.rolledBack && item.receiptId) {
             appliedReceiptIds.add(item.receiptId)
           }
-          if (item.attempted && !item.applied && item.detail) {
+          if (item.attempted && (!item.applied || item.rolledBack) && item.detail) {
             applyErrors.push(`${item.tweakId}: ${item.detail}`)
           }
         }
@@ -333,6 +348,7 @@ export function Asta() {
       if (activeExplicit.length > 0) {
         const receipts = await applyBatch(activeExplicit)
         requested += receipts.length
+        committed += receipts.length
         for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
       }
       if (activeReviewTransactional.length > 0) {
@@ -343,6 +359,7 @@ export function Asta() {
       if (activeReviewExplicit.length > 0) {
         const receipts = await applyBatch(activeReviewExplicit)
         requested += receipts.length
+        committed += receipts.length
         for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
       }
 
@@ -358,15 +375,19 @@ export function Asta() {
         alreadyAtTarget,
         firstApplySetup: firstApplySetupTweaks.length,
         firstApplySetupDetails,
+        notApplicable: notApplicableTweaks.length,
+        notApplicableDetails,
         preflightSkipped: unreadableTransactionalIds.size,
         preflightSkipDetails,
         transactional: activeTransactional.length + activeReviewTransactional.length,
         explicit: activeExplicit.length + activeReviewExplicit.length,
+        committed,
+        rolledBack,
         reviewSkipped: applyReview ? 0 : chosenReview.length,
         manual: plan.manual.length,
         otherGame: plan.otherGame.length,
         notMatched: plan.notMatched.length,
-        transactionStatus,
+        transactionStatus: summarizeTransactionStatus(transactionStatuses),
         errors: [...new Set(applyErrors)],
         ts: new Date().toLocaleTimeString(),
       })
@@ -550,12 +571,16 @@ export function Asta() {
             )}
 
             {applied && (
-              <div className={`mt-3 rounded-md border px-3 py-2 text-xs ${applied.errors.length || applied.mismatch || applied.preflightSkipped ? 'border-amber-500/40 bg-amber-500/10 text-amber-100' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'}`}>
+              <div className={`mt-3 rounded-md border px-3 py-2 text-xs ${applied.errors.length || applied.mismatch || applied.preflightSkipped || applied.notApplicable || applied.rolledBack ? 'border-amber-500/40 bg-amber-500/10 text-amber-100' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'}`}>
                 {applied.requested === 0
-                  ? applied.preflightSkipped > 0
+                  ? applied.notApplicable > 0 && applied.preflightSkipped === 0
+                    ? 'No applicable settings were changed'
+                    : applied.preflightSkipped > 0
                     ? 'No settings were changed'
                     : 'No write was needed for this selection'
-                  : `${applied.verified}/${applied.requested} actions matched immediate readback`}
+                  : `${applied.committed}/${applied.requested} actions committed`}
+                {applied.requested > 0 && applied.verified > 0 ? ` · ${applied.verified} verified live` : ''}
+                {applied.requested > 0 && applied.rolledBack > 0 ? ` · ${applied.rolledBack} rolled back` : ''}
                 {applied.requested > 0 && applied.mismatch > 0 ? ` · ${applied.mismatch} mismatch` : ''}
                 {applied.requested > 0 && applied.unknown > 0 ? ` · ${applied.unknown} unverified` : ''} (at {applied.ts}).
                 {applied.alreadyAtTarget > 0 ? ` ${applied.alreadyAtTarget} selected tweak${applied.alreadyAtTarget === 1 ? ' was' : 's were'} already at target and left unchanged.` : ''}
@@ -564,9 +589,11 @@ export function Asta() {
                 {applied.transactional > 0 ? ` ${applied.transactional} actions used verified transactions.` : ''}
                 {applied.explicit > 0 ? ` ${applied.explicit} actions used explicit review.` : ''}
                 {applied.reviewSkipped > 0 ? ` ${applied.reviewSkipped} higher-risk rows stayed unapplied because the review confirmation was declined.` : ''}
+                {applied.notApplicable > 0 ? ` ${applied.notApplicable} selected tweak${applied.notApplicable === 1 ? ' was' : 's were'} not applicable to this rig; no write was attempted for ${applied.notApplicable === 1 ? 'it' : 'them'}.` : ''}
                 {applied.preflightSkipped > 0 ? ` ${applied.preflightSkipped} selected tweak${applied.preflightSkipped === 1 ? ' was' : 's were'} not attempted because its live state was still ambiguous; no write was attempted.` : ''}
                 {applied.transactionStatus ? ` Transaction status: ${applied.transactionStatus}.` : ''}
                 {applied.firstApplySetupDetails.length > 0 && <span className="block mt-1 text-emerald-200">First-run setup: {applied.firstApplySetupDetails.join(' · ')}</span>}
+                {applied.notApplicableDetails.length > 0 && <span className="block mt-1 text-sky-200">Not applicable / no action taken: {applied.notApplicableDetails.slice(0, 5).join(' · ')}</span>}
                 {applied.preflightSkipDetails.length > 0 && <span className="block mt-1 text-amber-200">Not attempted / next fix: {applied.preflightSkipDetails.slice(0, 5).join(' · ')}</span>}
                 {applied.errors.length > 0 && <span className="block mt-1 text-amber-200">Some independent tweaks need attention: {applied.errors.slice(0, 5).join(' · ')}</span>}
                 This does not prove reboot persistence or better gameplay; run the same Asta Bench
@@ -811,8 +838,30 @@ function isSafeFirstApplyAudit(tweak: TweakRecord, audit: TweakAudit | undefined
   })
 }
 
+function isNotApplicableAudit(audit: TweakAudit | undefined): boolean {
+  if (!audit?.actions.length) return false
+  return audit.actions.every((action) => {
+    return action.status === 'unknown' && /^NOT_APPLICABLE:/i.test(action.detail.trim())
+  })
+}
+
+function summarizeTransactionStatus(
+  statuses: TransactionReport['status'][],
+): TransactionReport['status'] | undefined {
+  if (statuses.length === 0) return undefined
+  if (statuses.length === 1) return statuses[0]
+  if (statuses.every((status) => status === 'committed')) return 'committed'
+  if (statuses.every((status) => status === 'rolled_back')) return 'rolled_back'
+  if (statuses.every((status) => status === 'failed')) return 'failed'
+  return 'partial'
+}
+
 function formatAstaAuditDetail(tweakId: string, detail: string): string {
   const text = detail.trim()
+  if (text.startsWith('NOT_APPLICABLE:')) {
+    const reason = text.slice('NOT_APPLICABLE:'.length).trim()
+    return `${reason} No write was attempted because this capability is not exposed on this rig.`
+  }
   if (text.startsWith('NOT_CONFIGURED:')) {
     const reason = text.slice('NOT_CONFIGURED:'.length).trim()
     if (SAFE_FIRST_APPLY_IDS.has(tweakId)) {

@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.21',
+    date: '2026-10-09',
+    highlights: [
+      'FIX **Asta first-run and re-apply reliability.** Power-plan, RSS, EEE, USB, and PCIe actions now distinguish unsupported hardware from unreadable state, preserve real rollback causes, and report attempted, committed, verified, and rolled-back counts accurately.',
+      'FIX **Asta diagnostics.** A failed read-back no longer makes the whole run look like a mystery failure; the app now identifies the next repair or manual recovery step and keeps independent verified actions separate.',
+      'FIX **Sonic theme.** Restored the missing left eye while preserving the original mascot artwork and dimensions.',
+    ],
+  },
+  {
     version: '0.4.20',
     date: '2026-10-09',
     highlights: [
