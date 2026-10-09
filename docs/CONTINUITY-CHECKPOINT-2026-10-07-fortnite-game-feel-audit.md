@@ -119,3 +119,20 @@ Date: 2026-10-09
 - `npm run tauri:build` compiled the optimized binary and produced `src-tauri/target/release/bundle/nsis/optimizationmaxxing_0.4.20_x64-setup.exe`. The local command stopped only at the documented updater-signing boundary because the private signing key is CI-only; CI must sign and publish the artifacts.
 - Pre-ship checks passed: `git diff --check`, shipped PowerShell/batch/cmd ASCII scan, and release-surface authorship scan.
 - This checkpoint is still awaiting the CI-signed release and live artifact verification. UAC, actual Asta first apply, reboot persistence, and Fortnite gameplay/Alt+Tab behavior remain target-PC gates.
+
+## Live release: v0.4.20
+
+Date: 2026-10-09
+
+- Commit `e33c52629577438b0d9a828aff189b0a25700dab` was pushed to `main` and tag `v0.4.20` was pushed.
+- GitHub Actions run `37988122809` completed successfully. The Windows build, signed updater artifacts, artifact-presence check, release publication, and MaxxTopia notification all passed.
+- Public release is non-draft and non-prerelease at `https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.20`.
+- Public assets verified: `latest.json`, `optimizationmaxxing_0.4.20_x64-setup.exe`, and `optimizationmaxxing_0.4.20_x64-setup.exe.sig`. Public latest release also reports `v0.4.20`.
+- The release is live, but the target-PC gates remain: install/relaunch the new client, run Asta elevated, perform the first apply, reboot, and use the post-reboot re-check. Source and CI proof do not prove that a particular Windows installation will accept every adapter/policy action or that Fortnite will feel faster.
+
+### Next user test
+
+1. Install v0.4.20 and fully relaunch the app; an already-open older client cannot use the new verifier behavior.
+2. Run the app as Administrator, open Asta, preview the plan, and apply it. The receipt should identify first-run setup, a verified apply, or a concrete skipped reason; it must not present an unknown row as applied.
+3. Reboot, run Your Tune/re-check, and confirm the desired rows still verify. If a row is still unknown, use its stated ownership/access/adapter repair path rather than repeatedly retrying.
+4. Test Fortnite with Net Debug Stats and record the real match result separately from the app receipt; do not treat a successful Windows write as proof of lower ping or input latency.
