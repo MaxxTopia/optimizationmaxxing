@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.20',
+    date: '2026-10-09',
+    highlights: [
+      'FIX **Asta first-run setup and read-back diagnostics.** Safe power-plan and RSS ownership records are created before the verified write, while ambiguous or foreign state stays blocked with a concrete recovery message.',
+      'FIX **Fortnite QoS verification.** Asta now checks the effective Fortnite policy and reports local-only, mismatched, unreadable, and permission-denied states separately instead of hiding them behind a generic rollback.',
+      'IMPROVE **Fullscreen Alt+Tab guidance.** The Fullscreen Optimizations row now identifies the first rollback check for true-fullscreen black transitions without treating a display-mode change as a performance win.',
+    ],
+  },
+  {
     version: '0.4.19',
     date: '2026-10-07',
     highlights: [

@@ -129,10 +129,14 @@ pub fn verify(action: &TweakAction) -> Result<VerificationResult> {
         if output.status.success() {
             "PowerShell read-back passed.".to_string()
         } else {
-            format!(
-                "PowerShell read-back exited with code {} without a diagnostic message.",
-                output.status.code().map_or_else(|| "unknown".into(), |code| code.to_string())
-            )
+            match output.status.code() {
+                Some(1) => "PowerShell read-back returned exit code 1 without a diagnostic. The verifier did not identify whether the target drifted; no write was attempted. Rebuild with an explicit MISMATCH or UNKNOWN reason.".to_string(),
+                Some(2) => "PowerShell read-back could not establish a safe live-state basis (exit code 2) without a diagnostic. No write was attempted. Rebuild with an explicit UNKNOWN or NOT_CONFIGURED reason.".to_string(),
+                Some(code) => format!(
+                    "PowerShell read-back exited with code {code} without a diagnostic. No write was attempted; the verifier must report an explicit MISMATCH or UNKNOWN reason.",
+                ),
+                None => "PowerShell read-back ended without a diagnostic or exit code. No write was attempted; the verifier must report an explicit UNKNOWN reason.".to_string(),
+            }
         }
     } else {
         detail.chars().take(2000).collect()

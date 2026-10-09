@@ -36,6 +36,14 @@ const QUOTES = [
   '"Every drop of sweat and every scar can\'t become a lie."',
 ] as const
 
+// These two actions can safely establish their own app-owned restore record
+// on first apply when the live target is readable but no prior record exists.
+// Every other ambiguous read-back remains fail-closed.
+const SAFE_FIRST_APPLY_IDS = new Set([
+  'ps.power.dt-tournament',
+  'net.nic.rss.enable',
+])
+
 const ASTA_PHILOSOPHY = `No 4090. No DLSS. No dad-built PC. Just a kid on a stock GPU,
 a hand-me-down monitor, and Wi-Fi that probably shouldn't qual —
 who refuses to lose more times than the lobby refuses to let him in.
@@ -67,6 +75,8 @@ export function Asta() {
     unknown: number
     skipped: number
     alreadyAtTarget: number
+    firstApplySetup: number
+    firstApplySetupDetails: string[]
     preflightSkipped: number
     preflightSkipDetails: string[]
     transactional: number
@@ -255,12 +265,20 @@ export function Asta() {
         ...transactional,
         ...reviewTransactional,
       ].map((item) => item.tweakId))
+      const firstApplySetupTweaks = executionTweaks.filter((tweak) =>
+        isSafeFirstApplyAudit(tweak, freshAudit[tweak.id]),
+      )
+      const firstApplySetupIds = new Set(firstApplySetupTweaks.map((tweak) => tweak.id))
       const unreadableTransactionalIds = new Set(executionTweaks
         .filter((tweak) => transactionalIds.has(tweak.id))
+        .filter((tweak) => !firstApplySetupIds.has(tweak.id))
         .filter((tweak) => freshAudit[tweak.id]?.actions.some((action) =>
           action.status === 'unknown' || action.status === 'error',
         ))
         .map((tweak) => tweak.id))
+      const firstApplySetupDetails = firstApplySetupTweaks.map((tweak) =>
+        `${tweak.id}: first-run restore state will be captured before writing.`,
+      )
       const preflightSkipDetails = executionTweaks
         .filter((tweak) => unreadableTransactionalIds.has(tweak.id))
         .map((tweak) => {
@@ -269,7 +287,7 @@ export function Asta() {
             .map((action) => action.detail)
             .filter(Boolean)
             .join(' ')
-          return `${tweak.id}: ${detail || 'Live state could not be verified before writing.'}`
+          return `${tweak.id}: ${formatAstaAuditDetail(tweak.id, detail || 'Live state could not be verified before writing.')}`
         })
       const excludeAlreadyMatching = (items: BatchItem[]) =>
         items.filter((item) =>
@@ -338,6 +356,8 @@ export function Asta() {
         unknown: live.filter((receipt) => receipt.verificationStatus === 'unknown').length,
         skipped: plan.alreadyApplied.length + alreadyAtTarget,
         alreadyAtTarget,
+        firstApplySetup: firstApplySetupTweaks.length,
+        firstApplySetupDetails,
         preflightSkipped: unreadableTransactionalIds.size,
         preflightSkipDetails,
         transactional: activeTransactional.length + activeReviewTransactional.length,
@@ -460,7 +480,7 @@ export function Asta() {
                     <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2">
                       <p className="text-[11px] text-text-muted">
                         {selectedCount} of {reviewedPlan.candidates.length} selected · values read at {new Date(Object.values(planAudit)[0]?.scannedAt ?? Date.now()).toLocaleTimeString()}.
-                        {' '}Unknown means this action has no declared read-back contract.
+                        {' '}Unknown means read-back could not prove the target; the reason and next fix are shown on the row.
                       </p>
                       <div className="flex gap-2">
                         <button
@@ -540,12 +560,14 @@ export function Asta() {
                 {applied.requested > 0 && applied.unknown > 0 ? ` · ${applied.unknown} unverified` : ''} (at {applied.ts}).
                 {applied.alreadyAtTarget > 0 ? ` ${applied.alreadyAtTarget} selected tweak${applied.alreadyAtTarget === 1 ? ' was' : 's were'} already at target and left unchanged.` : ''}
                 {applied.skipped > applied.alreadyAtTarget ? ` ${applied.skipped - applied.alreadyAtTarget} previously verified tweak${applied.skipped - applied.alreadyAtTarget === 1 ? ' was' : 's were'} skipped.` : ''}
+                {applied.firstApplySetup > 0 ? ` ${applied.firstApplySetup} first-run restore record${applied.firstApplySetup === 1 ? ' was' : 's were'} created before writing.` : ''}
                 {applied.transactional > 0 ? ` ${applied.transactional} actions used verified transactions.` : ''}
                 {applied.explicit > 0 ? ` ${applied.explicit} actions used explicit review.` : ''}
                 {applied.reviewSkipped > 0 ? ` ${applied.reviewSkipped} higher-risk rows stayed unapplied because the review confirmation was declined.` : ''}
-                {applied.preflightSkipped > 0 ? ` ${applied.preflightSkipped} selected tweak${applied.preflightSkipped === 1 ? ' was' : 's were'} not attempted because its live state did not provide a safe, verified basis for writing.` : ''}
+                {applied.preflightSkipped > 0 ? ` ${applied.preflightSkipped} selected tweak${applied.preflightSkipped === 1 ? ' was' : 's were'} not attempted because its live state was still ambiguous; no write was attempted.` : ''}
                 {applied.transactionStatus ? ` Transaction status: ${applied.transactionStatus}.` : ''}
-                {applied.preflightSkipDetails.length > 0 && <span className="block mt-1 text-amber-200">Not attempted: {applied.preflightSkipDetails.slice(0, 5).join(' · ')}</span>}
+                {applied.firstApplySetupDetails.length > 0 && <span className="block mt-1 text-emerald-200">First-run setup: {applied.firstApplySetupDetails.join(' · ')}</span>}
+                {applied.preflightSkipDetails.length > 0 && <span className="block mt-1 text-amber-200">Not attempted / next fix: {applied.preflightSkipDetails.slice(0, 5).join(' · ')}</span>}
                 {applied.errors.length > 0 && <span className="block mt-1 text-amber-200">Some independent tweaks need attention: {applied.errors.slice(0, 5).join(' · ')}</span>}
                 This does not prove reboot persistence or better gameplay; run the same Asta Bench
                 before and after, then use Your Tune to re-check drift.
@@ -781,6 +803,35 @@ function sameAuditReadback(before: TweakAudit | undefined, after: TweakAudit | u
   })
 }
 
+function isSafeFirstApplyAudit(tweak: TweakRecord, audit: TweakAudit | undefined): boolean {
+  if (!SAFE_FIRST_APPLY_IDS.has(tweak.id) || !audit?.actions.length) return false
+  return audit.actions.every((action) => {
+    const detail = action.detail.trim()
+    return action.status === 'unknown' && detail.startsWith('NOT_CONFIGURED:')
+  })
+}
+
+function formatAstaAuditDetail(tweakId: string, detail: string): string {
+  const text = detail.trim()
+  if (text.startsWith('NOT_CONFIGURED:')) {
+    const reason = text.slice('NOT_CONFIGURED:'.length).trim()
+    if (SAFE_FIRST_APPLY_IDS.has(tweakId)) {
+      return `${reason} Fix: Asta will capture the restore state before enabling this setting on first apply.`
+    }
+    return `${reason} Fix: use the named setup or restore path before retrying.`
+  }
+  if (/access denied|permission denied/i.test(text)) {
+    return `${text} Fix: relaunch the installed app as Administrator and retry.`
+  }
+  if (/ownership record|recovery data|recovery record/i.test(text)) {
+    return `${text} Fix: use Settings -> Restore/repair, or revert the named app-owned change before retrying.`
+  }
+  if (/^MISMATCH:/i.test(text)) {
+    return `${text} Fix: re-apply this row after confirming the active adapter, policy, or power plan has not changed.`
+  }
+  return text
+}
+
 function auditStatusClass(status: string): string {
   if (status === 'matches') return 'text-emerald-300'
   if (status === 'differs' || status === 'partial') return 'text-amber-200'
@@ -840,12 +891,17 @@ function AstaPlanReviewRow({
               <span className={`block text-[11px] font-semibold ${auditStatusClass(audit.status)}`}>
                 Read-back: {audit.status} · {matchCount} match · {differsCount} differ · {unknownCount} unknown{errorCount ? ` · ${errorCount} error` : ''}
               </span>
+              {isSafeFirstApplyAudit(tweak, audit) && (
+                <span className="mt-1 block text-[11px] text-emerald-200">
+                  First-run setup is safe here: Asta will save the current restore state before enabling this setting.
+                </span>
+              )}
               {audit.actions.length > 0 ? (
                 <span className="mt-1 block space-y-1">
                   {audit.actions.map((action) => (
                     <span key={action.index} className="block text-[11px] text-text-muted">
                       <span className={auditStatusClass(action.status)}>{action.status}</span>
-                      {' · '}{action.detail}
+                      {' · '}{formatAstaAuditDetail(tweak.id, action.detail)}
                     </span>
                   ))}
                 </span>

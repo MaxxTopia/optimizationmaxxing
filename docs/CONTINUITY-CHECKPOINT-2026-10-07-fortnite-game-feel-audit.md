@@ -76,3 +76,46 @@ Scope: Investigate a report that Fortnite felt slow, build inputs felt late, and
 ## Best next move
 
 The release is shipped. The best next move is the target-PC gate: install v0.4.19, exercise UAC and the installed client, reboot, then run a real Fortnite capture with Net Debug Stats and frame-time/DPC evidence. Do not claim improved gameplay feel from source or build evidence alone. Keep the USB for transfer/install media or backups, not live Cargo output; replace it if it continues to show Disk 1 I/O errors.
+
+## Follow-up checkpoint: Asta read-back hardening and fullscreen Alt+Tab guidance
+
+Date: 2026-10-09
+
+### Scope and decisions
+
+- Asta and Tune diagnostics now distinguish `MISMATCH`, `UNKNOWN`, and `NOT_CONFIGURED` PowerShell read-back results instead of presenting every nonzero verifier exit as an unexplained failure.
+- The generic Rust PowerShell fallback now states that no write was attempted and gives a rebuild-required diagnostic when a verifier exits without an explicit reason.
+- Asta may create the app-owned first-run restore record immediately before applying only the readable, safe setup cases for the named Ultimate Performance plan and RSS. Foreign, malformed, missing-but-owned, or adapter-mismatched recovery records remain fail-closed and show a repair/restore path.
+- The Fortnite QoS verifier now checks the catalog's actual contract: the effective `FortniteClient-Win64-Shipping.exe` policy in `ActiveStore` with DSCP 46, while reporting local-only policy state as unknown instead of claiming success.
+- The catalog guidance for `ui.fse.disable-global` now explains the user's specific symptom: a multi-second black transition on Alt+Tab in true fullscreen that does not occur in borderless/windowed fullscreen points first to the fullscreen-optimization/presentation-path override. It is a rollback diagnostic, not a new aggressive tweak. MPO remains a separate conditional multi-monitor/VRR flicker workaround.
+
+### Verification
+
+- `npm run audit:catalog`: passed; 108 tweaks, 0 errors, 0 warnings.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed; only the existing large-chunk warning remained.
+- `npm run audit:driver-profiles`: passed.
+- `npm run test:bios-evidence`: passed.
+- `git diff --check`: passed; only expected LF-to-CRLF normalization warnings were reported.
+- A native Rust test was attempted against the USB target after the system drive filled during the earlier compile, but Cargo created the target and then stayed idle without spawning `rustc`; it was stopped cleanly after a bounded wait. Native tests are unverified for this follow-up and are not reported as passed.
+
+### Current state and human gates
+
+- Public v0.4.19 is unchanged; this follow-up is local on `fix/asta-qos-performance-setup` and has not been committed, published, or installed into the user's client.
+- The source/build gate is green for the web/catalog surfaces. UAC elevation, first apply, reboot persistence, actual Asta application, and the Fortnite true-fullscreen Alt+Tab repro remain physical-PC gates.
+- For the black flash: first revert the OptimizationMaxxing fullscreen-optimization override and verify the game's executable/shortcut Compatibility setting does not have “Disable fullscreen optimizations” enabled. If the symptom remains, inspect HDR/VRR, refresh-rate/resolution switching, and the display driver path; do not disable MPO solely for this symptom.
+
+### Best next action
+
+Build/install this local revision, run Asta as Administrator once, confirm the receipt explains any skipped row and the first-run restore records, reboot and re-check drift, then test true fullscreen versus borderless Alt+Tab. Only after that physical proof should this revision be published.
+
+## Release candidate: v0.4.20
+
+Date: 2026-10-09
+
+- The Asta/read-back/fullscreen guidance changes were versioned as v0.4.20 in `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`; a changelog entry was added.
+- `npx tsc --noEmit`, `npm run audit:catalog`, `npm run audit:driver-profiles`, and `npm run test:bios-evidence` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed: 99 library tests, 0 failures; only the existing two dead-code warnings remain.
+- `npm run tauri:build` compiled the optimized binary and produced `src-tauri/target/release/bundle/nsis/optimizationmaxxing_0.4.20_x64-setup.exe`. The local command stopped only at the documented updater-signing boundary because the private signing key is CI-only; CI must sign and publish the artifacts.
+- Pre-ship checks passed: `git diff --check`, shipped PowerShell/batch/cmd ASCII scan, and release-surface authorship scan.
+- This checkpoint is still awaiting the CI-signed release and live artifact verification. UAC, actual Asta first apply, reboot persistence, and Fortnite gameplay/Alt+Tab behavior remain target-PC gates.
