@@ -12,13 +12,11 @@ truthful, and repair the yellow Sonic theme mascot's viewer-left eye.
 
 ## Current state
 
-- Public/live baseline remains v0.4.20 at commit `22503c6`; the approved repair
-  is being prepared as v0.4.21 on `fix/asta-qos-performance-setup`.
-- The working tree contains the five intended Asta/Sonic source changes, the
-  three synchronized release-version files, the top changelog entry, and this
-  checkpoint.
-- Diggy explicitly approved commit/tag/push for this repair in the current task;
-  CI publication and served-release verification remain after the push.
+- Public/live release is v0.4.21 at commit `1d3e4fa9b8f152fc4595b576ee0c5f0a9570abc1`.
+- Tag `v0.4.21` points to that commit; the release is published, not draft or
+  prerelease, with the signed Windows installer and updater manifest uploaded.
+- The source branch is `fix/asta-qos-performance-setup`; the working tree was
+  clean after the release push. This checkpoint update is documentation-only.
 
 ## Implemented changes
 
@@ -53,16 +51,20 @@ truthful, and repair the yellow Sonic theme mascot's viewer-left eye.
   until verified on a target Windows machine.
 - `cargo fmt --check` reports existing repository-wide formatting drift; do not
   reformat unrelated files as part of this repair.
+- GitHub Release workflow `37995049006` passed all steps, including the clean
+  Tauri build/release, auto-publish verification, and release notification.
+- Served `latest.json` reports version `0.4.21`, Windows installer URL, and a
+  Windows signature.
 
 ## Remaining work and gate
 
-1. Commit the reviewed v0.4.21 repair, push `main`, and push tag `v0.4.21`.
-   Verify CI builds/signs/publishes the updater artifacts and the served release.
-2. On a target Windows machine, test Asta in admin mode with the active adapter,
+1. On a target Windows machine, test Asta in admin mode with the active adapter,
    reboot, and re-check the same receipt. This is the evidence gate for the
    original first-run/read-back problem.
 
 ## Best next action
 
-Commit and publish the reviewed Asta source/transaction contract and Sonic asset
-together as v0.4.21, then complete the CI and real-Windows Asta gate.
+Install/test the published v0.4.21 release on the target Windows machine, then
+run the same Asta receipt before and after reboot. Record any remaining
+adapter-specific `NOT_APPLICABLE`, permission, or live-state mismatch details
+before making another catalog change.
