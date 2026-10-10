@@ -73,6 +73,10 @@ P0 (implemented in this pass):
   rollback errors.
 - Keep exact board matching separate from CPU-only or nearby-board guesses.
 - Keep Asta proxy results and PresentMon game evidence as separate verdicts.
+- Keep one hidden elevation boundary per Asta execution phase; never spawn a
+  UAC/helper process per catalog row. If the app is already elevated, reuse
+  that token. Windows UAC consent itself is not silently automatable, so the
+  UI must explain that launching the app elevated is the one-consent path.
 
 P1 (implemented in this pass):
 

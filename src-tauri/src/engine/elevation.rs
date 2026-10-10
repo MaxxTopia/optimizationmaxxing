@@ -9,13 +9,11 @@
 //! `build_revert_line`); only the batch runner spawns powershell.exe.
 
 use anyhow::{anyhow, Context};
-use std::process::Command;
-
 use super::actions::{Hive, RegValueType, TweakAction};
 use super::bcdedit;
 use super::file_write;
 use super::powershell;
-use crate::process_helpers::powershell_program;
+use crate::process_helpers::hidden_elevation_powershell;
 
 fn hive_short(h: Hive) -> &'static str {
     match h {
@@ -312,10 +310,10 @@ pub fn run_elevated_capture_lines(
     };
 
     let outer = format!(
-        "try {{ $p = Start-Process -FilePath cmd.exe -ArgumentList @('/c','\"{}\"') -Verb RunAs -Wait -WindowStyle Hidden -PassThru; exit [int]$p.ExitCode }} catch {{ exit 1223 }}",
+        "try {{ $startArgs=@('/c','\"{}\"'); $admin=([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator); if($admin){{ $p=Start-Process -FilePath cmd.exe -ArgumentList $startArgs -Wait -WindowStyle Hidden -PassThru }}else{{ $p=Start-Process -FilePath cmd.exe -ArgumentList $startArgs -Verb RunAs -Wait -WindowStyle Hidden -PassThru }}; exit [int]$p.ExitCode }} catch {{ exit 1223 }}",
         script_path.to_string_lossy().replace('\'', "''"),
     );
-    let status = match Command::new(powershell_program())
+    let status = match hidden_elevation_powershell()
         .args(["-NoLogo", "-NoProfile", "-NonInteractive"])
         .arg("-Command")
         .arg(&outer)
@@ -459,10 +457,10 @@ fn run_elevated_lines(preamble: &[String], lines: &[String]) -> anyhow::Result<(
     let cleanup_script = || { let _ = std::fs::remove_file(&script_path); };
 
     let outer = format!(
-        "Start-Process -FilePath cmd.exe -ArgumentList @('/c','\"{}\"') -Verb RunAs -Wait -WindowStyle Hidden -PassThru | ForEach-Object {{ exit $_.ExitCode }}",
+        "$startArgs=@('/c','\"{}\"'); $admin=([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator); if($admin){{ $p=Start-Process -FilePath cmd.exe -ArgumentList $startArgs -Wait -WindowStyle Hidden -PassThru }}else{{ $p=Start-Process -FilePath cmd.exe -ArgumentList $startArgs -Verb RunAs -Wait -WindowStyle Hidden -PassThru }}; exit [int]$p.ExitCode",
         script_path.to_string_lossy().replace('\'', "''"),
     );
-    let status = Command::new(powershell_program())
+    let status = hidden_elevation_powershell()
         .args(["-NoLogo", "-NoProfile", "-NonInteractive"])
         .arg("-Command")
         .arg(&outer)

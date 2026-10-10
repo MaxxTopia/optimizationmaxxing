@@ -315,14 +315,18 @@ export function Asta() {
           && !unreadableTransactionalIds.has(item.tweakId)
           && !notApplicableIds.has(item.tweakId),
         )
-      const activeTransactional = excludeAlreadyMatching(transactional)
-      const activeExplicit = excludeAlreadyMatching(explicit)
-      const activeReviewTransactional = applyReview
-        ? excludeAlreadyMatching(reviewTransactional)
-        : []
-      const activeReviewExplicit = applyReview
-        ? excludeAlreadyMatching(reviewExplicit)
-        : []
+      // Review confirmation changes consent, not execution mechanics. Once
+      // the user accepts that lane, merge it into the same two backend batch
+      // calls so a large Asta run does not reopen the elevation boundary for
+      // every category of row.
+      const activeTransactional = excludeAlreadyMatching([
+        ...transactional,
+        ...(applyReview ? reviewTransactional : []),
+      ])
+      const activeExplicit = excludeAlreadyMatching([
+        ...explicit,
+        ...(applyReview ? reviewExplicit : []),
+      ])
 
       const keepRepairReport = (report: TransactionReport) => {
         transactionStatuses.push(report.status)
@@ -352,17 +356,6 @@ export function Asta() {
         committed += receipts.length
         for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
       }
-      if (activeReviewTransactional.length > 0) {
-        const report = await applyRepairBatch(activeReviewTransactional)
-        requested += activeReviewTransactional.length
-        keepRepairReport(report)
-      }
-      if (activeReviewExplicit.length > 0) {
-        const receipts = await applyBatch(activeReviewExplicit)
-        requested += receipts.length
-        committed += receipts.length
-        for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
-      }
 
       const allLive = await verifyApplied()
       const live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
@@ -380,8 +373,8 @@ export function Asta() {
         notApplicableDetails,
         preflightSkipped: unreadableTransactionalIds.size,
         preflightSkipDetails,
-        transactional: activeTransactional.length + activeReviewTransactional.length,
-        explicit: activeExplicit.length + activeReviewExplicit.length,
+        transactional: activeTransactional.length,
+        explicit: activeExplicit.length,
         committed,
         rolledBack,
         reviewSkipped: applyReview ? 0 : chosenReview.length,
@@ -445,7 +438,10 @@ export function Asta() {
               Pinnacle Asta inventories the full catalog for this rig and Fortnite context. Preview
               the live values, choose exactly which rows to include, then apply that selection.
               Reversible/read-back-capable actions use the transactional lane; unsupported scripts
-              are visibly separated into an explicit review lane and may need a second UAC prompt.
+              are visibly separated into an explicit review lane. The two lanes are batched so an
+              elevated run normally needs one Windows consent per execution phase, not one prompt
+              per tweak. Windows still requires a real UAC consent when the app is not already
+              running elevated.
               BIOS/NVRAM/firmware changes never become automatic.
             </p>
             <p className="mt-2 rounded-md border border-sky-300/20 bg-sky-300/5 px-3 py-2 text-xs leading-relaxed text-text-muted">

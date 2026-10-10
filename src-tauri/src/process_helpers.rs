@@ -2,11 +2,10 @@
 //! accidentally spawn flashing cmd.exe / powershell.exe / ping.exe windows
 //! when probing system state.
 //!
-//! IMPORTANT: do NOT use these helpers in the elevation path (engine::elevation
-//! / Start-Process -Verb RunAs). The UAC prompt host needs the spawned
-//! powershell window to be visible enough for Windows to attach the prompt;
-//! suppressing the console there can cause the prompt to fall behind other
-//! windows or never paint.
+//! The elevation path also uses a hidden outer PowerShell host. Windows owns
+//! the UAC broker UI; the helper console itself does not need to be visible.
+//! Keeping that host hidden prevents a second, confusing console flash while
+//! preserving the legitimate Windows consent dialog.
 
 use std::ffi::OsString;
 use std::path::PathBuf;
@@ -50,6 +49,13 @@ pub fn hidden_powershell() -> Command {
     #[cfg(windows)]
     c.creation_flags(CREATE_NO_WINDOW);
     c
+}
+
+/// `powershell.exe` configured as the hidden host for a `Start-Process
+/// -Verb RunAs` batch. The UAC consent dialog is still presented by Windows;
+/// this only suppresses the non-elevated helper console behind it.
+pub fn hidden_elevation_powershell() -> Command {
+    hidden_powershell()
 }
 
 /// `cmd.exe` configured to run silently — for output-capturing probes only,

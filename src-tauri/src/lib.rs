@@ -471,8 +471,11 @@ async fn apply_transaction(
 
         // Capture every pre-state before the first mutation. A failed capture
         // means no transaction is started, so the caller never gets a partial
-        // "best effort" apply without a rollback reference.
-        for item in items {
+        // "best effort" apply without a rollback reference. Protected BCD
+        // reads are batched so several ambiguous rows share one consent.
+        let action_refs = items.iter().map(|item| &item.action).collect::<Vec<_>>();
+        let pre_states = engine::capture_pre_states_with_elevation_fallback(&action_refs);
+        for (item, pre_result) in items.into_iter().zip(pre_states) {
             if !transaction_action_supported(&item.action) {
                 errors.push(format!(
                     "{} ({}) has no verified transaction contract; use the explicit review flow.",
@@ -481,7 +484,7 @@ async fn apply_transaction(
                 ));
                 continue;
             }
-            match engine::capture_pre_state_with_elevation_fallback(&item.action) {
+            match pre_result {
                 Ok(pre_state) => states.push(TransactionState {
                     item,
                     pre_state,
@@ -810,8 +813,12 @@ async fn apply_repair_batch(
 
         // Capture each action before mutating anything. A failed capture marks
         // only that tweak group as unavailable; unrelated groups can still be
-        // repaired with their own pre-state.
-        for item in items {
+        // repaired with their own pre-state. Protected BCD reads are batched
+        // across the whole repair plan so preflight does not prompt once per
+        // ambiguous action.
+        let action_refs = items.iter().map(|item| &item.action).collect::<Vec<_>>();
+        let pre_states = engine::capture_pre_states_with_elevation_fallback(&action_refs);
+        for (item, pre_result) in items.into_iter().zip(pre_states) {
             let group_index = groups
                 .iter()
                 .position(|group| {
@@ -863,7 +870,7 @@ async fn apply_repair_batch(
             }
 
             let tweak_id = item.tweak_id.clone();
-            match engine::capture_pre_state_with_elevation_fallback(&item.action) {
+            match pre_result {
                 Ok(pre_state) if engine::pre_state_is_ambiguous(&item.action, &pre_state) => {
                     let detail = pre_state
                         .get("detail")
@@ -1287,11 +1294,12 @@ async fn apply_batch(
     let store = (*state).clone();
     tokio::task::spawn_blocking(move || -> Result<Vec<ApplyReceipt>, String> {
         // 1. Capture pre-states for ALL items first (read is unelevated where
-        //    possible; bcdedit /enum is best-effort).
+        //    possible; ambiguous BCD reads share one elevated read-back).
         let mut prepared: Vec<(BatchItem, serde_json::Value)> = Vec::with_capacity(items.len());
-        for item in items.into_iter() {
-            let pre = engine::capture_pre_state_with_elevation_fallback(&item.action)
-                .map_err(|e| format!("{:#}", e))?;
+        let action_refs = items.iter().map(|item| &item.action).collect::<Vec<_>>();
+        let pre_states = engine::capture_pre_states_with_elevation_fallback(&action_refs);
+        for (item, pre_result) in items.into_iter().zip(pre_states) {
+            let pre = pre_result.map_err(|e| format!("{:#}", e))?;
             if engine::pre_state_is_ambiguous(&item.action, &pre) {
                 let detail = pre
                     .get("detail")

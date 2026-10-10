@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.23',
+    date: '2026-10-10',
+    highlights: [
+      'FIX **Asta elevation batching.** Protected BCD preflight is shared across the plan, review rows run through the same transaction lanes, and helper consoles stay hidden instead of opening one command window per tweak.',
+      'FIX **Nested UAC prompts.** An already-elevated app now reuses its elevated token instead of asking Windows to elevate each helper again. Windows still owns the legitimate consent dialog when the app starts unelevated.',
+      'IMPROVE **Rollback receipts.** A verified action that survives an independent mismatch remains committed; only the failing tweak group is restored and reported with its exact next step.',
+    ],
+  },
+  {
     version: '0.4.22',
     date: '2026-10-09',
     highlights: [

@@ -51,14 +51,42 @@ pub fn capture_pre_state(action: &TweakAction) -> anyhow::Result<serde_json::Val
 pub fn capture_pre_state_with_elevation_fallback(
     action: &TweakAction,
 ) -> anyhow::Result<serde_json::Value> {
-    let pre_state = capture_pre_state(action)?;
-    let needs_bcd_retry = matches!(action, TweakAction::BcdeditSet { .. })
-        && pre_state
-            .get("found")
-            .and_then(|value| value.as_str())
-            == Some("unknown");
-    if !needs_bcd_retry {
-        return Ok(pre_state);
+    capture_pre_states_with_elevation_fallback(&[action])
+        .into_iter()
+        .next()
+        .unwrap_or_else(|| Err(anyhow::anyhow!("pre-state capture returned no result")))
+}
+
+/// Capture many pre-states while sharing the protected BCD read-back.
+///
+/// Asta can contain several BCD actions. Calling the single-action helper in
+/// a loop used to launch one elevated read for each ambiguous action, which
+/// produced repeated consent/console interactions before the actual write
+/// phase. Direct reads still happen per action, but all ambiguous BCD rows are
+/// resolved from one elevated `bcdedit /enum` result.
+pub fn capture_pre_states_with_elevation_fallback(
+    actions: &[&TweakAction],
+) -> Vec<anyhow::Result<serde_json::Value>> {
+    let mut states = actions
+        .iter()
+        .map(|action| capture_pre_state(action))
+        .collect::<Vec<_>>();
+    let retry_indices = actions
+        .iter()
+        .enumerate()
+        .filter_map(|(index, action)| {
+            let needs_retry = matches!(action, TweakAction::BcdeditSet { .. })
+                && states[index]
+                    .as_ref()
+                    .ok()
+                    .and_then(|pre_state| pre_state.get("found"))
+                    .and_then(|value| value.as_str())
+                    == Some("unknown");
+            needs_retry.then_some(index)
+        })
+        .collect::<Vec<_>>();
+    if retry_indices.is_empty() {
+        return states;
     }
 
     let output = match elevation::run_elevated_capture_lines(&[
@@ -66,29 +94,43 @@ pub fn capture_pre_state_with_elevation_fallback(
     ]) {
         Ok(mut outputs) => outputs.pop(),
         Err(error) => {
-            return Ok(serde_json::json!({
-                "found": "unknown",
-                "detail": format!("Elevated BCD preflight could not run: {error:#}"),
-            }));
+            let detail = format!("Elevated BCD preflight could not run: {error:#}");
+            for index in retry_indices {
+                states[index] = Ok(serde_json::json!({
+                    "found": "unknown",
+                    "detail": detail,
+                }));
+            }
+            return states;
         }
     };
     let Some(output) = output else {
-        return Ok(serde_json::json!({
-            "found": "unknown",
-            "detail": "Elevated BCD preflight returned no output.",
-        }));
+        for index in retry_indices {
+            states[index] = Ok(serde_json::json!({
+                "found": "unknown",
+                "detail": "Elevated BCD preflight returned no output.",
+            }));
+        }
+        return states;
     };
     if output.exit_code != 0 {
-        return Ok(serde_json::json!({
-            "found": "unknown",
-            "detail": format!(
-                "Elevated bcdedit /enum exited with code {}: {}",
-                output.exit_code,
-                output.output.trim()
-            ),
-        }));
+        let detail = format!(
+            "Elevated bcdedit /enum exited with code {}: {}",
+            output.exit_code,
+            output.output.trim()
+        );
+        for index in retry_indices {
+            states[index] = Ok(serde_json::json!({
+                "found": "unknown",
+                "detail": detail,
+            }));
+        }
+        return states;
     }
-    bcdedit::pre_state_from_enum_output(action, &output.output)
+    for index in retry_indices {
+        states[index] = bcdedit::pre_state_from_enum_output(actions[index], &output.output);
+    }
+    states
 }
 
 /// An unknown BCD pre-state cannot safely participate in a reversible write:
