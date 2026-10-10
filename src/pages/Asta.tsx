@@ -285,7 +285,8 @@ export function Asta() {
         .filter((tweak) => !firstApplySetupIds.has(tweak.id))
         .filter((tweak) => !notApplicableIds.has(tweak.id))
         .filter((tweak) => freshAudit[tweak.id]?.actions.some((action) =>
-          action.status === 'unknown' || action.status === 'error',
+          (action.status === 'unknown' || action.status === 'error')
+          && !canNativeRetryProtectedRead(tweak, action),
         ))
         .map((tweak) => tweak.id))
       const firstApplySetupDetails = firstApplySetupTweaks.map((tweak) =>
@@ -501,7 +502,7 @@ export function Asta() {
                     <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2">
                       <p className="text-[11px] text-text-muted">
                         {selectedCount} of {reviewedPlan.candidates.length} selected · values read at {new Date(Object.values(planAudit)[0]?.scannedAt ?? Date.now()).toLocaleTimeString()}.
-                        {' '}Unknown means read-back could not prove the target; the reason and next fix are shown on the row.
+                        {' '}Unknown means read-back could not prove the target; protected Windows reads are retried under the apply UAC boundary, while other ambiguous rows stay blocked with their fix.
                       </p>
                       <div className="flex gap-2">
                         <button
@@ -590,7 +591,7 @@ export function Asta() {
                 {applied.explicit > 0 ? ` ${applied.explicit} actions used explicit review.` : ''}
                 {applied.reviewSkipped > 0 ? ` ${applied.reviewSkipped} higher-risk rows stayed unapplied because the review confirmation was declined.` : ''}
                 {applied.notApplicable > 0 ? ` ${applied.notApplicable} selected tweak${applied.notApplicable === 1 ? ' was' : 's were'} not applicable to this rig; no write was attempted for ${applied.notApplicable === 1 ? 'it' : 'them'}.` : ''}
-                {applied.preflightSkipped > 0 ? ` ${applied.preflightSkipped} selected tweak${applied.preflightSkipped === 1 ? ' was' : 's were'} not attempted because its live state was still ambiguous; no write was attempted.` : ''}
+                {applied.preflightSkipped > 0 ? ` ${applied.preflightSkipped} selected tweak${applied.preflightSkipped === 1 ? ' was' : 's were'} not attempted because its live state was still ambiguous; no write was attempted. Protected permission reads are retried inside the apply UAC boundary.` : ''}
                 {applied.transactionStatus ? ` Transaction status: ${applied.transactionStatus}.` : ''}
                 {applied.firstApplySetupDetails.length > 0 && <span className="block mt-1 text-emerald-200">First-run setup: {applied.firstApplySetupDetails.join(' · ')}</span>}
                 {applied.notApplicableDetails.length > 0 && <span className="block mt-1 text-sky-200">Not applicable / no action taken: {applied.notApplicableDetails.slice(0, 5).join(' · ')}</span>}
@@ -845,6 +846,19 @@ function isNotApplicableAudit(audit: TweakAudit | undefined): boolean {
   })
 }
 
+function canNativeRetryProtectedRead(
+  tweak: TweakRecord,
+  action: TweakAudit['actions'][number],
+): boolean {
+  if (action.status !== 'unknown' && action.status !== 'error') return false
+  const catalogAction = tweak.actions[action.index]
+  const protectedRead = catalogAction?.kind === 'bcdedit_set'
+    || (catalogAction?.kind === 'powershell_script' && Boolean(catalogAction.verify?.trim()))
+  if (!protectedRead) return false
+  const detail = action.detail.toLowerCase()
+  return /access[\s_-]*(?:is[\s_-]*)?denied|permission[\s_-]*denied|error[\s_-]*5|preflight[\s_-]*could not[\s_-]*read|get-netqospolicy|get-mmagent|bcdedit/.test(detail)
+}
+
 function summarizeTransactionStatus(
   statuses: TransactionReport['status'][],
 ): TransactionReport['status'] | undefined {
@@ -869,8 +883,8 @@ function formatAstaAuditDetail(tweakId: string, detail: string): string {
     }
     return `${reason} Fix: use the named setup or restore path before retrying.`
   }
-  if (/access denied|permission denied/i.test(text)) {
-    return `${text} Fix: relaunch the installed app as Administrator and retry.`
+  if (/access[\s_-]*(?:is[\s_-]*)?denied|permission[\s_-]*denied|permissiondenied|error[\s_-]*5|get-netqospolicy|get-mmagent/i.test(text)) {
+    return `${text} Fix: this is a protected Windows read, not proof of drift. Asta retries it inside the apply UAC boundary; if Windows still refuses it, no write is treated as verified.`
   }
   if (/ownership record|recovery data|recovery record/i.test(text)) {
     return `${text} Fix: use Settings -> Restore/repair, or revert the named app-owned change before retrying.`

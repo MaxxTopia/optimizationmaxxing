@@ -32,7 +32,7 @@ fn enum_bcd() -> Option<String> {
 ///   `hypervisorlaunchtype    Off`
 ///
 /// Returns Some(value_str) if the line is found, None if absent.
-fn parse_value(enum_output: &str, name: &str) -> Option<String> {
+pub(crate) fn parse_value(enum_output: &str, name: &str) -> Option<String> {
     let needle = name.to_ascii_lowercase();
     for line in enum_output.lines() {
         let trimmed = line.trim_start();
@@ -58,10 +58,46 @@ pub fn capture_pre_state(action: &TweakAction) -> anyhow::Result<serde_json::Val
     let Some(out) = enum_bcd() else {
         return Ok(serde_json::json!({ "found": "unknown" }));
     };
-    match parse_value(&out, name) {
+    pre_state_from_enum_output(action, &out)
+}
+
+/// Build the fixed, read-only command used by the elevated read-back path.
+pub fn enum_cmd_line() -> &'static str {
+    "bcdedit /enum {current} /v"
+}
+
+/// Parse a successful `{current}` enumeration into the durable pre-state
+/// shape used by the snapshot/revert engine.
+pub fn pre_state_from_enum_output(
+    action: &TweakAction,
+    enum_output: &str,
+) -> anyhow::Result<serde_json::Value> {
+    let TweakAction::BcdeditSet { name, .. } = action else {
+        return Err(anyhow!(
+            "pre_state_from_enum_output called on non-bcdedit action"
+        ));
+    };
+    match parse_value(enum_output, name) {
         Some(v) => Ok(serde_json::json!({ "found": true, "value": v })),
         None => Ok(serde_json::json!({ "found": false })),
     }
+}
+
+/// Verify a BCD target from a captured `{current}` enumeration.
+pub fn verification_from_enum_output(
+    action: &TweakAction,
+    enum_output: &str,
+) -> anyhow::Result<bool> {
+    let TweakAction::BcdeditSet { name, value } = action else {
+        return Err(anyhow!(
+            "verification_from_enum_output called on non-bcdedit action"
+        ));
+    };
+    let current = parse_value(enum_output, name);
+    Ok(current
+        .as_deref()
+        .map(|v| v.trim().eq_ignore_ascii_case(value.trim()))
+        .unwrap_or(false))
 }
 
 /// Verify a BCD value by reading `{current}` again after the elevated

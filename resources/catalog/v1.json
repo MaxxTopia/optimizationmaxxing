@@ -2057,8 +2057,8 @@
       "actions": [
         {
           "kind": "powershell_script",
-          "apply": "powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg /setactive SCHEME_CURRENT",
-          "revert": "powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 1; powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 2; powercfg /setactive SCHEME_CURRENT"
+          "apply": "$ErrorActionPreference='Stop'; powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0 | Out-Null; if($LASTEXITCODE -ne 0){throw 'AC PCIe Link State setting could not be set.'}; if(@(Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue).Count -gt 0){powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 0 | Out-Null; if($LASTEXITCODE -ne 0){throw 'DC PCIe Link State setting could not be set.'}}; powercfg /setactive SCHEME_CURRENT | Out-Null; if($LASTEXITCODE -ne 0){throw 'The current power plan could not be reactivated.'}; Write-Output 'OK'",
+          "revert": "$ErrorActionPreference='Stop'; powercfg /setacvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 1 | Out-Null; if($LASTEXITCODE -ne 0){throw 'AC PCIe Link State setting could not be restored.'}; if(@(Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue).Count -gt 0){powercfg /setdcvalueindex SCHEME_CURRENT SUB_PCIEXPRESS ee12f906-d277-404b-b6da-e5fa1a576df5 2 | Out-Null; if($LASTEXITCODE -ne 0){throw 'DC PCIe Link State setting could not be restored.'}}; powercfg /setactive SCHEME_CURRENT | Out-Null; if($LASTEXITCODE -ne 0){throw 'The current power plan could not be reactivated.'}; Write-Output 'OK'"
         }
       ],
       "targets": {

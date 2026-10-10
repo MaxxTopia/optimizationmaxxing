@@ -205,7 +205,7 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
             continue;
         };
 
-        let verification = engine::verify(&action);
+        let verification = engine::verify_with_elevation_fallback(&action);
         state
             .update_verification(&receipt_id, &verification)
             .map_err(|e| format!("{:#}", e))?;
@@ -342,7 +342,8 @@ async fn preview_tweak(action: TweakAction) -> Result<TweakPreview, String> {
         let kind = action.kind().to_string();
         let requires_admin = action.requires_admin();
         let pre_state =
-            engine::capture_pre_state(&action).map_err(|e| format!("{:#}", e))?;
+            engine::capture_pre_state_with_elevation_fallback(&action)
+                .map_err(|e| format!("{:#}", e))?;
         let summary = build_summary(&action, &pre_state);
         Ok(TweakPreview {
             kind,
@@ -360,7 +361,7 @@ async fn preview_tweak(action: TweakAction) -> Result<TweakPreview, String> {
 /// avoid rewriting them just to create an app receipt.
 #[tauri::command]
 async fn verify_action(action: TweakAction) -> Result<VerificationResult, String> {
-    tokio::task::spawn_blocking(move || engine::verify(&action))
+    tokio::task::spawn_blocking(move || engine::verify_with_elevation_fallback(&action))
         .await
         .map_err(|e| format!("verify task failed: {e}"))
 }
@@ -374,7 +375,7 @@ async fn apply_tweak(
     let store = (*state).clone();
     tokio::task::spawn_blocking(move || -> Result<ApplyReceipt, String> {
         let pre_state = engine::apply(&action).map_err(|e| format!("{:#}", e))?;
-        let verification = engine::verify(&action);
+        let verification = engine::verify_with_elevation_fallback(&action);
         store
             .record_apply(&tweak_id, &action, &pre_state, &verification)
             .map_err(|e| format!("{:#}", e))
@@ -480,7 +481,7 @@ async fn apply_transaction(
                 ));
                 continue;
             }
-            match engine::capture_pre_state(&item.action) {
+            match engine::capture_pre_state_with_elevation_fallback(&item.action) {
                 Ok(pre_state) => states.push(TransactionState {
                     item,
                     pre_state,
@@ -573,11 +574,18 @@ async fn apply_transaction(
         // Read back every mutation, including an elevated batch that returned
         // an error. The latter is important: it tells recovery whether the
         // line appears to have landed despite the aggregate command failure.
-        for state in &mut states {
-            if !state.attempted {
-                continue;
-            }
-            let verification = engine::verify(&state.item.action);
+        let verification_indices = states
+            .iter()
+            .enumerate()
+            .filter_map(|(index, state)| state.attempted.then_some(index))
+            .collect::<Vec<_>>();
+        let verification_actions = verification_indices
+            .iter()
+            .map(|index| &states[*index].item.action)
+            .collect::<Vec<_>>();
+        let verifications = engine::verify_batch(&verification_actions);
+        for (index, verification) in verification_indices.into_iter().zip(verifications) {
+            let state = &mut states[index];
             if errors.is_empty() && verification.status != VerificationStatus::Verified {
                 errors.push(format!(
                     "{} verification {:?}: {}",
@@ -855,7 +863,28 @@ async fn apply_repair_batch(
             }
 
             let tweak_id = item.tweak_id.clone();
-            match engine::capture_pre_state(&item.action) {
+            match engine::capture_pre_state_with_elevation_fallback(&item.action) {
+                Ok(pre_state) if engine::pre_state_is_ambiguous(&item.action, &pre_state) => {
+                    let detail = pre_state
+                        .get("detail")
+                        .and_then(|value| value.as_str())
+                        .unwrap_or("the protected BCD read-back remained ambiguous");
+                    let message = format!(
+                        "{} pre-state remained ambiguous after the elevated read-back; no write was attempted. {}",
+                        tweak_id, detail
+                    );
+                    group.states.push(TransactionState {
+                        item,
+                        pre_state,
+                        attempted: false,
+                        applied: false,
+                        rolled_back: false,
+                        verification: None,
+                        receipt: None,
+                        detail: message.clone(),
+                    });
+                    group.fail(message);
+                }
                 Ok(pre_state) => group.states.push(TransactionState {
                     item,
                     pre_state,
@@ -962,27 +991,64 @@ async fn apply_repair_batch(
             }
         };
 
-        // Verify every action that was attempted. A mismatch or unknown result
-        // fails only the containing tweak group and triggers selective rollback.
+        // Verify every action that was attempted in one read-back batch. A
+        // mismatch or unknown result fails only its containing tweak group;
+        // protected reads share one elevated retry instead of opening one UAC
+        // prompt per action.
+        let verification_indices = groups
+            .iter()
+            .enumerate()
+            .flat_map(|(group_index, group)| {
+                group
+                    .states
+                    .iter()
+                    .enumerate()
+                    .filter_map(move |(state_index, state)| {
+                        state
+                            .attempted
+                            .then_some((group_index, state_index))
+                    })
+            })
+            .collect::<Vec<_>>();
+        let verification_actions = verification_indices
+            .iter()
+            .map(|(group_index, state_index)| {
+                &groups[*group_index].states[*state_index].item.action
+            })
+            .collect::<Vec<_>>();
+        let verifications = engine::verify_batch(&verification_actions);
+        for ((group_index, state_index), verification) in
+            verification_indices.into_iter().zip(verifications)
+        {
+            let state = &mut groups[group_index].states[state_index];
+            if verification.status == VerificationStatus::Verified {
+                state.applied = true;
+                state.detail = "Applied and verified in the live system.".into();
+            } else {
+                state.detail = format!("Live verification failed: {}", verification.detail);
+            }
+            state.verification = Some(verification);
+        }
         for group in &mut groups {
-            let mut failures = Vec::new();
-            for state in &mut group.states {
-                if !state.attempted {
-                    continue;
-                }
-                let verification = engine::verify(&state.item.action);
-                if verification.status != VerificationStatus::Verified {
-                    failures.push(format!(
+            let failures = group
+                .states
+                .iter()
+                .filter(|state| {
+                    state.attempted
+                        && state
+                            .verification
+                            .as_ref()
+                            .map(|verification| verification.status != VerificationStatus::Verified)
+                            .unwrap_or(true)
+                })
+                .map(|state| {
+                    let verification = state.verification.as_ref().expect("checked above");
+                    format!(
                         "{} verification {:?}: {}",
                         state.item.tweak_id, verification.status, verification.detail
-                    ));
-                    state.detail = format!("Live verification failed: {}", verification.detail);
-                } else {
-                    state.applied = true;
-                    state.detail = "Applied and verified in the live system.".into();
-                }
-                state.verification = Some(verification);
-            }
+                    )
+                })
+                .collect::<Vec<_>>();
             for failure in failures {
                 group.fail(failure);
             }
@@ -1224,8 +1290,18 @@ async fn apply_batch(
         //    possible; bcdedit /enum is best-effort).
         let mut prepared: Vec<(BatchItem, serde_json::Value)> = Vec::with_capacity(items.len());
         for item in items.into_iter() {
-            let pre = engine::capture_pre_state(&item.action)
+            let pre = engine::capture_pre_state_with_elevation_fallback(&item.action)
                 .map_err(|e| format!("{:#}", e))?;
+            if engine::pre_state_is_ambiguous(&item.action, &pre) {
+                let detail = pre
+                    .get("detail")
+                    .and_then(|value| value.as_str())
+                    .unwrap_or("the protected BCD read-back remained ambiguous");
+                return Err(format!(
+                    "{} pre-state remained ambiguous after the elevated read-back; no write was attempted. {}",
+                    item.tweak_id, detail
+                ));
+            }
             prepared.push((item, pre));
         }
 
@@ -1274,10 +1350,11 @@ async fn apply_batch(
         // successful process exit is not proof that Windows accepted the
         // requested state (policy ACLs, driver ownership, and later tools can
         // all disagree).
-        let verifications: Vec<engine::VerificationResult> = prepared
+        let verification_actions = prepared
             .iter()
-            .map(|(item, _)| engine::verify(&item.action))
-            .collect();
+            .map(|(item, _)| &item.action)
+            .collect::<Vec<_>>();
+        let verifications = engine::verify_batch(&verification_actions);
 
         // 5. Record receipts in original order.
         let mut receipts = Vec::with_capacity(prepared.len());
@@ -1414,7 +1491,7 @@ async fn verify_applied(
             else {
                 continue;
             };
-            let verification = engine::verify(&action);
+            let verification = engine::verify_with_elevation_fallback(&action);
             store
                 .update_verification(&row.receipt_id, &verification)
                 .map_err(|e| format!("{:#}", e))?;

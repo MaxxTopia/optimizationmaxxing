@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.22',
+    date: '2026-10-09',
+    highlights: [
+      'FIX **Asta protected read-back.** Windows error 5 from QoS/MMAgent and ambiguous BCD reads now retry through one elevated read-back boundary; unknown state remains no-write and rollback receipts identify the repair.',
+      'FIX **Desktop PCIe power-plan verification.** Desktop Asta runs validate the AC setting without falsely failing on an unused DC value; laptops still require both AC and DC.',
+      'IMPROVE **Asta receipts.** Unsupported capabilities, permission failures, real mismatches, and skipped writes are separated with targeted next steps.',
+    ],
+  },
+  {
     version: '0.4.21',
     date: '2026-10-09',
     highlights: [

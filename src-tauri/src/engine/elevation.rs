@@ -243,6 +243,140 @@ pub fn run_elevated_raw_lines(lines: &[String]) -> anyhow::Result<()> {
     run_elevated_lines(&[], lines)
 }
 
+/// Output from one generated, read-only command in an elevated batch.
+///
+/// The caller owns the command construction; this runner only handles the
+/// UAC boundary and captures stdout/stderr for each line separately. It is
+/// intentionally not exposed to arbitrary frontend strings.
+#[derive(Debug, Clone)]
+pub struct ElevatedCommandOutput {
+    pub exit_code: i32,
+    pub output: String,
+}
+
+/// Run generated read-back commands under one UAC prompt and capture each
+/// command's output independently. A verifier must be able to distinguish a
+/// real mismatch from a protected read that the unelevated UI process could
+/// not perform.
+pub fn run_elevated_capture_lines(
+    lines: &[String],
+) -> anyhow::Result<Vec<ElevatedCommandOutput>> {
+    if lines.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let temp_dir = std::env::temp_dir();
+    let stamp = chrono::Utc::now().timestamp_millis();
+    let pid = std::process::id();
+    let script_path = temp_dir.join(format!("optmaxxing-readback-{pid}-{stamp}.cmd"));
+    let mut output_paths = Vec::with_capacity(lines.len());
+    let mut code_paths = Vec::with_capacity(lines.len());
+    let mut script = String::from("@echo off\r\nsetlocal enabledelayedexpansion\r\n");
+
+    for (index, line) in lines.iter().enumerate() {
+        let output_path = temp_dir.join(format!(
+            "optmaxxing-readback-{pid}-{stamp}-{index}.out"
+        ));
+        let code_path = temp_dir.join(format!(
+            "optmaxxing-readback-{pid}-{stamp}-{index}.code"
+        ));
+        let output_path_str = output_path.to_string_lossy().to_string();
+        let code_path_str = code_path.to_string_lossy().to_string();
+        // Each command is isolated so one verifier failure cannot prevent
+        // later read-backs from producing a diagnostic.
+        script.push_str(&format!(
+            "({line}) >{} 2>&1\r\necho !errorlevel! >{}\r\n",
+            cmd_quote(&output_path_str),
+            cmd_quote(&code_path_str),
+        ));
+        output_paths.push(output_path);
+        code_paths.push(code_path);
+    }
+    // The wrapper itself reports only UAC/helper failure. Individual command
+    // exit codes are captured in the per-command files above.
+    script.push_str("exit /b 0\r\n");
+
+    if let Err(error) = std::fs::write(&script_path, script.as_bytes()) {
+        let _ = std::fs::remove_file(&script_path);
+        return Err(error).context("writing elevated read-back script to temp");
+    }
+
+    let cleanup = || {
+        let _ = std::fs::remove_file(&script_path);
+        for path in &output_paths {
+            let _ = std::fs::remove_file(path);
+        }
+        for path in &code_paths {
+            let _ = std::fs::remove_file(path);
+        }
+    };
+
+    let outer = format!(
+        "try {{ $p = Start-Process -FilePath cmd.exe -ArgumentList @('/c','\"{}\"') -Verb RunAs -Wait -WindowStyle Hidden -PassThru; exit [int]$p.ExitCode }} catch {{ exit 1223 }}",
+        script_path.to_string_lossy().replace('\'', "''"),
+    );
+    let status = match Command::new(powershell_program())
+        .args(["-NoLogo", "-NoProfile", "-NonInteractive"])
+        .arg("-Command")
+        .arg(&outer)
+        .status()
+    {
+        Ok(status) => status,
+        Err(error) => {
+            cleanup();
+            return Err(error).context("spawning elevated read-back powershell.exe");
+        }
+    };
+
+    let outer_exit = status.code().unwrap_or(-1);
+    if outer_exit != 0 {
+        cleanup();
+        if outer_exit == 1223 {
+            return Err(anyhow!(
+                "elevated read-back was cancelled or denied by UAC (Windows error 1223)"
+            ));
+        }
+        return Err(anyhow!(
+            "elevated read-back helper exited with code {outer_exit}"
+        ));
+    }
+
+    let mut results = Vec::with_capacity(lines.len());
+    for (output_path, code_path) in output_paths.iter().zip(code_paths.iter()) {
+        let output = match std::fs::read(output_path) {
+            Ok(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
+            Err(error) => {
+                cleanup();
+                return Err(anyhow!(
+                    "elevated read-back output was missing: {error}"
+                ));
+            }
+        };
+        let code_text = match std::fs::read_to_string(code_path) {
+            Ok(text) => text,
+            Err(error) => {
+                cleanup();
+                return Err(anyhow!(
+                    "elevated read-back exit code was missing: {error}"
+                ));
+            }
+        };
+        let exit_code = match code_text.trim().parse::<i32>() {
+            Ok(code) => code,
+            Err(error) => {
+                cleanup();
+                return Err(anyhow!(
+                    "elevated read-back returned an invalid exit code: {error}"
+                ));
+            }
+        };
+        results.push(ElevatedCommandOutput { exit_code, output });
+    }
+
+    cleanup();
+    Ok(results)
+}
+
 /// Revert one elevated action.
 pub fn run_elevated_revert_action(
     action: &TweakAction,
