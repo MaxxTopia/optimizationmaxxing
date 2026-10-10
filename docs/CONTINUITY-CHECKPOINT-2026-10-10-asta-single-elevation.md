@@ -70,9 +70,23 @@ and this checkpoint; commit, tag, push `main` and `v0.4.23`, then verify the
 GitHub Actions signed release and public updater manifest. Do not claim the
 target-PC UAC or reboot result from CI evidence.
 
+Release completed:
+
+- Commit `49a93f9` is on `origin/main`; annotated tag `v0.4.23` points to the
+  same release commit.
+- GitHub Actions Release run `38023592465` passed all build, audit, signing,
+  auto-publish, and notification steps.
+- Published release: `https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.23`.
+- Public `latest.json` returned HTTP 200 and version `0.4.23`, with the signed
+  installer URL and signature present.
+- The local branch remains `fix/asta-qos-performance-setup`; its working tree
+  is clean after the release commit.
+
 ## Best next action
 
-Perform the scoped v0.4.23 release and wait for the signed public artifact. The
-user's next test is the installed Asta run, with the app launched as
-administrator if they want one Windows consent at startup and no nested helper
-prompts.
+Install v0.4.23 from the signed public artifact and run Asta once from a normal
+launch and once with the app explicitly launched as administrator if needed.
+The target-PC test must record whether helper consoles stay hidden, how many
+Windows consent dialogs appear, and whether the five previously mismatching
+rows now read back correctly. Reboot persistence and real Fortnite gameplay
+remain separate human gates.
