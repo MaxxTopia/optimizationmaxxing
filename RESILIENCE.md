@@ -77,6 +77,15 @@ P0 (implemented in this pass):
   UAC/helper process per catalog row. If the app is already elevated, reuse
   that token. Windows UAC consent itself is not silently automatable, so the
   UI must explain that launching the app elevated is the one-consent path.
+- Keep app-launch and background verification current-token-only. Protected
+  reads must become `unknown` and await an explicit admin action, never open a
+  hidden elevation helper during ordinary startup.
+- Batch selected Tournament Mode catch-up reverts and persist an error state on
+  failure so the 15-second driver cannot prompt repeatedly.
+- Asta and Tune Now must capture a median-of-three before/after host proxy and
+  show progress for each run; Asta also arms the exact receipt set for an
+  explicit reboot check. Immediate receipts, reboot persistence, and actual
+  Fortnite gameplay remain separate evidence layers.
 
 P1 (implemented in this pass):
 

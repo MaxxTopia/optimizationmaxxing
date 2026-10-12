@@ -179,6 +179,7 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
     report.mismatched = 0;
     report.unknown = 0;
 
+    let mut loaded = Vec::new();
     for receipt_id in report.receipt_ids.clone() {
         let Some(row) = active.iter().find(|row| row.receipt_id == receipt_id) else {
             report.mismatched += 1;
@@ -205,7 +206,15 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
             continue;
         };
 
-        let verification = engine::verify_with_elevation_fallback(&action);
+        loaded.push((receipt_id, row.tweak_id.clone(), action));
+    }
+
+    // The persistence check is an explicit user action after a real reboot,
+    // so protected reads may use elevation here. Batch them into one helper
+    // invocation instead of prompting once per receipt.
+    let action_refs = loaded.iter().map(|(_, _, action)| action).collect::<Vec<_>>();
+    let verifications = engine::verify_batch(&action_refs);
+    for ((receipt_id, tweak_id, _action), verification) in loaded.into_iter().zip(verifications) {
         state
             .update_verification(&receipt_id, &verification)
             .map_err(|e| format!("{:#}", e))?;
@@ -216,7 +225,7 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
         }
         report.items.push(RebootValidationItem {
             receipt_id,
-            tweak_id: row.tweak_id.clone(),
+            tweak_id,
             status: verification.status,
             detail: verification.detail,
         });
@@ -341,9 +350,11 @@ async fn preview_tweak(action: TweakAction) -> Result<TweakPreview, String> {
     tokio::task::spawn_blocking(move || -> Result<TweakPreview, String> {
         let kind = action.kind().to_string();
         let requires_admin = action.requires_admin();
-        let pre_state =
-            engine::capture_pre_state_with_elevation_fallback(&action)
-                .map_err(|e| format!("{:#}", e))?;
+        // Preview is a read-only page operation. Do not launch an elevated
+        // helper for every protected catalog row; ambiguous BCD state stays
+        // explicit and the apply transaction owns the one real UAC boundary.
+        let pre_state = engine::capture_pre_state(&action)
+            .map_err(|e| format!("{:#}", e))?;
         let summary = build_summary(&action, &pre_state);
         Ok(TweakPreview {
             kind,
@@ -361,7 +372,9 @@ async fn preview_tweak(action: TweakAction) -> Result<TweakPreview, String> {
 /// avoid rewriting them just to create an app receipt.
 #[tauri::command]
 async fn verify_action(action: TweakAction) -> Result<VerificationResult, String> {
-    tokio::task::spawn_blocking(move || engine::verify_with_elevation_fallback(&action))
+    // Catalog audits and plan previews must never create a UAC loop. Apply
+    // and the explicit reboot check use the batched elevated verifier instead.
+    tokio::task::spawn_blocking(move || engine::verify_without_elevation(&action))
         .await
         .map_err(|e| format!("verify task failed: {e}"))
 }
@@ -1492,6 +1505,7 @@ async fn verify_applied(
             .filter(|row| row.status == "applied")
             .collect::<Vec<_>>();
 
+        let mut loaded = Vec::new();
         for row in active {
             let Some((action, _pre_state)) = store
                 .get_receipt(&row.receipt_id)
@@ -1499,9 +1513,17 @@ async fn verify_applied(
             else {
                 continue;
             };
-            let verification = engine::verify_with_elevation_fallback(&action);
+            loaded.push((row.receipt_id, action));
+        }
+
+        let action_refs = loaded
+            .iter()
+            .map(|(_, action)| action)
+            .collect::<Vec<_>>();
+        let verifications = engine::verify_batch_without_elevation(&action_refs);
+        for ((receipt_id, _action), verification) in loaded.into_iter().zip(verifications) {
             store
-                .update_verification(&row.receipt_id, &verification)
+                .update_verification(&receipt_id, &verification)
                 .map_err(|e| format!("{:#}", e))?;
         }
 
@@ -1520,93 +1542,130 @@ pub struct RevertAllReport {
     pub total_active: usize,
 }
 
-/// Revert every applied tweak in newest-first order. HKCU registry reverts
-/// run unelevated; everything privileged (HKLM, bcdedit, PowerShell) batches
-/// into a single UAC prompt. Each successful revert is marked in the store.
+/// Revert the requested active receipts. HKCU registry reverts run unelevated;
+/// everything privileged (HKLM, bcdedit, PowerShell) batches into one UAC
+/// prompt. `None` means every active receipt, while `Some` is used by
+/// Tournament Mode to revert only its flagged set without prompting once per
+/// receipt.
+fn revert_receipts(
+    store: &SnapshotStore,
+    requested_ids: Option<&[String]>,
+) -> Result<RevertAllReport, String> {
+    let applied = store.list_applied().map_err(|e| format!("{:#}", e))?;
+    let active: Vec<&AppliedTweak> = applied
+        .iter()
+        .filter(|a| a.status == "applied")
+        .filter(|a| requested_ids.map(|ids| ids.iter().any(|id| id == &a.receipt_id)).unwrap_or(true))
+        .collect();
+    let total_active = active.len();
+    let mut failed: Vec<String> = Vec::new();
+
+    // A requested receipt may have been reverted between list_applied and this
+    // call. Report that explicitly instead of silently claiming it was done.
+    if let Some(ids) = requested_ids {
+        for id in ids {
+            if !active.iter().any(|a| a.receipt_id == *id) {
+                failed.push(id.clone());
+            }
+        }
+    }
+
+    if total_active == 0 {
+        return Ok(RevertAllReport {
+            reverted: 0,
+            failed_receipt_ids: failed,
+            elevated_used: false,
+            total_active: 0,
+        });
+    }
+
+    // Load each (receipt_id, action, pre_state) triple.
+    let mut loaded: Vec<(String, TweakAction, serde_json::Value)> = Vec::new();
+    for a in &active {
+        match store.get_receipt(&a.receipt_id) {
+            Ok(Some((action, pre))) => loaded.push((a.receipt_id.clone(), action, pre)),
+            Ok(None) | Err(_) => failed.push(a.receipt_id.clone()),
+        }
+    }
+
+    // Split: unelevated (HKCU registry) vs elevated.
+    let mut unelevated: Vec<(String, TweakAction, serde_json::Value)> = Vec::new();
+    let mut elevated: Vec<(String, TweakAction, serde_json::Value)> = Vec::new();
+    for triple in loaded {
+        if triple.1.requires_admin() {
+            elevated.push(triple);
+        } else {
+            unelevated.push(triple);
+        }
+    }
+
+    let mut reverted = 0usize;
+
+    // 1. Unelevated reverts run in-process, per-receipt for granular failure.
+    for (rid, action, pre) in &unelevated {
+        match engine::revert_unelevated(action, pre) {
+            Ok(_) => {
+                let _ = store.mark_reverted(rid);
+                reverted += 1;
+            }
+            Err(_) => failed.push(rid.clone()),
+        }
+    }
+
+    // 2. Elevated reverts batch into one UAC prompt.
+    let elevated_used = !elevated.is_empty();
+    if elevated_used {
+        let pairs: Vec<(&TweakAction, &serde_json::Value)> =
+            elevated.iter().map(|(_, a, p)| (a, p)).collect();
+        match engine::elevation::run_elevated_revert_batch(&pairs) {
+            Ok(_) => {
+                // Whole batch succeeded — mark each.
+                for (rid, _, _) in &elevated {
+                    let _ = store.mark_reverted(rid);
+                    reverted += 1;
+                }
+            }
+            Err(_) => {
+                // Batch failed — mark all elevated as failed.
+                for (rid, _, _) in &elevated {
+                    failed.push(rid.clone());
+                }
+            }
+        }
+    }
+
+    Ok(RevertAllReport {
+        reverted,
+        failed_receipt_ids: failed,
+        elevated_used,
+        total_active,
+    })
+}
+
+/// Revert every applied tweak in newest-first order. The privileged part is a
+/// single UAC batch, preserving the existing Settings-page behavior.
 #[tauri::command]
 async fn revert_all_applied(
     state: tauri::State<'_, SnapshotStore>,
 ) -> Result<RevertAllReport, String> {
     let store = (*state).clone();
-    tokio::task::spawn_blocking(move || -> Result<RevertAllReport, String> {
-        let applied = store.list_applied().map_err(|e| format!("{:#}", e))?;
-        let active: Vec<&AppliedTweak> = applied.iter().filter(|a| a.status == "applied").collect();
-        let total_active = active.len();
-        if total_active == 0 {
-            return Ok(RevertAllReport {
-                reverted: 0,
-                failed_receipt_ids: vec![],
-                elevated_used: false,
-                total_active: 0,
-            });
-        }
+    tokio::task::spawn_blocking(move || revert_receipts(&store, None))
+        .await
+        .map_err(|e| format!("revert_all task failed: {e}"))?
+}
 
-        // Load each (receipt_id, action, pre_state) triple.
-        let mut loaded: Vec<(String, TweakAction, serde_json::Value)> = Vec::new();
-        let mut failed: Vec<String> = Vec::new();
-        for a in &active {
-            match store.get_receipt(&a.receipt_id) {
-                Ok(Some((action, pre))) => loaded.push((a.receipt_id.clone(), action, pre)),
-                Ok(None) => failed.push(a.receipt_id.clone()),
-                Err(_) => failed.push(a.receipt_id.clone()),
-            }
-        }
-
-        // Split: unelevated (HKCU registry) vs elevated.
-        let mut unelevated: Vec<(String, TweakAction, serde_json::Value)> = Vec::new();
-        let mut elevated: Vec<(String, TweakAction, serde_json::Value)> = Vec::new();
-        for triple in loaded {
-            if triple.1.requires_admin() {
-                elevated.push(triple);
-            } else {
-                unelevated.push(triple);
-            }
-        }
-
-        let mut reverted = 0usize;
-
-        // 1. Unelevated reverts run in-process, per-receipt for granular failure.
-        for (rid, action, pre) in &unelevated {
-            match engine::revert_unelevated(action, pre) {
-                Ok(_) => {
-                    let _ = store.mark_reverted(rid);
-                    reverted += 1;
-                }
-                Err(_) => failed.push(rid.clone()),
-            }
-        }
-
-        // 2. Elevated reverts batch into one UAC prompt.
-        let elevated_used = !elevated.is_empty();
-        if elevated_used {
-            let pairs: Vec<(&TweakAction, &serde_json::Value)> =
-                elevated.iter().map(|(_, a, p)| (a, p)).collect();
-            match engine::elevation::run_elevated_revert_batch(&pairs) {
-                Ok(_) => {
-                    // Whole batch succeeded — mark each.
-                    for (rid, _, _) in &elevated {
-                        let _ = store.mark_reverted(rid);
-                        reverted += 1;
-                    }
-                }
-                Err(_) => {
-                    // Batch failed — mark all elevated as failed.
-                    for (rid, _, _) in &elevated {
-                        failed.push(rid.clone());
-                    }
-                }
-            }
-        }
-
-        Ok(RevertAllReport {
-            reverted,
-            failed_receipt_ids: failed,
-            elevated_used,
-            total_active,
-        })
-    })
-    .await
-    .map_err(|e| format!("revert_all task failed: {e}"))?
+/// Revert a caller-selected set of active receipts under one elevation
+/// boundary. Used by scheduled Tournament Mode catch-up so opening the app
+/// cannot produce one UAC prompt for every flagged tweak.
+#[tauri::command]
+async fn revert_batch(
+    state: tauri::State<'_, SnapshotStore>,
+    receipt_ids: Vec<String>,
+) -> Result<RevertAllReport, String> {
+    let store = (*state).clone();
+    tokio::task::spawn_blocking(move || revert_receipts(&store, Some(&receipt_ids)))
+        .await
+        .map_err(|e| format!("revert_batch task failed: {e}"))?
 }
 
 #[tauri::command]
@@ -2320,6 +2379,7 @@ pub fn run() {
             get_tune_preflight,
             enable_system_protection,
             revert_tweak,
+            revert_batch,
             revert_all_applied,
             list_applied,
             verify_applied,

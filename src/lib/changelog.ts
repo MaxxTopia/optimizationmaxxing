@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.24',
+    date: '2026-10-12',
+    highlights: [
+      'FIX **Startup UAC loop.** Read-only audits and launch-time checks no longer elevate one protected row at a time; unreadable protected state stays explicit until the user requests an admin action.',
+      'IMPROVE **Asta and Tune Now measurement.** Before/after results now use a median of three host-proxy runs, show progress, arm reboot persistence evidence, and keep live state, reboot state, and gameplay evidence separate.',
+      'FIX **Scheduled catch-up prompts.** Tournament Mode batches due reverts and stops retrying after a failed consent or transaction instead of prompting repeatedly.',
+    ],
+  },
+  {
     version: '0.4.23',
     date: '2026-10-10',
     highlights: [

@@ -82,11 +82,70 @@ Release completed:
 - The local branch remains `fix/asta-qos-performance-setup`; its working tree
   is clean after the release commit.
 
+## Current uncommitted follow-up (2026-10-12)
+
+The target-PC report after v0.4.23 exposed a second failure mode: ordinary app
+startup could enter a protected read path and show repeated Windows command
+processor/UAC prompts before the user requested any change. This follow-up is
+implemented locally but is not committed, published, or verified on Diggy's
+installed desktop build yet. It is now the v0.4.24 release candidate; the
+signed CI artifact and target-PC verification remain pending.
+
+### Changes in the working tree
+
+- Startup and background audits now use current-token-only verification. A
+  protected value is reported as `unknown` / needing an explicit admin check;
+  opening the app no longer silently escalates one receipt at a time.
+- The automatic reboot-persistence check was removed from app mount. It is now
+  explicit through the persistence card, so opening the app cannot trigger a
+  protected verification batch.
+- Asta's apply flow captures a before and after median-of-three Asta Bench
+  automatically, compares the bounded host proxy, and labels the result
+  improved, regressed, unchanged, or inconclusive. The UI explicitly says this
+  is not Fortnite FPS, server ping, or input-latency proof.
+- Tune Now's before/after bench now uses the same median-of-three measurement
+  and shows each run/stage, so its result is not based on one noisy sample.
+- Asta automatically arms the exact receipt set for a later reboot check. It
+  reports immediate live receipt status separately from persistence; a reboot
+  must occur before the check can be verified.
+- Tournament Mode's launch-time catch-up now reverts selected flagged receipts
+  through one batch boundary and will not retry automatically after a failure.
+  This prevents a stored schedule from producing one prompt per tweak.
+- The native `verify_applied`, `verify_action`, and preview paths no longer use
+  per-row elevation fallbacks. Explicit apply/revert/reboot actions retain the
+  necessary elevated boundary and fail with a diagnostic when consent or read-
+  back is unavailable.
+
+### Verification performed for this follow-up
+
+- `cargo test --manifest-path src-tauri/Cargo.toml`: passed, 101 tests.
+- `npm run build`: passed; Vite transformed 220 modules and produced the
+  production bundle.
+- `npx tsc --noEmit`: passed after the Tune Now bench change.
+- `npm run tauri:build`: compiled the changed native desktop executable and
+  produced the unsigned NSIS installer; it stopped only at the expected
+  signing boundary because `TAURI_SIGNING_PRIVATE_KEY` is not present here.
+- `git diff --check`: passed; only normal Git line-ending conversion warnings.
+- The repository-wide `cargo fmt --check` remains noisy because of existing
+  formatting differences in unrelated native files; no broad formatter run was
+  used because it would rewrite unrelated work.
+
+### Remaining gates
+
+- Install the signed v0.4.24 desktop artifact before calling this fix verified
+  on the target PC.
+- From a normal non-admin launch, verify zero spontaneous UAC prompts and no
+  command window flash. If a stored Tournament Mode schedule is intentionally
+  due, expect at most its one explicit batch prompt; a failed prompt must leave
+  the schedule in a visible error state without retry spam.
+- Apply Asta once, record the before/after proxy and transaction receipt, reboot,
+  then use the explicit persistence check. Run a controlled Fortnite test
+  separately; the host proxy cannot prove a better game result.
+
 ## Best next action
 
-Install v0.4.23 from the signed public artifact and run Asta once from a normal
-launch and once with the app explicitly launched as administrator if needed.
-The target-PC test must record whether helper consoles stay hidden, how many
-Windows consent dialogs appear, and whether the five previously mismatching
-rows now read back correctly. Reboot persistence and real Fortnite gameplay
-remain separate human gates.
+The local build/test gates above are green and Diggy has authorized publishing.
+Push/tag v0.4.24, verify the signed CI artifact and public updater manifest,
+then perform the first target-PC check as a normal non-admin launch with no
+stored due schedule, followed by explicit Asta apply, reboot persistence, and a
+controlled Fortnite comparison.

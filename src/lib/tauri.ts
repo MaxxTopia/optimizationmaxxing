@@ -417,6 +417,11 @@ export async function revertTweak(receiptId: string): Promise<void> {
   return invoke('revert_tweak', { receiptId })
 }
 
+/** Revert a selected receipt set under one privileged batch. */
+export async function revertBatch(receiptIds: string[]): Promise<RevertAllReport> {
+  return invoke<RevertAllReport>('revert_batch', { receiptIds })
+}
+
 /** Read a small persisted setting from the SQLite kv store. */
 export async function kvGet(key: string): Promise<string | null> {
   return invoke<string | null>('kv_get', { key })

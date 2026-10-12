@@ -4,7 +4,7 @@ import {
   applyBatch,
   inTauri,
   listApplied,
-  revertTweak,
+  revertBatch,
   type AppliedTweak,
   type BatchItem,
 } from './tauri'
@@ -135,22 +135,30 @@ async function performRevert(schedule: TournamentSchedule): Promise<TournamentSc
   // reverted tweaks are excluded — we only re-attempt the ones still applied.
   const flagged = pickFlaggedTweaks(list, schedule.game, ac)
   const reverted = [...schedule.revertedTweakIds]
-  const failures: string[] = []
   const newLog: string[] = []
-  for (const a of flagged) {
+  if (flagged.length > 0) {
     try {
-      await revertTweak(a.receiptId)
-      if (!reverted.includes(a.tweakId)) reverted.push(a.tweakId)
-      newLog.push(`reverted ${a.tweakId}`)
+      const report = await revertBatch(flagged.map((a) => a.receiptId))
+      const failedIds = new Set(report.failedReceiptIds)
+      for (const a of flagged) {
+        if (failedIds.has(a.receiptId)) {
+          newLog.push(`FAILED revert ${a.tweakId}: the batched revert did not complete`)
+        } else {
+          if (!reverted.includes(a.tweakId)) reverted.push(a.tweakId)
+          newLog.push(`reverted ${a.tweakId}`)
+        }
+      }
     } catch (e) {
-      failures.push(a.tweakId)
-      newLog.push(`FAILED revert ${a.tweakId}: ${stringErr(e)}`)
+      for (const a of flagged) {
+        newLog.push(`FAILED revert ${a.tweakId}: ${stringErr(e)}`)
+      }
     }
   }
+  const failures = flagged.filter((a) => newLog.some((entry) => entry.startsWith(`FAILED revert ${a.tweakId}:`)))
   const headline =
     failures.length > 0
-      ? `${nowStamp()} REVERT FAILED - ${failures.length} tweak(s) STILL APPLIED - NOT SAFE TO PLAY (retry / approve the UAC prompt)`
-      : `${nowStamp()} reverted ${reverted.length} tweak(s) for ${schedule.game}`
+      ? `${nowStamp()} REVERT FAILED - ${failures.length} tweak(s) STILL APPLIED - NOT SAFE TO PLAY (retry / approve the single batched UAC prompt)`
+      : `${nowStamp()} reverted ${flagged.length} tweak(s) for ${schedule.game}`
   return {
     ...schedule,
     state: failures.length > 0 ? 'error' : 'active',

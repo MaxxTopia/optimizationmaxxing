@@ -26,7 +26,7 @@ import { Changelog } from './pages/Changelog'
 import { Diagnostics } from './pages/Diagnostics'
 import { Session } from './pages/Session'
 import { MatchScan } from './pages/MatchScan'
-import { inTauri, openExternal, telemetrySendEvent, validateRebootPersistence } from './lib/tauri'
+import { inTauri, openExternal, telemetrySendEvent } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 import { useProfileStore } from './store/useProfileStore'
 import { useRigStore } from './store/useRigStore'
@@ -59,17 +59,6 @@ export default function App() {
   useEffect(() => {
     void ensureRigLoaded()
   }, [ensureRigLoaded])
-
-  // If the user armed a persistence proof before restarting Windows, finish
-  // it automatically on the next app launch. This is read-only verification;
-  // it never silently reapplies a drifted setting.
-  useEffect(() => {
-    if (!inTauri()) return
-    void validateRebootPersistence().catch(() => {
-      // Diagnostics exposes the same result and can show a readable error.
-      // Startup should remain usable if an older install has no proof record.
-    })
-  }, [])
 
   // Global anchor interceptor: route every `<a target="_blank">` click with
   // an external URL through plugin-shell's open(). Tauri 2 silently no-ops

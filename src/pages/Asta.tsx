@@ -4,15 +4,19 @@ import { useIsVip } from '../store/useVipStore'
 import {
   applyBatch,
   applyRepairBatch,
+  armRebootValidation,
   getTunePreflight,
   inTauri,
+  listApplied,
   verifyApplied,
+  type RebootValidation,
   type AppliedTweak,
   type BatchItem,
   type SpecProfile,
   type TransactionReport,
   type TunePreflight,
 } from '../lib/tauri'
+import { runBenchMedian, score, type BenchScored } from '../lib/astaBench'
 import { confirmAction } from '../lib/confirm'
 import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
 import { isTransactionActionEligible } from '../lib/optimizationSession'
@@ -61,6 +65,8 @@ setup on one rig and hurt another. The bench decides what stays.
 Apply only what you understand, then repeat the same game test. Receipts verify the immediate
 setting readback where supported; they do not prove reboot persistence or a competitive gain.`
 
+type AstaBenchPhase = 'idle' | 'before' | 'after' | 'complete'
+
 export function Asta() {
   const isVip = useIsVip()
   const isNative = inTauri()
@@ -103,6 +109,12 @@ export function Asta() {
   const [planAudit, setPlanAudit] = useState<Record<string, TweakAudit> | null>(null)
   const [previewProgress, setPreviewProgress] = useState({ done: 0, total: 0 })
   const [previewBusy, setPreviewBusy] = useState(false)
+  const [progress, setProgress] = useState('')
+  const [benchPhase, setBenchPhase] = useState<AstaBenchPhase>('idle')
+  const [benchBefore, setBenchBefore] = useState<BenchScored | null>(null)
+  const [benchAfter, setBenchAfter] = useState<BenchScored | null>(null)
+  const [benchError, setBenchError] = useState<string | null>(null)
+  const [rebootProof, setRebootProof] = useState<RebootValidation | null>(null)
 
   const inventory = useMemo(
     () => (spec ? buildAstaPlan(spec, appliedRows) : null),
@@ -169,6 +181,25 @@ export function Asta() {
     }
   }
 
+  async function captureAstaBench(phase: 'before' | 'after'): Promise<BenchScored | null> {
+    setBenchPhase(phase)
+    const label = phase === 'before' ? 'before' : 'after'
+    try {
+      const measured = score(await runBenchMedian(
+        3,
+        (run, total) => setProgress(`Running Asta Bench (${label}) — median run ${run}/${total}…`),
+        (stage) => setProgress(`Running Asta Bench (${label}) — ${stage}…`),
+      ))
+      if (phase === 'before') setBenchBefore(measured)
+      else setBenchAfter(measured)
+      return measured
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : String(e)
+      setBenchError((previous) => previous ? `${previous} ${label}: ${detail}` : `${label}: ${detail}`)
+      return null
+    }
+  }
+
   async function handleApply() {
     if (!isVip) return
     if (!reviewedPlan || !reviewedPlanKey || !previewIsCurrent || !planAudit) {
@@ -181,6 +212,11 @@ export function Asta() {
     }
     setBusy(true)
     setError(null)
+    setBenchBefore(null)
+    setBenchAfter(null)
+    setBenchError(null)
+    setBenchPhase('idle')
+    setRebootProof(null)
     try {
       try {
         const latestPreflight = await getTunePreflight()
@@ -328,6 +364,11 @@ export function Asta() {
         ...(applyReview ? reviewExplicit : []),
       ])
 
+      // Measure the host immediately before the first mutation. This is a
+      // proxy for CPU/DPC/network/frame pacing, not a Fortnite FPS or input
+      // latency guarantee, but it gives this run a real regression signal.
+      const beforeBench = await captureAstaBench('before')
+
       const keepRepairReport = (report: TransactionReport) => {
         transactionStatuses.push(report.status)
         committed += report.items.filter((item) => item.applied && !item.rolledBack).length
@@ -357,7 +398,10 @@ export function Asta() {
         for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
       }
 
-      const allLive = await verifyApplied()
+      // The apply/repair batches already performed their own verified
+      // read-back. Read durable receipts here instead of reopening a second
+      // elevated verification path immediately after the mutation.
+      const allLive = await listApplied()
       const live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
       setAppliedRows(allLive)
       setApplied({
@@ -385,6 +429,21 @@ export function Asta() {
         errors: [...new Set(applyErrors)],
         ts: new Date().toLocaleTimeString(),
       })
+      setProgress('Settling 4s before the after benchmark…')
+      await new Promise((resolve) => window.setTimeout(resolve, 4000))
+      const afterBench = await captureAstaBench('after')
+      setBenchPhase(beforeBench && afterBench ? 'complete' : 'idle')
+
+      // Arm an exact receipt set automatically. This proves only that the
+      // reboot check is ready; persistence is not claimed until Windows is
+      // restarted and the user runs the explicit post-boot check.
+      try {
+        setRebootProof(await armRebootValidation())
+      } catch (e) {
+        const detail = e instanceof Error ? e.message : String(e)
+        setBenchError((previous) => previous ? `${previous} persistence: ${detail}` : `persistence: ${detail}`)
+      }
+      setProgress('')
       setReviewedPlan(null)
       setReviewedPlanKey(null)
       setPlanAudit(null)
@@ -567,6 +626,12 @@ export function Asta() {
               </div>
             )}
 
+            {busy && progress && (
+              <div className="mt-3 rounded-md border border-sky-300/20 bg-sky-300/5 px-3 py-2 text-xs text-sky-100">
+                {progress}
+              </div>
+            )}
+
             {applied && (
               <div className={`mt-3 rounded-md border px-3 py-2 text-xs ${applied.errors.length || applied.mismatch || applied.preflightSkipped || applied.notApplicable || applied.rolledBack ? 'border-amber-500/40 bg-amber-500/10 text-amber-100' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'}`}>
                 {applied.requested === 0
@@ -593,9 +658,18 @@ export function Asta() {
                 {applied.notApplicableDetails.length > 0 && <span className="block mt-1 text-sky-200">Not applicable / no action taken: {applied.notApplicableDetails.slice(0, 5).join(' · ')}</span>}
                 {applied.preflightSkipDetails.length > 0 && <span className="block mt-1 text-amber-200">Not attempted / next fix: {applied.preflightSkipDetails.slice(0, 5).join(' · ')}</span>}
                 {applied.errors.length > 0 && <span className="block mt-1 text-amber-200">Some independent tweaks need attention: {applied.errors.slice(0, 5).join(' · ')}</span>}
-                This does not prove reboot persistence or better gameplay; run the same Asta Bench
-                before and after, then use Your Tune to re-check drift.
+                Immediate receipt status is separate from reboot persistence and gameplay outcome.
               </div>
+            )}
+
+            {(benchBefore || benchAfter || benchError) && (
+              <AstaBenchResult
+                phase={benchPhase}
+                before={benchBefore}
+                after={benchAfter}
+                error={benchError}
+                rebootProof={rebootProof}
+              />
             )}
 
             {preflight?.blocksAutoApply && (
@@ -816,6 +890,87 @@ function planFingerprint(spec: SpecProfile, plan: AstaPlan): string {
     osBuild: spec.os.build,
     candidates: plan.candidates.map((tweak) => tweak.id).sort(),
   })
+}
+
+function AstaBenchResult({
+  phase,
+  before,
+  after,
+  error,
+  rebootProof,
+}: {
+  phase: AstaBenchPhase
+  before: BenchScored | null
+  after: BenchScored | null
+  error: string | null
+  rebootProof: RebootValidation | null
+}) {
+  const delta = before && after ? after.composite - before.composite : null
+  const verdict = delta == null
+    ? 'inconclusive — one side of the proxy bench is missing'
+    : Math.abs(delta) < 1
+      ? 'no meaningful proxy change'
+      : delta > 0
+        ? 'proxy improved'
+        : 'proxy regressed'
+  const verdictClass = delta == null || Math.abs(delta) < 1
+    ? 'text-amber-200'
+    : delta > 0
+      ? 'text-emerald-300'
+      : 'text-red-300'
+  const persistence = rebootProof?.status === 'armed'
+    ? 'armed — restart Windows, then use Check after reboot'
+    : rebootProof?.status === 'verified'
+      ? 'verified after a real Windows reboot'
+      : rebootProof?.status === 'mismatch'
+        ? 'mismatch after reboot — inspect the listed receipts'
+        : rebootProof?.status === 'unknown'
+          ? 'unknown after reboot — at least one read-back was unavailable'
+          : rebootProof?.status === 'awaiting_reboot'
+            ? 'awaiting a real Windows reboot'
+            : 'not proven yet'
+
+  return (
+    <div className="mt-3 rounded-md border border-sky-300/30 bg-sky-300/5 px-3 py-3 text-xs text-text-muted leading-relaxed">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <strong className="text-text">Automatic Asta Bench (median of 3)</strong>
+        <span className={verdictClass}>{phase === 'before' || phase === 'after' ? 'measuring…' : verdict}</span>
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <BenchValue label="before" value={before?.composite} />
+        <BenchValue label="after" value={after?.composite} />
+        <BenchValue label="delta" value={delta} signed />
+        <BenchValue label="persistence" value={undefined} text={persistence} />
+      </div>
+      <p className="mt-2 text-[11px]">
+        The composite is the median of three runs combining CPU, DPC, ping-jitter to 1.1.1.1, and
+        desktop frame pacing. It is a host proxy, not proof of Fortnite FPS, server ping, or input
+        latency. A negative or tiny result is a reason to revert/compare under the same game
+        conditions.
+      </p>
+      {error ? <p className="mt-2 text-amber-200">Measurement/persistence note: {error}</p> : null}
+    </div>
+  )
+}
+
+function BenchValue({
+  label,
+  value,
+  text,
+  signed = false,
+}: {
+  label: string
+  value?: number | null
+  text?: string
+  signed?: boolean
+}) {
+  const shown = text ?? (value == null ? '—' : `${signed && value > 0 ? '+' : ''}${value.toFixed(1)}`)
+  return (
+    <div className="rounded border border-white/10 bg-black/10 px-2 py-1.5">
+      <p className="text-[10px] uppercase tracking-widest text-text-subtle">{label}</p>
+      <p className="mt-0.5 text-[11px] text-text">{shown}</p>
+    </div>
+  )
 }
 
 function sameAuditReadback(before: TweakAudit | undefined, after: TweakAudit | undefined): boolean {

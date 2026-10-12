@@ -224,6 +224,22 @@ fn verify_direct(action: &TweakAction) -> VerificationResult {
     }
 }
 
+/// Read one action with the current token only.
+///
+/// This is deliberately the default for background/startup audits. A
+/// protected read that the app token cannot access is reported as Unknown;
+/// it must not silently turn an app launch into an elevation request.
+pub fn verify_without_elevation(action: &TweakAction) -> VerificationResult {
+    verify_direct(action)
+}
+
+/// Read a set of actions with the current token only. Keeping this as a batch
+/// helper makes the no-UAC startup path explicit and avoids accidentally
+/// reintroducing per-receipt elevation in a caller loop.
+pub fn verify_batch_without_elevation(actions: &[&TweakAction]) -> Vec<VerificationResult> {
+    actions.iter().map(|action| verify_direct(action)).collect()
+}
+
 /// Read one action with an elevated retry when the normal read is ambiguous
 /// because the unelevated UI token cannot access the protected Windows API.
 pub fn verify_with_elevation_fallback(action: &TweakAction) -> VerificationResult {

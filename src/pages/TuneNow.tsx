@@ -8,7 +8,7 @@ import {
   type TweakRecord,
 } from '../lib/catalog'
 import { GAMES, type GameId } from '../lib/games'
-import { runBench, score } from '../lib/astaBench'
+import { runBenchMedian, score } from '../lib/astaBench'
 import { loadImpactStore } from '../lib/benchImpact'
 import { useIsVip } from '../store/useVipStore'
 import { useRigStore } from '../store/useRigStore'
@@ -203,8 +203,11 @@ export function TuneNow() {
         // Keep the scan usable; the transaction path still verifies/rolls back.
         setPreflight(null)
       }
-      setProgress('Running Asta Bench (before)…')
-      const before = score(await runBench())
+      const before = score(await runBenchMedian(
+        3,
+        (run, total) => setProgress(`Running Asta Bench (before) — median run ${run}/${total}…`),
+        (stage) => setProgress(`Running Asta Bench (before) — ${stage}…`),
+      ))
       setBeforeComposite(before.composite)
       setPhase('ready')
       setProgress('')
@@ -339,8 +342,11 @@ export function TuneNow() {
       setPhase('measuring')
       setProgress('Settling 4s before re-bench…')
       await new Promise((r) => setTimeout(r, 4000))
-      setProgress('Running Asta Bench (after)…')
-      const after = score(await runBench())
+      const after = score(await runBenchMedian(
+        3,
+        (run, total) => setProgress(`Running Asta Bench (after) — median run ${run}/${total}…`),
+        (stage) => setProgress(`Running Asta Bench (after) — ${stage}…`),
+      ))
       setAfterComposite(after.composite)
       setPhase('done')
       setProgress('')
