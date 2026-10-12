@@ -82,14 +82,13 @@ Release completed:
 - The local branch remains `fix/asta-qos-performance-setup`; its working tree
   is clean after the release commit.
 
-## Current uncommitted follow-up (2026-10-12)
+## v0.4.24 release follow-up (2026-10-12)
 
 The target-PC report after v0.4.23 exposed a second failure mode: ordinary app
 startup could enter a protected read path and show repeated Windows command
 processor/UAC prompts before the user requested any change. This follow-up is
-implemented locally but is not committed, published, or verified on Diggy's
-installed desktop build yet. It is now the v0.4.24 release candidate; the
-signed CI artifact and target-PC verification remain pending.
+shipped in v0.4.24. The signed CI artifact and public updater manifest are
+verified; target-PC verification remains pending.
 
 ### Changes in the working tree
 
@@ -142,10 +141,16 @@ signed CI artifact and target-PC verification remain pending.
   then use the explicit persistence check. Run a controlled Fortnite test
   separately; the host proxy cannot prove a better game result.
 
-## Best next action
+### v0.4.24 release evidence
 
-The local build/test gates above are green and Diggy has authorized publishing.
-Push/tag v0.4.24, verify the signed CI artifact and public updater manifest,
-then perform the first target-PC check as a normal non-admin launch with no
-stored due schedule, followed by explicit Asta apply, reboot persistence, and a
-controlled Fortnite comparison.
+- Release commit: `bdceccb`; tag `v0.4.24` is pushed to `origin/main`.
+- GitHub Actions run [38308310649](https://github.com/MaxxTopia/optimizationmaxxing/actions/runs/38308310649) passed all release steps, including the catalog audit, signed Windows build, auto-publish, updater-artifact verification, and MaxxTopia notification.
+- Public release: [v0.4.24](https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.24), with the NSIS installer, `.sig`, and `latest.json` assets. A cache-busted public request returned HTTP 200 and `version: 0.4.24` with a Windows signature.
+- The local native packaging check also compiled the v0.4.24 executable and produced the unsigned installer; signing is intentionally performed only in CI.
+
+### Best next action
+
+Install v0.4.24 and perform the first target-PC check as a normal non-admin
+launch with no stored due schedule, followed by explicit Asta apply, reboot
+persistence, and a controlled Fortnite comparison. CI cannot prove the target
+PC's UAC behavior, reboot persistence, or real gameplay result.
