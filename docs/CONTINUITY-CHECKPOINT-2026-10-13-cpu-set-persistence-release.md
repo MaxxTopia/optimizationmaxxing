@@ -42,7 +42,13 @@ The local build exits only at the existing updater-signing step because the priv
 
 ## Release and live proof
 
-At checkpoint creation, the source changes are ready for the authorized publish sequence: commit, push `main`, push tag `v0.4.26`, then verify the GitHub Actions release artifacts and public updater manifest. Update this section with the CI run, release URL, artifact set, and MaxxTopia sync result after those checks complete.
+- Commit: `62f6037` (`fix: verify persistent CPU-set watcher state`)
+- Published tag and main commit: `v0.4.26` / `62f6037950724c13f0ce8313db0dd98e35c90a7f`
+- GitHub Actions release run `38473723288` passed in 9m46s.
+- Public release: https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.26
+- Release is non-draft and non-prerelease and contains the NSIS installer, `.exe.sig`, and `latest.json`.
+- Public updater manifest reports version `0.4.26` and points both Windows channels at the signed installer.
+- MaxxTopia sync run `38474834860` passed. The public `/optimizationmaxxing` download page now resolves to the v0.4.26 installer after cache/deployment propagation.
 
 ## Remaining user gate
 
@@ -50,4 +56,4 @@ The published build cannot prove a particular PC's UAC context, reboot persisten
 
 ## Best next action
 
-Complete the authorized v0.4.26 push and CI/public artifact verification, then have Diggy test the installed signed build on the target rig.
+Have Diggy install/update v0.4.26 and test the watcher on the target rig; retain the release and target-PC evidence as separate claims.
