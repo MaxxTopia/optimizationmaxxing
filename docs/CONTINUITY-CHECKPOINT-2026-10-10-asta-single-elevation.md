@@ -204,3 +204,26 @@ native build and updater artifacts. Install that build on the target PC and
 repeat Asta. Expected result: the desktop power-plan rows verify instead of
 rolling back; if MMAgent is still unavailable, the receipt should show the
 actual PowerShell error and identify those actions as the remaining failure.
+
+## v0.4.25 published evidence (2026-10-13)
+
+- Release commit `79daca4df2207da85a9c533aa69a9c26f1dbeb4b` and tag `v0.4.25`
+  are pushed to `origin/main`.
+- GitHub Actions run
+  [38326649645](https://github.com/MaxxTopia/optimizationmaxxing/actions/runs/38326649645)
+  passed in 10m15s. Catalog audit, signed native build, updater-artifact
+  verification, auto-publish, and MaxxTopia notification all passed.
+- Public release [v0.4.25](https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.25)
+  is published and non-draft with the installer, `.sig`, and `latest.json`.
+  A cache-busted request to the public updater manifest returned HTTP 200,
+  `version: 0.4.25`, the v0.4.25 installer URL, and a Windows signature.
+- The target PC still needs the user-facing gate: install/update v0.4.25,
+  launch normally, run Asta, reboot, re-check persistence, and perform a
+  controlled Fortnite comparison. Public CI cannot prove that machine's UAC,
+  reboot persistence, or gameplay result.
+
+### Best next action
+
+Install v0.4.25 from the public updater or release page and capture the new
+Asta receipt. If anything remains unverified, the receipt should now include
+the actual elevated stdout/stderr needed for the next targeted repair.
