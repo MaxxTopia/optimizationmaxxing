@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.26',
+    date: '2026-10-13',
+    highlights: [
+      'FIX **CPU-set verification.** Game rules now read the live process assignment back after every write and re-apply when another tool changes it instead of trusting an old success receipt.',
+      'FIX **Watcher persistence.** Auto-pin rules are normalized and atomically saved, and the optional Windows sign-in entry is read back after install or removal so reboot state cannot silently drift.',
+      'IMPROVE **Watcher clarity.** The UI now labels only read-back-confirmed processes as verified live and explains exactly what the background watcher does after a restart.',
+    ],
+  },
+  {
     version: '0.4.25',
     date: '2026-10-12',
     highlights: [

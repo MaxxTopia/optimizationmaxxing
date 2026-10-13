@@ -16,8 +16,8 @@ use windows::Win32::System::SystemInformation::{
     CpuSetInformation, GetSystemCpuSetInformation, SYSTEM_CPU_SET_INFORMATION,
 };
 use windows::Win32::System::Threading::{
-    OpenProcess, SetProcessDefaultCpuSets, PROCESS_QUERY_LIMITED_INFORMATION,
-    PROCESS_SET_INFORMATION, PROCESS_VM_READ,
+    GetProcessDefaultCpuSets, OpenProcess, SetProcessDefaultCpuSets,
+    PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SET_INFORMATION, PROCESS_VM_READ,
 };
 use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
@@ -59,10 +59,16 @@ pub struct PinReport {
     pub pid: u32,
     pub process_name: String,
     pub cores: Vec<u32>,
-    /// True if the syscall returned success. False if the process exited
-    /// between OpenProcess and SetProcessDefaultCpuSets (race), or some
-    /// other failure (surfaced via `error`).
+    /// True only when the write succeeded and the requested CPU Set IDs were
+    /// read back from the live process handle. A successful syscall alone is
+    /// not treated as proof that the setting stuck.
     pub ok: bool,
+    /// Explicit read-back result for callers that need to distinguish a
+    /// verified write from a syscall-only result.
+    pub verified: bool,
+    /// CPU Set IDs Windows reported after the write. Empty means either the
+    /// native scheduler was requested or read-back did not complete.
+    pub applied_cores: Vec<u32>,
     pub error: Option<String>,
 }
 
@@ -239,15 +245,33 @@ pub fn pin_pid_to_cores(pid: u32, cores: &[u32]) -> Result<PinReport> {
             return Ok(PinReport {
                 pid,
                 process_name: String::new(),
-                cores: cores.to_vec(),
+                cores: normalize_cpu_set_ids(cores),
                 ok: false,
+                verified: false,
+                applied_cores: Vec::new(),
                 error: Some(format!("OpenProcess failed (PID may have exited or insufficient privilege): {e}")),
             })
         }
     };
     let process_name = read_process_name(handle).unwrap_or_default();
 
-    let cores_slice: &[u32] = cores;
+    let desired_cores = match validate_cpu_set_ids(cores) {
+        Ok(ids) => ids,
+        Err(error) => {
+            let _ = unsafe { CloseHandle(handle) };
+            return Ok(PinReport {
+                pid,
+                process_name,
+                cores: normalize_cpu_set_ids(cores),
+                ok: false,
+                verified: false,
+                applied_cores: Vec::new(),
+                error: Some(format!("CPU Set selection was rejected before writing: {error:#}")),
+            });
+        }
+    };
+
+    let cores_slice: &[u32] = &desired_cores;
     let count = cores_slice.len() as u32;
     let result = unsafe {
         SetProcessDefaultCpuSets(
@@ -255,24 +279,130 @@ pub fn pin_pid_to_cores(pid: u32, cores: &[u32]) -> Result<PinReport> {
             if count == 0 { None } else { Some(cores_slice) },
         )
     };
-    let ok = result.as_bool();
-    let error = if ok {
-        None
+    let syscall_ok = result.as_bool();
+    let (ok, verified, applied_cores, error) = if !syscall_ok {
+        (
+            false,
+            false,
+            Vec::new(),
+            Some(format!(
+                "SetProcessDefaultCpuSets returned FALSE (last_error={:?})",
+                unsafe { windows::Win32::Foundation::GetLastError() }
+            )),
+        )
     } else {
-        Some(format!(
-            "SetProcessDefaultCpuSets returned FALSE (last_error={:?})",
-            unsafe { windows::Win32::Foundation::GetLastError() }
-        ))
+        match read_process_default_cpu_sets(handle) {
+            Ok(applied) if applied == desired_cores => (true, true, applied, None),
+            Ok(applied) => (
+                false,
+                false,
+                applied.clone(),
+                Some(format!(
+                    "Windows accepted the CPU Set write but read back [{}], expected [{}]",
+                    format_cpu_set_ids(&applied),
+                    format_cpu_set_ids(&desired_cores)
+                )),
+            ),
+            Err(error) => (
+                false,
+                false,
+                Vec::new(),
+                Some(format!(
+                    "CPU Set write returned success but live read-back failed: {error:#}"
+                )),
+            ),
+        }
     };
     let _ = unsafe { CloseHandle(handle) };
 
     Ok(PinReport {
         pid,
         process_name,
-        cores: cores.to_vec(),
+        cores: desired_cores,
         ok,
+        verified,
+        applied_cores,
         error,
     })
+}
+
+/// Read the current per-process CPU Set preference without changing it.
+/// Used by the watcher to detect an external scheduler tool or game launcher
+/// that replaced the assignment after the last successful poll.
+pub fn read_pid_cpu_sets(pid: u32) -> Result<Vec<u32>> {
+    let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) }
+        .with_context(|| format!("OpenProcess for CPU Set read-back failed for PID {pid}"))?;
+    let result = read_process_default_cpu_sets(handle);
+    let _ = unsafe { CloseHandle(handle) };
+    result
+}
+
+fn read_process_default_cpu_sets(handle: HANDLE) -> Result<Vec<u32>> {
+    let mut required = 0u32;
+    // The first call is the documented size probe. Windows commonly returns
+    // FALSE with ERROR_INSUFFICIENT_BUFFER here; a nonzero required count is
+    // still usable and is handled below.
+    let first_ok = unsafe { GetProcessDefaultCpuSets(handle, None, &mut required) }.as_bool();
+    if required == 0 {
+        if first_ok {
+            return Ok(Vec::new());
+        }
+        return Err(anyhow!(
+            "GetProcessDefaultCpuSets size probe failed (last_error={:?})",
+            unsafe { GetLastError() }
+        ));
+    }
+
+    let mut ids = vec![0u32; required as usize];
+    let mut returned = required;
+    let ok = unsafe { GetProcessDefaultCpuSets(handle, Some(&mut ids), &mut returned) }.as_bool();
+    if !ok {
+        return Err(anyhow!(
+            "GetProcessDefaultCpuSets read-back failed (last_error={:?})",
+            unsafe { GetLastError() }
+        ));
+    }
+    let returned = usize::try_from(returned).context("CPU Set read-back count overflow")?;
+    if returned > ids.len() {
+        return Err(anyhow!(
+            "GetProcessDefaultCpuSets returned {returned} IDs for a {}-ID buffer",
+            ids.len()
+        ));
+    }
+    ids.truncate(returned);
+    Ok(normalize_cpu_set_ids(&ids))
+}
+
+fn validate_cpu_set_ids(cores: &[u32]) -> Result<Vec<u32>> {
+    let desired = normalize_cpu_set_ids(cores);
+    if desired.is_empty() {
+        return Ok(desired);
+    }
+    let info = cpu_set_info().context("read current Windows CPU Set topology")?;
+    let valid = info.cpu_set_ids.into_iter().collect::<HashSet<_>>();
+    let unknown = desired
+        .iter()
+        .copied()
+        .filter(|id| !valid.contains(id))
+        .collect::<Vec<_>>();
+    if !unknown.is_empty() {
+        return Err(anyhow!(
+            "CPU Set ID(s) [{}] are not present in the current Windows topology; refresh the scan after a hardware or firmware change",
+            format_cpu_set_ids(&unknown)
+        ));
+    }
+    Ok(desired)
+}
+
+fn normalize_cpu_set_ids(cores: &[u32]) -> Vec<u32> {
+    let mut normalized = cores.to_vec();
+    normalized.sort_unstable();
+    normalized.dedup();
+    normalized
+}
+
+fn format_cpu_set_ids(ids: &[u32]) -> String {
+    ids.iter().map(u32::to_string).collect::<Vec<_>>().join(", ")
 }
 
 fn read_process_name(handle: HANDLE) -> Result<String> {

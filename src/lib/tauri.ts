@@ -1389,7 +1389,10 @@ export interface PinReport {
   pid: number
   processName: string
   cores: number[]
+  /** True only after Windows reports the requested IDs back from the live process. */
   ok: boolean
+  verified: boolean
+  appliedCores: number[]
   error: string | null
 }
 

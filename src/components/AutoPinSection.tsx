@@ -194,6 +194,12 @@ export function AutoPinSection() {
             hidden watcher to start after reboot and catch Fortnite without opening the UI first.
             Ordinary registry, BCD, power-plan, and service tweaks do not need this app process.
           </p>
+          <p>
+            <strong className="text-text">Verification:</strong> a green live badge means Windows
+            reported the exact selected IDs back from the running process. If another tool or the
+            game changes that assignment, the watcher detects the drift and tries to restore the
+            saved rule on its next poll.
+          </p>
         </div>
 
         <div
@@ -362,7 +368,7 @@ export function AutoPinSection() {
 
         {status && status.pinned.length > 0 && (
           <div className="space-y-1 pt-3 border-t border-border">
-            <p className="text-[10px] uppercase tracking-widest text-emerald-300">currently pinned ({status.pinned.length})</p>
+            <p className="text-[10px] uppercase tracking-widest text-emerald-300">verified live ({status.pinned.length})</p>
             <ul className="space-y-0.5">
               {status.pinned.map((p) => (
                 <li key={p.pid} className="text-xs font-mono text-text">
@@ -424,7 +430,7 @@ function RuleRow({
         <div>
           <p className="text-sm text-text font-mono">
             {rule.processName}{' '}
-            {isPinned && <span className="text-[10px] text-emerald-300 ml-2">PINNED NOW</span>}
+            {isPinned && <span className="text-[10px] text-emerald-300 ml-2">VERIFIED LIVE</span>}
           </p>
           <p className="text-[11px] text-text-subtle">
             <span className="text-text-muted">{selectionSummary}</span>{' · '}
