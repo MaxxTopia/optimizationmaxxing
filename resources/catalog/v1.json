@@ -1040,8 +1040,8 @@
       "actions": [
         {
           "kind": "powershell_script",
-          "apply": "Disable-MMAgent -mc",
-          "revert": "Enable-MMAgent -mc"
+          "apply": "$ErrorActionPreference='Stop'; Disable-MMAgent -MemoryCompression",
+          "revert": "$ErrorActionPreference='Stop'; Enable-MMAgent -MemoryCompression"
         }
       ],
       "evidenceTier": "situational"
@@ -1125,8 +1125,8 @@
       "actions": [
         {
           "kind": "powershell_script",
-          "apply": "Disable-MMAgent -PageCombining",
-          "revert": "Enable-MMAgent -PageCombining"
+          "apply": "$ErrorActionPreference='Stop'; Disable-MMAgent -PageCombining",
+          "revert": "$ErrorActionPreference='Stop'; Enable-MMAgent -PageCombining"
         }
       ],
       "evidenceTier": "situational"

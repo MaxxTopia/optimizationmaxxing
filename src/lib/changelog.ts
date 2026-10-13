@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.25',
+    date: '2026-10-12',
+    highlights: [
+      'FIX **Asta power-plan read-back.** Hidden core-parking and device-idle settings now use the values Windows actually exposes, with desktop AC-only and laptop AC/DC validation.',
+      'FIX **MMAgent repair commands.** Memory Compression and Page Combining now use their explicit PowerShell parameters so elevation does not fail on abbreviated aliases.',
+      'IMPROVE **Failure diagnostics.** A failed elevated command now records its real Windows stdout/stderr in the receipt instead of showing only an opaque encoded command.',
+    ],
+  },
+  {
     version: '0.4.24',
     date: '2026-10-12',
     highlights: [

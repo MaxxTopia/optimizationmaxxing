@@ -428,8 +428,10 @@ fn run_elevated_lines(preamble: &[String], lines: &[String]) -> anyhow::Result<(
     let pid = std::process::id();
     let script_path = temp_dir.join(format!("optmaxxing-elev-{pid}-{stamp}.cmd"));
     let log_path = temp_dir.join(format!("optmaxxing-elev-{pid}-{stamp}.log"));
+    let detail_path = temp_dir.join(format!("optmaxxing-elev-{pid}-{stamp}.detail"));
 
     let log_path_str = log_path.to_string_lossy().to_string();
+    let detail_path_str = detail_path.to_string_lossy().to_string();
     let mut script = String::new();
     script.push_str("@echo off\r\n");
     script.push_str("setlocal enabledelayedexpansion\r\n");
@@ -445,7 +447,7 @@ fn run_elevated_lines(preamble: &[String], lines: &[String]) -> anyhow::Result<(
         // outer parens prevent a `(reg add ...) || ...` line from being
         // mis-parsed when the inner command itself uses parens.
         script.push_str(&format!(
-            "({line}) || (echo FAIL: {line}>>\"{log_path_str}\" & set /a FAILED+=1)\r\n",
+            "({line}) >\"{detail_path_str}\" 2>&1\r\nif errorlevel 1 (\r\n  echo FAIL: {line}>>\"{log_path_str}\"\r\n  echo DIAGNOSTIC:>>\"{log_path_str}\"\r\n  type \"{detail_path_str}\">>\"{log_path_str}\"\r\n  set /a FAILED+=1\r\n)\r\n",
         ));
     }
     script.push_str("exit /b !FAILED!\r\n");
@@ -454,7 +456,10 @@ fn run_elevated_lines(preamble: &[String], lines: &[String]) -> anyhow::Result<(
         .context("writing elevated batch script to temp")?;
 
     // Cleanup helper — always runs, even if PowerShell fails.
-    let cleanup_script = || { let _ = std::fs::remove_file(&script_path); };
+    let cleanup_script = || {
+        let _ = std::fs::remove_file(&script_path);
+        let _ = std::fs::remove_file(&detail_path);
+    };
 
     let outer = format!(
         "$startArgs=@('/c','\"{}\"'); $admin=([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator); if($admin){{ $p=Start-Process -FilePath cmd.exe -ArgumentList $startArgs -Wait -WindowStyle Hidden -PassThru }}else{{ $p=Start-Process -FilePath cmd.exe -ArgumentList $startArgs -Verb RunAs -Wait -WindowStyle Hidden -PassThru }}; exit [int]$p.ExitCode",

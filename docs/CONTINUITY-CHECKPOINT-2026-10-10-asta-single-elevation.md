@@ -154,3 +154,53 @@ Install v0.4.24 and perform the first target-PC check as a normal non-admin
 launch with no stored due schedule, followed by explicit Asta apply, reboot
 persistence, and a controlled Fortnite comparison. CI cannot prove the target
 PC's UAC behavior, reboot persistence, or real gameplay result.
+
+## Local repair follow-up and v0.4.25 candidate (2026-10-12)
+
+The latest target receipt is not a full success: 13/15 selected actions were
+left applied, 7 were verified live, 6 remained unverified, and 2 groups were
+rolled back. RSS/RSC/USB-link rows were correctly classified as unsupported
+capabilities on this rig and were not written. The two power-plan mismatches
+were verifier false negatives: these hidden settings require `powercfg /qh`,
+and a desktop should not be required to match a battery/DC value.
+
+### Working-tree changes
+
+- `src/lib/powershellVerifiers.ts` now reads hidden core-parking and device-idle
+  settings with `/qh`, isolates the requested GUID block, and requires AC only
+  on desktops while requiring AC and DC on laptops. The live desktop read-back
+  and forced-mismatch cases both produce the expected result and actionable
+  message.
+- `resources/catalog/v1.json` now uses the explicit `Disable-MMAgent
+  -MemoryCompression` and `-PageCombining` parameters instead of the rejected
+  abbreviated `-mc` form. The commands were not run on the development PC.
+- `src-tauri/src/engine/elevation.rs` now captures stderr/stdout for each failed
+  elevated command, so a future receipt contains the actual Windows diagnostic
+  instead of only an opaque encoded command line.
+
+### Verification and release boundary
+
+- `npx tsc --noEmit`: passed.
+- `npm run audit:catalog`: passed; 108 tweaks, 0 errors, 0 warnings.
+- `npm run build`: passed; the production Vite bundle was generated.
+- BIOS evidence tests and driver-profile audit: passed.
+- `cargo metadata --offline --locked`: passed.
+- Shipped PowerShell/batch/cmd scripts: ASCII check passed.
+- `git diff --check`: passed apart from normal line-ending warnings.
+- Native `cargo test --offline --locked` and `npm run tauri:build` were started
+  with their targets on E:, but Cargo stalled before spawning `rustc` after
+  bounded waits and was stopped. Native compilation is therefore not claimed
+  complete locally; the signed Windows CI build remains the native release gate
+  because C: is nearly full.
+- Version files and the top changelog entry are aligned to v0.4.25. The working
+  tree contains only this checkpoint, the three behavioral source/catalog files,
+  and the v0.4.25 release metadata. No commit, push, release, or live updater
+  change has been made yet; v0.4.24 remains the last published build.
+
+### Next action
+
+Commit and tag v0.4.25, push `main` and the tag, and let signed CI provide the
+native build and updater artifacts. Install that build on the target PC and
+repeat Asta. Expected result: the desktop power-plan rows verify instead of
+rolling back; if MMAgent is still unavailable, the receipt should show the
+actual PowerShell error and identify those actions as the remaining failure.

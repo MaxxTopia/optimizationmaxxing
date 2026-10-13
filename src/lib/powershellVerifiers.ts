@@ -22,6 +22,56 @@ const ACTIVE_PHYSICAL_ROUTE =
 const powerSettingVerifier = (subgroupGuid: string, settingGuid: string, label: string): string =>
   `$q=@(powercfg /query SCHEME_CURRENT ${subgroupGuid} 2>&1) -join [Environment]::NewLine; $exit=$LASTEXITCODE; if($exit -ne 0 -or [string]::IsNullOrWhiteSpace($q)){if($q -match '(?i)invalid parameters|not found|does not exist|unable to find'){Write-Output 'NOT_APPLICABLE: ${label} is not exposed by the active power plan.'; exit 2}; Write-Output 'UNKNOWN: Windows did not return the ${label} power setting.'; exit 2}; $block=[regex]::Match($q,'(?is)Power Setting GUID:\\s*${settingGuid}.*?(?=Power Setting GUID:|$)').Value; if([string]::IsNullOrWhiteSpace($block)){Write-Output 'NOT_APPLICABLE: ${label} is not exposed by the active power plan.'; exit 2}; $ac=[regex]::Match($block,'(?i)Current AC Power Setting Index:\\s+0x([0-9a-f]+)').Groups[1].Value; $dc=[regex]::Match($block,'(?i)Current DC Power Setting Index:\\s+0x([0-9a-f]+)').Groups[1].Value; if([string]::IsNullOrWhiteSpace($ac) -or [string]::IsNullOrWhiteSpace($dc)){Write-Output 'UNKNOWN: Windows returned the ${label} block without readable AC/DC values.'; exit 2}; $hasBattery=@(Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue).Count -gt 0; if($ac -eq '00000000' -and ((-not $hasBattery) -or $dc -eq '00000000')){exit 0}; if($hasBattery){Write-Output ('MISMATCH: ${label} is not disabled for both AC and DC (AC 0x'+$ac+', DC 0x'+$dc+').')}else{Write-Output ('MISMATCH: ${label} is not disabled for AC (AC 0x'+$ac+', DC 0x'+$dc+').')}; exit 1`
 
+// Keep the generated PowerShell in ordinary string fragments so diagnostic
+// text cannot accidentally turn a TypeScript interpolation into PowerShell
+// syntax. This also makes the desktop AC-only rule explicit.
+const hiddenPowerSettingVerifier = (
+  subgroupGuid: string,
+  settingGuid: string,
+  label: string,
+  expectedHex: string,
+  targetDescription: string,
+): string =>
+  [
+    "$q=@(powercfg /qh SCHEME_CURRENT " + subgroupGuid + " 2>&1) -join [Environment]::NewLine",
+    "$exit=$LASTEXITCODE",
+    "if($exit -ne 0 -or [string]::IsNullOrWhiteSpace($q)){if($q -match '(?i)invalid parameters|not found|does not exist|unable to find'){Write-Output 'NOT_APPLICABLE: " +
+      label +
+      " is not exposed by the active power plan.'; exit 2}; Write-Output 'UNKNOWN: Windows did not return the " +
+      label +
+      " power setting.'; exit 2}",
+    "$block=[regex]::Match($q,'(?is)Power Setting GUID:[ ]*" +
+      settingGuid +
+      ".*?(?=Power Setting GUID:|$)').Value",
+    "if([string]::IsNullOrWhiteSpace($block)){Write-Output 'NOT_APPLICABLE: " +
+      label +
+      " is not exposed by the active power plan.'; exit 2}",
+    "$ac=[regex]::Match($block,'(?i)Current AC Power Setting Index:[ ]+0x([0-9a-f]+)').Groups[1].Value",
+    "$dc=[regex]::Match($block,'(?i)Current DC Power Setting Index:[ ]+0x([0-9a-f]+)').Groups[1].Value",
+    "if([string]::IsNullOrWhiteSpace($ac) -or [string]::IsNullOrWhiteSpace($dc)){Write-Output 'UNKNOWN: Windows returned the " +
+      label +
+      " block without readable AC/DC values.'; exit 2}",
+    "$hasBattery=@(Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue).Count -gt 0",
+    "if($ac -eq '" +
+      expectedHex +
+      "' -and ((-not $hasBattery) -or $dc -eq '" +
+      expectedHex +
+      "')){exit 0}",
+    "if($hasBattery){Write-Output ('MISMATCH: " +
+      label +
+      " is not " +
+      targetDescription +
+      " for both AC and DC (AC 0x'+$ac+', DC 0x'+$dc+', target " +
+      expectedHex +
+      ").')}else{Write-Output ('MISMATCH: " +
+      label +
+      " is not " +
+      targetDescription +
+      " for AC (AC 0x'+$ac+', DC 0x'+$dc+', target " +
+      expectedHex +
+      ").')}; exit 1",
+  ].join('; ')
+
 const PCI_EXPRESS_SUBGROUP = '501a4d13-42af-4429-9fd1-a8218c268e20'
 const PCI_EXPRESS_LINK_STATE = 'ee12f906-d277-404b-b6da-e5fa1a576df5'
 const USB_SUBGROUP = '2a737441-1930-4402-8d77-b2bebba308a3'
@@ -47,9 +97,21 @@ export const POWERSHELL_VERIFIERS: Record<string, string> = {
   'net.nic.rss.enable':
     `${ACTIVE_PHYSICAL_ROUTE}$f=Join-Path $env:LOCALAPPDATA 'optmaxxing\\backups\\nic-rss-stash.json'; $r=Get-NetAdapterRss -Name $a.Name -ErrorAction SilentlyContinue; if(-not $r){Write-Output 'NOT_APPLICABLE: RSS is not exposed by the active adapter.'; exit 2}; if(-not (Test-Path -LiteralPath $f)){Write-Output 'NOT_CONFIGURED: RSS recovery record is absent; first apply will save the current RSS state for this adapter before enabling it.'; exit 2}; try{$state=Get-Content -LiteralPath $f -Raw | ConvertFrom-Json}catch{Write-Output 'UNKNOWN: RSS ownership record cannot be read; use Settings -> Restore/repair before retrying.'; exit 2}; if([int]$state.schema -ne 2 -or [string]$state.owner -ne 'optimizationmaxxing' -or [string]$state.identity -ne $identity -or [int]$state.interfaceIndex -ne $idx){Write-Output 'UNKNOWN: RSS ownership record does not match the active adapter; refusing to guess which device to restore.'; exit 2}; if(-not [bool]$r.Enabled){Write-Output 'MISMATCH: RSS is not enabled on the active adapter.'; exit 1}; exit 0`,
   'process.core-parking.disable':
-    "$q=powercfg /query SCHEME_CURRENT SUB_PROCESSOR 0cc5b647-c1df-4637-891a-dec35c318583 | Out-String; if($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($q)){Write-Output 'UNKNOWN: Windows did not return the core-parking power setting.'; exit 2}; if([regex]::Matches($q,'0x00000064').Count -ge 2){exit 0}; Write-Output 'MISMATCH: Core parking is not disabled for both AC and DC.'; exit 1",
+    hiddenPowerSettingVerifier(
+      'SUB_PROCESSOR',
+      '0cc5b647-c1df-4637-891a-dec35c318583',
+      'Core parking minimum active cores',
+      '00000064',
+      'set to 100% (core parking disabled)',
+    ),
   'power.device-idle.performance':
-    "$q=powercfg /query SCHEME_CURRENT SUB_NONE 4faab71a-92e5-4726-b531-224559672d19 | Out-String; if($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($q)){Write-Output 'UNKNOWN: Windows did not return the device-idle power setting.'; exit 2}; if([regex]::Matches($q,'0x00000000').Count -ge 2){exit 0}; Write-Output 'MISMATCH: Device idle performance is not set to maximum for both AC and DC.'; exit 1",
+    hiddenPowerSettingVerifier(
+      'SUB_NONE',
+      '4faab71a-92e5-4726-b531-224559672d19',
+      'Device idle policy',
+      '00000000',
+      'set to Performance',
+    ),
   'power.pcie.link-state.off':
     powerSettingVerifier(PCI_EXPRESS_SUBGROUP, PCI_EXPRESS_LINK_STATE, 'PCIe Link State Power Management'),
   'power.usb3.link-power.disable':
