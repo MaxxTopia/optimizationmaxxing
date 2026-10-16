@@ -26,16 +26,23 @@ import { Changelog } from './pages/Changelog'
 import { Diagnostics } from './pages/Diagnostics'
 import { Session } from './pages/Session'
 import { MatchScan } from './pages/MatchScan'
-import { inTauri, openExternal, telemetrySendEvent } from './lib/tauri'
+import { inTauri, openExternal, telemetrySendEvent, vipValidateOnline } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 import { useProfileStore } from './store/useProfileStore'
 import { useRigStore } from './store/useRigStore'
+import { useVipStore } from './store/useVipStore'
 
 const SPLASH_MIN_MS = 1200 // give the neon ripple at least one full sweep
 
 export default function App() {
   const activeProfile = useProfileStore((s) => s.activeProfile)
   const ensureRigLoaded = useRigStore((s) => s.ensureLoaded)
+  const redeemedCode = useVipStore((s) => s.redeemedCode)
+  const licenseSource = useVipStore((s) => s.licenseSource)
+  const markServerValidated = useVipStore((s) => s.markServerValidated)
+  const promoteToServerLicense = useVipStore((s) => s.promoteToServerLicense)
+  const markClientClockSeen = useVipStore((s) => s.markClientClockSeen)
+  const resetVip = useVipStore((s) => s.reset)
   useEffect(() => {
     if (!inTauri()) return
     const mountedAt = performance.now()
@@ -59,6 +66,57 @@ export default function App() {
   useEffect(() => {
     void ensureRigLoaded()
   }, [ensureRigLoaded])
+
+  // Server-backed VIP migration/lifecycle. Existing local-HMAC testers are
+  // probed read-only and promoted only if the shared Worker recognizes the
+  // code; an unrecognized legacy code is left alone for compatibility. Once
+  // a code is server-backed, terminal Worker responses clear access while a
+  // temporary network failure uses the store's bounded grace policy.
+  useEffect(() => {
+    if (!inTauri() || !redeemedCode) return
+    let alive = true
+    const check = async () => {
+      markClientClockSeen()
+      try {
+        const result = await vipValidateOnline(redeemedCode)
+        if (!alive) return
+        if (result.ok && (result.status === 'valid' || result.status === 'claimed' || result.status === 'idempotent')) {
+          if (licenseSource === 'server') markServerValidated(result.expiresAt ?? null)
+          else promoteToServerLicense(result.expiresAt ?? null)
+          return
+        }
+        if (licenseSource === 'server' && [
+          'expired',
+          'revoked',
+          'hwid-mismatch',
+          'hwid_mismatch',
+          'reset-required',
+          'reset_required',
+          'scope-mismatch',
+          'scope_mismatch',
+          'unclaimed',
+        ].includes(result.status)) {
+          resetVip()
+        }
+      } catch {
+        // Keep the cached state during a transient outage; useIsVip applies
+        // the 24-hour server-backed grace and clock-rollback guard.
+      }
+    }
+    void check()
+    const timer = window.setInterval(() => void check(), 15 * 60 * 1000)
+    return () => {
+      alive = false
+      window.clearInterval(timer)
+    }
+  }, [
+    redeemedCode,
+    licenseSource,
+    markClientClockSeen,
+    markServerValidated,
+    promoteToServerLicense,
+    resetVip,
+  ])
 
   // Global anchor interceptor: route every `<a target="_blank">` click with
   // an external URL through plugin-shell's open(). Tauri 2 silently no-ops

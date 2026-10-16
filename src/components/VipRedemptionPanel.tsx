@@ -79,7 +79,7 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
     try {
       const r = await vipClaimOnline(trimmed)
       if (r.ok) {
-        apply(trimmed, hwid)
+        apply(trimmed, hwid, { source: 'server', expiresAt: r.expiresAt ?? null })
         setStatus('ok')
         setConfetti(true)
         window.setTimeout(() => setConfetti(false), 1400)
@@ -112,7 +112,7 @@ export function VipRedemptionPanel({ onClose }: { onClose?: () => void }) {
     try {
       const ok = await vipVerify(trimmed)
       if (ok) {
-        apply(trimmed, hwid)
+        apply(trimmed, hwid, { source: 'legacy-offline' })
         setStatus('ok')
         setConfetti(true)
         window.setTimeout(() => setConfetti(false), 1400)

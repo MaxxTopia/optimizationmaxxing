@@ -151,12 +151,13 @@ fn constant_time_eq(a: &str, b: &str) -> bool {
     diff == 0
 }
 
-// ── Online claim against the Cloudflare Worker ───────────────────────
+// ── Online licensing against the Cloudflare Worker ───────────────────
 // Lets Diggy mint UNBOUND codes (just random 16-char strings via
 // scripts/mint-unbound-codes.py) and drop them in DMs. The worker's KV
 // ledger gives the code to the FIRST hwid that POSTs it — subsequent
-// claims on different rigs return 409. App falls back to the local
-// HWID-bound verify when the worker is unreachable.
+// claims on different rigs return 409. Existing offline HWID-bound codes
+// remain compatible, but newly claimed codes carry a server-backed expiry
+// and are revalidated at app startup and during a running session.
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -206,11 +207,33 @@ struct WorkerJson {
     scope: Option<String>,
 }
 
+fn worker_endpoint(route: &str) -> String {
+    let configured = worker_url();
+    let base = configured
+        .strip_suffix("/claim")
+        .or_else(|| configured.strip_suffix("/validate"))
+        .unwrap_or(&configured);
+    format!("{}/{}", base.trim_end_matches('/'), route)
+}
+
+fn network_error(message: impl Into<String>) -> ClaimResult {
+    ClaimResult {
+        ok: false,
+        status: "network-error".to_string(),
+        bound_hwid: None,
+        error: Some(message.into()),
+        tier: None,
+        expires_at: None,
+        scope: None,
+    }
+}
+
 /// Drive the worker round-trip via hidden PowerShell + Invoke-WebRequest.
 /// Same pattern we use for the 8311 ONU stick + bufferbloat — keeps the
-/// Rust dependency surface small.
-pub fn claim_online(code: &str, hwid: &str) -> ClaimResult {
-    let url = worker_url();
+/// Rust dependency surface small. `route` is either `claim` (mutating
+/// first activation) or `validate` (read-only recheck).
+fn request_online(code: &str, hwid: &str, route: &str) -> ClaimResult {
+    let url = worker_endpoint(route);
     // Include product="om" so the worker's scope-enforcement layer
     // accepts OM-scoped + both-scoped codes and rejects DM-scoped ones
     // with a 403 "code scope mismatch" error. Legacy codes minted
@@ -285,33 +308,17 @@ try {{
     {
         Ok(o) => o,
         Err(e) => {
-            return ClaimResult {
-                ok: false,
-                status: "network-error".to_string(),
-                bound_hwid: None,
-                error: Some(format!("powershell spawn failed: {e}")),
-                tier: None,
-                expires_at: None,
-                scope: None,
-            };
+            return network_error(format!("powershell spawn failed: {e}"));
         }
     };
     let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
     if stdout.is_empty() {
         let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
-        return ClaimResult {
-            ok: false,
-            status: "network-error".to_string(),
-            bound_hwid: None,
-            error: Some(if stderr.is_empty() {
+        return network_error(if stderr.is_empty() {
                 "no response body".to_string()
             } else {
                 stderr
-            }),
-            tier: None,
-            expires_at: None,
-            scope: None,
-        };
+            });
     }
     #[derive(Deserialize)]
     struct PsEnvelope {
@@ -320,47 +327,20 @@ try {{
     }
     let env: PsEnvelope = match serde_json::from_str(&stdout) {
         Ok(v) => v,
-        Err(e) => {
-            return ClaimResult {
-                ok: false,
-                status: "network-error".to_string(),
-                bound_hwid: None,
-                error: Some(format!("ps envelope parse failed: {e}")),
-                tier: None,
-                expires_at: None,
-                scope: None,
-            };
-        }
+        Err(e) => return network_error(format!("ps envelope parse failed: {e}")),
     };
     if env.status == 0 {
-        return ClaimResult {
-            ok: false,
-            status: "network-error".to_string(),
-            bound_hwid: None,
-            error: Some(env.body),
-            tier: None,
-            expires_at: None,
-            scope: None,
-        };
+        return network_error(env.body);
     }
     let parsed: WorkerJson = match serde_json::from_str(&env.body) {
         Ok(v) => v,
-        Err(e) => {
-            return ClaimResult {
-                ok: false,
-                status: "network-error".to_string(),
-                bound_hwid: None,
-                error: Some(format!("worker payload parse failed: {e}; body={}", env.body)),
-                tier: None,
-                expires_at: None,
-                scope: None,
-            };
-        }
+        Err(e) => return network_error(format!("worker payload parse failed: {e}; body={}", env.body)),
     };
     let status_label = parsed
         .status
         .clone()
         .unwrap_or_else(|| match env.status {
+            200 if route == "validate" => "valid".to_string(),
             200 => "claimed".to_string(),
             403 => "scope-mismatch".to_string(),
             409 => "already-claimed".to_string(),
@@ -378,6 +358,17 @@ try {{
         expires_at: parsed.expires_at,
         scope: parsed.scope,
     }
+}
+
+/// First-time claim or idempotent re-claim against the worker.
+pub fn claim_online(code: &str, hwid: &str) -> ClaimResult {
+    request_online(code, hwid, "claim")
+}
+
+/// Read-only validation of an existing server-backed claim. Unlike the old
+/// re-claim behavior, this never mutates the ledger or backfills metadata.
+pub fn validate_online(code: &str, hwid: &str) -> ClaimResult {
+    request_online(code, hwid, "validate")
 }
 
 #[cfg(test)]

@@ -2054,6 +2054,16 @@ async fn vip_claim_online(code: String) -> Result<vip::ClaimResult, String> {
 }
 
 #[tauri::command]
+async fn vip_validate_online(code: String) -> Result<vip::ClaimResult, String> {
+    tokio::task::spawn_blocking(move || {
+        let hwid = vip::compute_hwid().map_err(|e| format!("{:#}", e))?;
+        Ok::<vip::ClaimResult, String>(vip::validate_online(&code, &hwid))
+    })
+    .await
+    .map_err(|e| format!("vip validation task failed: {e}"))?
+}
+
+#[tauri::command]
 async fn lhm_sensors_elevated(app: tauri::AppHandle) -> Result<toolkit::LhmReport, String> {
     let resource_dir = app
         .path()
@@ -2409,6 +2419,7 @@ pub fn run() {
             vip_hwid,
             vip_verify,
             vip_claim_online,
+            vip_validate_online,
             bench_cpu,
             cpu_health_test,
             cpu_health_cancel,

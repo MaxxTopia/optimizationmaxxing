@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.27',
+    date: '2026-10-16',
+    highlights: [
+      'IMPROVE **Shared license validation.** Server-backed codes now revalidate without replaying the one-time claim, preserve the server expiry, and clear access on explicit expiry, revocation, HWID, scope, or reset failures.',
+      'IMPROVE **Offline safety.** A short Worker outage keeps a valid server-backed session available for a bounded grace window, while client-clock rollback fails closed instead of extending access.',
+      'FIX **Migration compatibility.** Existing local tester codes remain available as explicitly marked legacy-offline access until they are reissued or migrated.',
+    ],
+  },
+  {
     version: '0.4.26',
     date: '2026-10-13',
     highlights: [

@@ -800,10 +800,19 @@ export interface VipClaimResult {
   status: string
   boundHwid: string | null
   error: string | null
+  /** Server-authoritative expiry. null/undefined means lifetime. */
+  expiresAt?: number | null
+  /** Product scope returned by the Worker, when available. */
+  scope?: string
 }
 
 export async function vipClaimOnline(code: string): Promise<VipClaimResult> {
   return invoke<VipClaimResult>('vip_claim_online', { code })
+}
+
+/** Read-only server validation for a previously claimed code. */
+export async function vipValidateOnline(code: string): Promise<VipClaimResult> {
+  return invoke<VipClaimResult>('vip_validate_online', { code })
 }
 
 export interface CpuLatencySample {
