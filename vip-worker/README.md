@@ -28,10 +28,15 @@ First-claim-wins ledger for VIP redemption codes.
 3. **Paste the id into `wrangler.toml`** — replace
    `REPLACE_ME_WITH_KV_NAMESPACE_ID` with the actual id.
 
-4. **Deploy**:
+4. **Dry-run and deploy from the profile-media-enabled worker checkout**:
    ```
-   wrangler deploy
+   cd C:\Users\Diggy\projects\optimizationmaxxing-profile-media\vip-worker
+   powershell -ExecutionPolicy Bypass -File .\deploy.ps1 -DryRun
+   powershell -ExecutionPolicy Bypass -File .\deploy.ps1
    ```
+   The guarded script checks that revoke/remove, the product/status/duration
+   ledger filters, CSV export, and the shared profile-media R2 binding are
+   present before deploying.
    Output ends with the live URL, e.g.
    `https://optmaxxing-vip.<your-account>.workers.dev`.
 
@@ -41,6 +46,27 @@ First-claim-wins ledger for VIP redemption codes.
    setx OPTMAXXING_VIP_WORKER_URL "https://optmaxxing-vip.<your-account>.workers.dev/claim"
    ```
    Then rebuild the app.
+
+## Free profile-flair activation
+
+Profile flair is a free Discordmaxxer feature. A free user does not need a
+payment or a VIP code, but the worker still needs to know which Discord
+account owns the profile so one user cannot claim another user's visible
+Discord ID. The desktop client starts the flow from **DMHub → Activate free
+profile** (or the `DMVipClaim` plugin), opens Discord OAuth with the `identify`
+scope, and polls until the worker returns a Tier 0 claim bound to that PC.
+
+The client uses these worker routes:
+
+- `POST /free-claim/start` with `{ "hwid": "<32 hex characters>" }`
+- `GET /free-claim/status?session=<short-lived-session>`
+- the existing `/discord-link` callback, using a `free_<session>` state
+
+The OAuth client ID and redirect URI are non-secret Worker vars; the Discord
+OAuth client secret must be configured as a Worker secret before this flow can
+complete. The free claim is idempotent for the same Discord account and PC,
+and it is scoped to Discordmaxxer (`dm`). Paid claims continue to use
+`POST /claim` and are unchanged.
 
 ## (Optional) Custom domain
 
@@ -115,13 +141,20 @@ The bare code is the 16-char string without the `MAXX-` prefix or dashes.
 The Discordmaxxer Profile Flair editor has two intentionally different
 actions:
 
-- **Profile gradients are available to every Discordmaxxer user.** No tier is
-  required. A valid Discordmaxxer claim is still required to publish the two
-  shared theme colors so they sync across PCs and show to other Discordmaxxer
-  users; without a claim, the client keeps the gradient local to that install.
-  Animated avatars remain MAXXER+, and custom banners remain MAXXER. Vanilla
-  Discord does not render these roster-only
-  colors or flair.
+- **The profile-flair showcase is available to every Discordmaxxer user.** No
+  paid tier is required. A valid Discordmaxxer claim is still required to
+  publish one active shared banner, one active animated avatar, and the two
+  theme colors so they sync across PCs and show to other Discordmaxxer users;
+  without a claim, the client keeps the draft local to that install. Replacing
+  a field updates that one active slot. Vanilla Discord does not render these
+  roster-only colors or flair.
+- **Tier enhancements do not downgrade the free media.** Free accepts the
+  same full-quality banner/avatar URLs and colors. MAXXER adds owner-selected
+  banner/avatar crop anchors (`center`, `top`, or `bottom`); MAXXER+ adds
+  show-whole-image fit and avatar scale; MAXXER++ adds an optional `glow` or
+  `scanline` finish. These settings are stored with the owner's profile and
+  are returned to every Discordmaxxer client through the roster, so a viewer's
+  local profile settings cannot replace the profile being viewed.
 - **Publish as shared banner** uploads a selected GIF, image, or video to the
   `PROFILE_MEDIA` R2 bucket, saves the resulting HTTPS URL through `POST
   /profile`, and makes it available to other Discordmaxxer clients on the
@@ -154,13 +187,17 @@ with an empty one; the next UTC quota reset completes the migration.
 Deployment from this worker directory:
 
 ```
-wrangler r2 bucket create discordmaxxer-profile-media
-wrangler deploy
+powershell -ExecutionPolicy Bypass -File .\deploy.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\deploy.ps1
 ```
 
-The binding is declared in `wrangler.toml`. Keep the worker and the
-Discordmaxxer client release paired: the worker stores the shared media and
-roster snapshot, while the client renders it.
+The binding is declared in `wrangler.toml`. The deploy script refuses to run
+if the VIP remove/revoke handlers, full ledger filters, or shared profile-media
+binding are missing.
+Deploy only from this profile-media-enabled worker checkout; an older
+Optimizationmaxxing checkout can overwrite the dashboard and remove the live
+R2 binding. Keep the worker and the Discordmaxxer client release paired: the
+worker stores the shared media and roster snapshot, while the client renders it.
 
 ## Operational notes
 
