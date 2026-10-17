@@ -34,10 +34,10 @@ import { useRigStore } from '../store/useRigStore'
  */
 
 const QUOTES = [
-  '"I will surpass my limits."',
-  '"It\'s not the gear. It\'s who refuses to lose."',
-  '"We don\'t move because we think we can win. We move because the version of me that gives up is someone we refuse to meet."',
-  '"Every drop of sweat and every scar can\'t become a lie."',
+  '"Measured settings beat assumptions."',
+  '"Read back the change before you keep it."',
+  '"Stable frame time matters more than a bigger tweak list."',
+  '"Keep reversible changes and compare the same game scenario."',
 ] as const
 
 // These actions can safely establish their own app-owned restore record
@@ -49,21 +49,13 @@ const SAFE_FIRST_APPLY_IDS = new Set([
   'net.nic.eee-powersave.disable',
 ])
 
-const ASTA_PHILOSOPHY = `No 4090. No DLSS. No dad-built PC. Just a kid on a stock GPU,
-a hand-me-down monitor, and Wi-Fi that probably shouldn't qual —
-who refuses to lose more times than the lobby refuses to let him in.
+const ASTA_PHILOSOPHY = `Asta Mode builds a hardware-aware performance plan for this PC.
+It prioritizes measurable, reversible Windows, power, graphics, input, and network settings
+that match the detected hardware. Unsupported or ambiguous actions stay out of the automatic lane.
 
-That's the model. That's the path.
-
-This is the mode for the gen running 1660 Ti, 144 Hz IPS, basement
-ping, still planning to make Champion League. Asta Mode pulls every
-software lever this app can reach — the polite Tournament FPS preset,
-but cranked. The core lane is measurable; the experimental lane is
-clearly marked because a BIOS/driver/security trade can beat a stock
-setup on one rig and hurt another. The bench decides what stays.
-
-Apply only what you understand, then repeat the same game test. Receipts verify the immediate
-setting readback where supported; they do not prove reboot persistence or a competitive gain.`
+The apply receipt shows immediate read-back where supported. Reboot persistence and in-game
+results are measured separately, so you can review what changed, revert the latest run, and
+compare the same game scenario again.`
 
 type AstaBenchPhase = 'idle' | 'before' | 'after' | 'complete'
 

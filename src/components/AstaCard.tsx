@@ -19,10 +19,10 @@ import { useIsVip } from '../store/useVipStore'
  */
 
 const QUOTES = [
-  '"I will surpass my limits."',
-  '"It\'s not the gear. It\'s who refuses to lose."',
-  '"We don\'t move because we think we can win. We move because the version of me that gives up is someone we refuse to meet."',
-  '"Every drop of sweat and every scar we earned can\'t become a lie. We are not liars."',
+  '"Measured settings beat assumptions."',
+  '"Read back the change before you keep it."',
+  '"Stable frame time matters more than a bigger tweak list."',
+  '"Keep reversible changes and compare the same game scenario."',
 ] as const
 
 export function AstaCard() {
