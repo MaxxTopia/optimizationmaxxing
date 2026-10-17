@@ -9,6 +9,11 @@ on:
         tags:
             - "v*"
     workflow_dispatch:
+        inputs:
+            release_tag:
+                description: "Existing vX.Y.Z tag to rebuild (for example v0.4.27)"
+                required: true
+                type: string
 
 permissions:
     contents: write
@@ -18,7 +23,19 @@ jobs:
         runs-on: windows-latest
 
         steps:
+            - name: Validate manual release tag
+              if: github.event_name == 'workflow_dispatch'
+              shell: pwsh
+              env:
+                  RELEASE_TAG: ${{ inputs.release_tag }}
+              run: |
+                  if ($env:RELEASE_TAG -notmatch '^v\d+\.\d+\.\d+$') {
+                      throw "Manual releases must use an existing vX.Y.Z tag."
+                  }
+
             - uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref }}
 
             - name: Use Node.js 20
               uses: actions/setup-node@v4
@@ -59,8 +76,8 @@ jobs:
                   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
                   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
               with:
-                  tagName: ${{ github.ref_name }}
-                  releaseName: "Optimizationmaxxing ${{ github.ref_name }}"
+                  tagName: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+                  releaseName: "Optimizationmaxxing ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}"
                   releaseBody: |
                       ## Highlights
 
@@ -85,12 +102,13 @@ jobs:
             # releases. If any artifact is missing the release stays a draft and
             # this step fails loudly rather than shipping a half-built update.
             - name: Auto-publish release (verify updater artifacts first)
-              if: success() && startsWith(github.ref, 'refs/tags/v')
+              if: success() && startsWith((github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name), 'v')
               shell: bash
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
               run: |
-                  TAG="${GITHUB_REF_NAME}"
+                  TAG="$RELEASE_TAG"
                   VERSION="${TAG#v}"
                   EXE="optimizationmaxxing_${VERSION}_x64-setup.exe"
                   ASSETS=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
@@ -117,13 +135,14 @@ jobs:
             # MaxxTopia/maxxtopia.  Skips silently if missing so the build
             # itself still ships.
             - name: Notify maxxtopia of new release
-              if: success() && startsWith(github.ref, 'refs/tags/v') && env.HAS_PAT == 'true'
+              if: success() && startsWith((github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name), 'v') && env.HAS_PAT == 'true'
               shell: bash
               env:
                   PAT: ${{ secrets.MAXXTOPIA_DISPATCH_PAT }}
                   HAS_PAT: ${{ secrets.MAXXTOPIA_DISPATCH_PAT != '' }}
+                  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
               run: |
-                  TAG="${GITHUB_REF_NAME}"
+                  TAG="$RELEASE_TAG"
                   VERSION="${TAG#v}"
                   curl --fail-with-body -X POST \
                        -H "Accept: application/vnd.github+json" \
