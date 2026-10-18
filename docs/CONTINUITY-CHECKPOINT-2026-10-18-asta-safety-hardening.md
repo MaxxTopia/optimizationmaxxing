@@ -11,17 +11,22 @@ verified performance improvement.
 
 - Canonical worktree: `C:\Users\Diggy\projects\optimizationmaxxing-v0.4.27-copyfix`
 - Branch: `fix/asta-copy-v0.4.28`
-- Base tag/commit: `v0.4.28` / `5b6812d`
-- Published v0.4.28 remains untouched. This hardening patch is not committed,
-  pushed, installed, signed, or verified live in the installed app. An
-  unsigned local executable and NSIS installer were built successfully.
-- The installed/running client is still the published v0.4.28 build: `C:\Program
-  Files\optimizationmaxxing\optimizationmaxxing.exe`, file version `0.4.28`,
-  SHA-256 `CF863EB903A0FAF895F994DFBDEB55142BB1C936CB39D4A225602AADED0485BD`.
-  It does not contain this worktree's hardening changes.
-- The local environment has no `TAURI_SIGNING_PRIVATE_KEY`; the release workflow
-  is configured to use the existing CI signing secrets. No key was invented or
-  rotated, and no release/tag/push was performed.
+- Released tag/commit: `v0.4.29` / `a41d135`
+- v0.4.29 was pushed and published by CI run `39146362741`:
+  `https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.29`.
+  The signed installer, `latest.json`, and installer signature are present.
+- Published installer SHA-256:
+  `CF0795063321DF0C7A0616DA758746B3BD5A047C21D92C78904053F5998880EA`.
+- The signed v0.4.29 installer was installed locally and the app was relaunched.
+  The installed/running client is now `C:\Program
+  Files\optimizationmaxxing\optimizationmaxxing.exe`, file version `0.4.29`.
+  A read-only desktop smoke check showed the window and dashboard reporting
+  `OPTIMIZATIONMAXXING · V0.4.29`, with the v0.4.29 release notes visible and
+  Asta present as unlocked.
+- The local environment still has no `TAURI_SIGNING_PRIVATE_KEY`; the release
+  workflow used the existing CI signing secrets. No key was invented or
+  rotated. CI emitted only a non-blocking GitHub Actions Node 20 deprecation
+  annotation.
 - Pre-existing generated schema modifications remain unstaged and must not be
   overwritten: `src-tauri/gen/schemas/acl-manifests.json`,
   `src-tauri/gen/schemas/desktop-schema.json`, and
@@ -110,18 +115,24 @@ guard, receipt-summary recovery, sparse-ping handling, and the incomplete-
 evidence reboot-proof guard. `cargo fmt --check` was not a clean gate because the repository already
 contains broad unrelated rustfmt drift; the worktree was not reformatted.
 
+The signed v0.4.29 release was downloaded, its installer hash matched the
+published release digest, installed, relaunched, and checked through the actual
+desktop window. This verifies packaging and installed UI presence only; it does
+not verify a protected Windows write, reboot persistence, Fortnite FPS, input
+latency, or server ping.
+
 ## Still unfinished / user-owed
 
-1. If the gate is clean, decide whether to commit/tag/push a new release;
-   publishing is a separate explicit boundary.
-2. Install/relaunch a signed rebuilt client and run a read-only Asta plan, one
-   controlled Fortnite capture, and a real reboot persistence check. Source
-   tests cannot prove UAC behavior, the installed binary, FPS, input latency,
-   or Fortnite server ping.
+1. Run a real Asta/Windows protected apply from the installed v0.4.29 client,
+   then restart Windows and use its Check-after-reboot flow. This is the human
+   UAC/reboot gate; source and packaging tests cannot prove it.
+2. Run one controlled Fortnite before/after capture with the same scene,
+   route, graphics, cap, driver, and background load. The desktop Asta proxy is
+   not proof of FPS, input latency, build registration, or server ping.
 
 ## Best next action
 
-Review the final diff before any release action. The next implementation
-backlog item is the signed installed-build smoke test; the next release item is
-that smoke test on a signed build using the project's existing CI signing
-configuration.
+Use the installed v0.4.29 client for the read-only Asta preview first. If the
+plan is acceptable, perform one protected apply, record the receipt, restart
+Windows, and run Check after reboot before judging Fortnite. Keep the existing
+unrelated generated-schema changes and continuity-file rename untouched.
