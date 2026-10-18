@@ -11,31 +11,29 @@ verified performance improvement.
 
 - Canonical worktree: `C:\Users\Diggy\projects\optimizationmaxxing-v0.4.27-copyfix`
 - Branch: `fix/asta-copy-v0.4.28`
-- Released tag/commit: `v0.4.29` / `a41d135`
-- v0.4.29 was pushed and published by CI run `39146362741`:
-  `https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.29`.
-  The signed installer, `latest.json`, and installer signature are present.
+- Released tag/commit: `v0.4.30` / `666c5b2`
+- v0.4.30 was pushed and published by CI run `39156375162`:
+  `https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.30`.
+  The release is non-draft and non-prerelease; the signed installer,
+  `latest.json`, and installer signature are present.
 - Published installer SHA-256:
-  `CF0795063321DF0C7A0616DA758746B3BD5A047C21D92C78904053F5998880EA`.
-- The signed v0.4.29 installer was installed locally and the app was relaunched.
-  The installed/running client is now `C:\Program
-  Files\optimizationmaxxing\optimizationmaxxing.exe`, file version `0.4.29`.
-  A read-only desktop smoke check showed the window and dashboard reporting
-  `OPTIMIZATIONMAXXING · V0.4.29`, with the v0.4.29 release notes visible and
-  Asta present as unlocked.
+  `D5AE1C0CA92A3FD9E66FAC3F57BA961EFBACB2FA44BEDAAB5B2CD5FD419CFB6F`.
+- MaxxTopia received the release dispatch successfully in workflow run
+  `39156825570`; its follow-up Cloudflare Pages deploy is in progress in run
+  `39156839191`.
+- The installed/running client has not been replaced automatically and remains
+  the previously installed `0.4.29` client at `C:\Program
+  Files\optimizationmaxxing\optimizationmaxxing.exe`. Installing v0.4.30 is
+  the remaining local user-test step.
 - The local environment still has no `TAURI_SIGNING_PRIVATE_KEY`; the release
   workflow used the existing CI signing secrets. No key was invented or
   rotated. CI emitted only a non-blocking GitHub Actions Node 20 deprecation
   annotation.
-- The worktree now contains an unreleased follow-up in `src/pages/Asta.tsx`
-  and `resources/catalog/v1.json`: the normal Asta selection is being changed
-  from a stale named allow-list to a catalog-driven Pinnacle plan. It selects
-  every matching measured/mechanism row with a complete native transaction
-  contract, plus named transaction-backed experimental hardware rows. The
-  v0.4.29 client installed on the PC does not yet contain this follow-up.
-- The follow-up is prepared as the v0.4.30 release candidate. The user has
-  authorized publishing; CI still must build, sign, publish, and dispatch the
-  updater release before the installed client can receive it.
+- The v0.4.30 client source now contains the catalog-driven Pinnacle plan in
+  `src/pages/Asta.tsx` and `resources/catalog/v1.json`. It selects every
+  matching measured/mechanism row with a complete native transaction contract,
+  plus named transaction-backed experimental hardware rows. The installed
+  v0.4.29 client does not yet contain this follow-up.
 - Pre-existing generated schema modifications remain unstaged and must not be
   overwritten: `src-tauri/gen/schemas/acl-manifests.json`,
   `src-tauri/gen/schemas/desktop-schema.json`, and
@@ -151,17 +149,17 @@ contains broad unrelated rustfmt drift; the worktree was not reformatted.
 
 The signed v0.4.29 release was downloaded, its installer hash matched the
 published release digest, installed, relaunched, and checked through the actual
-desktop window. This verifies packaging and installed UI presence only; it does
-not verify a protected Windows write, reboot persistence, Fortnite FPS, input
-latency, or server ping.
+desktop window. The v0.4.30 release is now published with the installer,
+signature, and `latest.json` returning successfully over HTTPS. These checks
+verify packaging and release availability only; they do not verify a protected
+Windows write, reboot persistence, Fortnite FPS, input latency, or server ping.
 
-The unreleased Asta selection and power-contract follow-up also passed
-`npx tsc --noEmit`, `npm run build`, the catalog audit (108 tweaks, zero
-errors/warnings), the
+The Asta selection and power-contract follow-up passed `npx tsc --noEmit`,
+`npm run build`, the catalog audit (108 tweaks, zero errors/warnings), the
 driver-profile audit, the BIOS evidence test, `cargo test` (104 passed), and
 `git diff --check`. These checks prove source/build integrity only; they do not
-prove the new selection behavior in the installed client until a new signed
-build is released and opened.
+prove the new selection behavior in the installed client until v0.4.30 is
+installed and opened.
 
 The new release policy gate also passed: `npm run audit:asta-policy` reports
 catalog v1.9.4, 108 rows, 14 named Pinnacle rows, three first-apply restore
@@ -191,22 +189,19 @@ automatic lane without failing CI first.
 
 ## Still unfinished / user-owed
 
-1. Run a real Asta/Windows protected apply from the installed v0.4.29 client,
-   then restart Windows and use its Check-after-reboot flow. This is the human
-   UAC/reboot gate; source and packaging tests cannot prove it.
+1. Install v0.4.30 and run a real Asta/Windows protected apply, then restart
+   Windows and use its Check-after-reboot flow. This is the human UAC/reboot
+   gate; source and packaging tests cannot prove it.
 2. Run one controlled Fortnite before/after capture with the same scene,
    route, graphics, cap, driver, and background load. The desktop Asta proxy is
    not proof of FPS, input latency, build registration, or server ping.
-3. Publish/install the v0.4.30 Asta selection and exact-power-restore
-   follow-up, then confirm the installed screen shows compatible “Pinnacle
-   default” and “Pinnacle experimental” rows selected while
-   ambiguous/policy/security rows remain unchecked.
+3. Confirm the installed Asta screen shows compatible “Pinnacle default” and
+   “Pinnacle experimental” rows selected while ambiguous/policy/security rows
+   remain unchecked.
 
 ## Best next action
 
-The user has approved the v0.4.30 release. Run the full release gate, publish
-the tag, verify the signed installer/latest.json/signature and MaxxTopia sync,
-then install the new client and use it for a read-only Asta preview, one
-protected apply, a Windows restart, and Check after reboot before judging
-Fortnite. Keep the existing unrelated generated-schema changes and continuity
-file rename untouched.
+Install the published v0.4.30 client and use it for a read-only Asta preview,
+one protected apply, a Windows restart, and Check after reboot before judging
+Fortnite. Then run one controlled same-scene A/B capture. Keep the existing
+unrelated generated-schema changes and continuity file rename untouched.
