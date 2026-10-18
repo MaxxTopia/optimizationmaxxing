@@ -255,7 +255,7 @@ export function Benchmark() {
                 ? `${ping.p50Ms ?? '—'} ms · ±${ping.stddevMs?.toFixed(1) ?? '—'}`
                 : '—'
             }
-            score={ping ? `${scorePing(ping.stddevMs ?? 0).toFixed(0)}/20` : null}
+            score={ping ? `${scorePing(ping.stddevMs).toFixed(0)}/20` : null}
             sub={ping ? `${PING_COUNT} pings to ${PING_TARGET}` : 'idle'}
           />
           <Metric

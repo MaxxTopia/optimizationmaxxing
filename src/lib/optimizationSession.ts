@@ -1,4 +1,4 @@
-import type { BenchScored } from './astaBench'
+import { MIN_PING_SAMPLES, type BenchScored } from './astaBench'
 import { type GameId } from './games'
 import type { TweakAction } from './tauri'
 
@@ -124,6 +124,7 @@ export interface ClosedLoopEvidence {
   frameDeltaMs: number
   improvedMetrics: number
   regressedMetrics: number
+  missingMetrics: string[]
   explanation: string
 }
 
@@ -158,6 +159,7 @@ export function evaluateClosedLoop(
       frameDeltaMs: 0,
       improvedMetrics: 0,
       regressedMetrics: 0,
+      missingMetrics: [],
       explanation: 'Capture a baseline and an after result before judging a change.',
     }
   }
@@ -165,16 +167,30 @@ export function evaluateClosedLoop(
   const compositeDelta = after.composite - baseline.composite
   const cpuDeltaNs = after.cpu.nsPerIter - baseline.cpu.nsPerIter
   const dpcDeltaPct = after.dpc.totalDpcPercent - baseline.dpc.totalDpcPercent
-  const pingDeltaMs = (after.ping.stddevMs ?? 0) - (baseline.ping.stddevMs ?? 0)
+  const pingComparable = baseline.ping.samples.length >= MIN_PING_SAMPLES
+    && after.ping.samples.length >= MIN_PING_SAMPLES
+    && Number.isFinite(baseline.ping.stddevMs ?? Number.NaN)
+    && Number.isFinite(after.ping.stddevMs ?? Number.NaN)
+  const pingDeltaMs = pingComparable
+    ? (after.ping.stddevMs as number) - (baseline.ping.stddevMs as number)
+    : 0
   const frameDeltaMs = after.framePaceStddevMs - baseline.framePaceStddevMs
-  const improvements = [cpuDeltaNs < -0.5, dpcDeltaPct < -0.05, pingDeltaMs < -0.05, frameDeltaMs < -0.02]
-  const regressions = [cpuDeltaNs > 0.5, dpcDeltaPct > 0.05, pingDeltaMs > 0.05, frameDeltaMs > 0.02]
+  const improvements = [cpuDeltaNs < -0.5, dpcDeltaPct < -0.05, frameDeltaMs < -0.02]
+  const regressions = [cpuDeltaNs > 0.5, dpcDeltaPct > 0.05, frameDeltaMs > 0.02]
+  if (pingComparable) {
+    improvements.push(pingDeltaMs < -0.05)
+    regressions.push(pingDeltaMs > 0.05)
+  }
   const improvedMetrics = improvements.filter(Boolean).length
   const regressedMetrics = regressions.filter(Boolean).length
+  const missingMetrics = pingComparable ? [] : ['ping jitter/sample coverage']
 
   let verdict: EvidenceVerdict
   let explanation: string
-  if (baselineRuns < 3 || afterRuns < 3) {
+  if (!pingComparable) {
+    verdict = 'insufficient'
+    explanation = 'Ping jitter was not measurable with enough successful samples on both sides, so it was excluded from the comparison. Repeat the bench when the network probe returns enough samples.'
+  } else if (baselineRuns < 3 || afterRuns < 3) {
     verdict = 'insufficient'
     explanation = 'Repeat each side at least three times under the same scene and power state before making a keep/discard decision.'
   } else if (compositeDelta <= -0.75 || regressedMetrics >= 3) {
@@ -205,6 +221,7 @@ export function evaluateClosedLoop(
     frameDeltaMs,
     improvedMetrics,
     regressedMetrics,
+    missingMetrics,
     explanation,
   }
 }

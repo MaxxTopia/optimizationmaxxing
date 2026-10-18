@@ -23,6 +23,10 @@ export interface BenchScored extends BenchSample {
 
 export const PING_TARGET = '1.1.1.1'
 export const PING_COUNT = 30
+// A standard run asks for 30 samples. Fewer than ten successful replies is
+// too sparse to call the jitter comparison meaningful; keep the metric
+// unknown instead of letting a small sample make a noisy change look proven.
+export const MIN_PING_SAMPLES = 10
 export const FRAME_TEST_MS = 10000
 
 /** Run all 4 metrics in sequence. `onStage` lets the caller render per-stage progress. */
@@ -72,8 +76,11 @@ export function scoreCpu(nsPerIter: number): number {
 export function scoreDpc(pct: number): number {
   return Math.max(0, Math.min(25, 25 - pct * 5))
 }
-export function scorePing(stddevMs: number): number {
-  return Math.max(0, Math.min(20, 20 - stddevMs * 2.5))
+export function scorePing(stddevMs: number | null | undefined): number {
+  // Missing jitter is unknown, not zero jitter. Treating an unavailable
+  // probe as perfect can make a partial benchmark look like an improvement.
+  if (!Number.isFinite(stddevMs ?? Number.NaN)) return 0
+  return Math.max(0, Math.min(20, 20 - (stddevMs as number) * 2.5))
 }
 export function scoreFrame(stddevMs: number): number {
   return Math.max(0, Math.min(30, 30 - stddevMs * 7.5))
@@ -82,7 +89,7 @@ export function scoreFrame(stddevMs: number): number {
 export function score(sample: BenchSample): BenchScored {
   const sCpu = scoreCpu(sample.cpu.nsPerIter)
   const sDpc = scoreDpc(sample.dpc.totalDpcPercent)
-  const sPing = scorePing(sample.ping.stddevMs ?? 0)
+  const sPing = scorePing(sample.ping.stddevMs)
   const sFrame = scoreFrame(sample.framePaceStddevMs)
   return {
     ...sample,
@@ -127,8 +134,21 @@ export async function runBenchMedian(
   // stddevMs / framePaceStddevMs.
   const cpuNs = median(samples.map((s) => s.cpu.nsPerIter))
   const dpcPct = median(samples.map((s) => s.dpc.totalDpcPercent))
-  const pingStddev = median(samples.map((s) => s.ping.stddevMs ?? 0))
-  const pingP50 = median(samples.map((s) => s.ping.p50Ms ?? 0))
+  const pingCoverageSufficient = samples.every((sample) => sample.ping.samples.length >= MIN_PING_SAMPLES)
+  const validPingStddev = pingCoverageSufficient
+    ? samples
+      .map((s) => s.ping.stddevMs)
+      .filter((value): value is number => Number.isFinite(value))
+    : []
+  const validPingP50 = pingCoverageSufficient
+    ? samples
+      .map((s) => s.ping.p50Ms)
+      .filter((value): value is number => Number.isFinite(value))
+    : []
+  // Preserve an unavailable metric as unavailable. A missing ICMP sample must
+  // never become a synthetic 0 ms result in the median or composite score.
+  const pingStddev = validPingStddev.length > 0 ? median(validPingStddev) : null
+  const pingP50 = validPingP50.length > 0 ? median(validPingP50) : null
   const frame = median(samples.map((s) => s.framePaceStddevMs))
   const last = samples[samples.length - 1]
   return {

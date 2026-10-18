@@ -303,6 +303,8 @@ export interface RebootValidationItem {
   tweakId: string
   status: VerificationStatus
   detail: string
+  /** Present only when this action matched after the observed Windows reboot. */
+  verifiedAt: string | null
 }
 
 export interface RebootValidation {
@@ -413,6 +415,16 @@ export async function applyRepairBatch(items: BatchItem[]): Promise<TransactionR
   return invoke<TransactionReport>('apply_repair_batch', { items })
 }
 
+/** Asta-only combined lane: one protected apply batch, with verified actions
+ * retaining selective rollback and explicit actions remaining manual-review
+ * actions when their contracts are incomplete. */
+export async function applyAstaBatch(
+  transactional: BatchItem[],
+  explicit: BatchItem[],
+): Promise<TransactionReport> {
+  return invoke<TransactionReport>('apply_asta_batch', { transactional, explicit })
+}
+
 export async function revertTweak(receiptId: string): Promise<void> {
   return invoke('revert_tweak', { receiptId })
 }
@@ -465,9 +477,9 @@ export async function getRebootValidation(): Promise<RebootValidation> {
   return invoke<RebootValidation>('get_reboot_validation')
 }
 
-/** Capture the exact active receipt set and pre-reboot boot marker. */
-export async function armRebootValidation(): Promise<RebootValidation> {
-  return invoke<RebootValidation>('arm_reboot_validation')
+/** Capture an exact receipt set and the pre-reboot boot marker. */
+export async function armRebootValidation(receiptIds?: string[]): Promise<RebootValidation> {
+  return invoke<RebootValidation>('arm_reboot_validation', { receiptIds: receiptIds ?? null })
 }
 
 /** Verify the armed receipt set only after a real Windows reboot is observed. */

@@ -29,7 +29,12 @@ for (const { filename, sha256 } of records) {
   seen.add(filename)
   try {
     const bytes = await readFile(path.join(profileDir, filename))
-    const actual = createHash('sha256').update(bytes).digest('hex')
+    // Git may materialize tracked text as CRLF on Windows and LF on Linux.
+    // Hash the canonical UTF-8/LF representation so the same shipped profile
+    // cannot fail the release gate solely because it was checked out on a
+    // different platform.
+    const canonicalBytes = Buffer.from(bytes.toString('utf8').replace(/\r\n?/g, '\n'), 'utf8')
+    const actual = createHash('sha256').update(canonicalBytes).digest('hex')
     if (actual !== sha256) {
       errors.push(`${filename}: catalog ${sha256} != file ${actual}`)
     }

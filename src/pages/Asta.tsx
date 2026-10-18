@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useIsVip } from '../store/useVipStore'
 import {
-  applyBatch,
-  applyRepairBatch,
+  applyAstaBatch,
   armRebootValidation,
   getTunePreflight,
   inTauri,
+  kvGet,
   listApplied,
+  revertBatch,
   verifyApplied,
   type RebootValidation,
   type AppliedTweak,
@@ -19,7 +20,7 @@ import {
 import { runBenchMedian, score, type BenchScored } from '../lib/astaBench'
 import { confirmAction } from '../lib/confirm'
 import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
-import { isTransactionActionEligible } from '../lib/optimizationSession'
+import { evaluateClosedLoop, isTransactionActionEligible } from '../lib/optimizationSession'
 import { isHardBlockedForAutoTune } from '../lib/tuneProfiles'
 import { auditMany, type TweakAudit } from '../lib/audit'
 import { AstaShareCard } from '../components/AstaShareCard'
@@ -59,6 +60,19 @@ compare the same game scenario again.`
 
 type AstaBenchPhase = 'idle' | 'before' | 'after' | 'complete'
 
+type AstaActionDetail = {
+  tweakId: string
+  kind: string
+  status: string
+  detail: string
+}
+
+type AstaInflightNotice = {
+  transactionId: string
+  startedAt: string
+  actionCount: number
+}
+
 export function Asta() {
   const isVip = useIsVip()
   const isNative = inTauri()
@@ -69,6 +83,7 @@ export function Asta() {
   const [error, setError] = useState<string | null>(null)
   const [applied, setApplied] = useState<{
     requested: number
+    attempted: number
     verified: number
     mismatch: number
     unknown: number
@@ -78,12 +93,18 @@ export function Asta() {
     firstApplySetupDetails: string[]
     notApplicable: number
     notApplicableDetails: string[]
+    policySkipped: number
+    policySkipDetails: string[]
     preflightSkipped: number
     preflightSkipDetails: string[]
     transactional: number
     explicit: number
     committed: number
     rolledBack: number
+    safetyReverted: number
+    safetyRevertDetail?: string
+    persistenceExcluded: number
+    actionDetails: AstaActionDetail[]
     reviewSkipped: number
     manual: number
     otherGame: number
@@ -106,7 +127,10 @@ export function Asta() {
   const [benchBefore, setBenchBefore] = useState<BenchScored | null>(null)
   const [benchAfter, setBenchAfter] = useState<BenchScored | null>(null)
   const [benchError, setBenchError] = useState<string | null>(null)
+  const [benchSafetyNote, setBenchSafetyNote] = useState<string | null>(null)
+  const [benchEvidenceNote, setBenchEvidenceNote] = useState<string | null>(null)
   const [rebootProof, setRebootProof] = useState<RebootValidation | null>(null)
+  const [inflightNotice, setInflightNotice] = useState<AstaInflightNotice | null>(null)
 
   const inventory = useMemo(
     () => (spec ? buildAstaPlan(spec, appliedRows) : null),
@@ -122,13 +146,39 @@ export function Asta() {
     void ensureLoaded()
       .then((detected) => {
         if (!detected || !isNative) return null
-        return verifyApplied()
+        // Opening Asta must never surprise the user with a protected read or
+        // a UAC prompt. Stored receipts are enough to build the initial
+        // inventory; Preview is the explicit live read-back boundary.
+        return listApplied()
       })
       .then((rows) => {
         if (rows) setAppliedRows(rows)
       })
       .catch(() => undefined)
     void getTunePreflight().then(setPreflight).catch(() => undefined)
+    void kvGet('asta_inflight')
+      .then((raw) => {
+        if (!raw) return
+        try {
+          const marker = JSON.parse(raw) as Partial<AstaInflightNotice> & { status?: string }
+          if (
+            marker.status === 'in_flight'
+            && typeof marker.transactionId === 'string'
+            && typeof marker.startedAt === 'string'
+            && typeof marker.actionCount === 'number'
+          ) {
+            setInflightNotice({
+              transactionId: marker.transactionId,
+              startedAt: marker.startedAt,
+              actionCount: marker.actionCount,
+            })
+          }
+        } catch {
+          // An unreadable marker is not a reason to block Asta. Preview will
+          // perform the normal live read-back and report any actual drift.
+        }
+      })
+      .catch(() => undefined)
   }, [ensureLoaded, isNative])
 
   // Rotate quotes on click of the manifesto block — small easter egg.
@@ -207,6 +257,8 @@ export function Asta() {
     setBenchBefore(null)
     setBenchAfter(null)
     setBenchError(null)
+    setBenchSafetyNote(null)
+    setBenchEvidenceNote(null)
     setBenchPhase('idle')
     setRebootProof(null)
     try {
@@ -228,6 +280,10 @@ export function Asta() {
       }
       const latestApplied = await verifyApplied()
       const plan = buildAstaPlan(detected, latestApplied)
+      const receiptSnapshot = new Map(latestApplied.map((receipt) => [
+        receipt.receiptId,
+        `${receipt.verificationStatus}\u0000${receipt.verificationDetail}`,
+      ]))
       setAppliedRows(latestApplied)
       const currentPlanKey = planFingerprint(detected, plan)
       if (currentPlanKey !== reviewedPlanKey) {
@@ -287,11 +343,49 @@ export function Asta() {
 
       const transactionStatuses: TransactionReport['status'][] = []
       let requested = 0
+      let attempted = 0
       let alreadyAtTarget = 0
       let committed = 0
       let rolledBack = 0
+      let safetyReverted = 0
+      let safetyRevertDetail: string | undefined
       const applyErrors: string[] = []
+      const actionDetails: AstaActionDetail[] = []
       const appliedReceiptIds = new Set<string>()
+      // Safety rollback may target every active receipt from this run, but
+      // reboot persistence proof may target only receipts with an individual
+      // verified live read-back. Keeping these sets separate prevents an
+      // explicit/unverified action from being presented as persistence proof.
+      const verifiedReceiptIds = new Set<string>()
+      const appliedReceiptKeys = new Map<string, string>()
+      const receiptActionKey = (tweakId: string, kind: string) => `${tweakId}::${kind}`
+      const rememberAppliedReceipt = (
+        receiptId: string,
+        tweakId: string,
+        kind: string,
+        verificationStatus?: AppliedTweak['verificationStatus'] | null,
+      ) => {
+        appliedReceiptIds.add(receiptId)
+        appliedReceiptKeys.set(receiptId, receiptActionKey(tweakId, kind))
+        if (verificationStatus === 'verified') verifiedReceiptIds.add(receiptId)
+      }
+      const syncVerifiedReceiptIds = (rows: AppliedTweak[]) => {
+        for (const row of rows) {
+          if (
+            appliedReceiptIds.has(row.receiptId)
+            && row.status === 'applied'
+            && row.verificationStatus === 'verified'
+          ) {
+            verifiedReceiptIds.add(row.receiptId)
+          }
+        }
+        for (const receiptId of [...verifiedReceiptIds]) {
+          const row = rows.find((candidate) => candidate.receiptId === receiptId)
+          if (!row || row.status !== 'applied' || row.verificationStatus !== 'verified') {
+            verifiedReceiptIds.delete(receiptId)
+          }
+        }
+      }
       const alreadyMatchingIds = new Set(executionTweaks
         .filter((tweak) => freshAudit[tweak.id]?.status === 'matches')
         .map((tweak) => tweak.id))
@@ -308,6 +402,10 @@ export function Asta() {
         isNotApplicableAudit(freshAudit[tweak.id]),
       )
       const notApplicableIds = new Set(notApplicableTweaks.map((tweak) => tweak.id))
+      const policyOwnedTweaks = executionTweaks.filter((tweak) =>
+        isPolicyOwnedOrInactiveAudit(tweak.id, freshAudit[tweak.id]),
+      )
+      const policyOwnedIds = new Set(policyOwnedTweaks.map((tweak) => tweak.id))
       const unreadableTransactionalIds = new Set(executionTweaks
         .filter((tweak) => transactionalIds.has(tweak.id))
         .filter((tweak) => !firstApplySetupIds.has(tweak.id))
@@ -327,6 +425,13 @@ export function Asta() {
           .join(' ')
         return `${tweak.id}: ${formatAstaAuditDetail(tweak.id, detail || 'This rig does not expose the requested capability.')}`
       })
+      const policySkipDetails = policyOwnedTweaks.map((tweak) => {
+        const detail = freshAudit[tweak.id]?.actions
+          .map((action) => action.detail)
+          .filter(Boolean)
+          .join(' ')
+        return `${tweak.id}: Asta did not overwrite this rule because Windows reports it as policy-owned or inactive in ActiveStore. ${detail || 'Review the active Group Policy/profile source before retrying.'}`
+      })
       const preflightSkipDetails = executionTweaks
         .filter((tweak) => unreadableTransactionalIds.has(tweak.id))
         .map((tweak) => {
@@ -341,12 +446,13 @@ export function Asta() {
         items.filter((item) =>
           !alreadyMatchingIds.has(item.tweakId)
           && !unreadableTransactionalIds.has(item.tweakId)
-          && !notApplicableIds.has(item.tweakId),
+          && !notApplicableIds.has(item.tweakId)
+          && !policyOwnedIds.has(item.tweakId),
         )
       // Review confirmation changes consent, not execution mechanics. Once
-      // the user accepts that lane, merge it into the same two backend batch
-      // calls so a large Asta run does not reopen the elevation boundary for
-      // every category of row.
+      // the user accepts that lane, merge it into the same native Asta batch
+      // call so a large run does not reopen the elevation boundary for every
+      // category of row.
       const activeTransactional = excludeAlreadyMatching([
         ...transactional,
         ...(applyReview ? reviewTransactional : []),
@@ -356,19 +462,96 @@ export function Asta() {
         ...(applyReview ? reviewExplicit : []),
       ])
 
+      // apply_batch records receipts before it reports an aggregate elevated
+      // error. Reconcile those durable rows instead of letting the frontend
+      // report zero attempted actions after a partial native failure.
+      const reconcileRecordedReceipts = async (
+        items: BatchItem[],
+      ): Promise<void> => {
+        const keys = new Set(items.map((item) => `${item.tweakId}::${item.action.kind}`))
+        let recorded: AppliedTweak[]
+        try {
+          recorded = await listApplied()
+        } catch (e) {
+          // Receipt recovery is diagnostic, not a reason to skip the after
+          // benchmark. The native batch may have written durable rows even
+          // when this read is temporarily unavailable; keep the run moving
+          // so the user receives an honest safety result and can retry the
+          // receipt read from Diff.
+          applyErrors.push(`Receipt recovery could not read the durable apply record: ${e instanceof Error ? e.message : String(e)}`)
+          return
+        }
+        const recovered = recorded.filter((receipt) => {
+          // listApplied includes historical/superseded rows for the Diff UI;
+          // only a currently active receipt can represent a write from this
+          // failed batch or be a target for the later safety comparison.
+          if (receipt.status !== 'applied') return false
+          if (!keys.has(`${receipt.tweakId}::${receipt.kind}`)) return false
+          const previous = receiptSnapshot.get(receipt.receiptId)
+          // An aggregate native error confirms that the receipt store was
+          // retained, not that every matching historical row was written by
+          // this run. Only a new or changed receipt is recoverable evidence.
+          return !previous || previous !== `${receipt.verificationStatus}\u0000${receipt.verificationDetail}`
+        })
+        attempted += recovered.length
+        committed += recovered.filter((receipt) =>
+          receipt.status === 'applied' && receipt.verificationStatus === 'verified',
+        ).length
+        for (const receipt of recovered) {
+          rememberAppliedReceipt(receipt.receiptId, receipt.tweakId, receipt.kind, receipt.verificationStatus)
+        }
+        if (recovered.length > 0) {
+          actionDetails.push(...recovered.map((receipt) => ({
+            tweakId: receipt.tweakId,
+            kind: receipt.kind,
+            status: receipt.verificationStatus,
+            detail: receipt.verificationDetail,
+          })))
+          applyErrors.push(`Recovered ${recovered.length} receipt${recovered.length === 1 ? '' : 's'} after the native batch reported an error; live verification is shown below.`)
+        }
+      }
+
       // Measure the host immediately before the first mutation. This is a
       // proxy for CPU/DPC/network/frame pacing, not a Fortnite FPS or input
       // latency guarantee, but it gives this run a real regression signal.
       const beforeBench = await captureAstaBench('before')
+      if (!beforeBench) {
+        // Asta must not make a blind mutation when its own safety baseline is
+        // unavailable. The user can retry after the benchmark dependency is
+        // healthy; no receipt or reboot proof is created by this run.
+        setError((previous) => previous
+          ? `${previous} Asta did not write any settings because the baseline benchmark could not be captured.`
+          : 'Asta did not write any settings because the baseline benchmark could not be captured.')
+        setBenchPhase('idle')
+        setProgress('')
+        return
+      }
 
       const keepRepairReport = (report: TransactionReport) => {
         transactionStatuses.push(report.status)
-        committed += report.items.filter((item) => item.applied && !item.rolledBack).length
+        attempted += report.attemptedCount
+        // Count only live, non-rolled-back verifications as committed. The
+        // native report may retain a verified-before-rollback status for audit
+        // purposes, but that setting is not still active after rollback.
+        committed += report.items.filter((item) =>
+          item.attempted
+          && item.applied
+          && !item.rolledBack
+          && item.verificationStatus === 'verified',
+        ).length
         rolledBack += report.items.filter((item) => item.rolledBack).length
         applyErrors.push(...report.errors, ...report.rollbackErrors)
         for (const item of report.items) {
-          if (item.applied && !item.rolledBack && item.receiptId) {
-            appliedReceiptIds.add(item.receiptId)
+          actionDetails.push({
+            tweakId: item.tweakId,
+            kind: item.actionKind,
+            status: item.rolledBack
+              ? 'rolled_back'
+              : item.verificationStatus ?? (item.attempted ? (item.applied ? 'applied' : 'not_applied') : 'not_attempted'),
+            detail: item.detail,
+          })
+          if (item.attempted && !item.rolledBack && item.receiptId) {
+            rememberAppliedReceipt(item.receiptId, item.tweakId, item.actionKind, item.verificationStatus)
           }
           if (item.attempted && (!item.applied || item.rolledBack) && item.detail) {
             applyErrors.push(`${item.tweakId}: ${item.detail}`)
@@ -376,28 +559,45 @@ export function Asta() {
         }
       }
 
-      // Each catalog tweak is one atomic group, but a mismatch in one group
-      // no longer rolls back unrelated tweaks in the lane.
-      if (activeTransactional.length > 0) {
-        const report = await applyRepairBatch(activeTransactional)
-        requested += activeTransactional.length
-        keepRepairReport(report)
-      }
-      if (activeExplicit.length > 0) {
-        const receipts = await applyBatch(activeExplicit)
-        requested += receipts.length
-        committed += receipts.length
-        for (const receipt of receipts) appliedReceiptIds.add(receipt.receiptId)
+      // Each catalog tweak is one atomic verified group, but the verified and
+      // explicit lanes now share one native elevation boundary. A mismatch in
+      // one verified group still cannot roll back unrelated groups, and
+      // explicit actions remain visible for manual review rather than gaining
+      // an automatic rollback contract they do not have.
+      const activeItems = [...activeTransactional, ...activeExplicit]
+      if (activeItems.length > 0) {
+        requested += activeItems.length
+        try {
+          const report = await applyAstaBatch(activeTransactional, activeExplicit)
+          keepRepairReport(report)
+          setInflightNotice(null)
+        } catch (e) {
+          const detail = e instanceof Error ? e.message : String(e)
+          applyErrors.push(`Asta apply batch: ${detail}`)
+          await reconcileRecordedReceipts(activeItems)
+        }
       }
 
-      // The apply/repair batches already performed their own verified
+      // The Asta batch already performed its own verified
       // read-back. Read durable receipts here instead of reopening a second
       // elevated verification path immediately after the mutation.
-      const allLive = await listApplied()
-      const live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
+      let allLive: AppliedTweak[] = []
+      let liveReadAvailable = false
+      try {
+        allLive = await listApplied()
+        liveReadAvailable = true
+      } catch (e) {
+        // The receipts are still tracked by ID from the batch result or
+        // reconciliation. Do not skip the after benchmark merely because the
+        // summary read is unavailable; rollback can still use those IDs.
+        applyErrors.push(`Apply receipt summary could not be read: ${e instanceof Error ? e.message : String(e)}`)
+      }
+      let live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
+      syncVerifiedReceiptIds(allLive)
       setAppliedRows(allLive)
       setApplied({
         requested,
+        attempted,
         verified: live.filter((receipt) => receipt.verificationStatus === 'verified').length,
         mismatch: live.filter((receipt) => receipt.verificationStatus === 'mismatch').length,
         unknown: live.filter((receipt) => receipt.verificationStatus === 'unknown').length,
@@ -407,12 +607,18 @@ export function Asta() {
         firstApplySetupDetails,
         notApplicable: notApplicableTweaks.length,
         notApplicableDetails,
+        policySkipped: policyOwnedTweaks.length,
+        policySkipDetails,
         preflightSkipped: unreadableTransactionalIds.size,
         preflightSkipDetails,
         transactional: activeTransactional.length,
         explicit: activeExplicit.length,
         committed,
         rolledBack,
+        safetyReverted,
+        safetyRevertDetail,
+        persistenceExcluded: live.filter((receipt) => receipt.verificationStatus !== 'verified').length,
+        actionDetails,
         reviewSkipped: applyReview ? 0 : chosenReview.length,
         manual: plan.manual.length,
         otherGame: plan.otherGame.length,
@@ -426,11 +632,164 @@ export function Asta() {
       const afterBench = await captureAstaBench('after')
       setBenchPhase(beforeBench && afterBench ? 'complete' : 'idle')
 
+      // Asta is allowed to reject its own result. A three-run composite
+      // regression is not proof that every setting is bad, but it is enough to
+      // avoid leaving a newly applied, reversible batch active by accident.
+      const closedLoop = evaluateClosedLoop(beforeBench, afterBench, {
+        source: 'asta-proxy',
+        baselineRuns: 3,
+        afterRuns: 3,
+      })
+      setBenchEvidenceNote(
+        closedLoop.missingMetrics.length > 0
+          ? `Incomplete measurement: ${closedLoop.missingMetrics.join(', ')} was unavailable on one side, so the proxy delta is not a keep/revert signal. Repeat the bench when the network probe is healthy.`
+          : closedLoop.verdict === 'insufficient'
+            ? closedLoop.explanation
+            : null,
+      )
+      const afterBenchMissing = !afterBench
+      if ((closedLoop.verdict === 'regression' || afterBenchMissing) && appliedReceiptIds.size > 0) {
+        setProgress(afterBenchMissing
+          ? 'Asta Bench could not complete after apply; reverting this run…'
+          : 'Asta Bench detected a material local regression; reverting this run…')
+        const revertibleKeys = new Set(
+          [...activeTransactional, ...activeExplicit]
+            .filter((item) => isTransactionActionEligible(item.action))
+            .map((item) => `${item.tweakId}::${item.action.kind}`),
+        )
+        const revertibleReceiptIds = [...appliedReceiptIds]
+          .filter((receiptId) => revertibleKeys.has(appliedReceiptKeys.get(receiptId) ?? ''))
+        const nonRevertibleCount = [...appliedReceiptIds]
+          .filter((receiptId) => !revertibleKeys.has(appliedReceiptKeys.get(receiptId) ?? ''))
+          .length
+        if (revertibleReceiptIds.length > 0) {
+          try {
+            const revertReport = await revertBatch(revertibleReceiptIds)
+            safetyReverted = revertReport.reverted
+            rolledBack += revertReport.reverted
+            for (const receiptId of revertibleReceiptIds) {
+              if (!revertReport.failedReceiptIds.includes(receiptId)) {
+                appliedReceiptIds.delete(receiptId)
+                verifiedReceiptIds.delete(receiptId)
+              }
+            }
+            const failed = revertReport.failedReceiptIds.length
+            const reason = afterBenchMissing
+              ? 'the after benchmark did not complete, so the run could not be judged safely'
+              : `the proxy regressed by ${closedLoop.compositeDelta.toFixed(1)} points`
+            safetyRevertDetail = failed === 0
+              ? `Asta safety rollback reverted ${revertReport.reverted} newly applied action${revertReport.reverted === 1 ? '' : 's'} because ${reason}. The run was not armed for reboot persistence.`
+              : `Asta could not safely keep this run because ${reason}; the safety rollback reverted ${revertReport.reverted}/${revertibleReceiptIds.length} actions. ${failed} receipt${failed === 1 ? '' : 's'} still need manual review.`
+            if (nonRevertibleCount > 0) {
+              safetyRevertDetail += ` ${nonRevertibleCount} explicit action${nonRevertibleCount === 1 ? '' : 's'} had no revert contract and remain visible for manual review.`
+            }
+            setBenchSafetyNote(safetyRevertDetail)
+            try {
+              allLive = await listApplied()
+              liveReadAvailable = true
+            } catch (e) {
+              applyErrors.push(`Post-rollback receipt summary could not be read: ${e instanceof Error ? e.message : String(e)}`)
+            }
+            live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
+            syncVerifiedReceiptIds(allLive)
+            setAppliedRows(allLive)
+          } catch (e) {
+            safetyRevertDetail = afterBenchMissing
+              ? `Asta could not complete the after benchmark, and its automatic safety rollback failed: ${e instanceof Error ? e.message : String(e)}`
+              : `Asta detected a proxy regression (${closedLoop.compositeDelta.toFixed(1)} points), but its automatic safety rollback failed: ${e instanceof Error ? e.message : String(e)}`
+            applyErrors.push(safetyRevertDetail)
+            setBenchSafetyNote(safetyRevertDetail)
+          }
+        } else {
+          safetyRevertDetail = afterBenchMissing
+            ? 'Asta could not complete the after benchmark, but the selected live actions had no revert contract. They were not silently discarded; review or revert them manually.'
+            : `Asta detected a proxy regression (${closedLoop.compositeDelta.toFixed(1)} points), but the selected live actions had no revert contract. They were not silently discarded; review or revert them manually.`
+          applyErrors.push(safetyRevertDetail)
+          setBenchSafetyNote(safetyRevertDetail)
+        }
+      }
+
+      // The native batch verifies immediately, but the after benchmark takes
+      // time and another utility can change Windows during that window. Do a
+      // final non-elevated read-back before arming reboot proof so the proof
+      // set reflects the state that actually survived the benchmark.
+      if (appliedReceiptIds.size > 0) {
+        try {
+          allLive = await verifyApplied()
+          liveReadAvailable = true
+          live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
+          syncVerifiedReceiptIds(allLive)
+          setAppliedRows(allLive)
+        } catch (e) {
+          liveReadAvailable = false
+          applyErrors.push(`Post-benchmark live read-back could not be completed: ${e instanceof Error ? e.message : String(e)}`)
+        }
+      }
+
+      // Refresh the receipt summary after a possible safety rollback so the
+      // UI cannot claim that a reverted setting is still active.
+      setApplied({
+        requested,
+        attempted,
+        verified: live.filter((receipt) => receipt.verificationStatus === 'verified').length,
+        mismatch: live.filter((receipt) => receipt.verificationStatus === 'mismatch').length,
+        unknown: live.filter((receipt) => receipt.verificationStatus === 'unknown').length,
+        skipped: plan.alreadyApplied.length + alreadyAtTarget,
+        alreadyAtTarget,
+        firstApplySetup: firstApplySetupTweaks.length,
+        firstApplySetupDetails,
+        notApplicable: notApplicableTweaks.length,
+        notApplicableDetails,
+        policySkipped: policyOwnedTweaks.length,
+        policySkipDetails,
+        preflightSkipped: unreadableTransactionalIds.size,
+        preflightSkipDetails,
+        transactional: activeTransactional.length,
+        explicit: activeExplicit.length,
+        committed,
+        rolledBack,
+        safetyReverted,
+        safetyRevertDetail,
+        persistenceExcluded: live.filter((receipt) => receipt.verificationStatus !== 'verified').length,
+        actionDetails,
+        reviewSkipped: applyReview ? 0 : chosenReview.length,
+        manual: plan.manual.length,
+        otherGame: plan.otherGame.length,
+        notMatched: plan.notMatched.length,
+        transactionStatus: summarizeTransactionStatus(transactionStatuses),
+        errors: [...new Set(applyErrors)],
+        ts: new Date().toLocaleTimeString(),
+      })
+
       // Arm an exact receipt set automatically. This proves only that the
       // reboot check is ready; persistence is not claimed until Windows is
       // restarted and the user runs the explicit post-boot check.
       try {
-        setRebootProof(await armRebootValidation())
+        const persistenceReceiptIds = [...verifiedReceiptIds].filter((receiptId) =>
+          liveReadAvailable
+          && live.some((row) => row.receiptId === receiptId && row.status === 'applied' && row.verificationStatus === 'verified'),
+        )
+        if (persistenceReceiptIds.length === 0) {
+          if (appliedReceiptIds.size > 0) {
+            setBenchError((previous) => previous
+              ? `${previous} persistence: no current action had a verified live read-back after the after-benchmark, so reboot proof was not armed.`
+              : 'persistence: no current action had a verified live read-back after the after-benchmark, so reboot proof was not armed.')
+          }
+          setRebootProof(null)
+        } else if (
+          !beforeBench ||
+          !afterBench ||
+          closedLoop.verdict === 'insufficient' ||
+          closedLoop.missingMetrics.length > 0 ||
+          closedLoop.verdict === 'regression'
+        ) {
+          // Incomplete evidence, missing metrics, or a material regression
+          // must never arm a reboot proof, even if an explicit-only action
+          // could not be reverted automatically.
+          setRebootProof(null)
+        } else {
+          setRebootProof(await armRebootValidation(persistenceReceiptIds))
+        }
       } catch (e) {
         const detail = e instanceof Error ? e.message : String(e)
         setBenchError((previous) => previous ? `${previous} persistence: ${detail}` : `persistence: ${detail}`)
@@ -489,10 +848,11 @@ export function Asta() {
               Pinnacle Asta inventories the full catalog for this rig and Fortnite context. Preview
               the live values, choose exactly which rows to include, then apply that selection.
               Reversible/read-back-capable actions use the transactional lane; unsupported scripts
-              are visibly separated into an explicit review lane. The two lanes are batched so an
-              elevated run normally needs one Windows consent per execution phase, not one prompt
-              per tweak. Windows still requires a real UAC consent when the app is not already
-              running elevated.
+              are visibly separated into an explicit review lane. A normal Asta apply uses one
+              batched Windows consent for both lanes, not one prompt per tweak. Protected
+              preflight, read-back, or a failure-only safety rollback can require an additional
+              consent.
+              Windows UAC is real user consent; the app never bypasses it.
               BIOS/NVRAM/firmware changes never become automatic.
             </p>
             <p className="mt-2 rounded-md border border-sky-300/20 bg-sky-300/5 px-3 py-2 text-xs leading-relaxed text-text-muted">
@@ -513,6 +873,17 @@ export function Asta() {
                 <span className="block mt-1 text-[11px] text-text-subtle">
                   {displayPlan.notMatched.length} hardware mismatches and {displayPlan.otherGame.length} other-game rows are excluded from this Fortnite run.
                 </span>
+                <span className="block mt-1 text-[11px] text-text-subtle">
+                  This catalog contains {catalog.tweaks.length} rows. Eligible means a matching software row that is not already verified;
+                  already-on-target rows are skipped without a write. Separate-review rows are included in the eligible count, not added to it.
+                </span>
+              </div>
+            )}
+
+            {inflightNotice && (
+              <div className="mt-3 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-relaxed">
+                <strong className="text-amber-200">Previous Asta run was interrupted.</strong>{' '}
+                The last run stopped before it recorded a final receipt state ({inflightNotice.actionCount} planned action{inflightNotice.actionCount === 1 ? '' : 's'}, started {new Date(inflightNotice.startedAt).toLocaleString()}). Asta did not assume that nothing changed and did not auto-revert from this warning. Run <strong>Preview exact changes</strong> to reconcile the live state, then use the receipt details or Revert latest Asta run if needed.
               </div>
             )}
 
@@ -521,7 +892,7 @@ export function Asta() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold text-text">Read-only plan review</p>
-                    <p className="text-[11px] text-text-muted">Preview reads current settings only. Nothing changes until you activate the selected rows.</p>
+                    <p className="text-[11px] text-text-muted">Preview reads current settings only and performs the live read-back. Opening this page does not request UAC or change Windows; nothing changes until you activate the selected rows.</p>
                   </div>
                   <button
                     type="button"
@@ -625,14 +996,14 @@ export function Asta() {
             )}
 
             {applied && (
-              <div className={`mt-3 rounded-md border px-3 py-2 text-xs ${applied.errors.length || applied.mismatch || applied.preflightSkipped || applied.notApplicable || applied.rolledBack ? 'border-amber-500/40 bg-amber-500/10 text-amber-100' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'}`}>
+              <div className={`mt-3 rounded-md border px-3 py-2 text-xs ${applied.errors.length || applied.mismatch || applied.preflightSkipped || applied.notApplicable || applied.policySkipped || applied.rolledBack || applied.safetyReverted ? 'border-amber-500/40 bg-amber-500/10 text-amber-100' : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'}`}>
                 {applied.requested === 0
                   ? applied.notApplicable > 0 && applied.preflightSkipped === 0
                     ? 'No applicable settings were changed'
                     : applied.preflightSkipped > 0
                     ? 'No settings were changed'
                     : 'No write was needed for this selection'
-                  : `${applied.committed}/${applied.requested} actions committed`}
+                  : `${applied.attempted}/${applied.requested} actions attempted`}
                 {applied.requested > 0 && applied.verified > 0 ? ` · ${applied.verified} verified live` : ''}
                 {applied.requested > 0 && applied.rolledBack > 0 ? ` · ${applied.rolledBack} rolled back` : ''}
                 {applied.requested > 0 && applied.mismatch > 0 ? ` · ${applied.mismatch} mismatch` : ''}
@@ -644,13 +1015,35 @@ export function Asta() {
                 {applied.explicit > 0 ? ` ${applied.explicit} actions used explicit review.` : ''}
                 {applied.reviewSkipped > 0 ? ` ${applied.reviewSkipped} higher-risk rows stayed unapplied because the review confirmation was declined.` : ''}
                 {applied.notApplicable > 0 ? ` ${applied.notApplicable} selected tweak${applied.notApplicable === 1 ? ' was' : 's were'} not applicable to this rig; no write was attempted for ${applied.notApplicable === 1 ? 'it' : 'them'}.` : ''}
+                {applied.policySkipped > 0 ? ` ${applied.policySkipped} selected tweak${applied.policySkipped === 1 ? ' was' : 's were'} skipped because Windows reported a managed or inactive policy; no write was attempted.` : ''}
                 {applied.preflightSkipped > 0 ? ` ${applied.preflightSkipped} selected tweak${applied.preflightSkipped === 1 ? ' was' : 's were'} not attempted because its live state was still ambiguous; no write was attempted. Protected permission reads are retried inside the apply UAC boundary.` : ''}
+                {applied.persistenceExcluded > 0 ? ` ${applied.persistenceExcluded} active action${applied.persistenceExcluded === 1 ? ' remains' : 's remain'} unverified and is excluded from reboot-persistence proof.` : ''}
                 {applied.transactionStatus ? ` Transaction status: ${applied.transactionStatus}.` : ''}
                 {applied.firstApplySetupDetails.length > 0 && <span className="block mt-1 text-emerald-200">First-run setup: {applied.firstApplySetupDetails.join(' · ')}</span>}
                 {applied.notApplicableDetails.length > 0 && <span className="block mt-1 text-sky-200">Not applicable / no action taken: {applied.notApplicableDetails.slice(0, 5).join(' · ')}</span>}
+                {applied.policySkipDetails.length > 0 && <span className="block mt-1 text-sky-200">Policy-owned / inactive; no action taken: {applied.policySkipDetails.slice(0, 5).join(' · ')}</span>}
                 {applied.preflightSkipDetails.length > 0 && <span className="block mt-1 text-amber-200">Not attempted / next fix: {applied.preflightSkipDetails.slice(0, 5).join(' · ')}</span>}
+                {applied.safetyRevertDetail && <span className="block mt-1 text-amber-200">Safety action: {applied.safetyRevertDetail}</span>}
                 {applied.errors.length > 0 && <span className="block mt-1 text-amber-200">Some independent tweaks need attention: {applied.errors.slice(0, 5).join(' · ')}</span>}
-                Immediate receipt status is separate from reboot persistence and gameplay outcome.
+                {applied.actionDetails.length > 0 && (
+                  <details className="mt-2 rounded border border-white/10 bg-black/10">
+                    <summary className="cursor-pointer px-2 py-1.5 text-[11px] text-text-muted">
+                      Action receipt details ({applied.actionDetails.length})
+                    </summary>
+                    <div className="max-h-64 space-y-1 overflow-y-auto px-2 pb-2">
+                      {applied.actionDetails.map((detail, index) => (
+                        <div key={`${detail.tweakId}-${detail.kind}-${index}`} className="rounded border border-white/10 px-2 py-1 text-[11px]">
+                          <span className={detail.status === 'verified' ? 'text-emerald-300' : detail.status === 'mismatch' || detail.status === 'rolled_back' ? 'text-amber-200' : 'text-text-muted'}>
+                            {detail.status}
+                          </span>
+                          <span className="text-text-subtle"> · {detail.tweakId} · {detail.kind}</span>
+                          {detail.detail && <span className="mt-0.5 block text-text-muted">{detail.detail}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
+                Immediate receipt status is separate from reboot persistence and gameplay outcome. Asta does not leave a newly applied reversible run armed when the three-run local proxy materially regresses.
               </div>
             )}
 
@@ -660,6 +1053,8 @@ export function Asta() {
                 before={benchBefore}
                 after={benchAfter}
                 error={benchError}
+                safetyNote={benchSafetyNote}
+                evidenceNote={benchEvidenceNote}
                 rebootProof={rebootProof}
               />
             )}
@@ -889,23 +1284,29 @@ function AstaBenchResult({
   before,
   after,
   error,
+  safetyNote,
+  evidenceNote,
   rebootProof,
 }: {
   phase: AstaBenchPhase
   before: BenchScored | null
   after: BenchScored | null
   error: string | null
+  safetyNote: string | null
+  evidenceNote: string | null
   rebootProof: RebootValidation | null
 }) {
   const delta = before && after ? after.composite - before.composite : null
-  const verdict = delta == null
+  const verdict = evidenceNote
+    ? 'inconclusive — repeat the proxy bench'
+    : delta == null
     ? 'inconclusive — one side of the proxy bench is missing'
     : Math.abs(delta) < 1
       ? 'no meaningful proxy change'
       : delta > 0
         ? 'proxy improved'
         : 'proxy regressed'
-  const verdictClass = delta == null || Math.abs(delta) < 1
+  const verdictClass = evidenceNote || delta == null || Math.abs(delta) < 1
     ? 'text-amber-200'
     : delta > 0
       ? 'text-emerald-300'
@@ -940,6 +1341,8 @@ function AstaBenchResult({
         latency. A negative or tiny result is a reason to revert/compare under the same game
         conditions.
       </p>
+      {evidenceNote ? <p className="mt-2 text-amber-200">Measurement quality: {evidenceNote}</p> : null}
+      {safetyNote ? <p className="mt-2 text-amber-200">Safety action: {safetyNote}</p> : null}
       {error ? <p className="mt-2 text-amber-200">Measurement/persistence note: {error}</p> : null}
     </div>
   )
@@ -986,6 +1389,24 @@ function isNotApplicableAudit(audit: TweakAudit | undefined): boolean {
   if (!audit?.actions.length) return false
   return audit.actions.every((action) => {
     return action.status === 'unknown' && /^NOT_APPLICABLE:/i.test(action.detail.trim())
+  })
+}
+
+function isPolicyOwnedOrInactiveAudit(tweakId: string, audit: TweakAudit | undefined): boolean {
+  // This guard is intentionally narrow. Asta must not infer policy ownership
+  // from an arbitrary unknown row, but it must fail closed for the known QoS
+  // case where a local rule exists without an effective ActiveStore entry.
+  if (tweakId !== 'network.qos.dscp-tag' || !audit?.actions.length) return false
+  return audit.actions.some((action) => {
+    const detail = action.detail
+    const inactiveLocalRule = /unknown:\s*[\s\S]*(?:stored\s+locally|not\s+present\s+in\s+activestore|review\s+the\s+policy\s+source)/i.test(detail)
+    // A valid target may itself be owned by Group Policy and mention
+    // ActiveStore. Only treat ownership as a write-block when the audit did
+    // not confirm the requested live target; never skip a matching effective
+    // rule merely because its owner is managed.
+    const managedRule = action.status !== 'matches'
+      && /owner\s*=\s*(?:group\s+policy|mdm|domain|managed)/i.test(detail)
+    return inactiveLocalRule || managedRule
   })
 }
 

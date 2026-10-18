@@ -27,6 +27,7 @@ pub use metrics::PerfSnapshot;
 pub use specs::SpecProfile;
 
 const REBOOT_VALIDATION_KEY: &str = "reboot_validation";
+const ASTA_INFLIGHT_KEY: &str = "asta_inflight";
 
 /// True when the per-user startup launcher opened the app only to host the
 /// runtime CPU-set watcher. The main window stays hidden in this mode.
@@ -74,6 +75,11 @@ pub struct RebootValidationItem {
     pub tweak_id: String,
     pub status: VerificationStatus,
     pub detail: String,
+    /// Set only when this individual action matched after the observed reboot.
+    /// `None` is intentional for mismatch/unknown rows and for older saved
+    /// reports that predate per-action timestamps.
+    #[serde(default)]
+    pub verified_at: Option<String>,
 }
 
 fn idle_reboot_validation() -> RebootValidation {
@@ -172,7 +178,8 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
 
     report.after_uptime_secs = Some(after_uptime_secs);
     report.after_os_build = current_os_build();
-    report.verified_at = Some(chrono::Utc::now().to_rfc3339());
+    let checked_at = chrono::Utc::now().to_rfc3339();
+    report.verified_at = Some(checked_at.clone());
     report.items.clear();
     report.checked = report.receipt_ids.len();
     report.verified = 0;
@@ -188,6 +195,7 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
                 tweak_id: "(missing receipt)".into(),
                 status: VerificationStatus::Mismatch,
                 detail: "The armed receipt is no longer active, so this tweak cannot be proven persistent.".into(),
+                verified_at: None,
             });
             continue;
         };
@@ -202,6 +210,7 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
                 tweak_id: row.tweak_id.clone(),
                 status: VerificationStatus::Mismatch,
                 detail: "The armed receipt data is unavailable after reboot.".into(),
+                verified_at: None,
             });
             continue;
         };
@@ -226,6 +235,8 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
         report.items.push(RebootValidationItem {
             receipt_id,
             tweak_id,
+            verified_at: (verification.status == VerificationStatus::Verified)
+                .then(|| checked_at.clone()),
             status: verification.status,
             detail: verification.detail,
         });
@@ -259,7 +270,21 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
 
 #[cfg(test)]
 mod reboot_validation_tests {
-    use super::reboot_was_observed;
+    use super::{reboot_was_observed, RebootValidationItem};
+    use crate::engine::VerificationStatus;
+
+    #[test]
+    fn old_reboot_item_without_timestamp_still_loads() {
+        let raw = r#"{
+            "receiptId": "receipt-1",
+            "tweakId": "power.test",
+            "status": "verified",
+            "detail": "matched"
+        }"#;
+        let item: RebootValidationItem = serde_json::from_str(raw).expect("legacy item parses");
+        assert_eq!(item.status, VerificationStatus::Verified);
+        assert!(item.verified_at.is_none());
+    }
 
     #[test]
     fn only_a_lower_uptime_proves_a_reboot() {
@@ -276,21 +301,39 @@ fn get_reboot_validation(
     load_reboot_validation(&state)
 }
 
-/// Capture the exact active receipt set and current Windows uptime before a
-/// user restarts. This is the first half of the persistence proof.
+/// Capture a receipt set and current Windows uptime before a user restarts.
+/// Asta passes the receipts created by its current run; the optional empty
+/// selection keeps the standalone Reboot Persistence card's "arm active"
+/// behavior for users who deliberately want to check every active receipt.
 #[tauri::command]
 fn arm_reboot_validation(
     state: tauri::State<'_, SnapshotStore>,
+    receipt_ids: Option<Vec<String>>,
 ) -> Result<RebootValidation, String> {
-    let active = state
+    let active_rows = state
         .list_applied()
         .map_err(|e| format!("{:#}", e))?
         .into_iter()
         .filter(|row| row.status == "applied")
         .collect::<Vec<_>>();
+    let active = match receipt_ids {
+        Some(ids) => {
+            let wanted = ids.into_iter().collect::<std::collections::HashSet<_>>();
+            active_rows
+                .into_iter()
+                .filter(|row| wanted.contains(&row.receipt_id))
+                .collect::<Vec<_>>()
+        }
+        None => active_rows,
+    };
     if active.is_empty() {
         return Err("Apply at least one tweak before arming a reboot persistence check.".into());
     }
+    let active_count = active.len();
+    let receipt_ids = active
+        .into_iter()
+        .map(|row| row.receipt_id)
+        .collect::<Vec<_>>();
 
     let report = RebootValidation {
         status: "armed".into(),
@@ -300,12 +343,15 @@ fn arm_reboot_validation(
         after_uptime_secs: None,
         before_os_build: current_os_build(),
         after_os_build: None,
-        receipt_ids: active.into_iter().map(|row| row.receipt_id).collect(),
+        receipt_ids,
         checked: 0,
         verified: 0,
         mismatched: 0,
         unknown: 0,
-        detail: "Armed. Restart Windows, then open optimizationmaxxing to perform the post-boot read-back.".into(),
+        detail: format!(
+            "Armed {} receipt(s). Restart Windows, then open optimizationmaxxing to perform the post-boot read-back.",
+            active_count
+        ),
         items: Vec::new(),
     };
     save_reboot_validation(&state, &report)?;
@@ -457,6 +503,91 @@ struct TransactionState {
     verification: Option<engine::VerificationResult>,
     receipt: Option<ApplyReceipt>,
     detail: String,
+}
+
+/// Internal state for the Asta-only combined lane. The verified lane uses the
+/// same per-tweak rollback rules as `apply_repair_batch`; the explicit lane is
+/// deliberately recorded and verified but is never rolled back automatically
+/// by this command because its action contract may be incomplete.
+struct AstaState {
+    item: BatchItem,
+    pre_state: serde_json::Value,
+    prepared: bool,
+    attempted: bool,
+    applied: bool,
+    rolled_back: bool,
+    verification: Option<engine::VerificationResult>,
+    receipt: Option<ApplyReceipt>,
+    detail: String,
+}
+
+impl AstaState {
+    fn prepared(item: BatchItem, pre_state: serde_json::Value) -> Self {
+        Self {
+            item,
+            pre_state,
+            prepared: true,
+            attempted: false,
+            applied: false,
+            rolled_back: false,
+            verification: None,
+            receipt: None,
+            detail: String::new(),
+        }
+    }
+
+    fn skipped(item: BatchItem, detail: String) -> Self {
+        Self {
+            item,
+            pre_state: serde_json::Value::Null,
+            prepared: false,
+            attempted: false,
+            applied: false,
+            rolled_back: false,
+            verification: None,
+            receipt: None,
+            detail,
+        }
+    }
+
+    fn into_transaction_state(self) -> TransactionState {
+        TransactionState {
+            item: self.item,
+            pre_state: self.pre_state,
+            attempted: self.attempted,
+            applied: self.applied,
+            rolled_back: self.rolled_back,
+            verification: self.verification,
+            receipt: self.receipt,
+            detail: self.detail,
+        }
+    }
+}
+
+struct AstaGroup {
+    states: Vec<AstaState>,
+    failed: bool,
+    errors: Vec<String>,
+}
+
+impl AstaGroup {
+    fn new() -> Self {
+        Self {
+            states: Vec::new(),
+            failed: false,
+            errors: Vec::new(),
+        }
+    }
+
+    fn fail(&mut self, message: String) {
+        self.failed = true;
+        self.errors.push(message);
+    }
+}
+
+enum AstaVerifySlot {
+    Transaction { group_index: usize, state_index: usize },
+    Explicit { state_index: usize },
 }
 
 /// Apply a bounded set of reversible, verifiable actions as one transaction.
@@ -1224,6 +1355,561 @@ async fn apply_repair_batch(
     })
     .await
     .map_err(|e| format!("repair transaction task failed: {e}"))?
+}
+
+/// Apply Asta's verified and explicit lanes through one shared elevation
+/// boundary. The verified lane keeps per-tweak selective rollback; explicit
+/// actions are still read back and recorded but are never silently rolled back
+/// by this command when their contract is incomplete.
+#[tauri::command]
+async fn apply_asta_batch(
+    state: tauri::State<'_, SnapshotStore>,
+    transactional: Vec<BatchItem>,
+    explicit: Vec<BatchItem>,
+) -> Result<TransactionReport, String> {
+    let store = (*state).clone();
+    tokio::task::spawn_blocking(move || -> Result<TransactionReport, String> {
+        let transaction_id = format!(
+            "asta-{}-{}",
+            chrono::Utc::now().timestamp_millis(),
+            std::process::id()
+        );
+        let mut all_items: Vec<(bool, BatchItem)> = transactional
+            .into_iter()
+            .map(|item| (true, item))
+            .collect();
+        all_items.extend(explicit.into_iter().map(|item| (false, item)));
+
+        // Leave a durable breadcrumb before the first protected read or
+        // mutation. If the process is killed or Windows interrupts the batch,
+        // the next Asta open can ask the user to reconcile live state instead
+        // of assuming that an absent final receipt means nothing happened.
+        let inflight_marker = serde_json::json!({
+            "status": "in_flight",
+            "transactionId": transaction_id.clone(),
+            "startedAt": chrono::Utc::now().to_rfc3339(),
+            "actionCount": all_items.len(),
+        });
+        let inflight_write_error = store
+            .kv_set(ASTA_INFLIGHT_KEY, &inflight_marker.to_string())
+            .err()
+            .map(|error| format!("could not persist the Asta interruption marker: {error:#}"));
+
+        let action_refs = all_items
+            .iter()
+            .map(|(_, item)| &item.action)
+            .collect::<Vec<_>>();
+        let pre_states = engine::capture_pre_states_with_elevation_fallback(&action_refs);
+
+        let mut groups: Vec<AstaGroup> = Vec::new();
+        let mut explicit_states: Vec<AstaState> = Vec::new();
+        let mut errors = Vec::new();
+        if let Some(error) = inflight_write_error {
+            errors.push(error);
+        }
+
+        // Capture every pre-state before the first mutation. Asta can then
+        // safely share one elevated apply call without losing a restore point
+        // for either lane.
+        for ((is_transactional, item), pre_result) in all_items.into_iter().zip(pre_states) {
+            if is_transactional {
+                let tweak_id = item.tweak_id.clone();
+                let group_index = groups
+                    .iter()
+                    .position(|group| {
+                        group
+                            .states
+                            .first()
+                            .map(|state| state.item.tweak_id == tweak_id)
+                            .unwrap_or(false)
+                    })
+                    .unwrap_or_else(|| {
+                        groups.push(AstaGroup::new());
+                        groups.len() - 1
+                    });
+                let group = &mut groups[group_index];
+
+                if group.failed {
+                    group.states.push(AstaState::skipped(
+                        item,
+                        "Skipped because another action in this tweak group could not be prepared."
+                            .into(),
+                    ));
+                    continue;
+                }
+                if !transaction_action_supported(&item.action) {
+                    let message = format!(
+                        "{} ({}) has no verified Asta transaction contract; use the explicit review flow.",
+                        item.tweak_id,
+                        item.action.kind()
+                    );
+                    group.states.push(AstaState::skipped(item, message.clone()));
+                    group.fail(message);
+                    continue;
+                }
+
+                match pre_result {
+                    Ok(pre_state) if engine::pre_state_is_ambiguous(&item.action, &pre_state) => {
+                        let detail = pre_state
+                            .get("detail")
+                            .and_then(|value| value.as_str())
+                            .unwrap_or("the protected read-back remained ambiguous");
+                        let message = format!(
+                            "{} pre-state remained ambiguous after the elevated read-back; no write was attempted. {}",
+                            tweak_id, detail
+                        );
+                        group.states.push(AstaState::skipped(item, message.clone()));
+                        group.fail(message);
+                    }
+                    Ok(pre_state) => group.states.push(AstaState::prepared(item, pre_state)),
+                    Err(error) => {
+                        let message = format!(
+                            "{} pre-state capture failed: {:#}",
+                            tweak_id, error
+                        );
+                        group.states.push(AstaState::skipped(item, message.clone()));
+                        group.fail(message);
+                    }
+                }
+            } else {
+                match pre_result {
+                    Ok(pre_state) if engine::pre_state_is_ambiguous(&item.action, &pre_state) => {
+                        let detail = pre_state
+                            .get("detail")
+                            .and_then(|value| value.as_str())
+                            .unwrap_or("the protected read-back remained ambiguous");
+                        let message = format!(
+                            "{} pre-state remained ambiguous after the elevated read-back; no write was attempted. {}",
+                            item.tweak_id, detail
+                        );
+                        errors.push(message.clone());
+                        explicit_states.push(AstaState::skipped(item, message));
+                    }
+                    Ok(pre_state) => explicit_states.push(AstaState::prepared(item, pre_state)),
+                    Err(error) => {
+                        let message = format!(
+                            "{} pre-state capture failed: {:#}",
+                            item.tweak_id, error
+                        );
+                        errors.push(message.clone());
+                        explicit_states.push(AstaState::skipped(item, message));
+                    }
+                }
+            }
+        }
+
+        // Verified groups preserve the repair lane's isolation: one local
+        // failure poisons only that tweak group. Explicit actions keep going
+        // independently and retain their own receipts for manual review.
+        for group in &mut groups {
+            if group.failed {
+                continue;
+            }
+            let mut apply_failure = None;
+            for state in &mut group.states {
+                if !state.prepared || state.item.action.requires_admin() {
+                    continue;
+                }
+                state.attempted = true;
+                match engine::apply_unelevated(&state.item.action) {
+                    Ok(_) => {
+                        state.applied = true;
+                        state.detail = "Applied in-process; awaiting live verification.".into();
+                    }
+                    Err(error) => {
+                        state.detail = format!("Apply failed: {:#}", error);
+                        apply_failure = Some(format!("{}: {}", state.item.tweak_id, state.detail));
+                        break;
+                    }
+                }
+            }
+            if let Some(failure) = apply_failure {
+                group.fail(failure);
+            }
+        }
+        for state in &mut explicit_states {
+            if !state.prepared || state.item.action.requires_admin() {
+                continue;
+            }
+            state.attempted = true;
+            match engine::apply_unelevated(&state.item.action) {
+                Ok(_) => {
+                    state.applied = true;
+                    state.detail = "Applied in-process; awaiting live verification.".into();
+                }
+                Err(error) => {
+                    state.detail = format!("Apply failed: {:#}", error);
+                    errors.push(format!("{}: {}", state.item.tweak_id, state.detail));
+                }
+            }
+        }
+
+        // All elevated actions from both lanes now share one UAC prompt. The
+        // action-level verifier below remains the authority for what actually
+        // changed; a non-zero aggregate shell exit is retained as a diagnostic
+        // rather than being treated as proof that every line failed.
+        let mut elevated_actions: Vec<&TweakAction> = Vec::new();
+        for group in &mut groups {
+            if group.failed {
+                continue;
+            }
+            for state in &mut group.states {
+                if state.prepared && state.item.action.requires_admin() {
+                    state.attempted = true;
+                    elevated_actions.push(&state.item.action);
+                }
+            }
+        }
+        for state in &mut explicit_states {
+            if state.prepared && state.item.action.requires_admin() {
+                state.attempted = true;
+                elevated_actions.push(&state.item.action);
+            }
+        }
+
+        let elevated_error = if elevated_actions.is_empty() {
+            None
+        } else {
+            let create_rp = store
+                .kv_get("restore_point_before_apply")
+                .ok()
+                .flatten()
+                .map(|value| value != "false")
+                .unwrap_or(true);
+            match engine::elevation::run_elevated_batch_with_restore_point(
+                &elevated_actions,
+                create_rp,
+            ) {
+                Ok(_) => {
+                    for group in &mut groups {
+                        if group.failed {
+                            continue;
+                        }
+                        for state in &mut group.states {
+                            if state.attempted && state.item.action.requires_admin() {
+                                state.applied = true;
+                                state.detail =
+                                    "Applied under one UAC prompt; awaiting live verification."
+                                        .into();
+                            }
+                        }
+                    }
+                    for state in &mut explicit_states {
+                        if state.attempted && state.item.action.requires_admin() {
+                            state.applied = true;
+                            state.detail =
+                                "Applied under one UAC prompt; awaiting live verification.".into();
+                        }
+                    }
+                    None
+                }
+                Err(error) => Some(format!("elevated Asta batch: {:#}", error)),
+            }
+        };
+
+        // Verify both lanes in one read-back pass. A mismatch poisons only its
+        // verified tweak group; explicit rows remain visible and are not
+        // silently reverted.
+        let mut verification_slots = Vec::new();
+        let mut verification_actions: Vec<&TweakAction> = Vec::new();
+        for (group_index, group) in groups.iter().enumerate() {
+            for (state_index, state) in group.states.iter().enumerate() {
+                if state.attempted {
+                    verification_slots.push(AstaVerifySlot::Transaction {
+                        group_index,
+                        state_index,
+                    });
+                    verification_actions.push(&state.item.action);
+                }
+            }
+        }
+        for (state_index, state) in explicit_states.iter().enumerate() {
+            if state.attempted {
+                verification_slots.push(AstaVerifySlot::Explicit { state_index });
+                verification_actions.push(&state.item.action);
+            }
+        }
+        let verifications = engine::verify_batch(&verification_actions);
+        drop(verification_actions);
+        for (slot, verification) in verification_slots.into_iter().zip(verifications) {
+            match slot {
+                AstaVerifySlot::Transaction {
+                    group_index,
+                    state_index,
+                } => {
+                    let state = &mut groups[group_index].states[state_index];
+                    if verification.status == VerificationStatus::Verified {
+                        state.applied = true;
+                        state.detail = "Applied and verified in the live system.".into();
+                    } else {
+                        state.detail =
+                            format!("Live verification failed: {}", verification.detail);
+                    }
+                    state.verification = Some(verification);
+                }
+                AstaVerifySlot::Explicit { state_index } => {
+                    let state = &mut explicit_states[state_index];
+                    if verification.status == VerificationStatus::Verified {
+                        state.applied = true;
+                        state.detail = "Applied and verified in the live system.".into();
+                    } else {
+                        state.detail =
+                            format!("Live verification failed: {}", verification.detail);
+                    }
+                    state.verification = Some(verification);
+                }
+            }
+        }
+
+        for group in &mut groups {
+            let failures = group
+                .states
+                .iter()
+                .filter(|state| {
+                    state.attempted
+                        && state
+                            .verification
+                            .as_ref()
+                            .map(|verification| verification.status != VerificationStatus::Verified)
+                            .unwrap_or(true)
+                })
+                .map(|state| {
+                    let detail = state
+                        .verification
+                        .as_ref()
+                        .map(|verification| {
+                            format!("verification {:?}: {}", verification.status, verification.detail)
+                        })
+                        .unwrap_or_else(|| "verification was unavailable".into());
+                    format!("{} {}", state.item.tweak_id, detail)
+                })
+                .collect::<Vec<_>>();
+            for failure in failures {
+                group.fail(failure);
+            }
+        }
+        for state in &explicit_states {
+            if state.attempted
+                && state
+                    .verification
+                    .as_ref()
+                    .map(|verification| verification.status != VerificationStatus::Verified)
+                    .unwrap_or(true)
+            {
+                let detail = state
+                    .verification
+                    .as_ref()
+                    .map(|verification| {
+                        format!("verification {:?}: {}", verification.status, verification.detail)
+                    })
+                    .unwrap_or_else(|| "verification was unavailable".into());
+                errors.push(format!("{} {}", state.item.tweak_id, detail));
+            }
+        }
+        // The elevated runner returns one aggregate shell error for a batch.
+        // Individual read-back is authoritative: if a transactional group
+        // failed, keep the aggregate diagnostic with that group so its
+        // selective rollback remains visible. If every attempted action
+        // verifies (including the explicit lane), ignore aggregate runner
+        // noise instead of turning a live-successful batch into a false
+        // partial result.
+        if let Some(error) = elevated_error {
+            if groups.iter().any(|group| group.failed) {
+                if let Some(group) = groups.iter_mut().find(|group| group.failed) {
+                    group.fail(error);
+                }
+            }
+        }
+
+        // Record every attempted action before any selective rollback so Diff
+        // can explain partial native batches and the frontend can recover IDs
+        // even when the shell reported an aggregate failure.
+        for group in &mut groups {
+            let mut receipt_failures = Vec::new();
+            for state in &mut group.states {
+                if !state.attempted {
+                    continue;
+                }
+                let verification = state.verification.clone().unwrap_or(engine::VerificationResult {
+                    status: VerificationStatus::Unknown,
+                    detail: "The action was attempted but no live verification was available."
+                        .into(),
+                });
+                match store.record_apply(
+                    &state.item.tweak_id,
+                    &state.item.action,
+                    &state.pre_state,
+                    &verification,
+                ) {
+                    Ok(receipt) => state.receipt = Some(receipt),
+                    Err(error) => {
+                        let message = format!(
+                            "{} receipt could not be saved: {:#}",
+                            state.item.tweak_id, error
+                        );
+                        receipt_failures.push(message);
+                    }
+                }
+            }
+            for failure in receipt_failures {
+                group.fail(failure);
+            }
+        }
+        for state in &mut explicit_states {
+            if !state.attempted {
+                continue;
+            }
+            let verification = state.verification.clone().unwrap_or(engine::VerificationResult {
+                status: VerificationStatus::Unknown,
+                detail: "The action was attempted but no live verification was available.".into(),
+            });
+            match store.record_apply(
+                &state.item.tweak_id,
+                &state.item.action,
+                &state.pre_state,
+                &verification,
+            ) {
+                Ok(receipt) => state.receipt = Some(receipt),
+                Err(error) => errors.push(format!(
+                    "{} receipt could not be saved: {:#}",
+                    state.item.tweak_id, error
+                )),
+            }
+        }
+
+        let mut rollback_errors = Vec::new();
+        for group in groups.iter_mut().rev() {
+            if !group.failed {
+                continue;
+            }
+            for state in group.states.iter_mut().rev() {
+                if !state.attempted || state.item.action.requires_admin() {
+                    continue;
+                }
+                match engine::revert_unelevated(&state.item.action, &state.pre_state) {
+                    Ok(_) => {
+                        state.rolled_back = true;
+                        if let Some(receipt) = &state.receipt {
+                            let _ = store.mark_reverted(&receipt.receipt_id);
+                        }
+                    }
+                    Err(error) => rollback_errors.push(format!(
+                        "{} rollback failed: {:#}",
+                        state.item.tweak_id, error
+                    )),
+                }
+            }
+        }
+        let elevated_revert_pairs = groups
+            .iter()
+            .rev()
+            .filter(|group| group.failed)
+            .flat_map(|group| {
+                group
+                    .states
+                    .iter()
+                    .rev()
+                    .filter(|state| state.attempted && state.item.action.requires_admin())
+                    .map(|state| (&state.item.action, &state.pre_state))
+            })
+            .collect::<Vec<_>>();
+        if !elevated_revert_pairs.is_empty() {
+            match engine::elevation::run_elevated_revert_batch(&elevated_revert_pairs) {
+                Ok(_) => {
+                    for group in &mut groups {
+                        if !group.failed {
+                            continue;
+                        }
+                        for state in &mut group.states {
+                            if state.attempted && state.item.action.requires_admin() {
+                                state.rolled_back = true;
+                                if let Some(receipt) = &state.receipt {
+                                    let _ = store.mark_reverted(&receipt.receipt_id);
+                                }
+                            }
+                        }
+                    }
+                }
+                Err(error) => rollback_errors.push(format!(
+                    "elevated Asta rollback failed: {:#}",
+                    error
+                )),
+            }
+        }
+
+        errors.extend(
+            groups
+                .iter()
+                .flat_map(|group| group.errors.iter().cloned()),
+        );
+        // A normal return means the batch reached its final receipt state,
+        // including selective rollback where required. Mark the breadcrumb
+        // complete before calculating the report status so a failed marker
+        // clear cannot masquerade as a clean commit.
+        let completed_marker = serde_json::json!({
+            "status": "completed",
+            "transactionId": transaction_id.clone(),
+            "completedAt": chrono::Utc::now().to_rfc3339(),
+            "actionCount": groups.iter().map(|group| group.states.len()).sum::<usize>()
+                + explicit_states.len(),
+        });
+        if let Err(error) = store.kv_set(ASTA_INFLIGHT_KEY, &completed_marker.to_string()) {
+            errors.push(format!("could not clear the Asta interruption marker: {error:#}"));
+        }
+        let failed_groups = groups.iter().filter(|group| group.failed).count();
+        let any_committed = groups.iter().any(|group| {
+            group
+                .states
+                .iter()
+                .any(|state| state.applied && !state.rolled_back)
+        }) || explicit_states
+            .iter()
+            .any(|state| state.applied && !state.rolled_back);
+        let status = if failed_groups == 0 && errors.is_empty() && rollback_errors.is_empty() {
+            if let Some(build) = current_os_build() {
+                let _ = store.kv_set("last_applied_build", &build.to_string());
+            }
+            "committed"
+        } else if any_committed || rollback_errors.len() > 0 {
+            "partial"
+        } else {
+            "rolled_back"
+        };
+        if failed_groups > 0 {
+            errors.insert(
+                0,
+                format!(
+                    "{} verified tweak group(s) stayed rolled back; explicit review actions were left visible for manual review.",
+                    failed_groups
+                ),
+            );
+        }
+
+        let mut states = groups
+            .into_iter()
+            .flat_map(|group| group.states)
+            .map(AstaState::into_transaction_state)
+            .collect::<Vec<_>>();
+        states.extend(
+            explicit_states
+                .into_iter()
+                .map(AstaState::into_transaction_state),
+        );
+        let report = transaction_report(
+            transaction_id,
+            status,
+            states,
+            errors,
+            rollback_errors,
+        );
+        let _ = store.kv_set(
+            "last_transaction",
+            &serde_json::to_string(&report).unwrap_or_default(),
+        );
+        Ok(report)
+    })
+    .await
+    .map_err(|e| format!("Asta batch task failed: {e}"))?
 }
 
 #[cfg(test)]
@@ -2381,6 +3067,7 @@ pub fn run() {
             apply_batch,
             apply_transaction,
             apply_repair_batch,
+            apply_asta_batch,
             kv_get,
             kv_set,
             get_reboot_validation,

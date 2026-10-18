@@ -96,21 +96,28 @@ export function RebootPersistenceCard() {
         </div>
       ) : null}
 
-      {nonVerified.length > 0 ? (
-        <div className="border border-border rounded-md p-3 space-y-2">
-          <p className="text-xs uppercase tracking-widest text-text-subtle">
-            Items that need attention
-          </p>
-          {nonVerified.slice(0, 6).map((item) => (
-            <div key={item.receiptId} className="text-xs">
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-semibold text-text truncate">{item.tweakId}</span>
-                <span className={statusClass(item.status)}>{item.status}</span>
+      {report && report.items.length > 0 ? (
+        <details className="border border-border rounded-md p-3" open={nonVerified.length > 0}>
+          <summary className="cursor-pointer text-xs uppercase tracking-widest text-text-subtle">
+            Per-action reboot read-back ({report.items.length})
+          </summary>
+          <div className="mt-3 space-y-3">
+            {report.items.map((item) => (
+              <div key={item.receiptId} className="text-xs">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-text truncate">{item.tweakId}</span>
+                  <span className={statusClass(item.status)}>{item.status}</span>
+                </div>
+                <p className="text-text-muted">
+                  {item.verifiedAt
+                    ? `Last verified after reboot: ${formatTimestamp(item.verifiedAt)}`
+                    : `Checked after reboot: ${formatTimestamp(report.verifiedAt)}`}
+                </p>
+                <p className="text-text-muted">{item.detail}</p>
               </div>
-              <p className="text-text-muted">{item.detail}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </details>
       ) : null}
 
       <div className="flex items-center gap-2 flex-wrap">
@@ -159,4 +166,10 @@ function statusClass(status: string): string {
 
 function formatError(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+function formatTimestamp(value: string | null): string {
+  if (!value) return 'time unavailable'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
