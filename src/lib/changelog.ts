@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.29',
+    date: '2026-10-18',
+    highlights: [
+      'FIX **Asta verification and recovery.** Applies verified and explicit actions through one native batch, reports per-action read-back, rolls back verified groups after regressions, and records interrupted runs for reconciliation.',
+      'IMPROVE **Evidence boundaries.** Reboot proof now includes only current-run actions that remain individually verified after the benchmark; incomplete network evidence cannot be scored as an improvement.',
+    ],
+  },
+  {
     version: '0.4.28',
     date: '2026-10-17',
     highlights: [
