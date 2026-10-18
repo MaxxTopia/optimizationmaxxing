@@ -41,6 +41,9 @@ jobs:
             - name: Install npm dependencies
               run: npm ci
 
+            - name: Audit Asta automatic policy before packaging
+              run: npm run audit:asta-policy
+
             - name: Audit tweak catalog before packaging
               run: npm run audit:catalog
 

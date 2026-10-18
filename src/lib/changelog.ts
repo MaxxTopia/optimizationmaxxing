@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.30',
+    date: '2026-10-18',
+    highlights: [
+      'IMPROVE **Pinnacle Asta selection.** The plan now follows the catalog and detected hardware, automatically selecting matching measured/reversible actions plus vetted transaction-backed experimental NIC, power, and input controls.',
+      'FIX **Asta policy safety.** Exact read-back/restore contracts and a release audit keep ambiguous, policy-owned, static-file, firmware, security, and unsupported rows outside the automatic lane with clear reasons.',
+    ],
+  },
+  {
     version: '0.4.29',
     date: '2026-10-18',
     highlights: [

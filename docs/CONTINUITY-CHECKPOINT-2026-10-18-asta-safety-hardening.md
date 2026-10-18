@@ -27,6 +27,15 @@ verified performance improvement.
   workflow used the existing CI signing secrets. No key was invented or
   rotated. CI emitted only a non-blocking GitHub Actions Node 20 deprecation
   annotation.
+- The worktree now contains an unreleased follow-up in `src/pages/Asta.tsx`
+  and `resources/catalog/v1.json`: the normal Asta selection is being changed
+  from a stale named allow-list to a catalog-driven Pinnacle plan. It selects
+  every matching measured/mechanism row with a complete native transaction
+  contract, plus named transaction-backed experimental hardware rows. The
+  v0.4.29 client installed on the PC does not yet contain this follow-up.
+- The follow-up is prepared as the v0.4.30 release candidate. The user has
+  authorized publishing; CI still must build, sign, publish, and dispatch the
+  updater release before the installed client can receive it.
 - Pre-existing generated schema modifications remain unstaged and must not be
   overwritten: `src-tauri/gen/schemas/acl-manifests.json`,
   `src-tauri/gen/schemas/desktop-schema.json`, and
@@ -94,6 +103,27 @@ verified performance improvement.
 - Resilience notes document automatic local regression rollback, receipt
   reconciliation, measurement limits, the shared Asta batch, and the remaining
   installed-smoke and lab-mode backlog.
+- The follow-up selection model defines a catalog-driven evidence-led baseline
+  plus a named experimental lane for broadly useful Fortnite settings. Both
+  lanes require a complete transaction contract and a readable live state;
+  only the three documented first-apply restore captures may start from
+  `NOT_CONFIGURED`. Risk-4/security, policy-owned, firmware, static-file, and
+  ambiguous rows stay visible but unchecked. The automatic experimental lane
+  now covers the compatible active-route NIC controls (interrupt moderation,
+  flow control, LSO, and RSC), core parking, device-idle performance, PCIe and
+  USB link power, mouse input priority, MSI mode, and Delivery Optimization
+  peer sharing. These rows remain visibly experimental but use the same single
+  batched UAC path when their live state is readable. Asta's selection summary
+  now also distinguishes untouched Pinnacle defaults from a user-customized
+  selection so the UI never claims manual choices were automatic.
+- The core-parking, device-idle, PCIe-link, and USB-link power actions now
+  capture exact current AC/DC values (and the USB Attributes state) before
+  writing, then restore those values on rollback/revert. They no longer guess
+  generic restore values such as 0, 1, or 2.
+- The USB 3 Link Power action now uses Windows' actual setting GUID
+  `d4e98f31-5ffe-4ce1-be31-1b38b384c009` in both its apply and restore paths.
+  The previous catalog GUID was not the USB 3 setting and could incorrectly
+  make an exposed control appear unavailable.
 
 ## Verification performed
 
@@ -111,8 +141,12 @@ this worktree has a public signing key configured but no
 now total 104 passed after the legacy reboot report compatibility test.
 
 The latest gate also passed after exact receipt selection, the narrowed QoS
-guard, receipt-summary recovery, sparse-ping handling, and the incomplete-
-evidence reboot-proof guard. `cargo fmt --check` was not a clean gate because the repository already
+guard, receipt-summary recovery, sparse-ping handling, the incomplete-evidence
+reboot-proof guard, and the exact AC/DC power restore contracts. The new
+PowerShell action strings were parsed without syntax errors, and a read-only
+`powercfg /qh` check confirmed the targeted core-parking, device-idle, PCIe,
+and USB 3 setting GUIDs are discoverable on this host; Asta still skips the
+control on rigs whose driver or power plan does not expose it. `cargo fmt --check` was not a clean gate because the repository already
 contains broad unrelated rustfmt drift; the worktree was not reformatted.
 
 The signed v0.4.29 release was downloaded, its installer hash matched the
@@ -120,6 +154,40 @@ published release digest, installed, relaunched, and checked through the actual
 desktop window. This verifies packaging and installed UI presence only; it does
 not verify a protected Windows write, reboot persistence, Fortnite FPS, input
 latency, or server ping.
+
+The unreleased Asta selection and power-contract follow-up also passed
+`npx tsc --noEmit`, `npm run build`, the catalog audit (108 tweaks, zero
+errors/warnings), the
+driver-profile audit, the BIOS evidence test, `cargo test` (104 passed), and
+`git diff --check`. These checks prove source/build integrity only; they do not
+prove the new selection behavior in the installed client until a new signed
+build is released and opened.
+
+The new release policy gate also passed: `npm run audit:asta-policy` reports
+catalog v1.9.4, 108 rows, 14 named Pinnacle rows, three first-apply restore
+rows, and zero errors.
+
+The follow-up was then tightened so the app-owned Ultimate Performance plan is
+the only named situational baseline exception, while tournament-breaking
+metadata and static game-file writes remain blocked even for named experimental
+rows. The type check, production build, catalog audit, and diff check passed
+again after that correction. The installed v0.4.29 client still does not
+contain this source follow-up.
+
+This session added `scripts/audit-asta-policy.mjs` and the
+`audit:asta-policy` npm script as a release-facing policy gate. It checks that
+the named Pinnacle experimental and baseline IDs exist, do not overlap, carry
+honest warning/expected-impact copy, and have complete PowerShell verifier and
+restore contracts or supported native action kinds. It also checks the Asta
+source guard fragments that keep risk-4/security, static-file, policy-owned,
+and ambiguous rows out of automatic selection. The first audit found missing
+trade-off metadata on six intentionally promoted rows; those catalog entries
+now explain their risks and expected impact, and the audit passes with zero
+errors.
+
+The release workflow now runs this policy audit before the catalog audit and
+Tauri packaging, so a future tag cannot package a broadened or under-documented
+automatic lane without failing CI first.
 
 ## Still unfinished / user-owed
 
@@ -129,10 +197,16 @@ latency, or server ping.
 2. Run one controlled Fortnite before/after capture with the same scene,
    route, graphics, cap, driver, and background load. The desktop Asta proxy is
    not proof of FPS, input latency, build registration, or server ping.
+3. Publish/install the v0.4.30 Asta selection and exact-power-restore
+   follow-up, then confirm the installed screen shows compatible “Pinnacle
+   default” and “Pinnacle experimental” rows selected while
+   ambiguous/policy/security rows remain unchecked.
 
 ## Best next action
 
-Use the installed v0.4.29 client for the read-only Asta preview first. If the
-plan is acceptable, perform one protected apply, record the receipt, restart
-Windows, and run Check after reboot before judging Fortnite. Keep the existing
-unrelated generated-schema changes and continuity-file rename untouched.
+The user has approved the v0.4.30 release. Run the full release gate, publish
+the tag, verify the signed installer/latest.json/signature and MaxxTopia sync,
+then install the new client and use it for a read-only Asta preview, one
+protected apply, a Windows restart, and Check after reboot before judging
+Fortnite. Keep the existing unrelated generated-schema changes and continuity
+file rename untouched.

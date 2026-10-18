@@ -9,8 +9,11 @@ retain a recovery path, and fail closed when evidence is missing.
 
 - Every catalog action must have a captured pre-state or an explicit reason it
   cannot. Revert must restore the captured value, not a guessed default.
-- Experimental actions are opt-in. The UI names the expected benefit, the
-  failure mode, and the recovery path before applying them.
+- Experimental actions are never a blind apply-all. Asta's reviewed Pinnacle
+  lane may select only named, catalog-approved experimental rows when the
+  hardware match, native read-back, exact restore path, and risk gate all
+  pass; the UI still labels the row experimental and names the tradeoff and
+  recovery path before applying it. Other experimental rows remain opt-in.
 - A benchmark is a comparison aid, not proof of lower Fortnite input latency.
   A CPU screen is a bounded stability screen, not an RMA diagnosis.
 - Tournament Mode is an eligibility and preflight surface. It never claims that
@@ -29,6 +32,7 @@ new lab features are added.
 | --- | --- | --- | --- | --- |
 | P0 | An experimental registry, BCD, or device tweak makes Windows or a device unreliable. | Apply receipt, reboot failure, device disappears, user reports black screen. | Restore point before elevated batches, one-click revert, experimental confirmation, pre-state capture. | Add a catalog lint rule that blocks high-risk actions without a concrete inverse or explicit non-revertible label. |
 | P0 | A bad catalog entry silently ships or a preset references a removed tweak. | Catalog audit error, missing preset IDs, failed apply preview. | `scripts/audit-catalog.mjs`, preset missing-ID warnings, no silent filtering. | Run the audit in release CI and make errors fail the build. |
+| P0 | A catalog refresh accidentally broadens Asta's automatic lane by marking an unsafe row as measured, mechanism-backed, or transaction-capable. | `npm run audit:asta-policy` fails on a named ID, missing warning/impact copy, missing verifier/restore contract, or a removed source guard. | Asta derives selection from explicit evidence, risk, anti-cheat, hardware, and native transaction metadata; firmware, policy-owned, static-file, security-weakening, ambiguous, and unreviewed situational rows fail closed into the review lane. The release-facing policy audit checks the named automatic lanes and safety fragments before packaging. | Keep the audit in CI and add a selected/excluded ID fixture when the catalog policy changes. |
 | P1 | CPU screening creates unsafe heat or gives false confidence. | Temperature/noise warning, thread failure, WHEA delta, user reports instability. | Bounded 60s default, optional 3m run, explicit Stop screen control, WHEA described as a signal, follow-up tools named. | Add a live temperature cutoff before making the long run a default. |
 | P1 | OS comparisons mistake a driver, BIOS, game patch, or background process for an OS advantage. | Same rig produces different results across repeated control runs. | Median-of-3, saved OS build and hardware, fair-test checklist, local-only storage. | Add a control run label and reject comparisons without matching driver/game metadata. |
 | P1 | A tournament user changes a setting that conflicts with a current Epic requirement. | Pre-Tournament Audit flags Secure Boot, TPM, IOMMU, VBS, or unknown state. | Tournament copy is eligibility-first; no anti-cheat safety claims; audit remains separate from Tune Now. | Re-check the official rules link and cache a dated requirement snapshot during every content review. |
@@ -77,6 +81,14 @@ P0 (implemented in this pass):
   UAC/helper process per catalog row. If the app is already elevated, reuse
   that token. Windows UAC consent itself is not silently automatable, so the
   UI must explain that launching the app elevated is the one-consent path.
+- Make the Asta automatic lane catalog-driven rather than a stale hand-written
+  allow-list: include every matching measured/mechanism row with a complete
+  native transaction contract, plus only the named experimental hardware
+  rows that pass the same checks; leave the rest visible in explicit review.
+- Run `npm run audit:asta-policy` as a release blocker. It validates the named
+  Pinnacle lanes, catalog warnings and expected-impact copy, PowerShell
+  verifier/restore contracts, supported native action kinds, and the source
+  guards that keep unsafe rows out of automatic selection.
 - Keep app-launch and background verification current-token-only. Protected
   reads must become `unknown` and await an explicit admin action, never open a
   hidden elevation helper during ordinary startup.

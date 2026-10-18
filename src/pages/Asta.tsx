@@ -50,6 +50,43 @@ const SAFE_FIRST_APPLY_IDS = new Set([
   'net.nic.eee-powersave.disable',
 ])
 
+/**
+ * Experimental does not mean “unreviewed apply-all.” These are the small,
+ * explicit lane that Asta can select automatically when the action matches
+ * the rig and its transaction contract is present. They remain visibly
+ * experimental, but are included in the normal one-consent apply when their
+ * live read-back is unambiguous. This is the performance ceiling of the
+ * reversible Windows/NIC/power/input lane, not a promise that every tweak is
+ * faster on every driver or that ISP/server latency can be changed locally.
+ *
+ * Deliberately excluded: risk-4/security changes, policy-owned QoS, firmware/
+ * BIOS, static game-file edits, and actions with ambiguous or lossy restore.
+ */
+const PINNACLE_EXPERIMENTAL_IDS = new Set([
+  'net.nic.interrupt-moderation.disable',
+  'net.nic.flow-control.disable',
+  'net.nic.lso.disable',
+  'net.nic.rsc.disable',
+  'process.core-parking.disable',
+  'power.device-idle.performance',
+  'power.pcie.link-state.off',
+  'power.usb3.link-power.disable',
+  'hid.mouse.priority-realtime',
+  'process.msi-mode.gpu-nic-audio',
+  'peripherals.usb.coalescing-disable-pinnacle',
+  'process.background-apps.disable',
+  'network.delivery-optimization.peer-sharing.disable',
+])
+
+// Asta's one named baseline exception: this action creates/activates the
+// app-owned Ultimate Performance gaming plan and has a first-run restore
+// contract. It is situational by catalog evidence, but it is a core part of
+// the requested automatic performance baseline rather than an unreviewed
+// apply-all row.
+const PINNACLE_BASELINE_IDS = new Set([
+  'ps.power.dt-tournament',
+])
+
 const ASTA_PHILOSOPHY = `Asta Mode builds a hardware-aware performance plan for this PC.
 It prioritizes measurable, reversible Windows, power, graphics, input, and network settings
 that match the detected hardware. Unsupported or ambiguous actions stay out of the automatic lane.
@@ -119,6 +156,7 @@ export function Asta() {
   const [reviewedPlan, setReviewedPlan] = useState<AstaPlan | null>(null)
   const [reviewedPlanKey, setReviewedPlanKey] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const [selectionCustomized, setSelectionCustomized] = useState(false)
   const [planAudit, setPlanAudit] = useState<Record<string, TweakAudit> | null>(null)
   const [previewProgress, setPreviewProgress] = useState({ done: 0, total: 0 })
   const [previewBusy, setPreviewBusy] = useState(false)
@@ -141,6 +179,18 @@ export function Asta() {
     spec && inventory && reviewedPlan && reviewedPlanKey === planFingerprint(spec, inventory),
   )
   const selectedCount = displayPlan?.candidates.filter((tweak) => selectedIds.has(tweak.id)).length ?? 0
+  const pinnacleDefaultCount = reviewedPlan && planAudit
+    ? reviewedPlan.candidates.filter((tweak) => isPinnacleDefaultCandidate(tweak, planAudit[tweak.id])).length
+    : 0
+  const pinnacleExperimentalCount = reviewedPlan && planAudit
+    ? reviewedPlan.candidates.filter((tweak) =>
+      PINNACLE_EXPERIMENTAL_IDS.has(tweak.id)
+      && isPinnacleDefaultCandidate(tweak, planAudit[tweak.id]),
+    ).length
+    : 0
+  const selectedAdvancedCount = reviewedPlan && planAudit
+    ? reviewedPlan.candidates.filter((tweak) => selectedIds.has(tweak.id) && !isPinnacleDefaultCandidate(tweak, planAudit[tweak.id])).length
+    : 0
 
   useEffect(() => {
     void ensureLoaded()
@@ -202,18 +252,29 @@ export function Asta() {
       setAppliedRows(liveRows)
       const nextPlan = buildAstaPlan(detected, liveRows)
       const nextKey = planFingerprint(detected, nextPlan)
+      const sameReviewedPlan = reviewedPlanKey === nextKey
       setReviewedPlan(nextPlan)
       setReviewedPlanKey(nextKey)
-      setSelectedIds((previous) => {
-        const previousKey = reviewedPlanKey
-        if (previousKey === nextKey && previous.size > 0) {
-          return new Set(nextPlan.candidates.filter((tweak) => previous.has(tweak.id)).map((tweak) => tweak.id))
-        }
-        return new Set(nextPlan.candidates.map((tweak) => tweak.id))
-      })
+      // Do not briefly select the whole raw catalog while the live audit is
+      // running. The first visible selection is computed from the completed
+      // read-back below.
+      if (!sameReviewedPlan) {
+        setSelectedIds(new Set())
+        setSelectionCustomized(false)
+      }
       setPreviewProgress({ done: 0, total: nextPlan.candidates.length })
       const audit = await auditMany(nextPlan.candidates, (done, total) => setPreviewProgress({ done, total }), 3)
       setPlanAudit(audit)
+      setSelectedIds((previous) => {
+        if (sameReviewedPlan && selectionCustomized) {
+          const candidateIds = new Set(nextPlan.candidates.map((tweak) => tweak.id))
+          return new Set([...previous].filter((id) => candidateIds.has(id)))
+        }
+        return new Set(nextPlan.candidates
+          .filter((tweak) => isPinnacleDefaultCandidate(tweak, audit[tweak.id]))
+          .map((tweak) => tweak.id))
+      })
+      if (!sameReviewedPlan || !selectionCustomized) setSelectionCustomized(false)
     } catch (e) {
       setError(typeof e === 'string' ? e : (e as Error).message ?? String(e))
       setReviewedPlan(null)
@@ -290,7 +351,8 @@ export function Asta() {
         setReviewedPlan(plan)
         setReviewedPlanKey(currentPlanKey)
         setPlanAudit(null)
-        setSelectedIds((previous) => new Set(plan.candidates.filter((tweak) => previous.has(tweak.id)).map((tweak) => tweak.id)))
+        setSelectedIds(new Set())
+        setSelectionCustomized(false)
         setError('The rig or applicable plan changed since preview. Review the refreshed list before applying.')
         return
       }
@@ -310,7 +372,9 @@ export function Asta() {
       const reviewExplicit = chosenItems(plan.reviewExplicit)
       const safeActionCount = transactional.length + explicit.length
       const reviewActionCount = reviewTransactional.length + reviewExplicit.length
-      const experimentalCount = chosen.filter((tweak) => isExperimentalTweak(tweak)).length
+      const experimentalCount = chosen.filter((tweak) =>
+        isExperimentalTweak(tweak) || PINNACLE_EXPERIMENTAL_IDS.has(tweak.id),
+      ).length
       if (!(await confirmAction(
         `Pinnacle Asta is ready to apply the ${chosen.length} selected Fortnite/Windows tweaks from the reviewed plan. That is ${safeActionCount} standard actions; ${chosenReview.length} selected review rows (${reviewActionCount} actions) need a separate security/compatibility confirmation. ${experimentalCount} selected rows are experimental. Unchecked rows will be left alone; BIOS/NVRAM/firmware and mismatched hardware targets remain excluded. A restore point and same-condition game test are strongly recommended. Continue?`,
       ))) {
@@ -845,13 +909,15 @@ export function Asta() {
             <p className="text-[10px] uppercase tracking-widest text-text-subtle">apply</p>
             <h3 className="text-xl font-bold mt-1">Activate Asta Mode</h3>
             <p className="text-sm text-text-muted leading-snug mt-1">
-              Pinnacle Asta inventories the full catalog for this rig and Fortnite context. Preview
-              the live values, choose exactly which rows to include, then apply that selection.
-              Reversible/read-back-capable actions use the transactional lane; unsupported scripts
-              are visibly separated into an explicit review lane. A normal Asta apply uses one
-              batched Windows consent for both lanes, not one prompt per tweak. Protected
-              preflight, read-back, or a failure-only safety rollback can require an additional
-              consent.
+              Pinnacle Asta inventories the full catalog for this rig and Fortnite context, then
+              automatically selects every matching, evidence-backed action that has a complete
+              native read-back and restore path. Named experimental actions are included only
+              when they pass the same contract and hardware checks. Unverifiable, policy-owned,
+              firmware, static-file, security-weakening, unreviewed situational, and ambiguous
+              rows stay visible but unchecked for intentional review.
+              A normal Asta apply uses one batched Windows consent, not one prompt per tweak.
+              Protected preflight, read-back, or a failure-only safety rollback can require an
+              additional consent.
               Windows UAC is real user consent; the app never bypasses it.
               BIOS/NVRAM/firmware changes never become automatic.
             </p>
@@ -877,6 +943,11 @@ export function Asta() {
                   This catalog contains {catalog.tweaks.length} rows. Eligible means a matching software row that is not already verified;
                   already-on-target rows are skipped without a write. Separate-review rows are included in the eligible count, not added to it.
                 </span>
+                {reviewedPlan && planAudit && (
+                  <span className="block mt-1 text-[11px] text-emerald-200">
+                    Pinnacle plan: {pinnacleDefaultCount} setting{pinnacleDefaultCount === 1 ? '' : 's'} selected automatically after read-back, including {pinnacleExperimentalCount} vetted experimental setting{pinnacleExperimentalCount === 1 ? '' : 's'}; only unverifiable, policy-owned, manual, firmware, unsupported, or unreviewed situational rows stay unchecked.
+                  </span>
+                )}
               </div>
             )}
 
@@ -919,25 +990,36 @@ export function Asta() {
                   <>
                     <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2">
                       <p className="text-[11px] text-text-muted">
-                        {selectedCount} of {reviewedPlan.candidates.length} selected · values read at {new Date(Object.values(planAudit)[0]?.scannedAt ?? Date.now()).toLocaleTimeString()}.
+                        {selectionCustomized
+                          ? `${selectedCount} setting${selectedCount === 1 ? '' : 's'} selected (${pinnacleDefaultCount} Pinnacle defaults available, ${pinnacleExperimentalCount} experimental)`
+                          : `${selectedCount} Pinnacle setting${selectedCount === 1 ? '' : 's'} selected automatically (${pinnacleDefaultCount} available, ${pinnacleExperimentalCount} experimental)`}
+                        {' '}· values read at {new Date(Object.values(planAudit)[0]?.scannedAt ?? Date.now()).toLocaleTimeString()}.
                         {' '}Unknown means read-back could not prove the target; protected Windows reads are retried under the apply UAC boundary, while other ambiguous rows stay blocked with their fix.
                       </p>
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => setSelectedIds(new Set(reviewedPlan.candidates.map((tweak) => tweak.id)))}
+                          onClick={() => {
+                            setSelectedIds(new Set(reviewedPlan.candidates
+                              .filter((tweak) => isPinnacleDefaultCandidate(tweak, planAudit[tweak.id]))
+                              .map((tweak) => tweak.id)))
+                            setSelectionCustomized(false)
+                          }}
                           className="text-[11px] text-sky-300 underline underline-offset-2"
-                        >Select all</button>
+                        >Use Pinnacle defaults</button>
                         <button
                           type="button"
-                          onClick={() => setSelectedIds(new Set())}
+                          onClick={() => {
+                            setSelectedIds(new Set())
+                            setSelectionCustomized(true)
+                          }}
                           className="text-[11px] text-text-muted underline underline-offset-2"
-                        >Select none</button>
+                        >Clear selection</button>
                       </div>
                     </div>
                     <details open className="rounded border border-white/10 bg-black/10">
                       <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-text">
-                        Review eligible tweaks ({reviewedPlan.candidates.length}) — unchecked rows stay untouched
+                        Pinnacle plan + advanced rows ({reviewedPlan.candidates.length}) — unchecked rows stay untouched
                       </summary>
                       <div className="max-h-[34rem] space-y-2 overflow-y-auto p-2">
                         {reviewedPlan.candidates.map((tweak) => (
@@ -948,6 +1030,7 @@ export function Asta() {
                             selected={selectedIds.has(tweak.id)}
                             disabled={!previewIsCurrent || busy || previewBusy}
                             onToggle={() => setSelectedIds((previous) => {
+                              setSelectionCustomized(true)
                               const next = new Set(previous)
                               if (next.has(tweak.id)) next.delete(tweak.id)
                               else next.add(tweak.id)
@@ -1123,9 +1206,11 @@ export function Asta() {
                   : !previewIsCurrent || !planAudit
                     ? 'Preview the plan first'
                   : selectedCount === 0
-                    ? 'Select at least one tweak'
+                    ? 'No Pinnacle changes needed'
                   : isVip
-                  ? `🗡 Activate ${selectedCount} selected tweaks`
+                  ? selectedAdvancedCount > 0
+                    ? `🗡 Apply ${selectedCount} selected settings`
+                    : `🗡 Apply Pinnacle plan (${selectedCount})`
                   : '👑 VIP only'}
               </button>
               <Link
@@ -1232,7 +1317,10 @@ function buildAstaPlan(spec: SpecProfile, applied: AppliedTweak[]): AstaPlan {
       continue
     }
     candidates.push(tweak)
-    if (isHardBlockedForAutoTune(tweak)) review.push(tweak)
+    // Keep every row outside the automatic policy in the explicit review
+    // lane. This prevents a manual checkbox from quietly bypassing the same
+    // evidence/contract boundary that the automatic selector uses.
+    if (!isPinnacleAutomaticShapeCandidate(tweak)) review.push(tweak)
   }
 
   const transactional: BatchItem[] = []
@@ -1385,6 +1473,69 @@ function isSafeFirstApplyAudit(tweak: TweakRecord, audit: TweakAudit | undefined
   })
 }
 
+/**
+ * Decide which rows the one-click Asta plan may select automatically.
+ *
+ * A successful read-back proves that a setting landed, not that it improved
+ * Fortnite. The automatic plan therefore uses the catalog's evidence grade,
+ * risk/anti-cheat metadata, and transaction contract instead of a stale
+ * hand-maintained ID allow-list. Standard measured/mechanism rows are
+ * included when they pass the policy; only the named experimental lane may
+ * add situational rows. Every selected row still needs a readable live state
+ * (or one of the documented first-apply records).
+ */
+function isPinnacleAutomaticShapeCandidate(tweak: TweakRecord): boolean {
+  const pinnacleExperimental = PINNACLE_EXPERIMENTAL_IDS.has(tweak.id)
+  const pinnacleBaseline = PINNACLE_BASELINE_IDS.has(tweak.id)
+  const hardBlocked = isHardBlockedForAutoTune(tweak)
+  if (!pinnacleExperimental && !pinnacleBaseline && (hardBlocked || isExperimentalTweak(tweak))) return false
+  // Named experimental hardware actions may be risk 3, but risk 4/security
+  // changes never enter the automatic plan. These named rows remain visibly
+  // experimental in the plan and confirmation copy.
+  if (tweak.riskLevel > (pinnacleExperimental ? 3 : 2) || tweak.anticheatRisk !== 'none') return false
+  if (Object.values(tweak.tournamentCompliance ?? {}).some((value) => value === 'breaks')) return false
+  if (tweak.actions.some((action) =>
+    action.kind === 'file_write'
+      && /(?:GameUserSettings\.ini|Engine\.ini|videoconfig\.txt|autoexec\.cfg)$/i.test(action.path ?? ''),
+  )) return false
+  if (tweak.actions.length === 0 || !tweak.actions.every(isTransactionActionEligible)) return false
+  const evidenceIsAutomatic = ['measured', 'mechanism'].includes(tweak.evidenceTier ?? '')
+  const evidenceIsNamed = (pinnacleExperimental || pinnacleBaseline)
+    && ['situational', 'measured', 'mechanism'].includes(tweak.evidenceTier ?? '')
+  if (!evidenceIsAutomatic && !evidenceIsNamed) return false
+  return true
+}
+
+function isPinnacleDefaultCandidate(tweak: TweakRecord, audit: TweakAudit | undefined): boolean {
+  if (!isPinnacleAutomaticShapeCandidate(tweak)) return false
+  if (!audit?.actions.length) return false
+  if (isSafeFirstApplyAudit(tweak, audit)) return true
+  if (audit.actions.some((action) => action.status === 'unknown' || action.status === 'error')) return false
+  return audit.actions.some((action) => action.status === 'differs')
+}
+
+function pinnacleExclusionReason(tweak: TweakRecord, audit: TweakAudit | undefined): string {
+  const pinnacleExperimental = PINNACLE_EXPERIMENTAL_IDS.has(tweak.id)
+  const pinnacleBaseline = PINNACLE_BASELINE_IDS.has(tweak.id)
+  if (isHardBlockedForAutoTune(tweak) && !pinnacleExperimental && !pinnacleBaseline) return 'Review-only: Windows cannot prove this action safely in the automatic lane.'
+  if (isExperimentalTweak(tweak) && !pinnacleExperimental) return 'Experimental: visible for advanced testing, not part of the reviewed Pinnacle lane.'
+  if (tweak.riskLevel > (pinnacleExperimental ? 3 : 2) || tweak.anticheatRisk !== 'none') return 'Held for explicit review because its risk or anti-cheat compatibility is outside the automatic policy.'
+  if (Object.values(tweak.tournamentCompliance ?? {}).some((value) => value === 'breaks')) return 'Held for explicit review because its tournament-compatibility metadata requires a deliberate decision.'
+  if (tweak.actions.some((action) =>
+    action.kind === 'file_write'
+      && /(?:GameUserSettings\.ini|Engine\.ini|videoconfig\.txt|autoexec\.cfg)$/i.test(action.path ?? ''),
+  )) return 'Manual game-file action: Asta does not rewrite static game configuration automatically.'
+  if (!tweak.actions.every(isTransactionActionEligible)) return 'Manual/explicit action: it has no complete native read-back and restore contract.'
+  if (!['measured', 'mechanism'].includes(tweak.evidenceTier ?? '') && !pinnacleExperimental && !pinnacleBaseline) return 'Evidence is situational or cosmetic; Asta leaves it opt-in until the local condition is confirmed.'
+  if (audit?.actions.some((action) => action.status === 'unknown' || action.status === 'error')) return pinnacleExperimental
+    ? 'Vetted experimental action held back because live state is ambiguous; Asta will not write without a safe read-back.'
+    : 'Not selected: live state is ambiguous, so Asta will not write it automatically.'
+  if (audit?.actions.every((action) => action.status === 'matches')) return 'Already at the requested live value; no write is needed.'
+  return pinnacleExperimental
+    ? 'Vetted experimental action is waiting for a compatible live read-back.'
+    : 'Not selected by the current automatic safety gate.'
+}
+
 function isNotApplicableAudit(audit: TweakAudit | undefined): boolean {
   if (!audit?.actions.length) return false
   return audit.actions.every((action) => {
@@ -1481,7 +1632,17 @@ function AstaPlanReviewRow({
 }) {
   const reviewOnly = isHardBlockedForAutoTune(tweak)
   const transactional = tweak.actions.length > 0 && tweak.actions.every(isTransactionActionEligible)
-  const lane = reviewOnly ? 'Separate review confirmation' : transactional ? 'Verified transaction lane' : 'Explicit action lane'
+  const pinnacleExperimental = PINNACLE_EXPERIMENTAL_IDS.has(tweak.id)
+  const pinnacleDefault = isPinnacleDefaultCandidate(tweak, audit ?? undefined)
+  const lane = pinnacleDefault
+    ? pinnacleExperimental ? 'Pinnacle experimental' : 'Pinnacle default'
+    : reviewOnly
+      ? 'Separate review confirmation'
+      : isExperimentalTweak(tweak)
+        ? 'Advanced experimental'
+        : transactional
+          ? 'Verified, opt-in'
+          : 'Explicit review'
   const matchCount = audit?.actions.filter((action) => action.status === 'matches').length ?? 0
   const differsCount = audit?.actions.filter((action) => action.status === 'differs').length ?? 0
   const unknownCount = audit?.actions.filter((action) => action.status === 'unknown').length ?? 0
@@ -1500,19 +1661,24 @@ function AstaPlanReviewRow({
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-semibold text-sm text-text">{tweak.title}</span>
-            <span className={`rounded border px-2 py-0.5 text-[10px] ${reviewOnly ? 'border-amber-500/40 text-amber-200' : transactional ? 'border-emerald-500/40 text-emerald-300' : 'border-sky-500/40 text-sky-300'}`}>
+            <span className={`rounded border px-2 py-0.5 text-[10px] ${pinnacleDefault && !pinnacleExperimental ? 'border-emerald-500/50 text-emerald-200' : pinnacleExperimental || reviewOnly || isExperimentalTweak(tweak) ? 'border-amber-500/40 text-amber-200' : transactional ? 'border-sky-500/40 text-sky-300' : 'border-slate-400/40 text-slate-200'}`}>
               {lane}
             </span>
           </span>
           <span className="mt-1 block text-[11px] text-text-subtle">
             {tweak.category} · risk {tweak.riskLevel}/4 · anti-cheat risk {tweak.anticheatRisk} · reboot {tweak.rebootRequired}
             {tweak.evidenceTier ? ` · evidence ${tweak.evidenceTier}` : ''}
-            {isExperimentalTweak(tweak) ? ' · experimental' : ''}
+            {isExperimentalTweak(tweak) || pinnacleExperimental ? ' · experimental' : ''}
           </span>
           <span className="mt-1 block text-xs leading-relaxed text-text-muted">{tweak.description}</span>
           {tweak.rationale && <span className="mt-1 block text-[11px] leading-relaxed text-text-subtle">Why it is listed: {tweak.rationale}</span>}
           {tweak.expectedImpact && <span className="mt-1 block text-[11px] leading-relaxed text-text-subtle">Expected impact / tradeoff: {tweak.expectedImpact}</span>}
           {tweak.experimentalWarning && <span className="mt-1 block text-[11px] leading-relaxed text-amber-200">Caution: {tweak.experimentalWarning}</span>}
+          {!pinnacleDefault && (
+            <span className="mt-1 block text-[11px] leading-relaxed text-amber-200">
+              Not in automatic Pinnacle: {pinnacleExclusionReason(tweak, audit ?? undefined)}
+            </span>
+          )}
           {audit ? (
             <span className="mt-2 block rounded border border-white/10 bg-black/20 px-2 py-1.5">
               <span className={`block text-[11px] font-semibold ${auditStatusClass(audit.status)}`}>
