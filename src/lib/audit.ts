@@ -8,6 +8,7 @@
  */
 import type { TweakRecord } from './catalog'
 import { previewTweak, verifyAction, type TweakAction, type TweakPreview } from './tauri'
+import { manualPowerShellVerificationNote } from './powershellVerifiers'
 
 export type ActionAuditStatus = 'matches' | 'differs' | 'unknown' | 'error'
 
@@ -138,7 +139,12 @@ export async function auditTweak(tweak: TweakRecord): Promise<TweakAudit> {
         }
       }
       const preview = await previewTweak(action)
-      return auditAction(action, preview, index)
+      const audited = auditAction(action, preview, index)
+      if (action.kind === 'powershell_script' && audited.status === 'unknown') {
+        const note = manualPowerShellVerificationNote(tweak.id)
+        if (note) return { ...audited, detail: note }
+      }
+      return audited
     } catch (e) {
       return {
         index,

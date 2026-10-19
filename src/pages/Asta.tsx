@@ -23,6 +23,7 @@ import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from
 import { evaluateClosedLoop, isTransactionActionEligible } from '../lib/optimizationSession'
 import { isHardBlockedForAutoTune } from '../lib/tuneProfiles'
 import { auditMany, type TweakAudit } from '../lib/audit'
+import { manualPowerShellVerificationNote } from '../lib/powershellVerifiers'
 import { AstaShareCard } from '../components/AstaShareCard'
 import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
 import { TournamentAudit } from '../components/TournamentAudit'
@@ -1587,6 +1588,10 @@ function summarizeTransactionStatus(
 
 function formatAstaAuditDetail(tweakId: string, detail: string): string {
   const text = detail.trim()
+  if (/no declared read-back contract/i.test(text)) {
+    const note = manualPowerShellVerificationNote(tweakId)
+    if (note) return note
+  }
   if (text.startsWith('NOT_APPLICABLE:')) {
     const reason = text.slice('NOT_APPLICABLE:'.length).trim()
     return `${reason} No write was attempted because this capability is not exposed on this rig.`
@@ -1647,6 +1652,7 @@ function AstaPlanReviewRow({
   const differsCount = audit?.actions.filter((action) => action.status === 'differs').length ?? 0
   const unknownCount = audit?.actions.filter((action) => action.status === 'unknown').length ?? 0
   const errorCount = audit?.actions.filter((action) => action.status === 'error').length ?? 0
+  const manualVerificationNote = manualPowerShellVerificationNote(tweak.id)
   return (
     <article className="rounded-md border border-border bg-bg-base/60 p-3">
       <label className="flex cursor-pointer items-start gap-3">
@@ -1674,6 +1680,11 @@ function AstaPlanReviewRow({
           {tweak.rationale && <span className="mt-1 block text-[11px] leading-relaxed text-text-subtle">Why it is listed: {tweak.rationale}</span>}
           {tweak.expectedImpact && <span className="mt-1 block text-[11px] leading-relaxed text-text-subtle">Expected impact / tradeoff: {tweak.expectedImpact}</span>}
           {tweak.experimentalWarning && <span className="mt-1 block text-[11px] leading-relaxed text-amber-200">Caution: {tweak.experimentalWarning}</span>}
+          {manualVerificationNote && (
+            <span className="mt-1 block rounded border border-amber-500/30 bg-amber-500/5 px-2 py-1 text-[11px] leading-relaxed text-amber-100">
+              <strong className="text-amber-200">Manual verification:</strong> {manualVerificationNote}
+            </span>
+          )}
           {!pinnacleDefault && (
             <span className="mt-1 block text-[11px] leading-relaxed text-amber-200">
               Not in automatic Pinnacle: {pinnacleExclusionReason(tweak, audit ?? undefined)}
@@ -1767,8 +1778,9 @@ function Hero() {
             letterSpacing: '0.01em',
           }}
         >
-          For the kids on stock rigs born to chase pros they shouldn't be able to catch.
-          A measured core plus an opt-in lab lane. Your rig, not a slogan, decides what wins.
+          Hardware-aware settings for competitive play, with live read-back before apply and a
+          reversible path after. Your rig determines which changes are supported; anything that
+          cannot be verified stays visible for manual review.
         </p>
       </div>
 

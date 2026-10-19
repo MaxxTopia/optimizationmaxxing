@@ -77,6 +77,78 @@ const PCI_EXPRESS_LINK_STATE = 'ee12f906-d277-404b-b6da-e5fa1a576df5'
 const USB_SUBGROUP = '2a737441-1930-4402-8d77-b2bebba308a3'
 const USB_LINK_POWER = 'd4e23884-9b93-478a-9e23-77356611f124'
 
+const hostsMarkerVerifier = (
+  startMarker: string,
+  endMarker: string,
+  hosts: string[],
+  label: string,
+): string => {
+  const expected = hosts.map((host) => '0.0.0.0  ' + host)
+  const expectedLiteral = '@(' + expected.map((line) => "'" + line + "'").join(',') + ')'
+  return [
+    "$ErrorActionPreference='Stop'",
+    "$h=Join-Path $env:WINDIR 'System32\\drivers\\etc\\hosts'",
+    "$start='" + startMarker + "'",
+    "$end='" + endMarker + "'",
+    "if(-not(Test-Path -LiteralPath $h)){Write-Output 'UNKNOWN: The Windows hosts file could not be read.'; exit 2}",
+    "$content=Get-Content -LiteralPath $h -Raw -ErrorAction Stop",
+    "$block=[regex]::Match($content,'(?ms)'+[regex]::Escape($start)+'.*?'+[regex]::Escape($end)).Value",
+    "if([string]::IsNullOrWhiteSpace($block)){Write-Output ('MISMATCH: " + label + " hosts marker block is missing from the Windows hosts file.'); exit 1}",
+    "$expected=" + expectedLiteral,
+    "$missing=@($expected | Where-Object { $block -notmatch ('(?m)^\\s*'+[regex]::Escape($_)+'\\s*$') })",
+    "if($missing.Count -gt 0){Write-Output ('MISMATCH: " + label + " hosts block is missing '+$missing.Count+' expected entry(s).'); exit 1}",
+    "Write-Output 'Verified: " + label + " hosts marker block is present.'; exit 0",
+  ].join('; ')
+}
+
+const hibernationDisabledVerifier =
+  "$ErrorActionPreference='Stop'; $p=Get-ItemProperty -LiteralPath 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Power' -Name HibernateEnabled -ErrorAction Stop; if([int]$p.HibernateEnabled -eq 0){Write-Output 'Verified: Hibernation is disabled.'; exit 0}; Write-Output ('MISMATCH: Hibernation is enabled (HibernateEnabled='+$p.HibernateEnabled+').'); exit 1"
+
+const telemetryBatchTasks = [
+  '\\Microsoft\\Windows\\Application Experience\\Microsoft Compatibility Appraiser',
+  '\\Microsoft\\Windows\\Application Experience\\ProgramDataUpdater',
+  '\\Microsoft\\Windows\\Application Experience\\StartupAppTask',
+  '\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask',
+  '\\Microsoft\\Windows\\Customer Experience Improvement Program\\Consolidator',
+  '\\Microsoft\\Windows\\Customer Experience Improvement Program\\KernelCeipTask',
+  '\\Microsoft\\Windows\\Customer Experience Improvement Program\\UsbCeip',
+  '\\Microsoft\\Windows\\Autochk\\Proxy',
+  '\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector',
+  '\\Microsoft\\Windows\\Maps\\MapsToastTask',
+  '\\Microsoft\\Windows\\Maps\\MapsUpdateTask',
+  '\\Microsoft\\Windows\\Feedback\\Siuf\\DmClient',
+  '\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload',
+  '\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting',
+] as const
+
+const scheduledTasksDisabledVerifier = (tasks: readonly string[]): string => {
+  const taskLiteral = '@(' + tasks.map((task) => "'" + task + "'").join(',') + ')'
+  return [
+    "$ErrorActionPreference='Stop'",
+    "$tasks=" + taskLiteral,
+    "$missing=@(); $enabled=@()",
+    "foreach($p in $tasks){$parts=$p -split '\\\\'; $tn=$parts[-1]; $tp=$p.Substring(0,$p.Length-$tn.Length); try{$task=Get-ScheduledTask -TaskPath $tp -TaskName $tn -ErrorAction Stop}catch{$missing += $p; continue}; if([string]$task.State -eq 'Disabled'){continue}; $enabled += $p}",
+    "if($missing.Count -gt 0){Write-Output ('UNKNOWN: '+$missing.Count+' telemetry task(s) could not be read or are not installed.'); exit 2}",
+    "if($enabled.Count -gt 0){Write-Output ('MISMATCH: '+$enabled.Count+' telemetry task(s) remain enabled.'); exit 1}",
+    "Write-Output 'Verified: All cataloged telemetry tasks are disabled.'; exit 0",
+  ].join('; ')
+}
+
+// These actions intentionally stay in the explicit-review lane. They either
+// record guidance rather than changing a Windows setting, or create an
+// artifact that requires a separate vendor UI to import. A generic "script
+// ran" message would make those actions look verified when they are not.
+export const POWERSHELL_MANUAL_VERIFICATION_NOTES: Record<string, string> = {
+  'audio.sample-rate.match':
+    'UNKNOWN: This action records audio guidance only; it does not change the endpoint format. Set the playback device to 24 bit, 48000 Hz in Windows Sound settings and verify it there.',
+  'nvidia.nvpi.fortnite-profile':
+    'UNKNOWN: The Fortnite .nip artifact can be generated, but NVIDIA Profile Inspector import and Apply are manual and cannot be verified by this app.',
+}
+
+export function manualPowerShellVerificationNote(tweakId: string): string | undefined {
+  return POWERSHELL_MANUAL_VERIFICATION_NOTES[tweakId]
+}
+
 export const POWERSHELL_VERIFIERS: Record<string, string> = {
   'network.tcp.ack-nodelay':
     "$ErrorActionPreference='Stop'; $root='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces'; $paths=@(Get-ChildItem -LiteralPath $root -ErrorAction Stop | ForEach-Object { $p=Get-ItemProperty -LiteralPath $_.PSPath -ErrorAction SilentlyContinue; $ips=@($p.IPAddress)+@($p.DhcpIPAddress); if(@($ips | Where-Object { $_ -and $_ -ne '0.0.0.0' -and $_ -ne '::' -and $_ -ne '127.0.0.1' -and $_ -ne '::1' }).Count -gt 0){ $_.PSPath } }); if($paths.Count -eq 0){Write-Output 'UNKNOWN: No IP-bound TCP/IP interface profile was found; Windows did not expose a safe target.'; exit 2}; $bad=@($paths | Where-Object { $p=Get-ItemProperty -LiteralPath $_ -ErrorAction Stop; [int]$p.TcpAckFrequency -ne 1 -or [int]$p.TCPNoDelay -ne 1 }); if($bad.Count -gt 0){Write-Output ('MISMATCH: TCP immediate-ACK/Nagle target is missing on '+$bad.Count+' IP-bound interface profile(s).'); exit 1}; exit 0",
@@ -90,6 +162,47 @@ export const POWERSHELL_VERIFIERS: Record<string, string> = {
     "$ErrorActionPreference='Stop'; $statePath=Join-Path $env:LOCALAPPDATA 'optmaxxing\\backups\\siege-power-plan.json'; $planName='Optimizationmaxxing Ultimate Performance'; $legacyPlanName='Optimizationmaxxing Siege'; $active=powercfg /getactivescheme | Out-String; $activeGuid=[regex]::Match($active,'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}').Value; if(-not $activeGuid){Write-Output 'UNKNOWN: Active power plan could not be read; run the installed app as Administrator and retry.'; exit 2}; if(-not (Test-Path -LiteralPath $statePath)){ $plans=@(powercfg /list); $ownedPlan=@($plans | Where-Object {$_ -match ('\\('+[regex]::Escape($planName)+'\\)') -or $_ -match ('\\('+[regex]::Escape($legacyPlanName)+'\\)')}); if($ownedPlan.Count -gt 0){Write-Output 'UNKNOWN: An app-owned Ultimate Performance plan exists but its recovery record is missing; use Settings -> Restore/repair before retrying.'; exit 2}; Write-Output 'NOT_CONFIGURED: No app-owned Ultimate Performance plan or recovery record exists; first apply will create both before activation.'; exit 2}; try{$state=Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json}catch{Write-Output 'UNKNOWN: Power-plan recovery data cannot be read; use Settings -> Restore/repair before retrying.'; exit 2}; $schema=[int]$state.schema; $pattern='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'; if($schema -notin @(1,2) -or $state.owner -ne 'optimizationmaxxing' -or $state.created -ne $true -or [string]$state.originalGuid -notmatch $pattern -or [string]$state.targetGuid -notmatch $pattern -or [string]$state.originalGuid -eq [string]$state.targetGuid){Write-Output 'UNKNOWN: Power-plan ownership record is invalid; use Settings -> Restore/repair before retrying.'; exit 2}; if($schema -eq 1){$planName=$legacyPlanName}elseif([string]$state.planName -ne $planName){Write-Output 'UNKNOWN: Power-plan name is invalid; use Settings -> Restore/repair before retrying.'; exit 2}; $target=[string]$state.targetGuid; $line=@(powercfg /list | Where-Object {$_ -match [regex]::Escape($target)}); if($line.Count -ne 1 -or $line[0] -notmatch ('\\('+[regex]::Escape($planName)+'\\)')){Write-Output 'UNKNOWN: Owned Ultimate Performance plan is missing or was renamed; use Settings -> Restore/repair before retrying.'; exit 2}; if($activeGuid -ne $target){Write-Output 'MISMATCH: Active power-plan GUID differs from the owned Ultimate Performance plan.'; exit 1}; exit 0",
   'process.wake-timers.disable':
     "$q=powercfg /query SCHEME_CURRENT SUB_SLEEP BD3B718A-0680-4D9D-8AB2-E1D2B4AC806D | Out-String; if($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($q)){Write-Output 'UNKNOWN: Windows did not return the wake-timer power setting.'; exit 2}; if($q -match '0x00000000'){exit 0}; Write-Output 'MISMATCH: Wake timers are not disabled in the active power plan.'; exit 1",
+  'hosts.block.ms-telemetry': hostsMarkerVerifier(
+    '# === optimizationmaxxing/ms-telemetry begin ===',
+    '# === optimizationmaxxing/ms-telemetry end ===',
+    [
+      'vortex.data.microsoft.com',
+      'vortex-win.data.microsoft.com',
+      'telemetry.microsoft.com',
+      'watson.telemetry.microsoft.com',
+      'wes.df.telemetry.microsoft.com',
+      'services.wes.df.telemetry.microsoft.com',
+      'statsfe2.ws.microsoft.com',
+      'sqm.df.telemetry.microsoft.com',
+      'sqm.telemetry.microsoft.com',
+      'v10.events.data.microsoft.com',
+      'v20.events.data.microsoft.com',
+      'settings-win.data.microsoft.com',
+      'oca.telemetry.microsoft.com',
+      'reports.wes.df.telemetry.microsoft.com',
+      'feedback.windows.com',
+    ],
+    'Microsoft telemetry',
+  ),
+  'hosts.block.windows-ads': hostsMarkerVerifier(
+    '# === optimizationmaxxing/windows-ads begin ===',
+    '# === optimizationmaxxing/windows-ads end ===',
+    [
+      'arc.msn.com',
+      'g.msn.com',
+      'cdn.atdmt.com',
+      'm.adnxs.com',
+      'ads.msn.com',
+      'ads1.msn.com',
+      'rad.msn.com',
+      'live.rads.msn.com',
+      'msnbot-65-55-108-23.search.msn.com',
+      'flex.msn.com',
+    ],
+    'Windows ads',
+  ),
+  'ps.hibernation.disable': hibernationDisabledVerifier,
+  'tasks.telemetry-batch.disable': scheduledTasksDisabledVerifier(telemetryBatchTasks),
   'net.nic.interrupt-moderation.disable':
     `${ACTIVE_PHYSICAL_ROUTE}$p=Get-NetAdapterAdvancedProperty -Name $a.Name -DisplayName 'Interrupt Moderation' -ErrorAction SilentlyContinue; if(-not $p){Write-Output 'NOT_APPLICABLE: Interrupt Moderation is not exposed by the active adapter.'; exit 2}; if($p.DisplayValue -notmatch '^(Disabled|Off|No)$'){Write-Output ('MISMATCH: Interrupt Moderation is '+$p.DisplayValue+' on the active adapter; target is Disabled.'); exit 1}; exit 0`,
   'net.nic.flow-control.disable':

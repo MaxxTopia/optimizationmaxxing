@@ -312,6 +312,23 @@ export function NvpiDownloadsPanel() {
         )}
         {profileDiff && (
           <div className="rounded-md border border-border bg-bg-raised/30 p-2 space-y-2">
+            {profileDiff.diff.added.length === 0 && profileDiff.diff.removed.length === 0 ? (
+              <div className="rounded border border-emerald-500/40 bg-emerald-500/10 px-2 py-1.5">
+                <p className="text-[11px] font-semibold text-emerald-200">Matches shipped settings lines</p>
+                <p className="text-[10px] text-text-muted leading-snug mt-0.5">
+                  The exported file has no added or missing non-empty settings lines compared with
+                  the selected baseline. NVPI still must be reopened to confirm that the driver
+                  accepted and retained the profile.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1.5">
+                <p className="text-[11px] font-semibold text-amber-200">Different from shipped baseline</p>
+                <p className="text-[10px] text-text-muted leading-snug mt-0.5">
+                  {profileDiff.diff.added.length + profileDiff.diff.removed.length} settings-line change{profileDiff.diff.added.length + profileDiff.diff.removed.length === 1 ? '' : 's'} detected. Review the lines below; a difference is not automatically better or worse.
+                </p>
+              </div>
+            )}
             <p className="text-[11px] text-text-muted leading-snug">
               Compared <code>{profileDiff.fileName}</code> with{' '}
               <code>{compareFilename}</code>. Matching lines are omitted; this does not prove the

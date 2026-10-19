@@ -7,14 +7,23 @@ const catalogPath = path.join(root, 'resources', 'catalog', 'v1.json')
 const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'))
 const verifierPath = path.join(root, 'src', 'lib', 'powershellVerifiers.ts')
 const verifierSource = fs.readFileSync(verifierPath, 'utf8')
+const verifierSection = verifierSource.match(
+  /export const POWERSHELL_VERIFIERS[\s\S]*?^}/m,
+)?.[0] ?? ''
 const verifierIds = new Set(
-  [...verifierSource.matchAll(/^\s*'([^']+)':/gm)].map((match) => match[1]),
+  [...verifierSection.matchAll(/^\s*'([^']+)':/gm)].map((match) => match[1]),
+)
+const manualNotesSection = verifierSource.match(
+  /export const POWERSHELL_MANUAL_VERIFICATION_NOTES[\s\S]*?^}/m,
+)?.[0] ?? ''
+const manualNoteIds = new Set(
+  [...manualNotesSection.matchAll(/^\s*'([^']+)':/gm)].map((match) => match[1]),
 )
 const errors = []
 const warnings = []
 const ids = new Set()
 const powershellIds = new Set()
-const explicitOnlyPowerShellIds = new Set()
+const unclassifiedPowerShellIds = new Set()
 const legacyExperimentalIds = new Set([
   'process.cpu-mitigations.disable-DANGER',
   'process.msi-mode.gpu-nic-audio',
@@ -77,13 +86,19 @@ for (const tweak of catalog.tweaks ?? []) {
 // verifier entries are errors because they make the audit appear stronger
 // than the shipped catalog really is.
 for (const id of powershellIds) {
-  if (!verifierIds.has(id)) {
-    explicitOnlyPowerShellIds.add(id)
+  if (!verifierIds.has(id) && !manualNoteIds.has(id)) {
+    unclassifiedPowerShellIds.add(id)
   }
 }
 for (const id of verifierIds) {
   if (!powershellIds.has(id)) {
     errors.push(`${id}: verifier has no matching catalog PowerShell action`)
+  }
+}
+
+for (const id of manualNoteIds) {
+  if (!powershellIds.has(id)) {
+    errors.push(id + ': manual PowerShell verification note has no matching catalog action')
   }
 }
 
@@ -103,17 +118,27 @@ for (const tweak of catalog.tweaks ?? []) {
   evidenceCounts[tier] = (evidenceCounts[tier] ?? 0) + 1
 }
 
+// Add this before printing the summary so the error count matches the exit
+// status when a new PowerShell action lacks a verifier or manual note.
+if (unclassifiedPowerShellIds.size > 0) {
+  errors.push('PowerShell actions without a read-back verifier or explicit manual-verification note: ' + [...unclassifiedPowerShellIds].join(', '))
+}
+
 console.log(`catalog ${catalog.version}: ${catalog.tweaks.length} tweaks`)
 console.log(`risk: ${JSON.stringify(riskCounts)}`)
 console.log(`evidence: ${JSON.stringify(evidenceCounts)}`)
-console.log(`powershell: ${powershellIds.size} actions, ${[...powershellIds].filter((id) => verifierIds.has(id)).length} read-back verified, ${explicitOnlyPowerShellIds.size} explicit-only`)
-if (explicitOnlyPowerShellIds.size > 0) {
-  console.log(`explicit-only PowerShell: ${[...explicitOnlyPowerShellIds].join(', ')}`)
-}
+console.log(`powershell: ${powershellIds.size} actions, ${[...powershellIds].filter((id) => verifierIds.has(id)).length} read-back verified, ${manualNoteIds.size} explicitly manual, ${unclassifiedPowerShellIds.size} unclassified`)
 console.log(`experimental-or-risk4: ${catalog.tweaks.filter((t) => t.experimental === true || t.riskLevel === 4).length}`)
 console.log(`errors: ${errors.length}`)
 console.log(`warnings: ${warnings.length}`)
 for (const item of errors) console.log(`ERROR ${item}`)
 for (const item of warnings) console.log(`WARN ${item}`)
+
+if (manualNoteIds.size > 0) {
+  console.log('explicitly manual PowerShell: ' + [...manualNoteIds].join(', '))
+}
+if (unclassifiedPowerShellIds.size > 0) {
+  console.log('unclassified PowerShell: ' + [...unclassifiedPowerShellIds].join(', '))
+}
 
 if (errors.length > 0) process.exitCode = 1

@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.31',
+    date: '2026-10-19',
+    highlights: [
+      'IMPROVE **Asta read-back coverage.** Hosts, hibernation, and telemetry-task actions now have explicit live verifiers; audio and NVPI flows remain clearly labeled manual steps instead of appearing verified.',
+      'IMPROVE **Audit clarity.** The catalog audit now reports verified, manual, and unclassified PowerShell actions, while NVPI comparisons show exact matches or differences without claiming the driver accepted the profile.',
+      'FIX **Asta guidance.** Replaced the old motivational hero copy with concise hardware-aware guidance and a visible manual-review path for anything the app cannot prove live.',
+    ],
+  },
+  {
     version: '0.4.30',
     date: '2026-10-18',
     highlights: [
