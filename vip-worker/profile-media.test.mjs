@@ -313,7 +313,15 @@ test('saving a replacement or clearing a banner removes the old owned object', a
   }), env, context());
   assert.equal(clear.status, 200);
   assert.equal(media.values.has(secondKey), false);
-  assert.equal(await kv.get(`profile:${userId}`), null);
+  const tombstone = JSON.parse(await kv.get(`profile:${userId}`));
+  assert.ok(tombstone.updatedAt);
+  assert.deepEqual(Object.keys(tombstone), ['updatedAt']);
+
+  const roster = await worker.fetch(request('/roster'), env, context());
+  const rosterJson = await jsonResponse(roster);
+  assert.equal(roster.status, 200);
+  assert.equal(rosterJson.body.users[userId].profile, undefined);
+  assert.equal(rosterJson.body.users[userId].profileUpdatedAt, tombstone.updatedAt);
 });
 
 test('media upload fails clearly before storage is configured', async () => {
@@ -622,7 +630,9 @@ test('roster migration builds an R2 snapshot and later reads avoid KV list scans
   assert.equal(first.status, 200);
   assert.equal(firstJson.body.version, 2);
   assert.equal(firstJson.body.users[userId].tier, 3);
+  assert.equal(first.headers.get('cache-control'), 'no-store');
   assert.equal(media.values.has('roster/v2.json'), true);
+  assert.equal(media.values.get('roster/v2.json').httpMetadata.cacheControl, 'no-store');
 
   // Profile writes invalidate the isolate memo and update the durable mirror.
   const profile = await worker.fetch(request('/profile', 'POST', {
