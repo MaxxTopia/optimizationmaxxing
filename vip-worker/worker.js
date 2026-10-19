@@ -1275,13 +1275,13 @@ async function handleProfileUpdate(body, env, corsHeaders, ctx) {
     if (tier < minimumTier) delete final[field];
   }
 
-  // Drop the whole record if no flair remains — keeps KV tidy.
-  if (Object.keys(final).filter(k => k !== 'updatedAt').length === 0) {
-    await env.VIP_CLAIMS.delete(profileKey);
-  } else {
-    final.updatedAt = Date.now();
-    await env.VIP_CLAIMS.put(profileKey, JSON.stringify(final));
-  }
+  // Keep an updatedAt-only tombstone when all profile fields are cleared.
+  // Deleting the record made another client interpret its last local media as
+  // authoritative and republish the stale banner/avatar on the next sync.
+  // The tombstone is small, preserves the clear operation across clients, and
+  // is removed only when the claim itself expires or is revoked.
+  final.updatedAt = Date.now();
+  await env.VIP_CLAIMS.put(profileKey, JSON.stringify(final));
 
   // Versioned R2 objects avoid overwriting media while it is being viewed.
   // Once the profile points at a replacement (or clears the field), delete
@@ -1342,10 +1342,8 @@ function rosterEntryFromClaim(claim, profile) {
   if (parsed.expiresAt) entry.expiresAt = new Date(parsed.expiresAt).toISOString();
   if (parsed.founderNumber) entry.founderNumber = parsed.founderNumber;
   const cleaned = cleanProfileFields(profile, tier);
-  if (Object.keys(cleaned).length) {
-    entry.profile = cleaned;
-    if (Number.isFinite(Number(profile?.updatedAt))) entry.profileUpdatedAt = Number(profile.updatedAt);
-  }
+  if (Number.isFinite(Number(profile?.updatedAt))) entry.profileUpdatedAt = Number(profile.updatedAt);
+  if (Object.keys(cleaned).length) entry.profile = cleaned;
   return entry;
 }
 
@@ -1354,7 +1352,12 @@ function rosterResponse(payload, corsHeaders) {
     status: 200,
     headers: {
       'content-type': 'application/json',
-      'cache-control': `public, max-age=${ROSTER_CACHE_TTL_SEC}`,
+      // Profile media and widget skins are owner-scoped. Do not let a browser
+      // or an intermediary replay an older roster after the Worker has
+      // invalidated its memo following a profile update. The Worker still
+      // keeps its bounded in-memory/R2 snapshot cache; this header only stops
+      // client-side HTTP caches from reintroducing stale owner state.
+      'cache-control': 'no-store',
       ...corsHeaders,
     },
   });
@@ -1379,7 +1382,9 @@ async function writeRosterSnapshot(env, payload) {
   await env.PROFILE_MEDIA.put(ROSTER_SNAPSHOT_KEY, JSON.stringify(payload), {
     httpMetadata: {
       contentType: 'application/json',
-      cacheControl: `public, max-age=${ROSTER_CACHE_TTL_SEC}`,
+      // The snapshot is the durable source of truth, not a browser cache. A
+      // client must fetch the current owner map after focus/profile changes.
+      cacheControl: 'no-store',
     },
   });
 }
@@ -1440,10 +1445,8 @@ async function buildRosterFromKv(env, now) {
       try {
         const profile = JSON.parse(raw);
         const cleaned = cleanProfileFields(profile, users[userId].tier);
-        if (Object.keys(cleaned).length) {
-          users[userId].profile = cleaned;
-          if (Number.isFinite(Number(profile.updatedAt))) users[userId].profileUpdatedAt = Number(profile.updatedAt);
-        }
+        if (Number.isFinite(Number(profile.updatedAt))) users[userId].profileUpdatedAt = Number(profile.updatedAt);
+        if (Object.keys(cleaned).length) users[userId].profile = cleaned;
       } catch (_) {
         // Corrupt profile record — skip silently, fall through to no flair.
       }
