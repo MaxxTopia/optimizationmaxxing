@@ -111,6 +111,14 @@ type AstaInflightNotice = {
   actionCount: number
 }
 
+type AstaPreviewResult = {
+  detected: SpecProfile
+  plan: AstaPlan
+  planKey: string
+  audit: Record<string, TweakAudit>
+  pinnacleIds: Set<string>
+}
+
 export function Asta() {
   const isVip = useIsVip()
   const isNative = inTauri()
@@ -189,10 +197,6 @@ export function Asta() {
       && isPinnacleDefaultCandidate(tweak, planAudit[tweak.id]),
     ).length
     : 0
-  const selectedAdvancedCount = reviewedPlan && planAudit
-    ? reviewedPlan.candidates.filter((tweak) => selectedIds.has(tweak.id) && !isPinnacleDefaultCandidate(tweak, planAudit[tweak.id])).length
-    : 0
-
   useEffect(() => {
     void ensureLoaded()
       .then((detected) => {
@@ -237,10 +241,10 @@ export function Asta() {
     setQuoteIdx((i) => (i + 1) % QUOTES.length)
   }
 
-  async function handlePreview() {
+  async function prepareAstaPlan(forcePinnacleDefaults = false): Promise<AstaPreviewResult | null> {
     if (!isNative) {
       setError('The desktop app is required to read current Windows values. This preview never applies tweaks.')
-      return
+      return null
     }
     setPreviewBusy(true)
     setError(null)
@@ -266,23 +270,30 @@ export function Asta() {
       setPreviewProgress({ done: 0, total: nextPlan.candidates.length })
       const audit = await auditMany(nextPlan.candidates, (done, total) => setPreviewProgress({ done, total }), 3)
       setPlanAudit(audit)
+      const pinnacleIds = new Set(nextPlan.candidates
+        .filter((tweak) => isPinnacleDefaultCandidate(tweak, audit[tweak.id]))
+        .map((tweak) => tweak.id))
       setSelectedIds((previous) => {
-        if (sameReviewedPlan && selectionCustomized) {
+        if (!forcePinnacleDefaults && sameReviewedPlan && selectionCustomized) {
           const candidateIds = new Set(nextPlan.candidates.map((tweak) => tweak.id))
           return new Set([...previous].filter((id) => candidateIds.has(id)))
         }
-        return new Set(nextPlan.candidates
-          .filter((tweak) => isPinnacleDefaultCandidate(tweak, audit[tweak.id]))
-          .map((tweak) => tweak.id))
+        return pinnacleIds
       })
-      if (!sameReviewedPlan || !selectionCustomized) setSelectionCustomized(false)
+      if (forcePinnacleDefaults || !sameReviewedPlan || !selectionCustomized) setSelectionCustomized(false)
+      return { detected, plan: nextPlan, planKey: nextKey, audit, pinnacleIds }
     } catch (e) {
       setError(typeof e === 'string' ? e : (e as Error).message ?? String(e))
       setReviewedPlan(null)
       setReviewedPlanKey(null)
+      return null
     } finally {
       setPreviewBusy(false)
     }
+  }
+
+  async function handlePreview() {
+    await prepareAstaPlan(false)
   }
 
   async function captureAstaBench(phase: 'before' | 'after'): Promise<BenchScored | null> {
@@ -304,13 +315,14 @@ export function Asta() {
     }
   }
 
-  async function handleApply() {
+  async function handleApply(mode: 'pinnacle' | 'selected' = 'selected') {
     if (!isVip) return
-    if (!reviewedPlan || !reviewedPlanKey || !previewIsCurrent || !planAudit) {
+    const automaticPinnacle = mode === 'pinnacle'
+    if (!automaticPinnacle && (!reviewedPlan || !reviewedPlanKey || !previewIsCurrent || !planAudit)) {
       setError('Preview the current plan first. If the rig or inventory changed, refresh the preview before applying.')
       return
     }
-    if (selectedCount === 0) {
+    if (!automaticPinnacle && selectedCount === 0) {
       setError('Select at least one tweak in the reviewed plan, or leave without applying.')
       return
     }
@@ -324,6 +336,21 @@ export function Asta() {
     setBenchPhase('idle')
     setRebootProof(null)
     try {
+      // The primary path is intentionally self-contained: it performs the
+      // live preview/read-back, selects only the current Pinnacle defaults,
+      // and then continues with the existing final preflight and transaction
+      // safety checks. React state is asynchronous, so keep this result local
+      // instead of relying on setState having completed before apply starts.
+      const prepared = automaticPinnacle ? await prepareAstaPlan(true) : null
+      if (automaticPinnacle && !prepared) return
+      const previewPlan = prepared?.plan ?? reviewedPlan
+      const previewPlanKey = prepared?.planKey ?? reviewedPlanKey
+      const previewAudit = prepared?.audit ?? planAudit
+      const previewSelection = prepared?.pinnacleIds ?? selectedIds
+      if (!previewPlan || !previewPlanKey || !previewAudit) {
+        setError('Asta could not finish the live plan read-back. Nothing was changed; try again.')
+        return
+      }
       try {
         const latestPreflight = await getTunePreflight()
         setPreflight(latestPreflight)
@@ -348,18 +375,22 @@ export function Asta() {
       ]))
       setAppliedRows(latestApplied)
       const currentPlanKey = planFingerprint(detected, plan)
-      if (currentPlanKey !== reviewedPlanKey) {
+      if (currentPlanKey !== previewPlanKey) {
         setReviewedPlan(plan)
         setReviewedPlanKey(currentPlanKey)
         setPlanAudit(null)
         setSelectedIds(new Set())
         setSelectionCustomized(false)
-        setError('The rig or applicable plan changed since preview. Review the refreshed list before applying.')
+        setError(automaticPinnacle
+          ? 'The rig changed while Asta was preparing the automatic plan. Nothing was changed; run the one-click apply again.'
+          : 'The rig or applicable plan changed since preview. Review the refreshed list before applying.')
         return
       }
-      const chosen = plan.candidates.filter((tweak) => selectedIds.has(tweak.id))
+      const chosen = plan.candidates.filter((tweak) => previewSelection.has(tweak.id))
       if (chosen.length === 0) {
-        setError('The selected tweaks are no longer eligible on this rig. Preview the current plan again.')
+        setError(automaticPinnacle
+          ? 'Asta found no supported settings that need changing on this PC. Nothing was written.'
+          : 'The selected tweaks are no longer eligible on this rig. Preview the current plan again.')
         setReviewedPlan(null)
         setReviewedPlanKey(null)
         return
@@ -398,7 +429,7 @@ export function Asta() {
       const executionTweaks = chosen.filter((tweak) => executionIds.has(tweak.id))
       const freshAudit = await auditMany(executionTweaks, undefined, 3)
       const auditChanged = executionTweaks.some((tweak) =>
-        !sameAuditReadback(planAudit[tweak.id], freshAudit[tweak.id]),
+        !sameAuditReadback(previewAudit[tweak.id], freshAudit[tweak.id]),
       )
       if (auditChanged) {
         setPlanAudit((previous) => ({ ...(previous ?? {}), ...freshAudit }))
@@ -964,7 +995,7 @@ export function Asta() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold text-text">Read-only plan review</p>
-                    <p className="text-[11px] text-text-muted">Preview reads current settings only and performs the live read-back. Opening this page does not request UAC or change Windows; nothing changes until you activate the selected rows.</p>
+                    <p className="text-[11px] text-text-muted">Review is optional. The main Asta button reads current settings, selects every supported Pinnacle row, and applies the plan in one guided run. Opening this page alone never requests UAC or changes Windows.</p>
                   </div>
                   <button
                     type="button"
@@ -975,8 +1006,8 @@ export function Asta() {
                     {previewBusy
                       ? `Reading plan… ${previewProgress.done}/${previewProgress.total}`
                       : reviewedPlan && previewIsCurrent
-                        ? 'Refresh preview'
-                        : 'Preview exact changes'}
+                        ? 'Refresh exact changes'
+                        : 'Review exact changes (optional)'}
                   </button>
                 </div>
                 {previewBusy && (
@@ -1018,9 +1049,9 @@ export function Asta() {
                         >Clear selection</button>
                       </div>
                     </div>
-                    <details open className="rounded border border-white/10 bg-black/10">
+                    <details className="rounded border border-white/10 bg-black/10">
                       <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-text">
-                        Pinnacle plan + advanced rows ({reviewedPlan.candidates.length}) — unchecked rows stay untouched
+                        Advanced selection (optional) · {reviewedPlan.candidates.length} eligible rows — unchecked rows stay untouched
                       </summary>
                       <div className="max-h-[34rem] space-y-2 overflow-y-auto p-2">
                         {reviewedPlan.candidates.map((tweak) => (
@@ -1180,8 +1211,8 @@ export function Asta() {
             <div className="mt-4 flex flex-col gap-2">
               <button
                 type="button"
-                onClick={handleApply}
-                disabled={busy || previewBusy || !isVip || !previewIsCurrent || !planAudit || selectedCount === 0 || preflight?.blocksAutoApply}
+                onClick={() => void handleApply('pinnacle')}
+                disabled={busy || previewBusy || !isNative || !isVip || preflight?.blocksAutoApply}
                 className="btn-chrome w-full px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
                 style={
                   isVip
@@ -1204,16 +1235,26 @@ export function Asta() {
                   ? 'Finish Windows Update, then re-scan'
                   : busy
                   ? 'Applying…'
-                  : !previewIsCurrent || !planAudit
-                    ? 'Preview the plan first'
-                  : selectedCount === 0
-                    ? 'No Pinnacle changes needed'
-                  : isVip
-                  ? selectedAdvancedCount > 0
-                    ? `🗡 Apply ${selectedCount} selected settings`
-                    : `🗡 Apply Pinnacle plan (${selectedCount})`
-                  : '👑 VIP only'}
+                  : !isVip
+                    ? '👑 VIP only'
+                    : pinnacleDefaultCount > 0 && previewIsCurrent
+                      ? `🗡 Apply all supported Pinnacle settings (${pinnacleDefaultCount})`
+                      : '🗡 Apply all supported Pinnacle settings'}
               </button>
+              {reviewedPlan && planAudit && previewIsCurrent && selectionCustomized && selectedCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => void handleApply('selected')}
+                  disabled={busy || previewBusy || !isNative || !isVip || preflight?.blocksAutoApply}
+                  className="w-full rounded-md border border-sky-300/30 px-4 py-2 text-xs text-sky-200 hover:bg-sky-300/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Apply selected advanced rows ({selectedCount})
+                </button>
+              )}
+              <p className="text-center text-[11px] text-text-subtle">
+                One click reads live state first. It applies only supported, read-back-safe Pinnacle settings;
+                review-only, policy-owned, unsupported, and ambiguous rows stay out automatically.
+              </p>
               <Link
                 to="/benchmark"
                 className="text-center text-xs text-text-muted hover:text-text border border-border rounded-md px-3 py-1.5 hover:border-border-glow transition"

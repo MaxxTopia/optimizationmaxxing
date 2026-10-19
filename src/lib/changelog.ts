@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.32',
+    date: '2026-10-19',
+    highlights: [
+      'IMPROVE **One-click Asta apply.** Asta now reads the live plan and applies supported Pinnacle settings without requiring a manual preview or checkbox-by-checkbox selection.',
+      'IMPROVE **Advanced review UX.** Detailed rows are optional and collapsed by default; policy-owned, unsupported, ambiguous, and manual-only actions remain visibly separated from the automatic path.',
+    ],
+  },
+  {
     version: '0.4.31',
     date: '2026-10-19',
     highlights: [
