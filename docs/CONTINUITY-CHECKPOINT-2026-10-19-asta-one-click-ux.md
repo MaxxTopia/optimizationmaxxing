@@ -3,8 +3,9 @@
 ## Scope
 
 This pass improved Asta Mode's primary flow in the local worktree. It did not
-write Windows settings, request UAC, publish a release, or change the user's
-machine. Existing unrelated dirty schema and continuity files were preserved.
+write Windows settings, request UAC, or change the user's machine. Release
+publication was completed separately after the source and CI checks passed.
+Existing unrelated dirty schema and continuity files were preserved.
 
 ## Implemented
 
@@ -46,13 +47,30 @@ Passed in this worktree:
 - The user's prior receipt with two explicit unverified actions and a -1.1
   local proxy delta remains a historical run that needs manual review/revert;
   this UI change does not claim to repair an unknown prior machine state.
-- The source change is prepared locally as the v0.4.32 release candidate but is
-  not published yet. The current public build remains v0.4.31 until CI ships
-  the authorized tag.
+- CI and the public release do not prove real Windows UAC behavior, reboot
+  persistence, or Fortnite gameplay performance; those remain device-test
+  gates for the user.
+
+## v0.4.32 release evidence
+
+- Release commit: `bc99f97f228fb2d1905d826249d49afa8d898dc4`
+- Public tag/release: `v0.4.32` —
+  https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.32
+- Release workflow `39292881941` succeeded and published the signed Windows
+  installer, updater signature, and `latest.json`.
+- The updater manifest reports version `0.4.32` and the expected x64 NSIS
+  installer URL.
+- MaxxTopia release-sync `39294145966` and Pages deploy `39294177444`
+  succeeded; the public page now links to v0.4.32.
+- Unrelated local files remain intentionally dirty and unstaged:
+  `_IF-YOU-LOSE-CLAUDE.txt` and the three generated Tauri schema files.
 
 ## Best next action
 
-Run the local build in the desktop client and click the new primary Asta button
-without opening the advanced list. Confirm that one plan read, one consent
-boundary, a receipt, and the before/after bench appear. If that passes, the
-release candidate can be published through the documented v0.4.32 tag flow.
+Install or update to v0.4.32 in the desktop client and click the new primary
+Asta button without opening the advanced list. Confirm that one plan read, one
+consent boundary, a receipt, and the before/after bench appear. Then restart
+Windows and use the persistence check; compare Fortnite under the same scene,
+route, graphics, cap, driver, and background load. A negative device result is
+not overridden by the release claim; revert the affected run and capture the
+receipt for diagnosis.
