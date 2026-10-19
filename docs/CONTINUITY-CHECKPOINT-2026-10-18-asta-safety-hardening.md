@@ -191,9 +191,12 @@ automatic lane without failing CI first.
 
 ## Still unfinished / user-owed
 
-1. Install v0.4.30 and run a real Asta/Windows protected apply, then restart
-   Windows and use its Check-after-reboot flow. This is the human UAC/reboot
-   gate; source and packaging tests cannot prove it.
+1. Install v0.4.30, relaunch the app, and read back both the installed
+   executable at `C:\Program Files\optimizationmaxxing\optimizationmaxxing.exe`
+   and the in-app version; both must report `0.4.30` before testing Asta.
+   Then use Asta's read-only preview, run one protected apply, restart Windows,
+   and use its Check-after-reboot flow. This is the human UAC/reboot gate;
+   source and packaging tests cannot prove it.
 2. Run one controlled Fortnite before/after capture with the same scene,
    route, graphics, cap, driver, and background load. The desktop Asta proxy is
    not proof of FPS, input latency, build registration, or server ping.
@@ -203,7 +206,8 @@ automatic lane without failing CI first.
 
 ## Best next action
 
-Install the published v0.4.30 client and use it for a read-only Asta preview,
-one protected apply, a Windows restart, and Check after reboot before judging
-Fortnite. Then run one controlled same-scene A/B capture. Keep the existing
-unrelated generated-schema changes and continuity file rename untouched.
+Install the published v0.4.30 client, confirm the executable and in-app version
+both read `0.4.30`, then use it for a read-only Asta preview, one protected
+apply, a Windows restart, and Check after reboot before judging Fortnite. Then
+run one controlled same-scene A/B capture. Keep the existing unrelated
+generated-schema changes and continuity file rename untouched.
