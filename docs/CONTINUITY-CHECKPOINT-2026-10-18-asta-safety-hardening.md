@@ -11,6 +11,9 @@ verified performance improvement.
 
 - Canonical worktree: `C:\Users\Diggy\projects\optimizationmaxxing-v0.4.27-copyfix`
 - Branch: `fix/asta-copy-v0.4.28`
+- Current branch and `origin/main` both point to the continuity follow-up
+  commit `2b9b083`; the published `v0.4.30` tag points to release commit
+  `666c5b2`.
 - Released tag/commit: `v0.4.30` / `666c5b2`
 - v0.4.30 was pushed and published by CI run `39156375162`:
   `https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.30`.
@@ -19,12 +22,11 @@ verified performance improvement.
 - Published installer SHA-256:
   `D5AE1C0CA92A3FD9E66FAC3F57BA961EFBACB2FA44BEDAAB5B2CD5FD419CFB6F`.
 - MaxxTopia received the release dispatch successfully in workflow run
-  `39156825570`; its follow-up Cloudflare Pages deploy is in progress in run
-  `39156839191`.
-- The installed/running client has not been replaced automatically and remains
-  the previously installed `0.4.29` client at `C:\Program
-  Files\optimizationmaxxing\optimizationmaxxing.exe`. Installing v0.4.30 is
-  the remaining local user-test step.
+  `39156825570`; its follow-up Cloudflare Pages deploy completed successfully
+  in run `39156839191`.
+- The installed executable has not been replaced automatically: the file at
+  `C:\Program Files\optimizationmaxxing\optimizationmaxxing.exe` is still
+  version `0.4.29`. Installing v0.4.30 is the remaining local user-test step.
 - The local environment still has no `TAURI_SIGNING_PRIVATE_KEY`; the release
   workflow used the existing CI signing secrets. No key was invented or
   rotated. CI emitted only a non-blocking GitHub Actions Node 20 deprecation
