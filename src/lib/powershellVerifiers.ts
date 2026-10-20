@@ -8,11 +8,12 @@
  */
 
 // Network verifiers must resolve the same physical adapter that carries the
-// active IPv4 default route. Checking every adapter can report a false pass
-// when a VPN, Hyper-V switch, or stale disconnected NIC is the one that was
-// actually changed.
+// active IPv4 or IPv6 default route. Checking every adapter can report a
+// false pass when a VPN, Hyper-V switch, or stale disconnected NIC is the one
+// that was actually changed. IPv4-only lookup also made a valid IPv6-only or
+// briefly-renumbering connection look like an apply failure.
 const ACTIVE_PHYSICAL_ROUTE =
-  "$ErrorActionPreference='Stop'; $route=@(Get-NetRoute -DestinationPrefix '0.0.0.0/0' -AddressFamily IPv4 | Where-Object { $_.NextHop -and $_.NextHop -ne '0.0.0.0' -and $_.InterfaceIndex } | Sort-Object @{Expression='RouteMetric';Ascending=$true},@{Expression='InterfaceMetric';Ascending=$true} | Select-Object -First 1); if($route.Count -ne 1){Write-Output 'Active IPv4 route unavailable; verification is unknown.'; exit 2}; $a=Get-NetAdapter -Physical -InterfaceIndex ([int]$route[0].InterfaceIndex) | Select-Object -First 1; if(-not $a){Write-Output 'Active route is not a physical adapter; verification is unknown.'; exit 2}; $idx=[int]$a.ifIndex; $guid=''; if($a.PSObject.Properties.Name -contains 'InterfaceGuid'){$guid=[string]$a.InterfaceGuid}; $pnp=''; if($a.PSObject.Properties.Name -contains 'PnpDeviceID'){$pnp=[string]$a.PnpDeviceID}; $identity=$pnp; if([string]::IsNullOrWhiteSpace($identity)){$identity=$guid}; if([string]::IsNullOrWhiteSpace($identity)){$identity=[string]$a.Name};"
+  "$ErrorActionPreference='Stop'; $routes=@(Get-NetRoute -DestinationPrefix '0.0.0.0/0' -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.NextHop -and $_.NextHop -ne '0.0.0.0' -and $_.InterfaceIndex }; Get-NetRoute -DestinationPrefix '::/0' -AddressFamily IPv6 -ErrorAction SilentlyContinue | Where-Object { $_.NextHop -and $_.NextHop -ne '::' -and $_.InterfaceIndex }); $selected=$routes | Sort-Object @{Expression='RouteMetric';Ascending=$true},@{Expression='InterfaceMetric';Ascending=$true} | ForEach-Object { $candidate=Get-NetAdapter -Physical -InterfaceIndex ([int]$_.InterfaceIndex) -ErrorAction SilentlyContinue | Where-Object Status -eq 'Up' | Select-Object -First 1; if($candidate){[pscustomobject]@{Route=$_;Adapter=$candidate}} } | Select-Object -First 1; if(-not $selected){Write-Output 'Active physical default route (IPv4 or IPv6) unavailable; verification is unknown.'; exit 2}; $route=$selected.Route; $a=$selected.Adapter; $idx=[int]$a.ifIndex; $guid=''; if($a.PSObject.Properties.Name -contains 'InterfaceGuid'){$guid=[string]$a.InterfaceGuid}; $pnp=''; if($a.PSObject.Properties.Name -contains 'PnpDeviceID'){$pnp=[string]$a.PnpDeviceID}; $identity=$pnp; if([string]::IsNullOrWhiteSpace($identity)){$identity=$guid}; if([string]::IsNullOrWhiteSpace($identity)){$identity=[string]$a.Name};"
 
 // `powercfg /query` accepts a scheme and an optional subgroup, not a setting
 // GUID as a third positional argument. Query the subgroup once, then isolate

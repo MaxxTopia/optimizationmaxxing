@@ -590,6 +590,12 @@ enum AstaVerifySlot {
     Explicit { state_index: usize },
 }
 
+#[derive(Clone, Copy)]
+enum AstaApplySlot {
+    Transaction { group_index: usize, state_index: usize },
+    Explicit { state_index: usize },
+}
+
 /// Apply a bounded set of reversible, verifiable actions as one transaction.
 ///
 /// This is separate from `apply_batch` on purpose. Existing callers depend on
@@ -1544,11 +1550,10 @@ async fn apply_asta_batch(
             }
         }
 
-        // All elevated actions from both lanes now share one UAC prompt. The
-        // action-level verifier below remains the authority for what actually
-        // changed; a non-zero aggregate shell exit is retained as a diagnostic
-        // rather than being treated as proof that every line failed.
-        let mut elevated_actions: Vec<&TweakAction> = Vec::new();
+        // All elevated actions from both lanes now share one UAC prompt. Mark
+        // the selected states before borrowing their actions for the batch;
+        // the action-to-command mapping below then remains immutable until
+        // the elevated helper has returned.
         for group in &mut groups {
             if group.failed {
                 continue;
@@ -1556,17 +1561,39 @@ async fn apply_asta_batch(
             for state in &mut group.states {
                 if state.prepared && state.item.action.requires_admin() {
                     state.attempted = true;
-                    elevated_actions.push(&state.item.action);
                 }
             }
         }
         for state in &mut explicit_states {
             if state.prepared && state.item.action.requires_admin() {
                 state.attempted = true;
-                elevated_actions.push(&state.item.action);
             }
         }
 
+        // Keep the action-to-command mapping so one rejected NIC/PowerShell
+        // line cannot be reported as though every line failed.
+        let mut elevated_actions: Vec<&TweakAction> = Vec::new();
+        let mut elevated_slots: Vec<AstaApplySlot> = Vec::new();
+        for (group_index, group) in groups.iter().enumerate() {
+            if group.failed {
+                continue;
+            }
+            for (state_index, state) in group.states.iter().enumerate() {
+                if state.prepared && state.item.action.requires_admin() {
+                    elevated_actions.push(&state.item.action);
+                    elevated_slots.push(AstaApplySlot::Transaction {
+                        group_index,
+                        state_index,
+                    });
+                }
+            }
+        }
+        for (state_index, state) in explicit_states.iter().enumerate() {
+            if state.prepared && state.item.action.requires_admin() {
+                elevated_actions.push(&state.item.action);
+                elevated_slots.push(AstaApplySlot::Explicit { state_index });
+            }
+        }
         let elevated_error = if elevated_actions.is_empty() {
             None
         } else {
@@ -1576,33 +1603,72 @@ async fn apply_asta_batch(
                 .flatten()
                 .map(|value| value != "false")
                 .unwrap_or(true);
-            match engine::elevation::run_elevated_batch_with_restore_point(
+            let result = engine::elevation::run_elevated_batch_with_restore_point_results(
                 &elevated_actions,
                 create_rp,
-            ) {
-                Ok(_) => {
-                    for group in &mut groups {
-                        if group.failed {
-                            continue;
-                        }
-                        for state in &mut group.states {
-                            if state.attempted && state.item.action.requires_admin() {
-                                state.applied = true;
-                                state.detail =
-                                    "Applied under one UAC prompt; awaiting live verification."
-                                        .into();
+            );
+            drop(elevated_actions);
+            match result {
+                Ok(results) if results.len() == elevated_slots.len() => {
+                    for (slot, result) in elevated_slots.into_iter().zip(results) {
+                        if result.exit_code == 0 {
+                            match slot {
+                                AstaApplySlot::Transaction {
+                                    group_index,
+                                    state_index,
+                                } => {
+                                    let state = &mut groups[group_index].states[state_index];
+                                    state.applied = true;
+                                    state.detail =
+                                        "Applied under one UAC prompt; awaiting live verification."
+                                            .into();
+                                }
+                                AstaApplySlot::Explicit { state_index } => {
+                                    let state = &mut explicit_states[state_index];
+                                    state.applied = true;
+                                    state.detail =
+                                        "Applied under one UAC prompt; awaiting live verification."
+                                            .into();
+                                }
                             }
-                        }
-                    }
-                    for state in &mut explicit_states {
-                        if state.attempted && state.item.action.requires_admin() {
-                            state.applied = true;
-                            state.detail =
-                                "Applied under one UAC prompt; awaiting live verification.".into();
+                        } else {
+                            let diagnostic = result.output.trim();
+                            let detail = if diagnostic.is_empty() {
+                                format!(
+                                    "Elevated apply failed (exit code {}).",
+                                    result.exit_code
+                                )
+                            } else {
+                                format!(
+                                    "Elevated apply failed (exit code {}): {}",
+                                    result.exit_code, diagnostic
+                                )
+                            };
+                            match slot {
+                                AstaApplySlot::Transaction {
+                                    group_index,
+                                    state_index,
+                                } => {
+                                    let tweak_id =
+                                        groups[group_index].states[state_index].item.tweak_id.clone();
+                                    groups[group_index].states[state_index].detail = detail.clone();
+                                    groups[group_index].fail(format!("{}: {}", tweak_id, detail));
+                                }
+                                AstaApplySlot::Explicit { state_index } => {
+                                    let tweak_id = explicit_states[state_index].item.tweak_id.clone();
+                                    explicit_states[state_index].detail = detail.clone();
+                                    errors.push(format!("{}: {}", tweak_id, detail));
+                                }
+                            }
                         }
                     }
                     None
                 }
+                Ok(results) => Some(format!(
+                    "elevated Asta batch returned {} results for {} commands",
+                    results.len(),
+                    elevated_slots.len()
+                )),
                 Err(error) => Some(format!("elevated Asta batch: {:#}", error)),
             }
         };
@@ -1640,7 +1706,9 @@ async fn apply_asta_batch(
                     let state = &mut groups[group_index].states[state_index];
                     if verification.status == VerificationStatus::Verified {
                         state.applied = true;
-                        state.detail = "Applied and verified in the live system.".into();
+                        if !state.detail.starts_with("Elevated apply failed") {
+                            state.detail = "Applied and verified in the live system.".into();
+                        }
                     } else {
                         state.detail =
                             format!("Live verification failed: {}", verification.detail);
@@ -1651,7 +1719,9 @@ async fn apply_asta_batch(
                     let state = &mut explicit_states[state_index];
                     if verification.status == VerificationStatus::Verified {
                         state.applied = true;
-                        state.detail = "Applied and verified in the live system.".into();
+                        if !state.detail.starts_with("Elevated apply failed") {
+                            state.detail = "Applied and verified in the live system.".into();
+                        }
                     } else {
                         state.detail =
                             format!("Live verification failed: {}", verification.detail);
@@ -1800,36 +1870,71 @@ async fn apply_asta_batch(
                 }
             }
         }
-        let elevated_revert_pairs = groups
+        // Keep the same action-to-command mapping for rollback. The old
+        // aggregate path marked every failed-group action as reverted when
+        // the batch returned success, even if one line failed. That made a
+        // missing ownership record (for example an LSO stash) look like a
+        // rollback failure for unrelated tweaks and left their receipt state
+        // ambiguous.
+        let elevated_revert_slots = groups
             .iter()
+            .enumerate()
             .rev()
-            .filter(|group| group.failed)
-            .flat_map(|group| {
+            .filter(|(_, group)| group.failed)
+            .flat_map(|(group_index, group)| {
                 group
                     .states
                     .iter()
+                    .enumerate()
                     .rev()
-                    .filter(|state| state.attempted && state.item.action.requires_admin())
-                    .map(|state| (&state.item.action, &state.pre_state))
+                    .filter(|(_, state)| state.attempted && state.item.action.requires_admin())
+                    .map(move |(state_index, _)| (group_index, state_index))
+            })
+            .collect::<Vec<_>>();
+        let elevated_revert_pairs = elevated_revert_slots
+            .iter()
+            .map(|(group_index, state_index)| {
+                (
+                    &groups[*group_index].states[*state_index].item.action,
+                    &groups[*group_index].states[*state_index].pre_state,
+                )
             })
             .collect::<Vec<_>>();
         if !elevated_revert_pairs.is_empty() {
-            match engine::elevation::run_elevated_revert_batch(&elevated_revert_pairs) {
-                Ok(_) => {
-                    for group in &mut groups {
-                        if !group.failed {
-                            continue;
-                        }
-                        for state in &mut group.states {
-                            if state.attempted && state.item.action.requires_admin() {
-                                state.rolled_back = true;
-                                if let Some(receipt) = &state.receipt {
-                                    let _ = store.mark_reverted(&receipt.receipt_id);
-                                }
+            let revert_result =
+                engine::elevation::run_elevated_revert_batch_results(&elevated_revert_pairs);
+            drop(elevated_revert_pairs);
+            match revert_result {
+                Ok(results) if results.len() == elevated_revert_slots.len() => {
+                    for ((group_index, state_index), result) in
+                        elevated_revert_slots.into_iter().zip(results)
+                    {
+                        if result.exit_code == 0 {
+                            let state = &mut groups[group_index].states[state_index];
+                            state.rolled_back = true;
+                            if let Some(receipt) = &state.receipt {
+                                let _ = store.mark_reverted(&receipt.receipt_id);
                             }
+                        } else {
+                            let state = &groups[group_index].states[state_index];
+                            let diagnostic = result.output.trim();
+                            let detail = if diagnostic.is_empty() {
+                                format!("exit code {}", result.exit_code)
+                            } else {
+                                format!("exit code {}: {}", result.exit_code, diagnostic)
+                            };
+                            rollback_errors.push(format!(
+                                "{} elevated rollback failed: {}",
+                                state.item.tweak_id, detail
+                            ));
                         }
                     }
                 }
+                Ok(results) => rollback_errors.push(format!(
+                    "elevated Asta rollback returned {} results for {} commands",
+                    results.len(),
+                    elevated_revert_slots.len()
+                )),
                 Err(error) => rollback_errors.push(format!(
                     "elevated Asta rollback failed: {:#}",
                     error
@@ -2303,19 +2408,26 @@ fn revert_receipts(
     if elevated_used {
         let pairs: Vec<(&TweakAction, &serde_json::Value)> =
             elevated.iter().map(|(_, a, p)| (a, p)).collect();
-        match engine::elevation::run_elevated_revert_batch(&pairs) {
-            Ok(_) => {
-                // Whole batch succeeded — mark each.
-                for (rid, _, _) in &elevated {
-                    let _ = store.mark_reverted(rid);
-                    reverted += 1;
+        let result = engine::elevation::run_elevated_revert_batch_results(&pairs);
+        drop(pairs);
+        match result {
+            Ok(results) if results.len() == elevated.len() => {
+                // One UAC boundary, but one receipt outcome per command. A
+                // single stale/missing ownership record must not make every
+                // other revert look failed.
+                for ((rid, _, _), command) in elevated.iter().zip(results) {
+                    if command.exit_code == 0 {
+                        let _ = store.mark_reverted(rid);
+                        reverted += 1;
+                    } else {
+                        failed.push(rid.clone());
+                    }
                 }
             }
-            Err(_) => {
-                // Batch failed — mark all elevated as failed.
-                for (rid, _, _) in &elevated {
-                    failed.push(rid.clone());
-                }
+            Ok(_) | Err(_) => {
+                // The helper itself failed or returned an incomplete result;
+                // no receipt is safe to mark as reverted.
+                failed.extend(elevated.iter().map(|(rid, _, _)| rid.clone()));
             }
         }
     }

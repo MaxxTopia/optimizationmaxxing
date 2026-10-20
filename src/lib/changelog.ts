@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.33',
+    date: '2026-10-20',
+    highlights: [
+      'FIX **Asta apply receipts.** Elevated batches now report each command independently, so one failed action cannot make unrelated tweaks look rolled back or hide the real diagnostic.',
+      'FIX **Physical NIC targeting.** Ethernet actions and read-back now follow the active physical IPv4/IPv6 route and restore the exact adapter captured before the change.',
+    ],
+  },
+  {
     version: '0.4.32',
     date: '2026-10-19',
     highlights: [

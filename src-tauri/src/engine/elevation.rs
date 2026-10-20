@@ -219,8 +219,22 @@ pub fn run_elevated_batch_with_restore_point(
     actions: &[&TweakAction],
     create_restore_point: bool,
 ) -> anyhow::Result<()> {
+    let results = run_elevated_batch_with_restore_point_results(actions, create_restore_point)?;
+    if let Some(error) = summarize_elevated_failures(&results, actions.len(), "elevated") {
+        return Err(error);
+    }
+    Ok(())
+}
+
+/// Apply many actions under one UAC prompt and retain each command result.
+/// Aggregate-only results made a single failed command look like every
+/// command failed, forcing Asta to guess during rollback.
+pub fn run_elevated_batch_with_restore_point_results(
+    actions: &[&TweakAction],
+    create_restore_point: bool,
+) -> anyhow::Result<Vec<ElevatedCommandOutput>> {
     if actions.is_empty() {
-        return Ok(());
+        return Ok(Vec::new());
     }
     let mut lines: Vec<String> = Vec::with_capacity(actions.len());
     for a in actions {
@@ -231,7 +245,7 @@ pub fn run_elevated_batch_with_restore_point(
     } else {
         Vec::new()
     };
-    run_elevated_lines(&preamble, &lines)
+    run_elevated_command_results(&preamble, &lines, "optmaxxing-elev")
 }
 
 /// Run arbitrary elevated command lines under one UAC prompt (best-effort
@@ -389,14 +403,26 @@ pub fn run_elevated_revert_action(
 pub fn run_elevated_revert_batch(
     items: &[(&TweakAction, &serde_json::Value)],
 ) -> anyhow::Result<()> {
+    let results = run_elevated_revert_batch_results(items)?;
+    if let Some(error) = summarize_elevated_failures(&results, items.len(), "elevated revert") {
+        return Err(error);
+    }
+    Ok(())
+}
+
+/// Revert many elevated actions under one UAC prompt and retain each command
+/// result so callers can mark only the receipts that really reverted.
+pub fn run_elevated_revert_batch_results(
+    items: &[(&TweakAction, &serde_json::Value)],
+) -> anyhow::Result<Vec<ElevatedCommandOutput>> {
     if items.is_empty() {
-        return Ok(());
+        return Ok(Vec::new());
     }
     let mut lines: Vec<String> = Vec::with_capacity(items.len());
     for (action, pre) in items {
         lines.push(build_revert_line(action, pre).context("building batched revert line")?);
     }
-    run_elevated_lines(&[], &lines)
+    run_elevated_command_results(&[], &lines, "optmaxxing-revert")
 }
 
 /// Common runner: spawn ONE elevated cmd.exe that runs each line
@@ -496,6 +522,144 @@ fn run_elevated_lines(preamble: &[String], lines: &[String]) -> anyhow::Result<(
     }
     let _ = std::fs::remove_file(&log_path);
     Ok(())
+}
+
+/// Run command lines inside one hidden elevated cmd.exe and capture each line
+/// independently. The wrapper exits zero after UAC succeeds; individual
+/// command exit codes are returned in order so callers can recover precisely.
+fn run_elevated_command_results(
+    preamble: &[String],
+    lines: &[String],
+    prefix: &str,
+) -> anyhow::Result<Vec<ElevatedCommandOutput>> {
+    if lines.is_empty() && preamble.is_empty() {
+        return Ok(Vec::new());
+    }
+    let temp_dir = std::env::temp_dir();
+    let stamp = chrono::Utc::now().timestamp_millis();
+    let pid = std::process::id();
+    let script_path = temp_dir.join(format!("{prefix}-{pid}-{stamp}.cmd"));
+    let mut output_paths = Vec::with_capacity(lines.len());
+    let mut code_paths = Vec::with_capacity(lines.len());
+    let mut script = String::from("@echo off\r\nsetlocal enabledelayedexpansion\r\n");
+
+    // Restore-point creation is best effort and must not make a tweak line
+    // look failed. The actual action lines below retain their exit codes.
+    for command in preamble {
+        script.push_str(&format!("({command}) >nul 2>&1 || ver >nul\r\n"));
+    }
+    for (index, line) in lines.iter().enumerate() {
+        let output_path = temp_dir.join(format!("{prefix}-{pid}-{stamp}-{index}.out"));
+        let code_path = temp_dir.join(format!("{prefix}-{pid}-{stamp}-{index}.code"));
+        let output_path_str = output_path.to_string_lossy().to_string();
+        let code_path_str = code_path.to_string_lossy().to_string();
+        script.push_str(&format!(
+            "({line}) >{} 2>&1\r\necho !errorlevel! >{}\r\n",
+            cmd_quote(&output_path_str),
+            cmd_quote(&code_path_str),
+        ));
+        output_paths.push(output_path);
+        code_paths.push(code_path);
+    }
+    script.push_str("exit /b 0\r\n");
+
+    std::fs::write(&script_path, script.as_bytes())
+        .context("writing elevated command batch script to temp")?;
+
+    let cleanup = || {
+        let _ = std::fs::remove_file(&script_path);
+        for path in &output_paths {
+            let _ = std::fs::remove_file(path);
+        }
+        for path in &code_paths {
+            let _ = std::fs::remove_file(path);
+        }
+    };
+
+    let outer = format!(
+        "try {{ $startArgs=@('/c','\"{}\"'); $admin=([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator); if($admin){{ $p=Start-Process -FilePath cmd.exe -ArgumentList $startArgs -Wait -WindowStyle Hidden -PassThru }}else{{ $p=Start-Process -FilePath cmd.exe -ArgumentList $startArgs -Verb RunAs -Wait -WindowStyle Hidden -PassThru }}; exit [int]$p.ExitCode }} catch {{ exit 1223 }}",
+        script_path.to_string_lossy().replace('\'', "''"),
+    );
+    let status = match hidden_elevation_powershell()
+        .args(["-NoLogo", "-NoProfile", "-NonInteractive"])
+        .arg("-Command")
+        .arg(&outer)
+        .status()
+    {
+        Ok(status) => status,
+        Err(error) => {
+            cleanup();
+            return Err(error).context("spawning elevated powershell.exe");
+        }
+    };
+
+    let outer_exit = status.code().unwrap_or(-1);
+    if outer_exit != 0 {
+        cleanup();
+        if outer_exit == 1223 {
+            return Err(anyhow!(
+                "elevated command batch was cancelled or denied by UAC (Windows error 1223)"
+            ));
+        }
+        return Err(anyhow!(
+            "elevated command helper exited with code {outer_exit}"
+        ));
+    }
+
+    let mut results = Vec::with_capacity(lines.len());
+    for (output_path, code_path) in output_paths.iter().zip(code_paths.iter()) {
+        let output = match std::fs::read(output_path) {
+            Ok(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
+            Err(error) => {
+                cleanup();
+                return Err(anyhow!("elevated command output was missing: {error}"));
+            }
+        };
+        let code_text = match std::fs::read_to_string(code_path) {
+            Ok(text) => text,
+            Err(error) => {
+                cleanup();
+                return Err(anyhow!("elevated command exit code was missing: {error}"));
+            }
+        };
+        let exit_code = match code_text.trim().parse::<i32>() {
+            Ok(code) => code,
+            Err(error) => {
+                cleanup();
+                return Err(anyhow!("elevated command returned an invalid exit code: {error}"));
+            }
+        };
+        results.push(ElevatedCommandOutput { exit_code, output });
+    }
+
+    cleanup();
+    Ok(results)
+}
+
+fn summarize_elevated_failures(
+    results: &[ElevatedCommandOutput],
+    expected: usize,
+    label: &str,
+) -> Option<anyhow::Error> {
+    let failures = results.iter().filter(|result| result.exit_code != 0).count();
+    if failures == 0 && results.len() == expected {
+        return None;
+    }
+    if results.len() != expected {
+        return Some(anyhow!(
+            "{label} command batch returned {} results for {expected} commands",
+            results.len()
+        ));
+    }
+    let first = results
+        .iter()
+        .find(|result| result.exit_code != 0)
+        .map(|result| result.output.trim())
+        .filter(|output| !output.is_empty())
+        .unwrap_or("no diagnostic output");
+    Some(anyhow!(
+        "{failures} of {expected} {label} commands failed. First diagnostic: {first}"
+    ))
 }
 
 /// PowerShell single-quote — doubles embedded `'`.
