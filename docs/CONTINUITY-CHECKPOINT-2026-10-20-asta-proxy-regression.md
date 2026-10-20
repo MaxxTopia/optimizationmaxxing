@@ -3,9 +3,10 @@
 ## Scope
 
 This pass hardens the Asta apply and rollback path after a user receipt showed
-the local composite proxy falling from 95 to 92. The source fix is in the local
-worktree `fix/asta-copy-v0.4.28`; it has not been pushed or published. Existing
-dirty continuity, schema, and generated files were preserved.
+the local composite proxy falling from 95 to 92. The source fix was prepared in
+the local worktree `fix/asta-copy-v0.4.28`, fast-forwarded to `origin/main`,
+and published as `v0.4.33`. Existing dirty continuity, schema, and generated
+files were preserved and were not included in the release commit.
 
 ## Root cause and changes
 
@@ -42,12 +43,30 @@ Passed in this worktree:
 - PowerShell parser audit - 48 action scripts parsed
 - `git diff --check`
 
+Release evidence:
+
+- Release commit: `9a75f36c6da11a80daccc68e9827627a7bc16245`
+- Tag: `v0.4.33`
+- GitHub release: https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.33
+- CI release run: https://github.com/MaxxTopia/optimizationmaxxing/actions/runs/39516905675
+- CI result: successful Windows build, signing, artifact verification, and publish
+- Published assets: installer, installer signature, and `latest.json`
+- Updater manifest: version `0.4.33`, Windows URL points to the `v0.4.33` installer,
+  and a signature is present
+- MaxxTopia release-sync run: successful
+  https://github.com/MaxxTopia/maxxtopia/actions/runs/39517853055
+- MaxxTopia Cloudflare deployment: successful
+  https://github.com/MaxxTopia/maxxtopia/actions/runs/39517875081
+- Public page verified: `https://maxxtopia.com/optimizationmaxxing` reports
+  `v0.4.33` and links to the `v0.4.33` installer
+
 The native desktop package build produced the executable and NSIS installer:
 `src-tauri/target/release/optimizationmaxxing.exe` and
 `src-tauri/target/release/bundle/nsis/optimizationmaxxing_0.4.33_x64-setup.exe`.
 The command returned nonzero only at the Tauri signing step because this
 worktree has a public key but no `TAURI_SIGNING_PRIVATE_KEY`; the artifact is
-not a signed release and was not published.
+not a signed local artifact. CI signed and published the release using the
+repository secret; the private key was not copied into this worktree.
 
 ## Not proven yet
 
@@ -62,11 +81,12 @@ not a signed release and was not published.
 
 ## Best next action
 
-The local build cannot sign without the private updater key; CI owns that
-secret. After the authorized v0.4.33 tag is published by CI, install the
-signed packaged build on the test PC,
-run Asta with the same route, graphics, cap, driver, and background load, and
-save the per-action receipt. Restart Windows and run the persistence check. If
-the proxy regresses, confirm that only the responsible reversible action(s) are
-reverted and capture the exact diagnostic for the next fix.
+Install or update to the signed `v0.4.33` package on the test PC, run Asta with
+the same route, graphics, cap, driver, and background load, and save the
+per-action receipt. Restart Windows and run the persistence check. For actual
+Fortnite proof, compare the same scene and cap before and after; the host proxy
+is useful for safety diagnostics but is not a Fortnite FPS, ping, or input-
+latency guarantee. If the proxy regresses, confirm that only the responsible
+reversible action(s) are reverted and capture the exact diagnostic for the next
+fix.
 
