@@ -113,23 +113,32 @@ const PROFILE_ENUMS = {
   avatarFit: new Set(['cover', 'contain']),
   avatarScale: new Set(['0.9', '1', '1.1']),
   mediaEffect: new Set(['none', 'glow', 'scanline']),
+  mediaSpeed: new Set(['0.75', '1', '1.25', '1.5']),
 };
 const PROFILE_KV_PREFIX = "profile:";
 // Shared Discordmaxxer banner media is stored in R2 and addressed by a
 // short, stable HTTPS URL so it can be placed in the existing roster field.
-// The bucket is intentionally a separate binding: local files are only
-// uploaded after the user explicitly clicks "Publish as shared banner".
+// The bucket is intentionally a separate binding: local files are uploaded
+// only after the user explicitly clicks Save in the profile editor.
 const PROFILE_MEDIA_PREFIX = "profile-media/";
 const PROFILE_MEDIA_PUBLIC_ORIGIN = "https://optmaxxing-vip.maxxtopia.workers.dev";
 const PROFILE_MEDIA_PATH_RE = /^\/profile-media\/([0-9]{17,20})\/(banner|avatar)\/([0-9a-f-]{36})$/i;
 const PROFILE_MEDIA_DATA_URI_RE = /^data:([^;,]+);base64,([A-Za-z0-9+/=\s]+)$/;
 const PROFILE_MEDIA_MIME_TYPES = new Set([
-  'image/gif', 'image/png', 'image/jpeg', 'image/webp',
+  'image/gif', 'image/png', 'image/apng', 'image/jpeg', 'image/webp',
   'video/mp4', 'video/webm', 'video/quicktime',
 ]);
 const PROFILE_MEDIA_MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const PROFILE_MEDIA_MAX_VIDEO_BYTES = 15 * 1024 * 1024;
 const PROFILE_MEDIA_MAX_OBJECTS = 5;
+const PROFILE_MEDIA_MAX_DURATION_SECONDS = 20;
+const PROFILE_MEDIA_MAX_DIMENSION = 4096;
+const PROFILE_MEDIA_MAX_AVATAR_DIMENSION = 2048;
+const PROFILE_MEDIA_ORPHAN_TTL_MS = 24 * 60 * 60 * 1000;
+const PROFILE_MEDIA_POSTER_SUFFIX = '.poster';
+const PROFILE_MEDIA_IMPORT_MAX_URL_LENGTH = 2048;
+const PROFILE_MEDIA_IMPORT_MAX_REDIRECTS = 3;
+const PROFILE_MEDIA_IMPORT_TIMEOUT_MS = 20_000;
 
 // Crockford-style "FOUND" — F=15, O=N/A so we use 0, U=N/A so we use V… stop.
 // Crockford excludes I/L/O/U so "FOUND" doesn't survive the regex. Instead, we
@@ -163,6 +172,7 @@ const PROFILE_FIELD_MIN_TIER = {
   bannerFit: TIER_MAXXER_PLUS,
   avatarFit: TIER_MAXXER_PLUS,
   avatarScale: TIER_MAXXER_PLUS,
+  mediaSpeed: TIER_MAXXER_PLUS,
   mediaEffect: TIER_MAXXER_PLUS_PLUS,
 };
 
@@ -185,6 +195,41 @@ export default {
     }
     const url = new URL(request.url);
 
+    // Process health is deliberately independent from KV. This endpoint is
+    // safe for low-frequency monitoring and never reads or writes customer
+    // license data.
+    if ((url.pathname === '/healthz' || url.pathname === '/health') && request.method === 'GET') {
+      return json({
+        ok: true,
+        service: 'optmaxxing-vip',
+        status: 'worker_up',
+        kv: 'not_checked',
+      }, 200, {
+        ...corsHeaders,
+        'cache-control': 'no-store',
+      });
+    }
+
+    // Readiness checks the data binding without exposing a record or writing
+    // anything. It is intentionally separate from /healthz so a KV outage or
+    // quota condition is visible without making the process look dead.
+    if (url.pathname === '/readyz' && request.method === 'GET') {
+      return handleReadiness(env, corsHeaders);
+    }
+
+    // Aimmaxer revalidates an existing server-backed license at startup and
+    // periodically while running. This path is read-only: it must never
+    // rewrite a claim, metadata record, roster index, or profile.
+    if (url.pathname === '/validate' && request.method === 'POST') {
+      let body;
+      try {
+        body = await request.json();
+      } catch (e) {
+        return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+      }
+      return handleValidate(body, env, corsHeaders);
+    }
+
     if (url.pathname === '/roster' && request.method === 'GET') {
       return handleRoster(env, corsHeaders, ctx);
     }
@@ -192,6 +237,19 @@ export default {
     if (url.pathname.startsWith('/profile-media/') &&
         (request.method === 'GET' || request.method === 'HEAD')) {
       return handleProfileMediaGet(request, url, env, corsHeaders);
+    }
+
+    if (url.pathname === '/profile-media/import' && request.method === 'POST') {
+      let body;
+      try {
+        body = await request.json();
+      } catch (e) {
+        return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
+      }
+      if (await rateLimited(request, 'profile-media-import', 30, 60)) {
+        return json({ ok: false, error: 'too many media imports; try again shortly' }, 429, corsHeaders);
+      }
+      return handleProfileMediaImport(body, env, corsHeaders);
     }
 
     if (url.pathname === '/profile-media' && request.method === 'POST') {
@@ -317,6 +375,12 @@ export default {
       return json({ ok: false, error: 'malformed JSON' }, 400, corsHeaders);
     }
     return handleClaim(body, env, ctx, corsHeaders);
+  },
+
+  async scheduled(controller, env, ctx) {
+    // R2 does not expire abandoned uploads by itself. Run cleanup in the
+    // background so a successful request is never held up by a large bucket.
+    ctx.waitUntil(cleanupAllProfileMedia(env));
   },
 };
 
@@ -540,6 +604,116 @@ async function handleClaim(body, env, ctx, corsHeaders) {
     200,
     corsHeaders,
   );
+}
+
+async function handleReadiness(env, corsHeaders) {
+  const headers = {
+    ...corsHeaders,
+    'cache-control': 'no-store',
+  };
+  const kv = env?.VIP_CLAIMS;
+  if (!kv || typeof kv.get !== 'function') {
+    return json({
+      ok: false,
+      service: 'optmaxxing-vip',
+      status: 'degraded',
+      kv: 'unavailable',
+      code: 'KV_UNAVAILABLE',
+    }, 503, headers);
+  }
+
+  try {
+    await kv.get('__system:readyz__');
+    return json({
+      ok: true,
+      service: 'optmaxxing-vip',
+      status: 'ready',
+      kv: 'reachable',
+    }, 200, headers);
+  } catch (error) {
+    console.warn(`[readyz] ${error?.message ?? error}`);
+    return json({
+      ok: false,
+      service: 'optmaxxing-vip',
+      status: 'degraded',
+      kv: 'unavailable',
+      code: 'KV_UNAVAILABLE',
+    }, 503, headers);
+  }
+}
+
+// POST /validate { code, hwid, product } — read-only license check used by
+// Aimmaxer on startup. A local claim file is not enough because an admin may
+// have reset the binding or revoked the code since the last launch.
+async function handleValidate(body, env, corsHeaders) {
+  const code = typeof body?.code === 'string' ? body.code : '';
+  const hwid = typeof body?.hwid === 'string' ? body.hwid : '';
+  const product = typeof body?.product === 'string' ? body.product.toLowerCase() : '';
+  const serverNow = Date.now();
+  const norm = normalizeCode(code);
+  const lowerHwid = hwid.toLowerCase();
+
+  if (!ALLOWED_CODE_RE.test(norm)) {
+    return json({ ok: false, error: 'malformed code' }, 400, corsHeaders);
+  }
+  if (!ALLOWED_HWID_RE.test(lowerHwid)) {
+    return json({ ok: false, error: 'malformed hwid' }, 400, corsHeaders);
+  }
+  if (product && !['om', 'dm', 'aim'].includes(product)) {
+    return json({ ok: false, error: 'malformed product' }, 400, corsHeaders);
+  }
+
+  const meta = await readCodeMeta(env, norm);
+  if (meta?.revoked || meta?.archivedAt) {
+    return json({
+      ok: false,
+      status: 'revoked',
+      error: meta.archivedAt ? 'this code has been removed' : 'this code has been revoked',
+    }, 403, corsHeaders);
+  }
+
+  const scope = meta?.scope ?? 'both';
+  const fallbackTier = tierFromMetaOrCode(meta, norm);
+  if (product && scope !== 'both' && scope !== product) {
+    return json({ ok: false, status: 'scope_mismatch', error: 'code scope mismatch' }, 403, corsHeaders);
+  }
+
+  const raw = await env.VIP_CLAIMS.get(`claim:${norm}`);
+  if (!raw) {
+    return json({ ok: false, status: 'unclaimed', error: 'code has not been claimed yet' }, 404, corsHeaders);
+  }
+  const parsed = parseClaim(raw);
+  const claimedAt = typeof parsed.claimedAt === 'number' ? parsed.claimedAt : null;
+  const rawDurationMs = meta?.durationMs;
+  const parsedDurationMs = rawDurationMs == null || rawDurationMs === '' ? null : Number(rawDurationMs);
+  const durationMs = Number.isFinite(parsedDurationMs) && parsedDurationMs > 0
+    ? parsedDurationMs
+    : (meta?.durationKey && Object.prototype.hasOwnProperty.call(DURATIONS, meta.durationKey)
+      ? DURATIONS[meta.durationKey]
+      : null);
+  const expiresAt = typeof parsed.expiresAt === 'number'
+    ? parsed.expiresAt
+    : (durationMs && claimedAt != null ? claimedAt + durationMs : null);
+
+  if (!parsed.hwid) {
+    return json({ ok: false, status: 'reset_required', error: 'this license needs to be rebound by redeeming on the new machine' }, 403, corsHeaders);
+  }
+  if (parsed.hwid !== lowerHwid) {
+    return json({ ok: false, status: 'hwid_mismatch', error: 'license is bound to another machine' }, 409, corsHeaders);
+  }
+  if (expiresAt != null && serverNow >= expiresAt) {
+    return json({ ok: false, status: 'expired', error: 'subscription expired', expiredAt: expiresAt, serverNow }, 410, corsHeaders);
+  }
+
+  return json({
+    ok: true,
+    status: 'valid',
+    tier: effectiveClaimTier(parsed, fallbackTier),
+    scope: parsed.scope ?? scope,
+    serverNow,
+    ...(claimedAt != null ? { claimedAt } : {}),
+    ...(expiresAt != null ? { expiresAt } : {}),
+  }, 200, corsHeaders);
 }
 
 // ─── First-time Tune Now offers ────────────────────────────────────────
@@ -1017,6 +1191,275 @@ function decodeProfileMediaDataUri(dataUri, claimedMime) {
   return { mime, bytes };
 }
 
+function readU16BE(bytes, offset) {
+  return offset + 2 <= bytes.length ? (bytes[offset] << 8) | bytes[offset + 1] : null;
+}
+
+function readU16LE(bytes, offset) {
+  return offset + 2 <= bytes.length ? bytes[offset] | (bytes[offset + 1] << 8) : null;
+}
+
+function readU32BE(bytes, offset) {
+  if (offset + 4 > bytes.length) return null;
+  return (((bytes[offset] * 0x100 + bytes[offset + 1]) * 0x100 + bytes[offset + 2]) * 0x100 + bytes[offset + 3]);
+}
+
+function readU32LE(bytes, offset) {
+  if (offset + 4 > bytes.length) return null;
+  return bytes[offset] + bytes[offset + 1] * 0x100 + bytes[offset + 2] * 0x10000 + bytes[offset + 3] * 0x1000000;
+}
+
+function readAscii(bytes, offset, length) {
+  if (offset + length > bytes.length) return '';
+  let value = '';
+  for (let i = 0; i < length; i++) value += String.fromCharCode(bytes[offset + i]);
+  return value;
+}
+
+function parseGifMetadata(bytes) {
+  const width = readU16LE(bytes, 6);
+  const height = readU16LE(bytes, 8);
+  if (width === null || height === null) return {};
+  let duration = 0;
+  let offset = 13;
+  const packed = bytes[10] ?? 0;
+  if (packed & 0x80) offset += 3 * (1 << ((packed & 0x07) + 1));
+  while (offset + 1 < bytes.length) {
+    const marker = bytes[offset++];
+    if (marker === 0x3b) break;
+    if (marker === 0x21) {
+      if (offset >= bytes.length) break;
+      const label = bytes[offset++];
+      if (label === 0xf9 && offset + 5 < bytes.length && bytes[offset] === 4) {
+        const delay = readU16LE(bytes, offset + 2);
+        if (delay !== null) duration += delay / 100;
+      }
+      const blockSize = bytes[offset++] ?? 0;
+      offset = Math.min(bytes.length, offset + blockSize);
+      while (offset < bytes.length) {
+        const size = bytes[offset++];
+        if (!size) break;
+        offset = Math.min(bytes.length, offset + size);
+      }
+      continue;
+    }
+    if (marker === 0x2c) {
+      if (offset + 9 > bytes.length) break;
+      const imagePacked = bytes[offset + 8] ?? 0;
+      offset += 9;
+      if (imagePacked & 0x80) offset += 3 * (1 << ((imagePacked & 0x07) + 1));
+      offset += 1;
+      while (offset < bytes.length) {
+        const size = bytes[offset++];
+        if (!size) break;
+        offset = Math.min(bytes.length, offset + size);
+      }
+      continue;
+    }
+    break;
+  }
+  return { width, height, duration: duration > 0 ? duration : undefined };
+}
+
+function parsePngMetadata(bytes) {
+  if (bytes.length < 24) return {};
+  const width = readU32BE(bytes, 16);
+  const height = readU32BE(bytes, 20);
+  if (!width || !height) return {};
+  let duration = 0;
+  let offset = 8;
+  while (offset + 12 <= bytes.length) {
+    const size = readU32BE(bytes, offset);
+    const type = readAscii(bytes, offset + 4, 4);
+    if (size === null || offset + 12 + size > bytes.length) break;
+    if (type === 'fcTL' && size >= 26) {
+      const numerator = readU16BE(bytes, offset + 8 + 20) ?? 0;
+      const denominator = readU16BE(bytes, offset + 8 + 22) || 100;
+      duration += numerator / denominator;
+    }
+    offset += 12 + size;
+    if (type === 'IEND') break;
+  }
+  return { width, height, duration: duration > 0 ? duration : undefined };
+}
+
+function parseJpegMetadata(bytes) {
+  if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) return {};
+  let offset = 2;
+  while (offset + 3 < bytes.length) {
+    if (bytes[offset] !== 0xff) { offset++; continue; }
+    while (offset < bytes.length && bytes[offset] === 0xff) offset++;
+    const marker = bytes[offset++];
+    if (marker === 0xd8 || marker === 0xd9) continue;
+    if (marker >= 0xd0 && marker <= 0xd7) continue;
+    const length = readU16BE(bytes, offset);
+    if (length === null || length < 2 || offset + length > bytes.length) break;
+    const isFrame = (marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) ||
+      (marker >= 0xc9 && marker <= 0xcb) || (marker >= 0xcd && marker <= 0xcf);
+    if (isFrame && offset + 7 <= bytes.length) {
+      return { width: readU16BE(bytes, offset + 5), height: readU16BE(bytes, offset + 3) };
+    }
+    offset += length;
+  }
+  return {};
+}
+
+function parseWebpMetadata(bytes) {
+  if (readAscii(bytes, 0, 4) !== 'RIFF' || readAscii(bytes, 8, 4) !== 'WEBP') return {};
+  const type = readAscii(bytes, 12, 4);
+  if (type === 'VP8X' && bytes.length >= 30) {
+    const width = 1 + bytes[24] + (bytes[25] << 8) + (bytes[26] << 16);
+    const height = 1 + bytes[27] + (bytes[28] << 8) + (bytes[29] << 16);
+    return { width, height };
+  }
+  return {};
+}
+
+function readMp4Uint64(bytes, offset) {
+  if (offset + 8 > bytes.length) return null;
+  const high = readU32BE(bytes, offset);
+  const low = readU32BE(bytes, offset + 4);
+  if (high === null || low === null) return null;
+  return high * 0x100000000 + low;
+}
+
+function parseMp4Metadata(bytes) {
+  if (bytes.length < 12 || readAscii(bytes, 4, 4) !== 'ftyp') return {};
+  const result = {};
+  const containerTypes = new Set(['moov', 'trak', 'mdia', 'minf', 'stbl', 'edts', 'udta', 'meta']);
+  const walk = (start, end) => {
+    let offset = start;
+    while (offset + 8 <= end && offset + 8 <= bytes.length) {
+      let size = readU32BE(bytes, offset);
+      const type = readAscii(bytes, offset + 4, 4);
+      let header = 8;
+      if (size === 1 && offset + 16 <= end) {
+        size = readMp4Uint64(bytes, offset + 8);
+        header = 16;
+      } else if (size === 0) {
+        size = end - offset;
+      }
+      if (!size || size < header || offset + size > end) break;
+      const dataStart = offset + header;
+      const dataEnd = offset + size;
+      if (type === 'mvhd' || type === 'mdhd') {
+        const version = bytes[dataStart] ?? 0;
+        const timescaleOffset = version === 1 ? dataStart + 20 : dataStart + 12;
+        const durationOffset = version === 1 ? dataStart + 24 : dataStart + 16;
+        const timescale = readU32BE(bytes, timescaleOffset);
+        const rawDuration = version === 1 ? readMp4Uint64(bytes, durationOffset) : readU32BE(bytes, durationOffset);
+        if (timescale && rawDuration !== null && rawDuration > 0 && !result.duration) result.duration = rawDuration / timescale;
+      } else if (type === 'tkhd') {
+        const version = bytes[dataStart] ?? 0;
+        const widthOffset = dataStart + (version === 1 ? 88 : 76);
+        const widthFixed = readU32BE(bytes, widthOffset);
+        const heightFixed = readU32BE(bytes, widthOffset + 4);
+        if (widthFixed && heightFixed && !result.width) {
+          result.width = Math.round(widthFixed / 65536);
+          result.height = Math.round(heightFixed / 65536);
+        }
+      }
+      if (containerTypes.has(type)) walk(dataStart, dataEnd);
+      offset += size;
+    }
+  };
+  walk(0, bytes.length);
+  return result;
+}
+
+function readEbmlVint(bytes, offset) {
+  if (offset >= bytes.length) return null;
+  const first = bytes[offset];
+  let mask = 0x80;
+  let width = 1;
+  while (width <= 8 && !(first & mask)) { mask >>= 1; width++; }
+  if (width > 8 || offset + width > bytes.length) return null;
+  let value = first & (mask - 1);
+  for (let i = 1; i < width; i++) value = value * 256 + bytes[offset + i];
+  const unknown = value === Math.pow(2, width * 7) - 1;
+  return { value, width, unknown };
+}
+
+function parseWebmMetadata(bytes) {
+  if (bytes.length < 4 || bytes[0] !== 0x1a || bytes[1] !== 0x45 || bytes[2] !== 0xdf || bytes[3] !== 0xa3) return {};
+  const result = {};
+  let timecodeScale = 1_000_000;
+  let durationUnits;
+  const containers = new Set([0x18538067, 0x1549a966, 0x1654ae6b, 0xae, 0xe0]);
+  const readUnsigned = (start, length) => {
+    if (length < 1 || length > 4 || start + length > bytes.length) return 0;
+    let value = 0;
+    for (let i = 0; i < length; i++) value = value * 256 + bytes[start + i];
+    return value;
+  };
+  const walk = (start, end) => {
+    for (let offset = start; offset + 2 < end;) {
+      const idFirst = bytes[offset];
+      const idWidth = idFirst & 0x80 ? 1 : idFirst & 0x40 ? 2 : idFirst & 0x20 ? 3 : idFirst & 0x10 ? 4 : 0;
+      if (!idWidth || offset + idWidth >= end) { offset++; continue; }
+      let id = 0;
+      for (let i = 0; i < idWidth; i++) id = id * 256 + bytes[offset + i];
+      const size = readEbmlVint(bytes, offset + idWidth);
+      if (!size) { offset++; continue; }
+      const dataStart = offset + idWidth + size.width;
+      const dataEnd = size.unknown ? end : dataStart + size.value;
+      if (dataStart > end || dataEnd > end || dataEnd <= dataStart) { offset++; continue; }
+
+      if (id === 0x2ad7b1 && size.value <= 4) {
+        const value = readUnsigned(dataStart, size.value);
+        if (value > 0) timecodeScale = value;
+      } else if (id === 0x4489 && (size.value === 4 || size.value === 8)) {
+        const view = new DataView(bytes.buffer, bytes.byteOffset + dataStart, size.value);
+        durationUnits = size.value === 4 ? view.getFloat32(0, false) : view.getFloat64(0, false);
+      } else if (id === 0xb0 && size.value <= 4) {
+        const value = readUnsigned(dataStart, size.value);
+        if (value > 0) result.width = value;
+      } else if (id === 0xba && size.value <= 4) {
+        const value = readUnsigned(dataStart, size.value);
+        if (value > 0) result.height = value;
+      }
+
+      if (containers.has(id)) walk(dataStart, dataEnd);
+      offset = dataEnd;
+    }
+  };
+  walk(4, bytes.length);
+  if (Number.isFinite(durationUnits) && durationUnits > 0) result.duration = durationUnits * timecodeScale / 1e9;
+  return result;
+}
+
+function readProfileMediaMetadata(bytes, mime) {
+  if (!(bytes instanceof Uint8Array) || bytes.length < 4) return {};
+  if (mime === 'image/gif') return parseGifMetadata(bytes);
+  if (mime === 'image/png' || mime === 'image/apng') return parsePngMetadata(bytes);
+  if (mime === 'image/jpeg') return parseJpegMetadata(bytes);
+  if (mime === 'image/webp') return parseWebpMetadata(bytes);
+  if (mime === 'video/mp4' || mime === 'video/quicktime') return parseMp4Metadata(bytes);
+  if (mime === 'video/webm') return parseWebmMetadata(bytes);
+  return {};
+}
+
+function validateProfileMediaMetadata(kind, mime, bytes) {
+  const metadata = readProfileMediaMetadata(bytes, mime);
+  const maxDimension = kind === 'avatar' ? PROFILE_MEDIA_MAX_AVATAR_DIMENSION : PROFILE_MEDIA_MAX_DIMENSION;
+  if (metadata.width > maxDimension || metadata.height > maxDimension) {
+    return { error: `${kind} dimensions must be ${maxDimension}px or smaller` };
+  }
+  if (metadata.duration > PROFILE_MEDIA_MAX_DURATION_SECONDS) {
+    return { error: `media duration must be ${PROFILE_MEDIA_MAX_DURATION_SECONDS} seconds or shorter` };
+  }
+  // Tiny fixtures and old files can be metadata-less, but do not allow a
+  // real video to bypass the duration guard simply by hiding its container.
+  if (mime.startsWith('video/') && bytes.length > 256 && !Number.isFinite(metadata.duration)) {
+    return { error: 'could not read video duration; use a valid MP4 or WebM file' };
+  }
+  return { metadata };
+}
+
+function profileMediaPosterKey(key) {
+  return `${key}${PROFILE_MEDIA_POSTER_SUFFIX}`;
+}
+
 function profileMediaKeyForUrl(value, userId, kind = 'banner') {
   if (typeof value !== 'string') return null;
   try {
@@ -1045,7 +1488,16 @@ async function readProfileRecord(env, userId) {
   }
 }
 
-async function pruneProfileMedia(env, userId, profile, preserveKey) {
+async function deleteProfileMediaObject(env, key) {
+  if (!key || !env.PROFILE_MEDIA?.delete) return;
+  await env.PROFILE_MEDIA.delete(key);
+  // A poster is a companion object, not a second user upload. Always remove
+  // it with the source media so replacing/clearing a banner cannot leak R2
+  // storage forever.
+  await env.PROFILE_MEDIA.delete(profileMediaPosterKey(key));
+}
+
+async function pruneProfileMedia(env, userId, profile, preserveKey, options = {}) {
   if (!env.PROFILE_MEDIA?.list || !env.PROFILE_MEDIA?.delete) return;
   try {
     const listed = await env.PROFILE_MEDIA.list({
@@ -1053,21 +1505,233 @@ async function pruneProfileMedia(env, userId, profile, preserveKey) {
       limit: 1000,
     });
     const objects = Array.isArray(listed?.objects) ? listed.objects : [];
+    const primaryObjects = objects.filter(object => object?.key && !String(object.key).endsWith(PROFILE_MEDIA_POSTER_SUFFIX));
+    const primaryKeys = new Set(primaryObjects.map(object => object.key));
     const keep = new Set([
       profileMediaKeyForUrl(profile?.bannerUrl, userId, 'banner'),
       profileMediaKeyForUrl(profile?.avatarAnimatedUrl, userId, 'avatar'),
       preserveKey,
     ].filter(Boolean));
-    const candidates = objects
+    const keepWithPosters = new Set([...keep, ...[...keep].map(profileMediaPosterKey)]);
+    const orphanPosters = objects.filter(object =>
+      object?.key && String(object.key).endsWith(PROFILE_MEDIA_POSTER_SUFFIX) &&
+      !primaryKeys.has(String(object.key).slice(0, -PROFILE_MEDIA_POSTER_SUFFIX.length))
+    );
+    const candidates = primaryObjects
       .filter(object => object?.key && !keep.has(object.key))
       .sort((a, b) => String(a.uploaded ?? '').localeCompare(String(b.uploaded ?? '')));
-    const deleteCount = Math.max(0, objects.length - PROFILE_MEDIA_MAX_OBJECTS);
-    await Promise.all(candidates.slice(0, deleteCount).map(object => env.PROFILE_MEDIA.delete(object.key)));
+    const stale = options.removeExpired
+      ? candidates.filter(object => {
+        const uploadedAt = Date.parse(String(object.uploaded ?? ''));
+        return Number.isFinite(uploadedAt) && Date.now() - uploadedAt > PROFILE_MEDIA_ORPHAN_TTL_MS;
+      })
+      : [];
+    const overLimit = candidates.slice(0, Math.max(0, primaryObjects.length - PROFILE_MEDIA_MAX_OBJECTS));
+    const toDelete = new Map([...stale, ...overLimit].map(object => [object.key, object]));
+    await Promise.all([
+      ...orphanPosters.map(object => env.PROFILE_MEDIA.delete(object.key)),
+      ...[...toDelete.values()].map(object => deleteProfileMediaObject(env, object.key)),
+      ...objects
+        .filter(object => object?.key && String(object.key).endsWith(PROFILE_MEDIA_POSTER_SUFFIX) && !keepWithPosters.has(object.key))
+        .filter(object => {
+          const uploadedAt = Date.parse(String(object.uploaded ?? ''));
+          return options.removeExpired && Number.isFinite(uploadedAt) && Date.now() - uploadedAt > PROFILE_MEDIA_ORPHAN_TTL_MS;
+        })
+        .map(object => env.PROFILE_MEDIA.delete(object.key)),
+    ]);
   } catch (error) {
     // Orphan cleanup is best effort. A temporary R2 list/delete failure must
     // not turn a valid new upload into a broken profile action.
     console.warn('[profile-media] prune failed:', error?.message ?? error);
   }
+}
+
+async function cleanupAllProfileMedia(env) {
+  if (!env.PROFILE_MEDIA?.list || !env.PROFILE_MEDIA?.delete) return;
+  try {
+    const userIds = new Set();
+    let cursor;
+    do {
+      const options = { prefix: PROFILE_MEDIA_PREFIX, limit: 1000 };
+      if (cursor) options.cursor = cursor;
+      const listed = await env.PROFILE_MEDIA.list(options);
+      for (const object of listed?.objects ?? []) {
+        const match = String(object?.key ?? '').match(/^profile-media\/([0-9]{17,20})\//);
+        if (match) userIds.add(match[1]);
+      }
+      cursor = listed?.truncated ? listed.cursor : undefined;
+    } while (cursor);
+
+    for (const userId of userIds) {
+      await pruneProfileMedia(env, userId, await readProfileRecord(env, userId), null, { removeExpired: true });
+    }
+  } catch (error) {
+    console.warn('[profile-media] scheduled cleanup failed:', error?.message ?? error);
+  }
+}
+
+function profileMediaMimeFromPath(value) {
+  const extension = String(value || '').toLowerCase().split('?')[0].split('#')[0].match(/\.([a-z0-9]+)$/)?.[1];
+  return ({
+    gif: 'image/gif',
+    apng: 'image/apng',
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    webp: 'image/webp',
+    mp4: 'video/mp4',
+    webm: 'video/webm',
+    mov: 'video/quicktime',
+  })[extension] || '';
+}
+
+function remoteProfileMediaUrlError(sourceUrl) {
+  if (typeof sourceUrl !== 'string' || !sourceUrl.trim()) return 'sourceUrl must be a direct HTTPS media URL';
+  if (sourceUrl.length > PROFILE_MEDIA_IMPORT_MAX_URL_LENGTH) {
+    return `sourceUrl must be ${PROFILE_MEDIA_IMPORT_MAX_URL_LENGTH} characters or shorter`;
+  }
+  let parsed;
+  try {
+    parsed = new URL(sourceUrl);
+  } catch {
+    return 'sourceUrl must be a valid HTTPS media URL';
+  }
+  if (parsed.protocol !== 'https:') return 'sourceUrl must use https://';
+  if (parsed.username || parsed.password) return 'sourceUrl cannot contain username or password credentials';
+  if (parsed.port && parsed.port !== '443') return 'sourceUrl must use the standard HTTPS port';
+  const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (!hostname || hostname === 'localhost' || hostname.endsWith('.localhost') ||
+      hostname.endsWith('.local') || hostname.endsWith('.internal') || hostname === 'metadata.google.internal') {
+    return 'sourceUrl points to a private or local host';
+  }
+  if (hostname.includes(':')) return 'sourceUrl must use a public HTTPS hostname';
+  const octets = hostname.split('.').map(Number);
+  if (octets.length === 4 && octets.every(Number.isInteger) && octets.every(value => value >= 0 && value <= 255)) {
+    const [first, second] = octets;
+    if (first === 0 || first === 10 || first === 127 || first === 169 && second === 254 ||
+        first === 172 && second >= 16 && second <= 31 || first === 192 && second === 168 ||
+        first === 100 && second >= 64 && second <= 127 || first === 198 && (second === 18 || second === 19)) {
+      return 'sourceUrl points to a private or reserved host';
+    }
+  }
+  return null;
+}
+
+async function readRemoteProfileMediaBytes(response, maxBytes) {
+  const contentLength = Number(response.headers.get('content-length'));
+  if (Number.isFinite(contentLength) && contentLength > maxBytes) {
+    throw new Error(`remote file exceeds the ${maxBytes === PROFILE_MEDIA_MAX_VIDEO_BYTES ? '15 MB video' : '5 MB image'} limit`);
+  }
+  if (!response.body) {
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > maxBytes) {
+      throw new Error(`remote file exceeds the ${maxBytes === PROFILE_MEDIA_MAX_VIDEO_BYTES ? '15 MB video' : '5 MB image'} limit`);
+    }
+    return bytes;
+  }
+  const reader = response.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const next = await reader.read();
+      if (next.done) break;
+      const value = next.value instanceof Uint8Array ? next.value : new Uint8Array(next.value);
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => {});
+        throw new Error(`remote file exceeds the ${maxBytes === PROFILE_MEDIA_MAX_VIDEO_BYTES ? '15 MB video' : '5 MB image'} limit`);
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock?.();
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
+async function fetchRemoteProfileMedia(sourceUrl) {
+  const initialError = remoteProfileMediaUrlError(sourceUrl);
+  if (initialError) throw new Error(initialError);
+  let currentUrl = sourceUrl;
+  for (let redirect = 0; redirect <= PROFILE_MEDIA_IMPORT_MAX_REDIRECTS; redirect++) {
+    const validationError = remoteProfileMediaUrlError(currentUrl);
+    if (validationError) throw new Error(validationError);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PROFILE_MEDIA_IMPORT_TIMEOUT_MS);
+    let response;
+    try {
+      response = await fetch(currentUrl, {
+        redirect: 'manual',
+        signal: controller.signal,
+        headers: { accept: 'image/gif,image/apng,image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime' },
+      });
+    } catch (error) {
+      if (error?.name === 'AbortError') throw new Error('remote media request timed out after 20 seconds');
+      throw new Error('could not fetch the remote media URL');
+    } finally {
+      clearTimeout(timer);
+    }
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location) throw new Error('remote media redirect did not include a destination');
+      if (redirect === PROFILE_MEDIA_IMPORT_MAX_REDIRECTS) throw new Error('remote media redirected too many times');
+      currentUrl = new URL(location, currentUrl).toString();
+      continue;
+    }
+    if (!response.ok) throw new Error(`remote media returned HTTP ${response.status}`);
+    const declaredMime = String(response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+    const inferredMime = profileMediaMimeFromPath(currentUrl);
+    const mime = declaredMime === 'application/octet-stream' || !declaredMime ? inferredMime : declaredMime;
+    if (!PROFILE_MEDIA_MIME_TYPES.has(mime)) {
+      throw new Error(`remote media returned unsupported content type ${declaredMime || 'unknown'}; use a direct GIF, PNG, JPG, WebP, MP4, or WebM URL`);
+    }
+    const maxBytes = mime.startsWith('video/') ? PROFILE_MEDIA_MAX_VIDEO_BYTES : PROFILE_MEDIA_MAX_IMAGE_BYTES;
+    const bytes = await readRemoteProfileMediaBytes(response, maxBytes);
+    return { mime, bytes };
+  }
+  throw new Error('remote media import did not complete');
+}
+
+async function persistProfileMedia(auth, kind, decoded, poster, mediaValidation, env) {
+  const token = crypto.randomUUID();
+  const key = `${PROFILE_MEDIA_PREFIX}${auth.userId}/${kind}/${token}`;
+  await env.PROFILE_MEDIA.put(key, decoded.bytes, {
+    httpMetadata: {
+      contentType: decoded.mime,
+      contentDisposition: 'inline',
+      cacheControl: 'public, max-age=300',
+    },
+  });
+  if (poster) {
+    await env.PROFILE_MEDIA.put(profileMediaPosterKey(key), poster.bytes, {
+      httpMetadata: {
+        contentType: poster.mime,
+        contentDisposition: 'inline',
+        cacheControl: 'public, max-age=86400',
+      },
+    });
+  }
+  await pruneProfileMedia(env, auth.userId, await readProfileRecord(env, auth.userId), key);
+  const publicUrl = `${PROFILE_MEDIA_PUBLIC_ORIGIN}/${key}` +
+    (decoded.mime.startsWith('video/') ? '?dmx-media=video' : '');
+  const posterUrl = poster
+    ? `${PROFILE_MEDIA_PUBLIC_ORIGIN}/${key}?dmx-media=video&dmx-poster=1`
+    : undefined;
+  return {
+    ok: true,
+    url: publicUrl,
+    ...(posterUrl ? { posterUrl } : {}),
+    mime: decoded.mime,
+    bytes: decoded.bytes.byteLength,
+    ...(mediaValidation.metadata && Object.keys(mediaValidation.metadata).length ? { metadata: mediaValidation.metadata } : {}),
+  };
 }
 
 async function handleProfileMediaUpload(body, env, corsHeaders) {
@@ -1089,25 +1753,50 @@ async function handleProfileMediaUpload(body, env, corsHeaders) {
   if (kind === 'avatar' && decoded.mime.startsWith('video/')) {
     return json({ ok: false, error: 'shared avatars accept GIF/image files; send video once to native Discord instead' }, 400, corsHeaders);
   }
+  const mediaValidation = validateProfileMediaMetadata(kind, decoded.mime, decoded.bytes);
+  if (mediaValidation.error) return json({ ok: false, error: mediaValidation.error }, 400, corsHeaders);
 
-  const token = crypto.randomUUID();
-  const key = `${PROFILE_MEDIA_PREFIX}${auth.userId}/${kind}/${token}`;
-  await env.PROFILE_MEDIA.put(key, decoded.bytes, {
-    httpMetadata: {
-      contentType: decoded.mime,
-      contentDisposition: 'inline',
-      cacheControl: 'public, max-age=300',
-    },
-  });
-  await pruneProfileMedia(env, auth.userId, await readProfileRecord(env, auth.userId), key);
-  const publicUrl = `${PROFILE_MEDIA_PUBLIC_ORIGIN}/${key}` +
-    (decoded.mime.startsWith('video/') ? '?dmx-media=video' : '');
-  return json({
-    ok: true,
-    url: publicUrl,
-    mime: decoded.mime,
-    bytes: decoded.bytes.byteLength,
-  }, 201, corsHeaders);
+  let poster = null;
+  if (body?.posterDataUri !== undefined) {
+    if (!decoded.mime.startsWith('video/') || kind !== 'banner') {
+      return json({ ok: false, error: 'posterDataUri is only supported for banner videos' }, 400, corsHeaders);
+    }
+    poster = decodeProfileMediaDataUri(body.posterDataUri);
+    if (poster.error || !poster.mime.startsWith('image/')) {
+      return json({ ok: false, error: poster.error || 'poster must be an image' }, 400, corsHeaders);
+    }
+    const posterValidation = validateProfileMediaMetadata('banner', poster.mime, poster.bytes);
+    if (posterValidation.error) return json({ ok: false, error: `poster: ${posterValidation.error}` }, 400, corsHeaders);
+  }
+
+  return json(await persistProfileMedia(auth, kind, decoded, poster, mediaValidation, env), 201, corsHeaders);
+}
+
+async function handleProfileMediaImport(body, env, corsHeaders) {
+  const auth = await getProfileAuth(body, env);
+  if (auth.error) return json({ ok: false, error: auth.error }, auth.status, corsHeaders);
+  const kind = body?.kind === 'avatar' ? 'avatar' : body?.kind === 'banner' ? 'banner' : '';
+  if (!kind) return json({ ok: false, error: 'kind must be banner or avatar' }, 400, corsHeaders);
+  const field = kind === 'avatar' ? 'avatarAnimatedUrl' : 'bannerUrl';
+  if (auth.tier < PROFILE_FIELD_MIN_TIER[field]) {
+    return json({ ok: false, error: `${field} requires tier ${PROFILE_FIELD_MIN_TIER[field]}+` }, 403, corsHeaders);
+  }
+  if (!env.PROFILE_MEDIA) {
+    return json({ ok: false, error: 'profile media storage is not configured yet' }, 503, corsHeaders);
+  }
+  let fetched;
+  try {
+    fetched = await fetchRemoteProfileMedia(body?.sourceUrl);
+  } catch (error) {
+    return json({ ok: false, error: error?.message || 'could not import the remote media URL' }, 400, corsHeaders);
+  }
+  const decoded = { mime: fetched.mime, bytes: fetched.bytes };
+  if (kind === 'avatar' && decoded.mime.startsWith('video/')) {
+    return json({ ok: false, error: 'shared avatars accept GIF/image files; video avatars remain native-Discord-only' }, 400, corsHeaders);
+  }
+  const mediaValidation = validateProfileMediaMetadata(kind, decoded.mime, decoded.bytes);
+  if (mediaValidation.error) return json({ ok: false, error: mediaValidation.error }, 400, corsHeaders);
+  return json(await persistProfileMedia(auth, kind, decoded, null, mediaValidation, env), 201, corsHeaders);
 }
 
 async function handleProfileMediaGet(request, url, env, corsHeaders) {
@@ -1116,7 +1805,8 @@ async function handleProfileMediaGet(request, url, env, corsHeaders) {
   if (!env.PROFILE_MEDIA) {
     return json({ ok: false, error: 'profile media storage is not configured yet' }, 503, corsHeaders);
   }
-  const key = `${PROFILE_MEDIA_PREFIX}${match[1]}/${match[2]}/${match[3]}`;
+  const baseKey = `${PROFILE_MEDIA_PREFIX}${match[1]}/${match[2]}/${match[3]}`;
+  const key = url.searchParams.get('dmx-poster') === '1' ? profileMediaPosterKey(baseKey) : baseKey;
   const metadata = await env.PROFILE_MEDIA.head(key);
   if (!metadata) return json({ ok: false, error: 'media not found' }, 404, corsHeaders);
 
@@ -1297,7 +1987,7 @@ async function handleProfileUpdate(body, env, corsHeaders, ctx) {
       const nextMediaKey = profileMediaKeyForUrl(nextValue, userId, kind);
       if (previousMediaKey && previousMediaKey !== nextMediaKey) {
         try {
-          await env.PROFILE_MEDIA.delete(previousMediaKey);
+          await deleteProfileMediaObject(env, previousMediaKey);
         } catch (error) {
           console.warn('[profile] old media cleanup failed:', error?.message ?? error);
         }

@@ -155,26 +155,48 @@ actions:
   `scanline` finish. These settings are stored with the owner's profile and
   are returned to every Discordmaxxer client through the roster, so a viewer's
   local profile settings cannot replace the profile being viewed.
-- **Publish as shared banner** uploads a selected GIF, image, or video to the
-  `PROFILE_MEDIA` R2 bucket, saves the resulting HTTPS URL through `POST
-  /profile`, and makes it available to other Discordmaxxer clients on the
-  roster. Video URLs receive a `dmx-media=video` hint because the object URL
-  intentionally has no file extension.
-- **Publish as shared avatar** uploads a GIF/image avatar and saves it to the
-  same roster. Video avatars remain a one-time native Discord action because
-  the Discordmaxxer avatar renderer uses `<img>` and cannot reliably render a
+- **Upload & Save** uploads a selected or dropped GIF, image, or short video to
+  the `PROFILE_MEDIA` R2 bucket, saves the resulting stable HTTPS URL through
+  `POST /profile`, and makes it available to other Discordmaxxer clients on
+  the roster. The client shows local preview and upload progress before the
+  profile write; the worker owns the media by Discord user ID and only accepts
+  writes bearing that user's claim.
+- **Paste URL & Save** uses `POST /profile-media/import` to fetch a direct
+  HTTPS media URL on the server, validate it, store an owned copy, and replace
+  the pasted URL with the stable R2 URL before the profile write. The import
+  path follows only a small number of safe HTTPS redirects, blocks private or
+  metadata-network targets, rejects webpage responses, streams against the
+  byte limit, and never lets one user's claim write another user's media.
+- **Shared avatar** uploads GIF/image media and saves it to the same roster.
+  Video avatars remain a one-time native Discord action because the
+  Discordmaxxer avatar renderer uses `<img>` and cannot reliably render a
   video as an avatar.
 - **Send banner once** is a separate native Discord `/users/@me/profile`
   update. It does not save the file to the roster, and it cannot make the
   Discordmaxxer-only gradient/flair appear in vanilla Discord.
 
 The media route accepts image files up to 5 MB and banner video files up to
-15 MB. It serves `GET`, `HEAD`, and single-range `GET` requests at
+15 MB, limits media to 4096px (2048px for avatars) and 20 seconds, and
+validates GIF/PNG/JPEG/WebP/MP4/WebM/QuickTime metadata when available. The
+client automatically resizes/re-encodes oversized local PNG/JPEG/WebP files
+when it can do so safely; the Worker still performs the authoritative
+validation. The Worker import path stores the original bytes after validation.
+It intentionally does not transcode GIF/video because this Worker has no safe
+codec runtime. Adding real codec optimization later should be a separate
+media-processing service, not an opaque best-effort rewrite in the request
+handler. Local banner-video uploads may include a generated poster frame; it
+is stored as a companion object and served with `?dmx-poster=1` for viewers
+that need a thumbnail. Imported remote video currently keeps its original
+media without a generated poster. It serves `GET`, `HEAD`, and single-range
+`GET` requests at
 `/profile-media/<userId>/<banner|avatar>/<uuid>` with the stored content type
 so the roster renderer can load the same asset on another PC. Replacing or
 clearing a shared banner/avatar removes the previous object owned by that
 user; a best-effort per-user retention pass keeps at most five recent objects
-and external URLs are never deleted. Uploads are rate-limited at 60/minute.
+and external URLs are never deleted. An hourly scheduled pass removes
+unreferenced uploads and poster companions older than 24 hours. Uploads are
+rate-limited at 60/minute; the client retries transient failures up to three
+times and preserves the local draft when a save fails so it can be retried.
 Roster responses and the app cache converge in about 30 seconds. Profile
 writes carry an `updatedAt` conflict check so a stale second PC gets a clear
 refresh-and-review error instead of silently overwriting newer flair. After

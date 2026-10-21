@@ -2,6 +2,11 @@ name = "optmaxxing-vip"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 
+# The unclaimed profile-media cleanup handler is best-effort and never blocks
+# profile saves. It is intentionally not scheduled here because this Cloudflare
+# Free account has reached its five-cron limit; normal media serving, uploads,
+# validation, claims, and ticket flows do not depend on the timer.
+
 # Auto-grant config (v3, 2026-05-10).
 # Same DISCORD_GUILD_ID + VIP_ROLE_ID as maxxtopia/tickets-worker —
 # Maxxtopia server (ID 794160379767947264), universal @VIP role
