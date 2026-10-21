@@ -92,6 +92,15 @@ function adminRequest(path, method = 'GET', body) {
   return request(path, method, body, { authorization: `Bearer ${adminToken}` });
 }
 
+function ebmlElement(id, data) {
+  assert(data.length < 0x7f, 'test EBML element must fit in a one-byte size field');
+  return Uint8Array.from([...id, 0x80 | data.length, ...data]);
+}
+
+function concatBytes(...parts) {
+  return Uint8Array.from(parts.flatMap((part) => [...part]));
+}
+
 async function seededEnvironment() {
   const kv = new MemoryKV();
   const media = new MemoryR2();
@@ -240,6 +249,113 @@ test('local banner upload returns public media URL and serves bytes', async () =
   assert.equal(head.headers.get('accept-ranges'), 'bytes');
 });
 
+test('remote media import stores a validated owned copy and returns a stable URL', async () => {
+  const { media, env } = await seededEnvironment();
+  const bytes = Uint8Array.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]);
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input) => {
+    assert.equal(String(input), 'https://cdn.example.test/banner.gif');
+    return new Response(bytes, {
+      status: 200,
+      headers: { 'content-type': 'image/gif', 'content-length': String(bytes.length) },
+    });
+  };
+
+  try {
+    const imported = await worker.fetch(request('/profile-media/import', 'POST', {
+      userId,
+      claimCode,
+      kind: 'banner',
+      sourceUrl: 'https://cdn.example.test/banner.gif',
+    }), env, context());
+    const result = await jsonResponse(imported);
+    assert.equal(imported.status, 201);
+    assert.equal(result.body.ok, true);
+    assert.match(result.body.url, /^https:\/\/optmaxxing-vip\.maxxtopia\.workers\.dev\/profile-media\/12345678901234567\/banner\/[0-9a-f-]{36}$/i);
+    assert.equal(result.body.bytes, bytes.length);
+    assert.equal(media.values.size, 1);
+
+    const stored = [...media.values.values()][0];
+    assert.deepEqual(stored.bytes, bytes);
+    assert.equal(stored.httpMetadata.contentType, 'image/gif');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('remote media import rejects oversized responses before reading or storing them', async () => {
+  const { media, env } = await seededEnvironment();
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'content-type': 'image/png',
+        'content-length': String(5 * 1024 * 1024 + 1),
+      },
+    });
+  };
+
+  try {
+    const imported = await worker.fetch(request('/profile-media/import', 'POST', {
+      userId,
+      claimCode,
+      kind: 'banner',
+      sourceUrl: 'https://cdn.example.test/large.png',
+    }), env, context());
+    const result = await jsonResponse(imported);
+    assert.equal(imported.status, 400);
+    assert.match(result.body.error, /5 MB image limit/i);
+    assert.equal(media.values.size, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('remote media import rejects unsafe redirects and webpage responses', async () => {
+  const { media, env } = await seededEnvironment();
+  const originalFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    return new Response(null, {
+      status: 302,
+      headers: { location: 'https://127.0.0.1/private.gif' },
+    });
+  };
+
+  try {
+    const unsafe = await worker.fetch(request('/profile-media/import', 'POST', {
+      userId,
+      claimCode,
+      kind: 'banner',
+      sourceUrl: 'https://cdn.example.test/redirect.gif',
+    }), env, context());
+    const unsafeJson = await jsonResponse(unsafe);
+    assert.equal(unsafe.status, 400);
+    assert.match(unsafeJson.body.error, /private|reserved/i);
+    assert.equal(calls, 1);
+    assert.equal(media.values.size, 0);
+
+    globalThis.fetch = async () => new Response('<html>not media</html>', {
+      status: 200,
+      headers: { 'content-type': 'text/html' },
+    });
+    const webpage = await worker.fetch(request('/profile-media/import', 'POST', {
+      userId,
+      claimCode,
+      kind: 'avatar',
+      sourceUrl: 'https://cdn.example.test/profile',
+    }), env, context());
+    const webpageJson = await jsonResponse(webpage);
+    assert.equal(webpage.status, 400);
+    assert.match(webpageJson.body.error, /unsupported content type/i);
+    assert.equal(media.values.size, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('shared avatar upload accepts GIFs and marks video banners for the renderer', async () => {
   const { media, env } = await seededEnvironment();
   const avatarBytes = Uint8Array.from([0x47, 0x49, 0x46, 0x38]);
@@ -261,11 +377,62 @@ test('shared avatar upload accepts GIFs and marks video banners for the renderer
   const video = await worker.fetch(request('/profile-media', 'POST', {
     userId, claimCode, kind: 'banner', mime: 'video/mp4',
     dataUri: 'data:video/mp4;base64,AAAA',
+    posterDataUri: 'data:image/png;base64,iVBORw0KGgo=',
   }), env, context());
   const videoJson = await jsonResponse(video);
   assert.equal(video.status, 201);
   assert.match(videoJson.body.url, /\?dmx-media=video$/);
-  assert.equal(media.values.size, 2);
+  assert.match(videoJson.body.posterUrl, /\?dmx-media=video&dmx-poster=1$/);
+  assert.equal(media.values.size, 3);
+  const posterUrl = new URL(videoJson.body.posterUrl);
+  const poster = await worker.fetch(request(`${posterUrl.pathname}${posterUrl.search}`), env, context());
+  assert.equal(poster.status, 200);
+  assert.equal(poster.headers.get('content-type'), 'image/png');
+});
+
+test('media metadata limits reject oversized images and opaque real videos', async () => {
+  const { env } = await seededEnvironment();
+  const oversizedPng = new Uint8Array(24);
+  oversizedPng.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+  new DataView(oversizedPng.buffer).setUint32(16, 5000);
+  new DataView(oversizedPng.buffer).setUint32(20, 1);
+  const oversized = await worker.fetch(request('/profile-media', 'POST', {
+    userId, claimCode, kind: 'banner', mime: 'image/png',
+    dataUri: `data:image/png;base64,${Buffer.from(oversizedPng).toString('base64')}`,
+  }), env, context());
+  assert.equal(oversized.status, 400);
+  assert.match((await jsonResponse(oversized)).body.error, /dimensions/i);
+
+  const opaqueVideo = new Uint8Array(300);
+  const opaque = await worker.fetch(request('/profile-media', 'POST', {
+    userId, claimCode, kind: 'banner', mime: 'video/mp4',
+    dataUri: `data:video/mp4;base64,${Buffer.from(opaqueVideo).toString('base64')}`,
+  }), env, context());
+  assert.equal(opaque.status, 400);
+  assert.match((await jsonResponse(opaque)).body.error, /duration/i);
+
+  const duration = new Uint8Array(8);
+  new DataView(duration.buffer).setFloat64(0, 21_000, false);
+  const timecodeScale = ebmlElement([0x2a, 0xd7, 0xb1], [0x00, 0x0f, 0x42, 0x40]);
+  const webmInfo = ebmlElement([0x15, 0x49, 0xa9, 0x66], concatBytes(
+    timecodeScale,
+    ebmlElement([0x44, 0x89], [...duration]),
+  ));
+  const webmVideo = ebmlElement([0xe0], concatBytes(
+    ebmlElement([0xb0], [0x07, 0x80]),
+    ebmlElement([0xba], [0x04, 0x38]),
+  ));
+  const webmTracks = ebmlElement([0x16, 0x54, 0xae, 0x6b], ebmlElement([0xae], webmVideo));
+  const longWebm = concatBytes(
+    ebmlElement([0x1a, 0x45, 0xdf, 0xa3], []),
+    ebmlElement([0x18, 0x53, 0x80, 0x67], concatBytes(webmInfo, webmTracks)),
+  );
+  const longWebmResponse = await worker.fetch(request('/profile-media', 'POST', {
+    userId, claimCode, kind: 'banner', mime: 'video/webm',
+    dataUri: `data:video/webm;base64,${Buffer.from(longWebm).toString('base64')}`,
+  }), env, context());
+  assert.equal(longWebmResponse.status, 400);
+  assert.match((await jsonResponse(longWebmResponse)).body.error, /duration/i);
 });
 
 test('media pruning keeps the current upload set bounded', async () => {
@@ -278,6 +445,24 @@ test('media pruning keeps the current upload set bounded', async () => {
     assert.equal(response.status, 201);
   }
   assert.equal(media.values.size, 5);
+});
+
+test('scheduled cleanup removes abandoned uploads and their poster companions', async () => {
+  const { media, env } = await seededEnvironment();
+  const oldKey = `profile-media/${userId}/banner/abandoned`;
+  const oldPosterKey = `${oldKey}.poster`;
+  await media.put(oldKey, Uint8Array.from([1, 2, 3]), { httpMetadata: { contentType: 'video/mp4' } });
+  await media.put(oldPosterKey, Uint8Array.from([4, 5, 6]), { httpMetadata: { contentType: 'image/png' } });
+  const oldUploaded = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+  media.values.get(oldKey).uploaded = oldUploaded;
+  media.values.get(oldPosterKey).uploaded = oldUploaded;
+
+  let cleanup;
+  await worker.scheduled({}, env, { waitUntil(promise) { cleanup = promise; } });
+  await cleanup;
+
+  assert.equal(media.values.has(oldKey), false);
+  assert.equal(media.values.has(oldPosterKey), false);
 });
 
 test('saving a replacement or clearing a banner removes the old owned object', async () => {
@@ -509,7 +694,7 @@ test('profile presentation enhancements are tier-gated while free media stays fu
   await kv.put(`claim:${claimCode}`, JSON.stringify({ ...claim, tier: 2 }));
   const plusEnhancement = await worker.fetch(request('/profile', 'POST', {
     userId, claimCode,
-    profile: { bannerFit: 'contain', avatarFit: 'contain', avatarScale: '1.1' },
+    profile: { bannerFit: 'contain', avatarFit: 'contain', avatarScale: '1.1', mediaSpeed: '1.25' },
   }), env, context());
   assert.equal(plusEnhancement.status, 200);
 
@@ -526,6 +711,7 @@ test('profile presentation enhancements are tier-gated while free media stays fu
   assert.equal(saved.bannerFit, 'contain');
   assert.equal(saved.avatarFit, 'contain');
   assert.equal(saved.avatarScale, '1.1');
+  assert.equal(saved.mediaSpeed, '1.25');
   assert.equal(saved.mediaEffect, 'glow');
 });
 
