@@ -22,5 +22,13 @@ export default defineConfig({
     target: 'es2021',
     minify: 'esbuild',
     sourcemap: false,
+    chunkSizeWarningLimit: 750,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom', 'zustand'],
+        },
+      },
+    },
   },
 })

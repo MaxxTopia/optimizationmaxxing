@@ -906,6 +906,38 @@ export function Asta() {
     <div className="space-y-8">
       <Hero />
 
+      {/* 4-Step Self-Explanatory Process Guide */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="surface-card p-4 rounded-xl border border-border space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">1</span>
+            <span className="text-xs font-semibold text-text uppercase tracking-wider">Rig Audit</span>
+          </div>
+          <p className="text-xs text-text-muted leading-relaxed">Live preflight scans CPU, GPU, and OS build. Policy-owned, unsupported, or ambiguous rows are excluded safely.</p>
+        </div>
+        <div className="surface-card p-4 rounded-xl border border-border space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">2</span>
+            <span className="text-xs font-semibold text-text uppercase tracking-wider">1-Click Apply</span>
+          </div>
+          <p className="text-xs text-text-muted leading-relaxed">Applies all supported Pinnacle settings in one native UAC prompt. Immediate read-back receipts verify each tweak.</p>
+        </div>
+        <div className="surface-card p-4 rounded-xl border border-border space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">3</span>
+            <span className="text-xs font-semibold text-text uppercase tracking-wider">Reboot Check</span>
+          </div>
+          <p className="text-xs text-text-muted leading-relaxed">Restart Windows, then use <em>Check after reboot</em> to verify settings persisted through Windows boot.</p>
+        </div>
+        <div className="surface-card p-4 rounded-xl border border-border space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">4</span>
+            <span className="text-xs font-semibold text-text uppercase tracking-wider">Game Proof</span>
+          </div>
+          <p className="text-xs text-text-muted leading-relaxed">Compare 1% lows and frame pacing in your actual game. Reversible anytime with one-click rollback.</p>
+        </div>
+      </section>
+
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 surface-card p-6 space-y-4">
           <p className="text-[10px] uppercase tracking-[0.35em] text-text-subtle">the path</p>
@@ -1091,10 +1123,24 @@ export function Asta() {
             )}
 
             {!isVip && (
-              <div className="mt-4 rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs text-amber-200 leading-snug">
-                <strong>VIP required.</strong> Open <Link to="/pricing" className="underline">
-                Pricing</Link>, tap the $115 price 5 times within 3 seconds, paste a code from
-                Diggy.
+              <div className="mt-4 rounded-md border border-amber-500/50 bg-amber-500/10 p-3.5 text-xs text-amber-200 leading-snug flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-300 font-bold">👑 Asta Mode (VIP Only)</span>
+                    <span className="rounded bg-amber-400/20 px-1.5 py-0.5 text-[10px] uppercase font-semibold text-amber-300">Free Preview</span>
+                  </div>
+                  <p className="text-amber-200/90 text-xs">
+                    You can preview all hardware-matched settings and read-back diagnostics below. Upgrade to VIP or redeem your code to unlock 1-click apply, composite benchmarking, and reboot persistence.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link
+                    to="/pricing"
+                    className="btn-chrome px-3 py-1.5 rounded-md bg-amber-400 text-bg-base font-semibold text-xs whitespace-nowrap hover:bg-amber-300 transition"
+                  >
+                    View VIP ($115) →
+                  </Link>
+                </div>
               </div>
             )}
 

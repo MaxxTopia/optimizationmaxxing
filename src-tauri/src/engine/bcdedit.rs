@@ -52,7 +52,7 @@ pub(crate) fn parse_value(enum_output: &str, name: &str) -> Option<String> {
 
 /// Capture pre-state for a BcdeditSet action.
 pub fn capture_pre_state(action: &TweakAction) -> anyhow::Result<serde_json::Value> {
-    let TweakAction::BcdeditSet { name, .. } = action else {
+    let TweakAction::BcdeditSet { name: _, .. } = action else {
         return Err(anyhow!("capture_pre_state called on non-bcdedit action"));
     };
     let Some(out) = enum_bcd() else {

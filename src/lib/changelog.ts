@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.34',
+    date: '2026-10-21',
+    highlights: [
+      'IMPROVE **Bundle loading & performance.** Route-level code-splitting and vendor chunking cut initial load size by >68% for faster app launch.',
+      'IMPROVE **Tier clarity & code redemption.** Added a global header status pill, a prominent VIP code redemption button on Pricing, and side-by-side Free vs VIP guidance.',
+      'IMPROVE **Asta Mode guidance.** Added a 4-step execution guide (Rig Audit → 1-Click Apply → Reboot Check → Game Proof) and streamlined Free Preview guidance.',
+      'FIX **Compiler warning cleanup.** Silenced unused bindings and added proper guards in native elevation and bcdedit modules.',
+    ],
+  },
+  {
     version: '0.4.33',
     date: '2026-10-20',
     highlights: [

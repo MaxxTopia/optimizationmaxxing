@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { CrashBoundary } from './components/CrashBoundary'
 import { Layout } from './components/Layout'
@@ -8,29 +8,39 @@ import { UpdateBanner } from './components/UpdateBanner'
 import { TournamentModeDriver } from './components/TournamentModeDriver'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { Dashboard } from './pages/Dashboard'
-import { TuneNow } from './pages/TuneNow'
-import { Tweaks } from './pages/Tweaks'
-import { Presets } from './pages/Presets'
-import { Profile } from './pages/Profile'
-import { Toolkit } from './pages/Toolkit'
-import { Guides } from './pages/Guides'
-import { Grind } from './pages/Grind'
-import { Hardware } from './pages/Hardware'
-import { Asta } from './pages/Asta'
-import { Benchmark } from './pages/Benchmark'
-import { OptimizationLab } from './pages/OptimizationLab'
-import { Diff } from './pages/Diff'
-import { Pricing } from './pages/Pricing'
-import { Settings } from './pages/Settings'
-import { Changelog } from './pages/Changelog'
-import { Diagnostics } from './pages/Diagnostics'
-import { Session } from './pages/Session'
-import { MatchScan } from './pages/MatchScan'
 import { inTauri, openExternal, telemetrySendEvent, vipValidateOnline } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 import { useProfileStore } from './store/useProfileStore'
 import { useRigStore } from './store/useRigStore'
 import { useVipStore } from './store/useVipStore'
+
+const TuneNow = lazy(() => import('./pages/TuneNow').then((m) => ({ default: m.TuneNow })))
+const Tweaks = lazy(() => import('./pages/Tweaks').then((m) => ({ default: m.Tweaks })))
+const Presets = lazy(() => import('./pages/Presets').then((m) => ({ default: m.Presets })))
+const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })))
+const Toolkit = lazy(() => import('./pages/Toolkit').then((m) => ({ default: m.Toolkit })))
+const Guides = lazy(() => import('./pages/Guides').then((m) => ({ default: m.Guides })))
+const Grind = lazy(() => import('./pages/Grind').then((m) => ({ default: m.Grind })))
+const Hardware = lazy(() => import('./pages/Hardware').then((m) => ({ default: m.Hardware })))
+const Asta = lazy(() => import('./pages/Asta').then((m) => ({ default: m.Asta })))
+const Benchmark = lazy(() => import('./pages/Benchmark').then((m) => ({ default: m.Benchmark })))
+const OptimizationLab = lazy(() => import('./pages/OptimizationLab').then((m) => ({ default: m.OptimizationLab })))
+const Diff = lazy(() => import('./pages/Diff').then((m) => ({ default: m.Diff })))
+const Pricing = lazy(() => import('./pages/Pricing').then((m) => ({ default: m.Pricing })))
+const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })))
+const Changelog = lazy(() => import('./pages/Changelog').then((m) => ({ default: m.Changelog })))
+const Diagnostics = lazy(() => import('./pages/Diagnostics').then((m) => ({ default: m.Diagnostics })))
+const Session = lazy(() => import('./pages/Session').then((m) => ({ default: m.Session })))
+const MatchScan = lazy(() => import('./pages/MatchScan').then((m) => ({ default: m.MatchScan })))
+
+function PageLoadingFallback() {
+  return (
+    <div className="flex h-64 w-full flex-col items-center justify-center gap-3">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+      <span className="text-xs uppercase tracking-widest text-text-subtle">Loading view…</span>
+    </div>
+  )
+}
 
 const SPLASH_MIN_MS = 1200 // give the neon ripple at least one full sweep
 
@@ -152,31 +162,33 @@ export default function App() {
       <Layout>
         <UpdateBanner />
         <TournamentModeDriver />
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/tune" element={<TuneNow />} />
-          <Route path="/tweaks" element={<Tweaks />} />
-          <Route path="/presets" element={<Presets />} />
-          <Route path="/toolkit" element={<Toolkit />} />
-          <Route path="/guides" element={<Guides />} />
-          <Route path="/grind" element={<Grind />} />
-          <Route path="/hardware" element={<Hardware />} />
-          <Route path="/asta" element={<Asta />} />
-          <Route path="/benchmark" element={<Benchmark />} />
-          <Route path="/lab" element={<OptimizationLab />} />
-          <Route path="/diff" element={<Diff />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/updates" element={<Changelog />} />
-          {/* legacy route kept for any in-app deep-links from old modals */}
-          <Route path="/changelog" element={<Changelog />} />
-          <Route path="/diagnostics" element={<Diagnostics />} />
-          <Route path="/match-scan" element={<MatchScan />} />
-          {/* Optional recovery utility; deliberately hidden from primary navigation because it is
-              not a required optimization step and suspending processes is user-controlled. */}
-          <Route path="/session" element={<Session />} />
-        </Routes>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/tune" element={<TuneNow />} />
+            <Route path="/tweaks" element={<Tweaks />} />
+            <Route path="/presets" element={<Presets />} />
+            <Route path="/toolkit" element={<Toolkit />} />
+            <Route path="/guides" element={<Guides />} />
+            <Route path="/grind" element={<Grind />} />
+            <Route path="/hardware" element={<Hardware />} />
+            <Route path="/asta" element={<Asta />} />
+            <Route path="/benchmark" element={<Benchmark />} />
+            <Route path="/lab" element={<OptimizationLab />} />
+            <Route path="/diff" element={<Diff />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/updates" element={<Changelog />} />
+            {/* legacy route kept for any in-app deep-links from old modals */}
+            <Route path="/changelog" element={<Changelog />} />
+            <Route path="/diagnostics" element={<Diagnostics />} />
+            <Route path="/match-scan" element={<MatchScan />} />
+            {/* Optional recovery utility; deliberately hidden from primary navigation because it is
+                not a required optimization step and suspending processes is user-controlled. */}
+            <Route path="/session" element={<Session />} />
+          </Routes>
+        </Suspense>
         <WhatsNewModal />
         <TipsToast />
         <Element115Vial />

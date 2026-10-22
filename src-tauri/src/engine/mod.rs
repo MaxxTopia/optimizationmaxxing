@@ -387,6 +387,7 @@ fn should_retry_elevated(action: &TweakAction, result: &VerificationResult) -> b
 
 /// Public default verifier retained for callers that do not need to know
 /// about the elevation fallback.
+#[allow(dead_code)]
 pub fn verify(action: &TweakAction) -> VerificationResult {
     verify_with_elevation_fallback(action)
 }

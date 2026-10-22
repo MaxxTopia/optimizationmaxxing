@@ -18,11 +18,13 @@ import { useMetrics } from '../store/useMetrics'
 import { activeActionReceiptCount, activeCatalogTweakCount, activeTweakCount, listApplied } from '../lib/tauri'
 import { catalog } from '../lib/catalog'
 import { useRigStore } from '../store/useRigStore'
+import { useIsVip } from '../store/useVipStore'
 
 const APP_VERSION = (import.meta.env.VITE_APP_VERSION as string) || '0.1'
 
 export function Dashboard() {
   const spec = useRigStore((s) => s.spec)
+  const isVip = useIsVip()
   const [appliedCount, setAppliedCount] = useState(0)
   const [activeReceiptCount, setActiveReceiptCount] = useState(0)
   const [unknownActiveCount, setUnknownActiveCount] = useState(0)
@@ -94,6 +96,55 @@ export function Dashboard() {
       </section>
 
       <DetectedRigCard />
+
+      {/* Self-explanatory Tier & Next Action Card */}
+      <section className={`surface-card p-5 rounded-xl border ${isVip ? 'border-amber-500/30 bg-amber-500/5' : 'border-border bg-bg-card/70'}`}>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${isVip ? 'bg-amber-400 text-bg-base' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+                {isVip ? '👑 VIP Tier Active' : 'Free Tier Active'}
+              </span>
+              <span className="text-xs text-text-muted">
+                {isVip ? 'Full 100+ catalog & Asta Pinnacle ceiling unlocked' : '70 safe baseline tweaks & snapshot restore included'}
+              </span>
+            </div>
+            <h2 className="text-lg font-bold text-text">
+              {isVip ? 'Push the rig to its absolute ceiling' : 'Quick Start: 3 simple steps to a cleaner, faster rig'}
+            </h2>
+            <p className="text-xs text-text-muted max-w-2xl leading-relaxed">
+              {isVip
+                ? 'Your hardware is identified. Run Asta Mode to batch reversible power, NIC, and Windows settings with single UAC elevation and reboot persistence.'
+                : '1. Click Tune Now (90s) → 2. Apply safe baseline tweaks in one UAC prompt → 3. Test your game. Restore points are created automatically.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {isVip ? (
+              <Link
+                to="/asta"
+                className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base font-semibold text-xs whitespace-nowrap hover:bg-accent/90 transition shadow-sm"
+              >
+                🗡 Open Asta Mode →
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/tune"
+                  className="btn-chrome px-4 py-2 rounded-md bg-accent text-bg-base font-semibold text-xs whitespace-nowrap hover:bg-accent/90 transition shadow-sm"
+                >
+                  Tune Free Baseline →
+                </Link>
+                <Link
+                  to="/pricing"
+                  className="px-3 py-2 rounded-md border border-amber-400/40 text-amber-300 hover:bg-amber-400/10 text-xs font-semibold whitespace-nowrap transition"
+                >
+                  👑 Upgrade ($115) / Redeem
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* LIVE GAUGES */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">

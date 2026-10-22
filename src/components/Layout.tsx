@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { MaxxerSidebar } from './MaxxerSidebar'
 import { ThemePicker } from './ThemePicker'
+import { useIsVip } from '../store/useVipStore'
 
 const NAV_LINKS = [
   { to: '/', label: 'Dashboard' },
@@ -25,6 +26,7 @@ const NAV_LINKS = [
 
 export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
+  const isVip = useIsVip()
 
   useEffect(() => {
     // Reset to top of page on route change. Without this, navigating
@@ -62,7 +64,31 @@ export function Layout({ children }: { children: ReactNode }) {
                 })}
               </nav>
             </div>
-            <ThemePicker />
+            <div className="flex items-center gap-2.5">
+              <Link
+                to="/pricing"
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition ${
+                  isVip
+                    ? 'border-amber-400/50 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 shadow-[0_0_10px_rgba(255,215,0,0.2)]'
+                    : 'border-border bg-bg-card text-text-muted hover:text-text hover:border-accent/40'
+                }`}
+                title={isVip ? '👑 VIP Active — full 100+ catalog & Asta ceiling unlocked' : 'Free Tier active — click to view VIP features or redeem a code'}
+              >
+                {isVip ? (
+                  <>
+                    <span className="text-amber-400 text-xs">👑</span>
+                    <span>VIP</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span>FREE</span>
+                    <span className="text-[10px] text-accent ml-0.5">Upgrade →</span>
+                  </>
+                )}
+              </Link>
+              <ThemePicker />
+            </div>
           </div>
         </header>
         <main className="flex-1 px-6 py-8 max-w-6xl w-full mx-auto">{children}</main>

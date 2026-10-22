@@ -120,6 +120,25 @@ export function Pricing() {
         />
       </div>
 
+      {/* Prominent Redemption Access for code holders */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+        <div className="space-y-1 text-center sm:text-left">
+          <p className="text-sm font-semibold text-text flex items-center gap-2 justify-center sm:justify-start">
+            <span className="text-amber-300">👑</span> Already have a VIP Activation Code?
+          </p>
+          <p className="text-xs text-text-muted">
+            Enter the 16-character code from Diggy to bind your lifetime license to this rig.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowRedemption(true)}
+          className="btn-chrome px-4 py-2 rounded-md bg-amber-400 text-bg-base font-semibold text-xs whitespace-nowrap hover:bg-amber-300 transition shadow-sm"
+        >
+          Redeem VIP Code →
+        </button>
+      </div>
+
       {(showRedemption || (isVip && redeemedCode)) && (
         <VipRedemptionPanel onClose={() => setShowRedemption(false)} />
       )}
@@ -142,6 +161,57 @@ export function Pricing() {
           point for the substance that turns dead PCs into living ones. The number isn't an
           accident: $115 is the regular lifetime price, locked in forever.
         </p>
+      </section>
+
+      {/* Self-explanatory paths for Free vs VIP */}
+      <section className="surface-card p-5 space-y-4">
+        <div>
+          <p className="text-xs uppercase tracking-widest text-text-subtle">how to proceed</p>
+          <h2 className="text-lg font-semibold">Which path is right for you?</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-lg border border-border p-4 bg-bg-base/40 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <h3 className="font-semibold text-sm text-text">Free Tier Pathway</h3>
+            </div>
+            <ol className="space-y-2 text-xs text-text-muted">
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-accent">1.</span>
+                <span><strong>Scan your PC:</strong> Open <strong className="text-text">Tune now</strong> to detect your CPU, GPU, RAM, and Windows build.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-accent">2.</span>
+                <span><strong>1-Click Free Baseline:</strong> Applies 70 safe, tested OS tweaks in a single UAC prompt with an automatic restore point.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-accent">3.</span>
+                <span><strong>Reversible anytime:</strong> Verify in-game feel. Anything you don't like can be undone instantly in Settings → Restore.</span>
+              </li>
+            </ol>
+          </div>
+
+          <div className="rounded-lg border border-amber-500/30 p-4 bg-amber-500/5 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-amber-300 text-sm">👑</span>
+              <h3 className="font-semibold text-sm text-text">VIP Lifetime Pathway ($115)</h3>
+            </div>
+            <ol className="space-y-2 text-xs text-text-muted">
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-amber-300">1.</span>
+                <span><strong>Get your code:</strong> Click <em>Open Discord ticket</em> to message Diggy and pay via PayPal, Crypto, Venmo, etc.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-amber-300">2.</span>
+                <span><strong>Redeem once:</strong> Enter your 16-character code above. It binds to your HWID forever with offline grace protection.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="font-bold text-amber-300">3.</span>
+                <span><strong>Push to the limit:</strong> Run <strong className="text-text">Asta Mode</strong> for 1-click Pinnacle tuning, deep Match Scan sensors, and tournament profiles.</span>
+              </li>
+            </ol>
+          </div>
+        </div>
       </section>
 
       <section className="surface-card p-5">

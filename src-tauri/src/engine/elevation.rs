@@ -193,6 +193,7 @@ pub fn run_elevated_action(action: &TweakAction) -> anyhow::Result<()> {
 
 /// Apply many actions under a single UAC prompt. HKCU items should be
 /// filtered out by the caller and applied unelevated.
+#[allow(dead_code)]
 pub fn run_elevated_batch(actions: &[&TweakAction]) -> anyhow::Result<()> {
     run_elevated_batch_with_restore_point(actions, false)
 }
@@ -663,6 +664,7 @@ fn summarize_elevated_failures(
 }
 
 /// PowerShell single-quote — doubles embedded `'`.
+#[allow(dead_code)]
 fn ps_quote(s: &str) -> String {
     format!("'{}'", s.replace('\'', "''"))
 }
