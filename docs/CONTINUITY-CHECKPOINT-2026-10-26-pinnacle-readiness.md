@@ -66,3 +66,34 @@ install the public build on a clean machine, confirm one normal UAC boundary,
 reboot and check persistence, and run the same-scene Fortnite/Valorant Match
 Scan before/after. Those tests are required to prove a user's real gameplay
 outcome; the release pipeline cannot prove them.
+
+## 2026-10-26 real-machine acceptance pass
+
+The installed app was checked before testing and was still 0.4.35, so it was
+not valid evidence for the live 0.4.36 release. The stale process was closed
+and the clean-worktree 0.4.36 release binary was launched on the machine.
+
+Observed on the machine:
+
+- 0.4.36 native process launched, remained responsive, and stayed alive after
+  the smoke interval; no new crash file appeared.
+- Windows 10 Home build 19045; Ryzen 7 2700 (16 logical processors); NVIDIA
+  RTX 2070 driver 32.0.15.9636.
+- Active plan was Optimizationmaxxing Ultimate Performance.
+- The active physical adapter was Intel I211 at 1 Gbps.
+- The public updater manifest resolved to 0.4.36 and contained a non-empty
+  updater signature.
+- No Windows tweak, Asta apply, UAC operation, reboot, NVPI import, or game
+  process was changed or measured during this pass. The desktop capture path
+  timed out, so the UI Apply flow remains a human field gate.
+
+Product improvement made locally (not yet released): `UpdateBanner` now shows
+a visible retry state when the updater check fails. Previously a failed check
+was silent and looked identical to being current, which could strand a user on
+an older build. TypeScript, Vite, catalog/Asta policy audits, and PowerShell
+contract tests passed. The native bundle was rebuilt successfully; local
+artifact signing still requires the CI-only private key.
+
+Next gate: decide whether to release this updater-observability patch as the
+next version, then install that signed public build and perform the human-only
+UAC, Asta read-back, reboot-persistence, and same-scene Match Scan checks.

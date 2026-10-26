@@ -12,14 +12,17 @@ import { inTauri } from '../lib/tauri'
  * minisign signature against the bundled public key + relaunches into
  * the new build.
  *
- * Failures (no internet, GitHub rate-limit, signature mismatch) fail
- * silent — the app continues working. Surface in dev tools, not the UI.
+ * Failures (no internet, GitHub rate-limit, signature mismatch) keep the app
+ * usable but are surfaced with a retry action so "no update" is not confused
+ * with "the check failed".
  */
 
 interface BannerState {
   available: Update | null
+  checking: boolean
   downloading: boolean
   installed: boolean
+  checkError: string | null
   errorMsg: string | null
 }
 
@@ -36,32 +39,39 @@ function readDismissedVersion(): string | null {
 export function UpdateBanner() {
   const [state, setState] = useState<BannerState>({
     available: null,
+    checking: true,
     downloading: false,
     installed: false,
+    checkError: null,
     errorMsg: null,
   })
   const [dismissedVersion, setDismissedVersion] = useState<string | null>(() =>
     readDismissedVersion(),
   )
 
-  useEffect(() => {
-    if (!inTauri()) return
-    let cancelled = false
-    check()
-      .then((update) => {
-        if (cancelled) return
-        if (update) {
-          setState((s) => ({ ...s, available: update }))
-        }
-      })
-      .catch((e) => {
-        // Don't surface to user — most likely network / no release yet.
-        // eslint-disable-next-line no-console
-        console.warn('[updater] check failed:', e)
-      })
-    return () => {
-      cancelled = true
+  async function checkForUpdate() {
+    if (!inTauri()) {
+      setState((s) => ({ ...s, checking: false }))
+      return
     }
+
+    setState((s) => ({ ...s, checking: true, checkError: null }))
+    try {
+      const update = await check()
+      setState((s) => ({ ...s, checking: false, available: update, checkError: null }))
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      // Keep the app usable, but make a failed check visible. A silent failure
+      // is indistinguishable from "already current" and can strand users on
+      // an older build until they discover the problem themselves.
+      // eslint-disable-next-line no-console
+      console.warn('[updater] check failed:', e)
+      setState((s) => ({ ...s, checking: false, checkError: message }))
+    }
+  }
+
+  useEffect(() => {
+    void checkForUpdate()
   }, [])
 
   // Suppress only when the user explicitly said "later" on THIS version. A
@@ -70,6 +80,35 @@ export function UpdateBanner() {
   // + relaunches.
   const suppressed =
     !!state.available && dismissedVersion === state.available.version
+  if (state.checkError) {
+    return (
+      <div
+        className="surface-card mx-6 mt-4 px-4 py-3 flex items-center gap-3 flex-wrap"
+        style={{
+          borderColor: 'rgba(234, 179, 8, 0.45)',
+          background: 'rgba(234, 179, 8, 0.06)',
+        }}
+        role="status"
+        aria-live="polite"
+      >
+        <span className="text-lg" aria-hidden="true">↻</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-text">Couldn’t check for updates</p>
+          <p className="text-xs text-text-muted mt-0.5">
+            The app is still usable. Retry so you don’t miss a newer signed build.
+          </p>
+        </div>
+        <button
+          onClick={() => void checkForUpdate()}
+          disabled={state.checking}
+          className="btn-chrome px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-40"
+        >
+          {state.checking ? 'Checking…' : 'Check again'}
+        </button>
+      </div>
+    )
+  }
+
   if (!state.available || suppressed) return null
 
   function dismiss() {
