@@ -47,8 +47,22 @@ experimental, manual, and unsupported boundaries understandable and auditable.
 
 ## Release state
 
-The source is ready for the authorized commit/tag/push after the final diff
-review. Generated Tauri schema files may be left unstaged by the native build;
-they are not part of this scoped release. CI must still publish the signed
-updater artifacts and the public updater manifest before the release is called
-live.
+Release `v0.4.36` is live from commit `25f3849`:
+
+- `main` and the annotated `v0.4.36` tag are pushed to GitHub.
+- Release workflow `40336212418` passed in 10m21s, including the signed
+  Windows build, updater-artifact check, auto-publish, and MaxxTopia release
+  notification.
+- GitHub release is public, non-draft, and non-prerelease with
+  `optimizationmaxxing_0.4.36_x64-setup.exe`, its `.sig`, and `latest.json`.
+- The public `latest.json` reports version `0.4.36` and a signed Windows
+  installer entry.
+- MaxxTopia release sync `40337766774` passed and the following Cloudflare
+  Pages deployment `40337808612` passed.
+
+Generated Tauri schema files may be left unstaged by the native build; they are
+not part of this scoped release. The remaining proof gates are field gates:
+install the public build on a clean machine, confirm one normal UAC boundary,
+reboot and check persistence, and run the same-scene Fortnite/Valorant Match
+Scan before/after. Those tests are required to prove a user's real gameplay
+outcome; the release pipeline cannot prove them.
