@@ -1,6 +1,6 @@
 {
   "name": "optimizationmaxxing",
-  "version": "0.4.36",
+  "version": "0.4.37",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "test:bios-evidence": "node scripts/test-bios-evidence-catalog.mjs",
+    "test:bench-stability": "node scripts/test-bench-stability.mjs",
     "test:powershell-contracts": "node scripts/test-powershell-contracts.mjs"
   },
   "dependencies": {

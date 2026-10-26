@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.37',
+    date: '2026-10-26',
+    highlights: [
+      'IMPROVE **Asta evidence quality.** Before/after results now show run-to-run variation and label deltas that fall inside normal measurement noise instead of overstating a host-proxy change.',
+      'IMPROVE **Game proof workflow.** Match Scan now explains how to hold the scene, route, cap, driver, power state, and background load constant while comparing FPS, lows, frametime, and Net Debug Stats.',
+      'FIX **Update visibility.** Failed update checks now show a retry state instead of looking identical to an already-current app.',
+    ],
+  },
+  {
     version: '0.4.36',
     date: '2026-10-26',
     highlights: [

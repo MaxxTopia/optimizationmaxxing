@@ -3,6 +3,7 @@
  * call this — keeps scoring consistent across surfaces.
  */
 import { benchCpu, benchPing, dpcSnapshot, type CpuLatencySample, type PingJitterSample, type DpcSnapshot } from './tauri'
+import { median, summarizeRunDistribution } from './benchMath'
 
 export type BenchStage = 'idle' | 'cpu' | 'dpc' | 'ping' | 'frame' | 'done'
 
@@ -11,6 +12,11 @@ export interface BenchSample {
   dpc: DpcSnapshot
   ping: PingJitterSample
   framePaceStddevMs: number
+  /** Distribution metadata from runBenchMedian; absent for a single run. */
+  runCount?: number
+  runSpread?: number
+  runMad?: number
+  runComposites?: number[]
 }
 
 export interface BenchScored extends BenchSample {
@@ -101,15 +107,6 @@ export function score(sample: BenchSample): BenchScored {
   }
 }
 
-/** Pick the median value from an array of numbers (interpolated for even
- * lengths). Used by `runBenchMedian` to flatten run-to-run noise across
- * the 4 metrics. */
-function median(xs: number[]): number {
-  const sorted = xs.slice().sort((a, b) => a - b)
-  const m = sorted.length >> 1
-  return sorted.length % 2 ? sorted[m] : (sorted[m - 1] + sorted[m]) / 2
-}
-
 /** Run the bench N times and return a synthetic sample where every
  * metric is the median across runs. Cuts run-to-run variance from ~3-4
  * composite points down to ~1 — much more trustworthy for per-tweak
@@ -150,11 +147,17 @@ export async function runBenchMedian(
   const pingStddev = validPingStddev.length > 0 ? median(validPingStddev) : null
   const pingP50 = validPingP50.length > 0 ? median(validPingP50) : null
   const frame = median(samples.map((s) => s.framePaceStddevMs))
+  const runComposites = samples.map((sample) => score(sample).composite)
+  const distribution = summarizeRunDistribution(runComposites)
   const last = samples[samples.length - 1]
   return {
     cpu: { ...last.cpu, nsPerIter: cpuNs },
     dpc: { ...last.dpc, totalDpcPercent: dpcPct },
     ping: { ...last.ping, stddevMs: pingStddev, p50Ms: pingP50 },
     framePaceStddevMs: frame,
+    runCount: distribution.count,
+    runSpread: distribution.spread,
+    runMad: distribution.mad,
+    runComposites,
   }
 }

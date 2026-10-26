@@ -97,3 +97,50 @@ artifact signing still requires the CI-only private key.
 Next gate: decide whether to release this updater-observability patch as the
 next version, then install that signed public build and perform the human-only
 UAC, Asta read-back, reboot-persistence, and same-scene Match Scan checks.
+
+## 2026-10-26 benchmark-proof hardening pass
+
+Scope: improve the quality of Asta's local before/after signal and make the
+real-game proof path easier to follow. This pass does not add new Windows
+tweaks, change rollback thresholds, or claim that a host proxy proves FPS or
+input latency.
+
+Prepared for release on `codex/pinnacle-v0.4.36` as version `0.4.37`:
+
+- `src/lib/benchMath.ts` keeps median, spread, MAD, and display-only noise
+  floor calculations pure and testable.
+- `runBenchMedian` now carries the number of runs, composite range, MAD, and
+  per-run composites into the Asta result.
+- Asta now labels a small before/after delta as inside normal run-to-run noise
+  and shows the measured variation beside the existing host-proxy caveat.
+- Match Scan now shows a repeatable proof protocol: keep scene, route, cap,
+  driver, power, and background load constant; compare average FPS, 1%/0.1%
+  lows, worst frametime, CPU/GPU bound, and Net Debug Stats separately.
+- The release workflow runs `npm run test:bench-stability` before packaging.
+- `docs/RESILIENCE.md` records the noisy-proxy failure mode and the required
+  response.
+
+Verification performed:
+
+- `npm run test:bench-stability` — passed: 4 checks.
+- `npx tsc --noEmit` — passed.
+- `npm run build` — passed.
+- `npm run audit:catalog` — passed: 108 rows, 0 errors/warnings.
+- `npm run audit:asta-policy` — passed: 14 Pinnacle defaults, 0 errors.
+- `npm run audit:pinnacle-coverage` — passed: 11/11 required capabilities.
+- `npm run test:powershell-contracts` — passed.
+- `npm run test:bios-evidence` — passed: 9 checks.
+- `cargo test --manifest-path src-tauri/Cargo.toml` — passed: 107 tests.
+- No release, push, deployment, installed-app update, Windows write, reboot,
+  NVPI import, or Fortnite/Valorant capture was performed before the current
+  release gate.
+
+Known state and next gate:
+
+- The release candidate is version `0.4.37`; the isolated worktree still
+  contains unrelated generated Tauri schema modifications that must not be
+  swept into the feature commit.
+- A signed CI build and a human field pass remain required before calling this
+  live: install the built version, confirm one UAC boundary, run Asta and read
+  back, reboot and check persistence, then use Match Scan in the same game
+  scene before and after.

@@ -18,6 +18,7 @@ import {
   type TunePreflight,
 } from '../lib/tauri'
 import { runBenchMedian, score, type BenchScored } from '../lib/astaBench'
+import { measurementNoiseFloor } from '../lib/benchMath'
 import { confirmAction } from '../lib/confirm'
 import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
 import { evaluateClosedLoop, isTransactionActionEligible } from '../lib/optimizationSession'
@@ -1491,16 +1492,23 @@ function AstaBenchResult({
   rebootProof: RebootValidation | null
 }) {
   const delta = before && after ? after.composite - before.composite : null
+  const noiseFloor = measurementNoiseFloor(
+    before ? { mad: before.runMad, spread: before.runSpread } : null,
+    after ? { mad: after.runMad, spread: after.runSpread } : null,
+  )
+  const insideNoise = delta != null && noiseFloor != null && Math.abs(delta) < noiseFloor
   const verdict = evidenceNote
     ? 'inconclusive — repeat the proxy bench'
     : delta == null
     ? 'inconclusive — one side of the proxy bench is missing'
+    : insideNoise
+      ? 'inside normal run-to-run noise'
     : Math.abs(delta) < 1
       ? 'no meaningful proxy change'
       : delta > 0
         ? 'proxy improved'
         : 'proxy regressed'
-  const verdictClass = evidenceNote || delta == null || Math.abs(delta) < 1
+  const verdictClass = evidenceNote || delta == null || insideNoise || Math.abs(delta) < 1
     ? 'text-amber-200'
     : delta > 0
       ? 'text-emerald-300'
@@ -1535,11 +1543,23 @@ function AstaBenchResult({
         latency. A negative or tiny result is a reason to revert/compare under the same game
         conditions.
       </p>
+      {before && after ? (
+        <p className="mt-2 text-[11px] text-sky-200/90">
+          Measurement stability: typical run variation was {formatBenchVariation(before)} before and{' '}
+          {formatBenchVariation(after)} after. Treat a before/after delta smaller than about{' '}
+          {noiseFloor?.toFixed(1) ?? '—'} points as noise, not a performance claim.
+        </p>
+      ) : null}
       {evidenceNote ? <p className="mt-2 text-amber-200">Measurement quality: {evidenceNote}</p> : null}
       {safetyNote ? <p className="mt-2 text-amber-200">Safety action: {safetyNote}</p> : null}
       {error ? <p className="mt-2 text-amber-200">Measurement/persistence note: {error}</p> : null}
     </div>
   )
+}
+
+function formatBenchVariation(sample: BenchScored): string {
+  if (sample.runMad == null || sample.runSpread == null) return 'not recorded'
+  return `${sample.runMad.toFixed(1)} points (range ${sample.runSpread.toFixed(1)})`
 }
 
 function BenchValue({

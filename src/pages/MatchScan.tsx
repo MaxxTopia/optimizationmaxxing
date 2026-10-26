@@ -133,6 +133,17 @@ export function MatchScan() {
         </p>
       </header>
 
+      <div className="surface-card border border-sky-300/25 bg-sky-300/5 p-4 space-y-2">
+        <div className="text-xs uppercase tracking-widest text-sky-200">Repeatable proof protocol</div>
+        <p className="text-sm text-text-muted leading-relaxed">
+          Use the same map or Creative route, resolution, render mode, FPS cap, driver, power state,
+          network route, and background apps before and after a change. Capture at least one clean
+          baseline and one post-change session; compare average FPS, 1%/0.1% lows, worst frametime,
+          CPU/GPU bound, and in-game Net Debug Stats separately. This is the evidence that decides
+          whether a tweak helps your game, not the Asta host proxy alone.
+        </p>
+      </div>
+
       <div className="surface-card p-5 space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
