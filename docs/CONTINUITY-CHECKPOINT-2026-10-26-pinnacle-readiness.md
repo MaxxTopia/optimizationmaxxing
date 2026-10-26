@@ -144,3 +144,37 @@ Known state and next gate:
   live: install the built version, confirm one UAC boundary, run Asta and read
   back, reboot and check persistence, then use Match Scan in the same game
   scene before and after.
+
+## 2026-10-26 v0.4.37 release evidence
+
+The release gate was authorized and completed. Version `0.4.37` is live from
+the isolated worktree on `codex/pinnacle-v0.4.36`.
+
+- Release commit: `651c091` (`release: v0.4.37 - benchmark proof hardening`).
+- Public tag: `v0.4.37`.
+- GitHub release workflow `40417300207`: completed successfully, including
+  catalog, Asta-policy, coverage, benchmark-stability, packaging, artifact
+  verification, and MaxxTopia notification steps.
+- Public GitHub release: non-draft, non-prerelease, with the installer,
+  updater signature, and `latest.json` assets.
+- Public updater manifest reports version `0.4.37` and a non-empty signature.
+- Downloaded public installer SHA-256 matched the GitHub asset digest:
+  `e9a4b2788cd99e88ad3372c8a73d4abc58ba203a5ba20a29731b74390f612d9c`.
+- The public installer was run silently on this machine, installed
+  `C:\Program Files\optimizationmaxxing\optimizationmaxxing.exe` at
+  version `0.4.37`, launched responsively, and closed cleanly.
+- MaxxTopia release-sync run `40418401091` and Pages deployment run
+  `40418426427` both completed successfully.
+
+This proves release, artifact integrity, installation, and launch. It does not
+prove a Windows tweak write, UAC/read-back behavior, reboot persistence, NVPI
+import, or Fortnite/Valorant FPS, 1% lows, network latency, or input latency.
+Those remain human field gates because they can mutate Windows and require a
+real game session. The release workflow also emitted a GitHub Node.js 20
+deprecation warning; it did not fail the release and should be handled as a
+future workflow-maintenance item.
+
+Current next action: use the installed `0.4.37` build for the human field pass:
+run the Asta no-write self-test, apply supported settings once, reboot, use
+Check after reboot, then compare the same Match Scan scene and route before
+and after. Keep the three generated Tauri schema edits outside release commits.
