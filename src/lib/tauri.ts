@@ -452,6 +452,40 @@ export async function enableSystemProtection(): Promise<void> {
   return invoke('enable_system_protection')
 }
 
+export interface NvpiStatus {
+  available: boolean
+  executablePath: string | null
+  backupAvailable: boolean
+  backupPath: string
+  managedProfilePath: string
+  profileId: string
+  detail: string
+}
+
+export interface NvpiOperationResult {
+  status: 'applied' | 'restored' | 'notFound' | 'noBackup' | 'failed'
+  executablePath: string | null
+  backupPath: string | null
+  profilePath: string | null
+  verified: boolean
+  detail: string
+}
+
+/** Read-only detection of an already-installed NVIDIA Profile Inspector. */
+export async function nvpiStatus(): Promise<NvpiStatus> {
+  return invoke<NvpiStatus>('nvpi_status')
+}
+
+/** Apply the app-owned aggressive Fortnite NVPI profile with one UAC boundary. */
+export async function applyNvpiFortniteExtreme(): Promise<NvpiOperationResult> {
+  return invoke<NvpiOperationResult>('nvpi_apply_fortnite_extreme')
+}
+
+/** Restore the customized-profile export captured before the last apply. */
+export async function restoreNvpiFortnite(): Promise<NvpiOperationResult> {
+  return invoke<NvpiOperationResult>('nvpi_restore_fortnite')
+}
+
 export interface RevertAllReport {
   reverted: number
   failedReceiptIds: string[]

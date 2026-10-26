@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { CrashBoundary } from './components/CrashBoundary'
 import { Layout } from './components/Layout'
 import { Element115Vial } from './components/Element115Vial'
@@ -8,7 +8,7 @@ import { UpdateBanner } from './components/UpdateBanner'
 import { TournamentModeDriver } from './components/TournamentModeDriver'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { Dashboard } from './pages/Dashboard'
-import { inTauri, openExternal, telemetrySendEvent, vipValidateOnline } from './lib/tauri'
+import { inTauri, listApplied, openExternal, telemetrySendEvent, vipValidateOnline } from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 import { useProfileStore } from './store/useProfileStore'
 import { useRigStore } from './store/useRigStore'
@@ -43,6 +43,39 @@ function PageLoadingFallback() {
 }
 
 const SPLASH_MIN_MS = 1200 // give the neon ripple at least one full sweep
+const FIRST_RUN_TUNE_KEY = 'optmaxxing:first-run-tune-v1'
+
+/**
+ * Make the first useful action obvious without forcing returning users through
+ * Tune Now on every launch. A failed read leaves the normal Dashboard intact.
+ */
+function FirstRunTuneRedirect() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!inTauri() || location.pathname !== '/') return
+    if (window.localStorage.getItem(FIRST_RUN_TUNE_KEY)) return
+
+    // Mark the check before awaiting so React StrictMode cannot start two
+    // concurrent native reads. A read failure deliberately falls back to the
+    // Dashboard rather than blocking the app behind onboarding.
+    window.localStorage.setItem(FIRST_RUN_TUNE_KEY, 'checked')
+    let alive = true
+    void listApplied()
+      .then((rows) => {
+        if (alive && rows.length === 0) navigate('/tune', { replace: true })
+      })
+      .catch(() => {
+        // Dashboard is the safe fallback if the native receipt store is unavailable.
+      })
+    return () => {
+      alive = false
+    }
+  }, [location.pathname, navigate])
+
+  return null
+}
 
 export default function App() {
   const activeProfile = useProfileStore((s) => s.activeProfile)
@@ -160,6 +193,7 @@ export default function App() {
   return (
     <CrashBoundary>
       <Layout>
+        <FirstRunTuneRedirect />
         <UpdateBanner />
         <TournamentModeDriver />
         <Suspense fallback={<PageLoadingFallback />}>

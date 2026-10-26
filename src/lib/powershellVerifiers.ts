@@ -143,7 +143,7 @@ export const POWERSHELL_MANUAL_VERIFICATION_NOTES: Record<string, string> = {
   'audio.sample-rate.match':
     'UNKNOWN: This action records audio guidance only; it does not change the endpoint format. Set the playback device to 24 bit, 48000 Hz in Windows Sound settings and verify it there.',
   'nvidia.nvpi.fortnite-profile':
-    'UNKNOWN: The Fortnite .nip artifact can be generated, but NVIDIA Profile Inspector import and Apply are manual and cannot be verified by this app.',
+    'UNKNOWN: The catalog row remains an explicit fallback because NVIDIA Profile Inspector owns the driver database. The automatic Asta/Tune card can import the app-owned Fortnite Extreme profile when NVPI is installed, then export/read back the Fortnite block to verify requested values; that read-back does not prove in-game FPS, latency, or draw distance.',
 }
 
 export function manualPowerShellVerificationNote(tweakId: string): string | undefined {

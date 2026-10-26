@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.35',
+    date: '2026-10-26',
+    highlights: [
+      'NEW **Fortnite Extreme NVIDIA profile.** Apply the aggressive nine-setting driver profile from Tune Now or Asta, with an app-owned backup and one-click restore.',
+      'IMPROVE **NVIDIA verification.** The native flow exports before and after import, reads the Fortnite profile block back, and keeps manual import as a fallback when Profile Inspector is not installed.',
+      'IMPROVE **Visibility guidance.** Clarified that Fortnite object and item draw distance is controlled in-game, with the FPS tradeoff explained instead of promising a hidden driver tweak.',
+    ],
+  },
+  {
     version: '0.4.34',
     date: '2026-10-21',
     highlights: [

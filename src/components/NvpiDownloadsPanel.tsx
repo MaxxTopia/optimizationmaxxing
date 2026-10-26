@@ -29,17 +29,26 @@ interface NipProfile {
 
 const PROFILES: NipProfile[] = [
   {
+    filename: 'fortnite-extreme.nip',
+    label: 'Fortnite — Extreme performance',
+    exes: 'FortniteClient-Win64-Shipping.exe, FortniteLauncher.exe',
+    settingsCount: 9,
+    highlight: true,
+    experimental: true,
+    blurb:
+      'Nine aggressive, standard NVIDIA driver controls: maximum-performance power mode, VSync off, high-performance filtering, driver optimizations on, and FXAA/MFAA off. It can add shimmer or reduce image quality; it cannot increase Fortnite item draw distance.',
+  },
+  {
     filename: 'fortnite-pinnacle.nip',
-    label: 'Fortnite — latency baseline',
+    label: 'Fortnite — latency baseline (legacy)',
     exes: 'FortniteClient-Win64-Shipping.exe, FortniteLauncher.exe',
     settingsCount: 4,
-    highlight: true,
     blurb:
       'Four driver-profile overrides to A/B as a starting point. They do not guarantee lower latency; compare the same Fortnite scene with Reflex, frame cap, and display settings held constant.',
   },
   {
     filename: 'fortnite-clean-render.nip',
-    label: 'Fortnite — performance render lab',
+    label: 'Fortnite — performance render lab (legacy)',
     exes: 'FortniteClient-Win64-Shipping.exe, FortniteLauncher.exe',
     settingsCount: 9,
     experimental: true,
@@ -141,11 +150,11 @@ export function NvpiDownloadsPanel() {
     >
       <div>
         <p className="text-[10px] uppercase tracking-widest text-accent">driver profile lab</p>
-        <h3 className="text-base font-semibold">NVPI setup — backup, import, verify, apply</h3>
+        <h3 className="text-base font-semibold">NVPI setup — apply, verify, restore</h3>
         <p className="text-xs text-text-muted leading-snug mt-1 max-w-2xl">
-          NVPI is the separate importer that applies these files. Optimizationmaxxing never
-          silently installs it or changes the NVIDIA driver database. Export your current profile
-          first so you have a rollback file, then follow the same order every time.
+          In the desktop app, use the Fortnite Extreme card's two buttons to back up, import, and
+          verify the profile in one guided operation. Optimizationmaxxing never silently installs
+          NVPI or changes the NVIDIA driver database in the background.
         </p>
         <p className="text-[11px] text-amber-200/90 leading-snug mt-2 max-w-2xl">
           These are driver profiles, not Fortnite file edits. We do not ship foliage/cloud/terrain
@@ -175,10 +184,10 @@ export function NvpiDownloadsPanel() {
           </a>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-text-muted leading-snug">
-          <p><strong className="text-text">Before step 2:</strong> In NVPI export the current Fortnite profile and keep that <code>.nip</code> as your backup.</p>
-          <p><strong className="text-text">Step 2:</strong> Download one profile below; it saves as a <code>.nip</code> in your normal Downloads folder.</p>
-          <p><strong className="text-text">Step 3:</strong> In NVPI choose <strong className="text-text">File → Import Profile(s)</strong>. Select the file; do not paste its text into another field or double-click it.</p>
-          <p><strong className="text-text">Step 4:</strong> When NVPI asks <strong className="text-text">Merge or Replace</strong>, choose <strong className="text-text">Merge</strong> for a normal test. Import only one Fortnite variant, confirm the executable names, then click <strong className="text-text">Apply changes</strong>. Close and reopen NVPI and export again to verify.</p>
+          <p><strong className="text-text">Recommended:</strong> Return to Asta or Tune Now and use <strong className="text-text">Apply Fortnite Extreme profile</strong>. It captures the rollback export, imports the app-owned profile, and verifies the exported Fortnite block.</p>
+          <p><strong className="text-text">Manual fallback:</strong> Download one profile below; it saves as a <code>.nip</code> in your normal Downloads folder.</p>
+          <p><strong className="text-text">Import:</strong> In NVPI choose <strong className="text-text">File → Import Profile(s)</strong>, select the file, choose <strong className="text-text">Merge</strong>, confirm the executable names, and click <strong className="text-text">Apply changes</strong>.</p>
+          <p><strong className="text-text">Rollback:</strong> Prefer <strong className="text-text">Restore previous NVIDIA profile</strong> in the desktop card. If using NVPI manually, export the current profile before importing and keep that export.</p>
         </div>
       </div>
 
@@ -240,13 +249,12 @@ export function NvpiDownloadsPanel() {
       </div>
 
       <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 space-y-1.5">
-        <h4 className="text-sm font-semibold text-amber-200">For the mobile-style competitive look</h4>
+        <h4 className="text-sm font-semibold text-amber-200">For farther item visibility</h4>
         <p className="text-[11px] text-text-muted leading-snug">
-          No NVPI profile controls Fortnite clouds or build geometry. In Fortnite itself, use the
-          supported Performance rendering mode, low textures/effects/meshes where available,
-          shadows and motion blur off, VSync off, and your tested Reflex/frame-cap combination.
-          These choices can change by game version and event rules; hidden visibility settings do
-          not belong in a competitive preset.
+          NVPI cannot force Fortnite to keep guns or other objects rendered farther away. Use
+          Fortnite's own View Distance setting if the visibility benefit is worth the frame-time
+          cost; higher distance can reduce FPS and 1% lows. The Extreme profile is a driver
+          performance profile, not a visibility or wall-visibility modification.
         </p>
       </div>
 

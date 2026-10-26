@@ -19,6 +19,19 @@ export interface DriverProfileRecord {
  * setting. Users are told to export their current profile before importing. */
 export const DRIVER_PROFILE_CATALOG: DriverProfileRecord[] = [
   {
+    id: 'fortnite-extreme',
+    kind: 'nvidia-nip',
+    filename: 'fortnite-extreme.nip',
+    label: 'Fortnite Extreme performance',
+    revision: 1,
+    reviewedOn: '2026-10-26',
+    settingsCount: 9,
+    sha256: 'd1a5a34386988942213263141736021ac0e2e67bcb1d8303d99b2f38e3321f91',
+    objective: 'An aggressive normal-driver-controls profile for Fortnite: maximum performance bias with explicit image-quality tradeoffs and rollback.',
+    rollback: ['Export the current customized profiles before import.', 'Use Restore previous NVIDIA profile in the app or re-import the saved export.', 'Re-test after every NVIDIA driver update or Fortnite rendering change.'],
+    warnings: ['Extreme does not guarantee higher FPS or lower latency and may add texture shimmer.', 'It cannot increase Fortnite object draw distance; use the game View Distance setting for that tradeoff.'],
+  },
+  {
     id: 'fortnite-pinnacle',
     kind: 'nvidia-nip',
     filename: 'fortnite-pinnacle.nip',

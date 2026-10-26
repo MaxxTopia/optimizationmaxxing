@@ -1,6 +1,6 @@
 [package]
 name = "optimizationmaxxing"
-version = "0.4.34"
+version = "0.4.35"
 description = "PC optimization tool for competitive gamers"
 authors = ["Diggy"]
 edition = "2021"
@@ -25,6 +25,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"
 anyhow = "1"
 thiserror = "1"
 chrono = { version = "0.4", features = ["serde"] }
+base64 = "0.22"
 
 # Phase 3 — spec detection
 wmi = "0.14"

@@ -39,6 +39,7 @@ import { issueTuneTicket, readTuneTicket, type TuneTicket } from '../lib/tuneTic
 import { TuneTicketModal } from '../components/TuneTicketModal'
 import { DetectedRigCard } from '../components/DetectedRigCard'
 import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
+import { NvpiManualStepCard } from '../components/NvpiManualStepCard'
 
 /**
  * /tune — the lazy-user one-click conversion page.
@@ -533,6 +534,7 @@ export function TuneNow() {
           plan={plan}
           projection={projection}
           isVip={isVip}
+          isNative={isNative}
           intensity={intensity}
           targetGame={targetGame}
           profile={profile}
@@ -752,6 +754,7 @@ function ReadyState({
   plan,
   projection,
   isVip,
+  isNative,
   intensity,
   profile,
   recommendedId,
@@ -774,6 +777,7 @@ function ReadyState({
   plan: PlanBuckets
   projection: { vipGainEstimate: number; vipGainRange: [number, number] }
   isVip: boolean
+  isNative: boolean
   intensity: TuneIntensity
   profile: ReturnType<typeof tuneProfile>
   recommendedId: TuneIntensity
@@ -803,6 +807,8 @@ function ReadyState({
           <Stat label="Composite (now)" value={beforeComposite.toFixed(0)} highlight />
         </div>
       </section>
+
+      <NvpiManualStepCard gpuVendor={spec.gpu.vendor} canApply={isVip && isNative} />
 
       <section className="surface-card p-5 space-y-3">
         <header>

@@ -10,6 +10,7 @@ mod engine;
 mod match_scan;
 mod metrics;
 mod network_audit;
+mod nvpi;
 mod process_helpers;
 mod specs;
 mod scewin;
@@ -2255,6 +2256,38 @@ async fn enable_system_protection() -> Result<(), String> {
     .map_err(|e| format!("enable_system_protection task failed: {e}"))?
 }
 
+/// Read whether an already-installed NVIDIA Profile Inspector is available
+/// and whether OptimizationMaxxing has a saved customized-profile backup.
+/// This is intentionally read-only and never requests elevation.
+#[tauri::command]
+async fn nvpi_status() -> Result<nvpi::NvpiStatus, String> {
+    tokio::task::spawn_blocking(nvpi::status)
+        .await
+        .map_err(|e| format!("nvpi status task failed: {e}"))?
+        .map_err(|e| format!("{:#}", e))
+}
+
+/// Apply the app-owned aggressive Fortnite profile through one elevated NVPI
+/// invocation. The backend exports the current customized profiles first and
+/// verifies the exported profile after import.
+#[tauri::command]
+async fn nvpi_apply_fortnite_extreme() -> Result<nvpi::NvpiOperationResult, String> {
+    tokio::task::spawn_blocking(nvpi::apply_fortnite_extreme)
+        .await
+        .map_err(|e| format!("nvpi apply task failed: {e}"))?
+        .map_err(|e| format!("{:#}", e))
+}
+
+/// Restore the app-owned export captured immediately before the last NVPI
+/// apply, then verify the exported Fortnite block against that backup.
+#[tauri::command]
+async fn nvpi_restore_fortnite() -> Result<nvpi::NvpiOperationResult, String> {
+    tokio::task::spawn_blocking(nvpi::restore_fortnite)
+        .await
+        .map_err(|e| format!("nvpi restore task failed: {e}"))?
+        .map_err(|e| format!("{:#}", e))
+}
+
 #[tauri::command]
 async fn revert_tweak(
     state: tauri::State<'_, SnapshotStore>,
@@ -3187,6 +3220,9 @@ pub fn run() {
             validate_reboot_persistence,
             get_tune_preflight,
             enable_system_protection,
+            nvpi_status,
+            nvpi_apply_fortnite_extreme,
+            nvpi_restore_fortnite,
             revert_tweak,
             revert_batch,
             revert_all_applied,

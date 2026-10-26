@@ -27,6 +27,7 @@ import { manualPowerShellVerificationNote } from '../lib/powershellVerifiers'
 import { AstaShareCard } from '../components/AstaShareCard'
 import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
 import { TournamentAudit } from '../components/TournamentAudit'
+import { NvpiManualStepCard } from '../components/NvpiManualStepCard'
 import { useRigStore } from '../store/useRigStore'
 
 /**
@@ -992,6 +993,10 @@ export function Asta() {
               Packet only wakes a sleeping PC; it is not an active-game latency setting, so Asta
               does not toggle it as a performance tweak.
             </p>
+
+            <div className="mt-3">
+              <NvpiManualStepCard gpuVendor={spec?.gpu.vendor} canApply={isVip && isNative} />
+            </div>
 
             {displayPlan && (
               <div className="mt-3 rounded-md border border-border bg-bg-base/40 px-3 py-2 text-xs text-text-muted leading-relaxed">
