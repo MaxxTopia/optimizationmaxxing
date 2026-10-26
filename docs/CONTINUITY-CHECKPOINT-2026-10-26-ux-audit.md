@@ -28,17 +28,19 @@ Passed in `C:\Users\Diggy\projects\optimizationmaxxing-v0.4.27-copyfix`:
 - `rustfmt --check --edition 2021 src-tauri/src/nvpi.rs`
 - `git diff --check` — clean; only pre-existing generated-schema line-ending warnings were reported by Git
 - Release metadata is synchronized at `0.4.35` in `package.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`, and `src-tauri/tauri.conf.json`; the top changelog entry is present.
-- `npm run tauri:build` compiled the frontend, native executable, and NSIS installer, but stopped at updater signing because this PC has no `TAURI_SIGNING_PRIVATE_KEY`. No signed updater artifact was produced.
+- `npm run tauri:build` compiled the frontend, native executable, signed NSIS installer, and updater signature after the documented local signing key was restored for the release build.
 - The built executable at `src-tauri/target/release/optimizationmaxxing.exe` launched and its accessibility surface reported `0.4.35`, the new changelog entry, the detected test PC, and the new NVPI feature surface. This is source/build/runtime smoke evidence only; no Windows or NVIDIA setting was applied.
+- Release CI run `40327556562` completed successfully. GitHub release `v0.4.35` is published with `latest.json`, `optimizationmaxxing_0.4.35_x64-setup.exe`, and its `.sig`; the updater manifest reports version `0.4.35` and a signature.
+- MaxxTopia sync run `40328794730` completed successfully, and both public optimizationmaxxing pages now reference the `0.4.35` installer.
 
 ## State and limits
 
-- Source changes are local and uncommitted. No release, installer replacement, publish, or deployment was performed because the documented signed-build gate failed.
-- Installed `C:\Program Files\optimizationmaxxing\optimizationmaxxing.exe` is still the existing 0.4.34 build; it does not include this checkpoint until a new package is built and installed.
+- The release source is committed as `de1e93a7a971b0869e83ffc01ed9e1715b0216f4` on `main`, tagged `v0.4.35`, and pushed. The follow-up continuity-only change is intentionally separate and must not retag the release.
+- Installed `C:\Program Files\optimizationmaxxing\optimizationmaxxing.exe` was left untouched during this task, so it may still be the existing 0.4.34 build until the signed 0.4.35 installer is installed.
 - Desktop accessibility capture launched the built app and confirmed the new runtime version, but interactive capture timed out and did not permit a reliable Asta/Tune click/run. No live Windows write, NVIDIA import, reboot-persistence proof, Fortnite/Valorant FPS, 1% lows, input-to-pixel, or build-registration proof was claimed.
 - The repository-wide `cargo fmt -- --check` still reports pre-existing formatting differences in unrelated Rust files; the new NVPI module has a targeted clean `rustfmt` check and unrelated files were not reformatted.
 - The Asta composite remains a host proxy, not game proof. NVPI export verification proves the driver profile block was written/read back; it does not prove Fortnite FPS, input latency, or object draw distance.
 
 ## Next action
 
-Restore the project signing key on the release environment, or explicitly choose the documented CI-only signing path. Then rerun `npm run tauri:build`, verify the signed updater artifacts, stage only the intended release files, commit/tag/push `v0.4.35`, and verify the provider release before installing the signed build. After installation, verify first-run routing and both automatic-NVIDIA buttons, run a no-write Asta Bench, and perform a controlled Fortnite capture. Publishing and gameplay proof remain separate gates.
+Install or update the signed `v0.4.35` package on the test PC, reopen the app, and verify first-run routing plus both automatic-NVIDIA buttons. Then run a no-write Asta Bench and, separately, a controlled Fortnite/Valorant capture using the same scene, cap, driver, route, and background load. Publishing is complete; UAC/registry/NVIDIA application, reboot persistence, and gameplay proof remain separate human/runtime gates.
