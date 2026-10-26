@@ -28,6 +28,7 @@ import { AstaShareCard } from '../components/AstaShareCard'
 import { RebootPersistenceCard } from '../components/RebootPersistenceCard'
 import { TournamentAudit } from '../components/TournamentAudit'
 import { NvpiManualStepCard } from '../components/NvpiManualStepCard'
+import { PinnacleCoverageCard } from '../components/PinnacleCoverageCard'
 import { useRigStore } from '../store/useRigStore'
 
 /**
@@ -1018,6 +1019,18 @@ export function Asta() {
                   </span>
                 )}
               </div>
+            )}
+
+            {displayPlan && (
+              <PinnacleCoverageCard
+                automaticCount={reviewedPlan && planAudit ? pinnacleDefaultCount : null}
+                eligibleCount={displayPlan.candidates.length}
+                alreadyOnTarget={displayPlan.alreadyApplied.length}
+                reviewCount={displayPlan.review.length}
+                manualCount={displayPlan.manual.length}
+                excludedCount={displayPlan.notMatched.length + displayPlan.otherGame.length}
+                isLaptop={Boolean(spec?.mobo.isLaptop)}
+              />
             )}
 
             {inflightNotice && (

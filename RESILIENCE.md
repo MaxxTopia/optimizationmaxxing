@@ -64,6 +64,19 @@ claim automatic failover for it.
 
 ## Safeguard backlog
 
+This release adds a user-visible coverage map and a release audit for the
+Fortnite Pinnacle surface. The map is derived from the current rig-aware plan;
+it does not turn driver-dependent or external controls into automatic writes.
+The audit fails the release if a core catalog capability or the Asta automatic
+lane boundary disappears.
+
+The CPU Sets watcher remains a live process preference, not a persistent Windows
+core reservation. Its saved rule can survive a reboot only when the watcher is
+enabled at sign-in; ordinary registry, power-plan, and service actions do not
+need the app open. A default of all detected CPU Sets is intentional because
+Windows CPU Set IDs and efficiency classes are topology labels, not proof of a
+faster Fortnite configuration.
+
 P0 (implemented in this pass):
 
 - Capture every native pre-state before a transaction mutates anything.

@@ -61,6 +61,9 @@ jobs:
             - name: Audit Asta automatic policy before packaging
               run: npm run audit:asta-policy
 
+            - name: Audit Pinnacle Fortnite coverage before packaging
+              run: npm run audit:pinnacle-coverage
+
             - name: Audit tweak catalog before packaging
               run: npm run audit:catalog
 
@@ -86,6 +89,8 @@ jobs:
 
                       - Background standby cleanup is off by recommendation. Users can test a guarded one-shot without installing a recurring task, with clear A/B guidance; current scripts skip detected supported games (best-effort only).
                       - Pinnacle Asta now offers one-click apply for supported rig-matched settings after live read-back; detailed row review remains optional and higher-risk/manual actions stay separately confirmed.
+                      - Asta now shows an honest Pinnacle coverage map and a release-gated audit for core Fortnite capabilities, including input, Game Mode/DVR, HAGS, power, process priority, background apps, and exposed NIC controls.
+                      - CPU Sets guidance now explains Windows scheduler IDs and keeps all detected sets as the default starting point; P-core selection remains an explicit experiment rather than an unexplained promise.
                       - Asta rechecks selected settings immediately before applying and pauses for review if a setting changed while you were reviewing the plan.
                       - Tune Now and Your Tune report mismatches without guessing what caused them; Optimization Lab distinguishes local proxy evidence from real Fortnite capture.
 

@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.36',
+    date: '2026-10-26',
+    highlights: [
+      'IMPROVE **Pinnacle coverage map.** Asta now shows what is automatic on this exact PC, what is already correct, what needs review, and what remains outside Windows app control.',
+      'IMPROVE **CPU Sets guidance.** Fortnite now defaults to all detected Windows CPU Sets, explains IDs such as 56 and efficiency classes, and keeps P-core selection as an explicit A/B test.',
+      'TEST **Pinnacle coverage audit.** Release checks now protect the catalog entries for Fortnite priority, input, Game Mode/DVR/HAGS, power, NIC, background apps, and NVIDIA profile guidance.',
+    ],
+  },
+  {
     version: '0.4.35',
     date: '2026-10-26',
     highlights: [

@@ -211,8 +211,10 @@ export function AutoPinSection() {
         >
           <p className="font-semibold text-text mb-1">Fortnite starting choice</p>
           <p className="text-text-muted">
-            Use all detected sets first. On Intel hybrid CPUs, the highest-performance button
-            selects the P-core class Windows actually reports. That is an optional experiment,
+            <strong className="text-text">Recommended default: use all detected sets.</strong>{' '}
+            Windows can schedule the game across every available logical processor without
+            guessing from an ID number. On Intel hybrid CPUs, the highest-performance button
+            selects the P-core class Windows actually reports. That is an optional A/B test,
             not a universal Fortnite recommendation. Compare identical matches and frametime
             captures against the all-set baseline; keep the result only if it wins repeatedly.
           </p>
@@ -561,7 +563,9 @@ function CoreGrid({
         Windows reported <strong className="text-text">{info.cpuSets.length} CPU Set records</strong>{' '}
         in this scan. That count is not a recommendation or a core number. IDs such as 56 are
         labels assigned by Windows; G is the processor group and L is the logical processor
-        position inside that group. None of these numbers is an FPS or latency score.
+        position inside that group. The efficiency class is the H/L grouping shown above; it is
+        Windows topology metadata, not a guarantee that one subset will feel faster. None of
+        these numbers is an FPS or latency score.
       </p>
 
       {sections.map((section) => (
@@ -614,7 +618,7 @@ function CoreGrid({
                     </span>
                   )}
                   <span className="block text-[8px] text-text-subtle">
-                    G{set.group}/L{set.logicalProcessorIndex}
+                    G{set.group}/L{set.logicalProcessorIndex} · EC{set.efficiencyClass}
                   </span>
                 </button>
               )
