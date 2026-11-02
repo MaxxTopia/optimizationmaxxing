@@ -76,22 +76,34 @@ button:
   assertions; `npm run audit:pinnacle-coverage` passed (11/11); `npm run
   test:powershell-contracts` passed (24 actions, 22 verified and 2 manual);
   `git diff --check` passed.
-- No Windows apply, reboot, installer, or live visual acceptance test was run
-  for this source-only UX change.
+- `npx tsc --noEmit` passed; `cargo test --manifest-path
+  src-tauri/Cargo.toml` passed with 107 library tests and 0 failures.
+- `npm run tauri:build` produced the local 0.4.38 installer bundle. Local
+  updater signing was intentionally not attempted because this workstation
+  has only the public key; CI owns the private signing secret.
+- GitHub Actions release run
+  `https://github.com/MaxxTopia/optimizationmaxxing/actions/runs/41366690486`
+  passed all audits, built the Windows installer, signed the updater files,
+  and published the release.
+- No Windows apply, reboot, or live gameplay acceptance test was run by the
+  source/CI checks. Those remain explicit device gates.
 
 ## Release state
 
-The public/live build remains v0.4.37 while the release-readiness pass runs.
-The intended Asta UX and security-lane changes are being packaged as v0.4.38;
-the unrelated pre-existing changes in `_IF-YOU-LOSE-CLAUDE.txt` and generated
-Tauri schema files remain untouched and must not be bundled accidentally.
+The public/live build is v0.4.38:
+`https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.38`.
+The release is non-draft and includes the signed installer,
+`optimizationmaxxing_0.4.38_x64-setup.exe.sig`, and `latest.json`. The
+unrelated pre-existing changes in `_IF-YOU-LOSE-CLAUDE.txt` and generated
+Tauri schema files remain untouched and are still not bundled.
 ## User/device evidence and next gate
 
 The user's reboot card showed one armed action,
 `fortnite.gus-ini.competitive`, verified after a real Windows restart. That was
 valid evidence for that action only, but the Asta auto-arm path was too narrow
-for the user's expectation of checking the active setup. Before release, review
-the local diff, run the documented Tauri build, then install and visually verify
-the new flow. After release, the user should test Apply → restart → Check after
-restart and confirm the armed count reflects the active verified receipt set,
-followed by a same-scene Fortnite Match Scan for FPS and frame-time evidence.
+for the user's expectation of checking the active setup. The next user/device
+gate is to install v0.4.38 and test Apply → restart → Check after restart.
+Confirm the armed count reflects the active verified receipt set, then run a
+same-scene Fortnite Match Scan for FPS, 1% lows, frame-time, and ping evidence.
+Source tests and CI cannot prove UAC/elevation, registry or BCD writes, adapter
+changes, reboot persistence, or improved gameplay.
