@@ -22,7 +22,7 @@ import { measurementNoiseFloor } from '../lib/benchMath'
 import { confirmAction } from '../lib/confirm'
 import { catalog, isExperimentalTweak, tweakMatchesSpec, type TweakRecord } from '../lib/catalog'
 import { evaluateClosedLoop, isTransactionActionEligible } from '../lib/optimizationSession'
-import { isHardBlockedForAutoTune } from '../lib/tuneProfiles'
+import { EXTREME_SECURITY_TRADEOFF_IDS, isHardBlockedForAutoTune } from '../lib/tuneProfiles'
 import { auditMany, type TweakAudit } from '../lib/audit'
 import { manualPowerShellVerificationNote } from '../lib/powershellVerifiers'
 import { AstaShareCard } from '../components/AstaShareCard'
@@ -37,13 +37,6 @@ import { useRigStore } from '../store/useRigStore'
  * (so they see what they could unlock — that's the upsell), but Apply is
  * hard-gated behind the existing VIP store.
  */
-
-const QUOTES = [
-  '"Measured settings beat assumptions."',
-  '"Read back the change before you keep it."',
-  '"Stable frame time matters more than a bigger tweak list."',
-  '"Keep reversible changes and compare the same game scenario."',
-] as const
 
 // These actions can safely establish their own app-owned restore record
 // on first apply when the live target is readable but no prior record exists.
@@ -90,14 +83,6 @@ const PINNACLE_EXPERIMENTAL_IDS = new Set([
 const PINNACLE_BASELINE_IDS = new Set([
   'ps.power.dt-tournament',
 ])
-
-const ASTA_PHILOSOPHY = `Asta Mode builds a hardware-aware performance plan for this PC.
-It prioritizes measurable, reversible Windows, power, graphics, input, and network settings
-that match the detected hardware. Unsupported or ambiguous actions stay out of the automatic lane.
-
-The apply receipt shows immediate read-back where supported. Reboot persistence and in-game
-results are measured separately, so you can review what changed, revert the latest run, and
-compare the same game scenario again.`
 
 type AstaBenchPhase = 'idle' | 'before' | 'after' | 'complete'
 
@@ -162,13 +147,13 @@ export function Asta() {
     errors: string[]
     ts: string
   } | null>(null)
-  const [quoteIdx, setQuoteIdx] = useState(0)
   const [preflight, setPreflight] = useState<TunePreflight | null>(null)
   const [appliedRows, setAppliedRows] = useState<AppliedTweak[]>([])
   const [reviewedPlan, setReviewedPlan] = useState<AstaPlan | null>(null)
   const [reviewedPlanKey, setReviewedPlanKey] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [selectionCustomized, setSelectionCustomized] = useState(false)
+  const [extremeSecurityAcknowledged, setExtremeSecurityAcknowledged] = useState(false)
   const [planAudit, setPlanAudit] = useState<Record<string, TweakAudit> | null>(null)
   const [previewProgress, setPreviewProgress] = useState({ done: 0, total: 0 })
   const [previewBusy, setPreviewBusy] = useState(false)
@@ -191,6 +176,9 @@ export function Asta() {
     spec && inventory && reviewedPlan && reviewedPlanKey === planFingerprint(spec, inventory),
   )
   const selectedCount = displayPlan?.candidates.filter((tweak) => selectedIds.has(tweak.id)).length ?? 0
+  const extremeSecurityRows = reviewedPlan?.candidates.filter((tweak) => EXTREME_SECURITY_TRADEOFF_IDS.has(tweak.id)) ?? []
+  const advancedRows = reviewedPlan?.candidates.filter((tweak) => !EXTREME_SECURITY_TRADEOFF_IDS.has(tweak.id)) ?? []
+  const selectedExtremeSecurityCount = extremeSecurityRows.filter((tweak) => selectedIds.has(tweak.id)).length
   const pinnacleDefaultCount = reviewedPlan && planAudit
     ? reviewedPlan.candidates.filter((tweak) => isPinnacleDefaultCandidate(tweak, planAudit[tweak.id])).length
     : 0
@@ -239,11 +227,6 @@ export function Asta() {
       .catch(() => undefined)
   }, [ensureLoaded, isNative])
 
-  // Rotate quotes on click of the manifesto block — small easter egg.
-  function bumpQuote() {
-    setQuoteIdx((i) => (i + 1) % QUOTES.length)
-  }
-
   async function prepareAstaPlan(forcePinnacleDefaults = false): Promise<AstaPreviewResult | null> {
     if (!isNative) {
       setError('The desktop app is required to read current Windows values. This preview never applies tweaks.')
@@ -252,6 +235,10 @@ export function Asta() {
     setPreviewBusy(true)
     setError(null)
     setPlanAudit(null)
+    // A fresh live read is a new consent boundary. Never carry a prior
+    // security acknowledgement or its selected rows into a refreshed plan.
+    setExtremeSecurityAcknowledged(false)
+    setSelectedIds((previous) => new Set([...previous].filter((id) => !EXTREME_SECURITY_TRADEOFF_IDS.has(id))))
     setPreviewProgress({ done: 0, total: 0 })
     try {
       const detected = await refreshRig()
@@ -384,6 +371,7 @@ export function Asta() {
         setPlanAudit(null)
         setSelectedIds(new Set())
         setSelectionCustomized(false)
+        setExtremeSecurityAcknowledged(false)
         setError(automaticPinnacle
           ? 'The rig changed while Asta was preparing the automatic plan. Nothing was changed; run the one-click apply again.'
           : 'The rig or applicable plan changed since preview. Review the refreshed list before applying.')
@@ -396,9 +384,15 @@ export function Asta() {
           : 'The selected tweaks are no longer eligible on this rig. Preview the current plan again.')
         setReviewedPlan(null)
         setReviewedPlanKey(null)
+        setExtremeSecurityAcknowledged(false)
         return
       }
       const chosenIds = new Set(chosen.map((tweak) => tweak.id))
+      const chosenExtremeSecurity = chosen.filter((tweak) => EXTREME_SECURITY_TRADEOFF_IDS.has(tweak.id))
+      if (chosenExtremeSecurity.length > 0 && !extremeSecurityAcknowledged) {
+        setError('Security tradeoffs are selected but not acknowledged. Open Extreme security tradeoffs, read the warnings, and enable its acknowledgement before applying them.')
+        return
+      }
       const chosenReview = plan.review.filter((tweak) => chosenIds.has(tweak.id))
       const chosenItems = (items: BatchItem[]) => items.filter((item) => chosenIds.has(item.tweakId))
       const transactional = chosenItems(plan.transactional)
@@ -419,7 +413,9 @@ export function Asta() {
       const applyReview =
         chosenReview.length === 0 ||
         (await confirmAction(
-          `Review lane: apply the ${chosenReview.length} selected higher-risk or hard-to-read-back tweak${chosenReview.length === 1 ? '' : 's'} too? These can weaken security, affect anti-cheat/tournament eligibility, or lack deterministic read-back. Continue only if you accept the tradeoffs shown in the plan.`,
+          chosenExtremeSecurity.length > 0
+            ? `Extreme security tradeoffs selected: ${chosenExtremeSecurity.map((tweak) => tweak.title).join('; ')}. These can reduce Windows protection, affect anti-cheat/virtualization, require a reboot or sign-out, and may provide no measurable Fortnite gain. Asta will capture the current native state for restore, but you must use Revert/Diff and reboot to return to it. Continue only on a dedicated test rig after accepting the per-setting warnings?`
+            : `Review lane: apply the ${chosenReview.length} selected higher-risk or hard-to-read-back tweak${chosenReview.length === 1 ? '' : 's'} too? These can weaken security, affect anti-cheat/tournament eligibility, or lack deterministic read-back. Continue only if you accept the tradeoffs shown in the plan.`,
         ))
 
       // Confirm dialogs can remain open while other software changes settings.
@@ -451,39 +447,15 @@ export function Asta() {
       const applyErrors: string[] = []
       const actionDetails: AstaActionDetail[] = []
       const appliedReceiptIds = new Set<string>()
-      // Safety rollback may target every active receipt from this run, but
-      // reboot persistence proof may target only receipts with an individual
-      // verified live read-back. Keeping these sets separate prevents an
-      // explicit/unverified action from being presented as persistence proof.
-      const verifiedReceiptIds = new Set<string>()
       const appliedReceiptKeys = new Map<string, string>()
       const receiptActionKey = (tweakId: string, kind: string) => `${tweakId}::${kind}`
       const rememberAppliedReceipt = (
         receiptId: string,
         tweakId: string,
         kind: string,
-        verificationStatus?: AppliedTweak['verificationStatus'] | null,
       ) => {
         appliedReceiptIds.add(receiptId)
         appliedReceiptKeys.set(receiptId, receiptActionKey(tweakId, kind))
-        if (verificationStatus === 'verified') verifiedReceiptIds.add(receiptId)
-      }
-      const syncVerifiedReceiptIds = (rows: AppliedTweak[]) => {
-        for (const row of rows) {
-          if (
-            appliedReceiptIds.has(row.receiptId)
-            && row.status === 'applied'
-            && row.verificationStatus === 'verified'
-          ) {
-            verifiedReceiptIds.add(row.receiptId)
-          }
-        }
-        for (const receiptId of [...verifiedReceiptIds]) {
-          const row = rows.find((candidate) => candidate.receiptId === receiptId)
-          if (!row || row.status !== 'applied' || row.verificationStatus !== 'verified') {
-            verifiedReceiptIds.delete(receiptId)
-          }
-        }
       }
       const alreadyMatchingIds = new Set(executionTweaks
         .filter((tweak) => freshAudit[tweak.id]?.status === 'matches')
@@ -597,7 +569,7 @@ export function Asta() {
           receipt.status === 'applied' && receipt.verificationStatus === 'verified',
         ).length
         for (const receipt of recovered) {
-          rememberAppliedReceipt(receipt.receiptId, receipt.tweakId, receipt.kind, receipt.verificationStatus)
+          rememberAppliedReceipt(receipt.receiptId, receipt.tweakId, receipt.kind)
         }
         if (recovered.length > 0) {
           actionDetails.push(...recovered.map((receipt) => ({
@@ -650,7 +622,7 @@ export function Asta() {
             detail: item.detail,
           })
           if (item.attempted && !item.rolledBack && item.receiptId) {
-            rememberAppliedReceipt(item.receiptId, item.tweakId, item.actionKind, item.verificationStatus)
+            rememberAppliedReceipt(item.receiptId, item.tweakId, item.actionKind)
           }
           if (item.attempted && (!item.applied || item.rolledBack) && item.detail) {
             applyErrors.push(`${item.tweakId}: ${item.detail}`)
@@ -692,7 +664,6 @@ export function Asta() {
         applyErrors.push(`Apply receipt summary could not be read: ${e instanceof Error ? e.message : String(e)}`)
       }
       let live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
-      syncVerifiedReceiptIds(allLive)
       setAppliedRows(allLive)
       setApplied({
         requested,
@@ -769,7 +740,6 @@ export function Asta() {
             for (const receiptId of revertibleReceiptIds) {
               if (!revertReport.failedReceiptIds.includes(receiptId)) {
                 appliedReceiptIds.delete(receiptId)
-                verifiedReceiptIds.delete(receiptId)
               }
             }
             const failed = revertReport.failedReceiptIds.length
@@ -790,7 +760,6 @@ export function Asta() {
               applyErrors.push(`Post-rollback receipt summary could not be read: ${e instanceof Error ? e.message : String(e)}`)
             }
             live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
-            syncVerifiedReceiptIds(allLive)
             setAppliedRows(allLive)
           } catch (e) {
             safetyRevertDetail = afterBenchMissing
@@ -817,7 +786,6 @@ export function Asta() {
           allLive = await verifyApplied()
           liveReadAvailable = true
           live = allLive.filter((row) => appliedReceiptIds.has(row.receiptId))
-          syncVerifiedReceiptIds(allLive)
           setAppliedRows(allLive)
         } catch (e) {
           liveReadAvailable = false
@@ -860,19 +828,22 @@ export function Asta() {
         ts: new Date().toLocaleTimeString(),
       })
 
-      // Arm an exact receipt set automatically. This proves only that the
-      // reboot check is ready; persistence is not claimed until Windows is
-      // restarted and the user runs the explicit post-boot check.
+      // Arm the active, verified receipt set automatically. The Asta run may
+      // have skipped receipts that were verified by an earlier run, so using
+      // only the current-run set can make a full Asta apply appear to have
+      // armed one setting. Unverified/unknown/manual rows remain outside the
+      // persistence proof until they have a native read-back contract.
       try {
-        const persistenceReceiptIds = [...verifiedReceiptIds].filter((receiptId) =>
-          liveReadAvailable
-          && live.some((row) => row.receiptId === receiptId && row.status === 'applied' && row.verificationStatus === 'verified'),
-        )
+        const persistenceReceiptIds = appliedReceiptIds.size > 0 && liveReadAvailable
+          ? allLive
+            .filter((row) => row.status === 'applied' && row.verificationStatus === 'verified')
+            .map((row) => row.receiptId)
+          : []
         if (persistenceReceiptIds.length === 0) {
           if (appliedReceiptIds.size > 0) {
             setBenchError((previous) => previous
-              ? `${previous} persistence: no current action had a verified live read-back after the after-benchmark, so reboot proof was not armed.`
-              : 'persistence: no current action had a verified live read-back after the after-benchmark, so reboot proof was not armed.')
+              ? `${previous} persistence: no active setting had a verified live read-back after the after-benchmark, so reboot proof was not armed.`
+              : 'persistence: no active setting had a verified live read-back after the after-benchmark, so reboot proof was not armed.')
           }
           setRebootProof(null)
         } else if (
@@ -898,6 +869,7 @@ export function Asta() {
       setReviewedPlanKey(null)
       setPlanAudit(null)
       setSelectedIds(new Set())
+      setExtremeSecurityAcknowledged(false)
     } catch (e) {
       setError(typeof e === 'string' ? e : (e as Error).message ?? String(e))
     } finally {
@@ -909,60 +881,41 @@ export function Asta() {
     <div className="space-y-8">
       <Hero />
 
-      {/* 4-Step Self-Explanatory Process Guide */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="surface-card p-4 rounded-xl border border-border space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">1</span>
-            <span className="text-xs font-semibold text-text uppercase tracking-wider">Rig Audit</span>
+      <section className="surface-card p-5 space-y-4 border border-border">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-text-subtle">simple flow</p>
+            <h2 className="mt-1 text-2xl font-semibold text-text">Apply, restart, verify.</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-text-muted">
+              Asta handles the supported Fortnite settings automatically. Advanced rows stay
+              available below, but they are never required for the main path.
+            </p>
           </div>
-          <p className="text-xs text-text-muted leading-relaxed">Live preflight scans CPU, GPU, and OS build. Policy-owned, unsupported, or ambiguous rows are excluded safely.</p>
+          <span className="rounded-full border border-sky-300/25 bg-sky-300/5 px-2.5 py-1 text-[11px] text-sky-100">
+            No changes until Apply
+          </span>
         </div>
-        <div className="surface-card p-4 rounded-xl border border-border space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">2</span>
-            <span className="text-xs font-semibold text-text uppercase tracking-wider">1-Click Apply</span>
-          </div>
-          <p className="text-xs text-text-muted leading-relaxed">Applies all supported Pinnacle settings in one native UAC prompt. Immediate read-back receipts verify each tweak.</p>
-        </div>
-        <div className="surface-card p-4 rounded-xl border border-border space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">3</span>
-            <span className="text-xs font-semibold text-text uppercase tracking-wider">Reboot Check</span>
-          </div>
-          <p className="text-xs text-text-muted leading-relaxed">Restart Windows, then use <em>Check after reboot</em> to verify settings persisted through Windows boot.</p>
-        </div>
-        <div className="surface-card p-4 rounded-xl border border-border space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">4</span>
-            <span className="text-xs font-semibold text-text uppercase tracking-wider">Game Proof</span>
-          </div>
-          <p className="text-xs text-text-muted leading-relaxed">Compare 1% lows and frame pacing in your actual game. Reversible anytime with one-click rollback.</p>
-        </div>
+        <ol className="grid gap-3 border-t border-border pt-4 sm:grid-cols-2 lg:grid-cols-4">
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">1</span>
+            <div><p className="text-xs font-semibold text-text">Apply supported settings</p><p className="mt-1 text-xs leading-relaxed text-text-muted">One guided Windows consent. Live read-back checks each supported change.</p></div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">2</span>
+            <div><p className="text-xs font-semibold text-text">Restart Windows</p><p className="mt-1 text-xs leading-relaxed text-text-muted">Required before persistence can be proven.</p></div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">3</span>
+            <div><p className="text-xs font-semibold text-text">Check after restart</p><p className="mt-1 text-xs leading-relaxed text-text-muted">Asta reads the armed settings back; it does not reapply them.</p></div>
+          </li>
+          <li className="flex gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">4</span>
+            <div><p className="text-xs font-semibold text-text">Run game proof</p><p className="mt-1 text-xs leading-relaxed text-text-muted">Use the same scene to compare FPS, 1% lows, and frame time.</p></div>
+          </li>
+        </ol>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 surface-card p-6 space-y-4">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-text-subtle">the path</p>
-          <h2
-            className="text-3xl md:text-4xl font-bold leading-tight asta-anti-magic"
-            style={{ fontFamily: "'Pirata One', 'Cinzel', serif" }}
-          >
-            We don't quit. So we built the mode.
-          </h2>
-          <p
-            onClick={bumpQuote}
-            title="(click for another quote)"
-            className="text-base leading-relaxed text-text italic cursor-pointer select-none"
-            style={{ fontFamily: "'Cinzel', 'Cormorant Garamond', serif" }}
-          >
-            {QUOTES[quoteIdx]}
-          </p>
-          <pre className="text-sm leading-relaxed text-text-muted whitespace-pre-wrap font-sans">
-            {ASTA_PHILOSOPHY}
-          </pre>
-        </div>
-
+      <section className="space-y-4">
         <div className="theme-stage-asta surface-card p-6 space-y-3 relative overflow-hidden">
           <div
             aria-hidden="true"
@@ -974,41 +927,64 @@ export function Asta() {
           />
           <div className="relative">
             <p className="text-[10px] uppercase tracking-widest text-text-subtle">apply</p>
-            <h3 className="text-xl font-bold mt-1">Activate Asta Mode</h3>
-            <p className="text-sm text-text-muted leading-snug mt-1">
-              Pinnacle Asta inventories the full catalog for this rig and Fortnite context, then
-              automatically selects every matching, evidence-backed action that has a complete
-              native read-back and restore path. Named experimental actions are included only
-              when they pass the same contract and hardware checks. Unverifiable, policy-owned,
-              firmware, static-file, security-weakening, unreviewed situational, and ambiguous
-              rows stay visible but unchecked for intentional review.
-              A normal Asta apply uses one batched Windows consent, not one prompt per tweak.
-              Protected preflight, read-back, or a failure-only safety rollback can require an
-              additional consent.
-              Windows UAC is real user consent; the app never bypasses it.
-              BIOS/NVRAM/firmware changes never become automatic.
-            </p>
-            <p className="mt-2 rounded-md border border-sky-300/20 bg-sky-300/5 px-3 py-2 text-xs leading-relaxed text-text-muted">
-              <strong className="text-text">Ethernet note:</strong> Asta includes cataloged RSS, EEE,
-              and interrupt-moderation controls when they match the rig. Driver scripts without
-              exact read-back and restore handling stay in the separate review lane. Wake on Magic
-              Packet only wakes a sleeping PC; it is not an active-game latency setting, so Asta
-              does not toggle it as a performance tweak.
+            <h3 className="text-xl font-bold mt-1">Apply supported Fortnite settings</h3>
+            <p className="text-sm text-text-muted leading-snug mt-1 max-w-3xl">
+              The main button reads this PC first, selects the supported Pinnacle lane, applies it
+              in one guided run, and verifies each setting it can prove. You do not need to open
+              the preview or select individual boxes.
             </p>
 
-            <div className="mt-3">
-              <NvpiManualStepCard gpuVendor={spec?.gpu.vendor} canApply={isVip && isNative} />
-            </div>
+            <details className="mt-3 rounded-md border border-sky-300/20 bg-sky-300/5 px-3 py-2">
+              <summary className="cursor-pointer text-xs font-semibold text-text">How Asta decides what to apply</summary>
+              <div className="mt-2 space-y-2 text-xs leading-relaxed text-text-muted">
+                <p>
+                  Asta includes matching actions only when Windows exposes a native read-back and
+                  restore path. Ambiguous, policy-owned, unsupported, firmware, security-weakening,
+                  and situational rows remain visible for optional review instead of being forced
+                  into the automatic lane.
+                </p>
+                <p>
+                  One batched Windows consent covers the normal apply. A protected preflight,
+                  read-back, or failure-only rollback can request another consent. BIOS, NVRAM,
+                  and firmware changes are never automatic.
+                </p>
+                <p>
+                  <strong className="text-text">Ethernet:</strong> RSS, EEE, and interrupt
+                  moderation are included only when the active adapter exposes them. Wake on Magic
+                  Packet only controls wake-from-sleep behavior, so it is not treated as a game
+                  latency setting.
+                </p>
+                <p>
+                  <strong className="text-text">Security:</strong> Defender, core isolation, and
+                  CPU security mitigations are not silently disabled. The optional Extreme security
+                  section can expose the cataloged HVCI, Hyper-V, SmartScreen, and CPU-mitigation
+                  rows with per-setting warnings and a restore receipt. You can select them individually
+                  or use the explicit Select all extreme rows control. Turning them off increases exposure
+                  and does not guarantee lower input delay. A global Defender-off command is not
+                  offered because Windows tamper protection can reject it and the security cost is
+                  not justified without a measured, rig-specific cause.
+                </p>
+              </div>
+            </details>
+
+            {/nvidia|geforce|rtx|gtx/i.test(spec?.gpu.vendor ?? '') && (
+              <details className="mt-3 rounded-md border border-amber-300/25 bg-amber-300/5 px-3 py-2">
+                <summary className="cursor-pointer text-xs font-semibold text-amber-100">Optional: NVIDIA driver profile</summary>
+                <div className="mt-3">
+                  <NvpiManualStepCard gpuVendor={spec?.gpu.vendor} canApply={isVip && isNative} />
+                </div>
+              </details>
+            )}
 
             {displayPlan && (
               <div className="mt-3 rounded-md border border-border bg-bg-base/40 px-3 py-2 text-xs text-text-muted leading-relaxed">
-                <strong className="text-text">{reviewedPlan ? 'Reviewed inventory:' : 'Current inventory:'}</strong>{' '}
-                <span className="text-emerald-300">{displayPlan.candidates.length} eligible</span>{' · '}
-                <span className="text-sky-300">{displayPlan.alreadyApplied.length} already on target</span>{' · '}
-                <span className="text-amber-200">{displayPlan.review.length} require separate review</span>{' · '}
-                <span className="text-purple-300">{displayPlan.manual.length} manual firmware excluded</span>.
+                <strong className="text-text">{reviewedPlan ? 'Plan:' : 'Coverage:'}</strong>{' '}
+                <span className="text-emerald-300">{displayPlan.candidates.length} ready</span>{' · '}
+                <span className="text-sky-300">{displayPlan.alreadyApplied.length} already correct</span>{' · '}
+                <span className="text-amber-200">{displayPlan.review.length} optional review</span>{' · '}
+                <span className="text-purple-300">{displayPlan.manual.length} firmware/manual</span>.
                 <span className="block mt-1 text-[11px] text-text-subtle">
-                  {displayPlan.notMatched.length} hardware mismatches and {displayPlan.otherGame.length} other-game rows are excluded from this Fortnite run.
+                  {displayPlan.notMatched.length} hardware-mismatch and {displayPlan.otherGame.length} other-game rows are outside this Fortnite run.
                 </span>
                 <span className="block mt-1 text-[11px] text-text-subtle">
                   This catalog contains {catalog.tweaks.length} rows. Eligible means a matching software row that is not already verified;
@@ -1023,15 +999,25 @@ export function Asta() {
             )}
 
             {displayPlan && (
-              <PinnacleCoverageCard
-                automaticCount={reviewedPlan && planAudit ? pinnacleDefaultCount : null}
-                eligibleCount={displayPlan.candidates.length}
-                alreadyOnTarget={displayPlan.alreadyApplied.length}
-                reviewCount={displayPlan.review.length}
-                manualCount={displayPlan.manual.length}
-                excludedCount={displayPlan.notMatched.length + displayPlan.otherGame.length}
-                isLaptop={Boolean(spec?.mobo.isLaptop)}
-              />
+              <details className="mt-3 rounded-md border border-emerald-300/20 bg-emerald-300/5 px-3 py-2">
+                <summary className="cursor-pointer text-xs font-semibold text-emerald-100">
+                  What Asta can change on this PC
+                  <span className="ml-2 font-normal text-text-subtle">
+                    {reviewedPlan && planAudit ? `${pinnacleDefaultCount} automatic now` : 'show coverage'}
+                  </span>
+                </summary>
+                <div className="mt-1">
+                  <PinnacleCoverageCard
+                    automaticCount={reviewedPlan && planAudit ? pinnacleDefaultCount : null}
+                    eligibleCount={displayPlan.candidates.length}
+                    alreadyOnTarget={displayPlan.alreadyApplied.length}
+                    reviewCount={displayPlan.review.length}
+                    manualCount={displayPlan.manual.length}
+                    excludedCount={displayPlan.notMatched.length + displayPlan.otherGame.length}
+                    isLaptop={Boolean(spec?.mobo.isLaptop)}
+                  />
+                </div>
+              </details>
             )}
 
             {inflightNotice && (
@@ -1042,11 +1028,16 @@ export function Asta() {
             )}
 
             {inventory && (
-              <div className="mt-3 rounded-md border border-amber-200/20 bg-black/20 p-3 space-y-2">
+              <details className="mt-3 rounded-md border border-amber-200/20 bg-black/20 px-3 py-2">
+                <summary className="cursor-pointer text-xs font-semibold text-amber-100">
+                  Advanced review (optional)
+                  <span className="ml-2 font-normal text-text-subtle">Inspect rows before applying</span>
+                </summary>
+                <div className="pt-3 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm font-semibold text-text">Read-only plan review</p>
-                    <p className="text-[11px] text-text-muted">Review is optional. The main Asta button reads current settings, selects every supported Pinnacle row, and applies the plan in one guided run. Opening this page alone never requests UAC or changes Windows.</p>
+                    <p className="text-sm font-semibold text-text">Preview exact changes</p>
+                    <p className="text-[11px] text-text-muted">This is read-only. The main Apply button handles the automatic lane without this step.</p>
                   </div>
                   <button
                     type="button"
@@ -1057,8 +1048,8 @@ export function Asta() {
                     {previewBusy
                       ? `Reading plan… ${previewProgress.done}/${previewProgress.total}`
                       : reviewedPlan && previewIsCurrent
-                        ? 'Refresh exact changes'
-                        : 'Review exact changes (optional)'}
+                        ? 'Refresh preview'
+                        : 'Preview exact changes'}
                   </button>
                 </div>
                 {previewBusy && (
@@ -1104,8 +1095,76 @@ export function Asta() {
                       <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-text">
                         Advanced selection (optional) · {reviewedPlan.candidates.length} eligible rows — unchecked rows stay untouched
                       </summary>
-                      <div className="max-h-[34rem] space-y-2 overflow-y-auto p-2">
-                        {reviewedPlan.candidates.map((tweak) => (
+                      <div className="space-y-3 p-2">
+                        {extremeSecurityRows.length > 0 && (
+                          <details className="rounded-md border border-red-400/40 bg-red-500/10" open>
+                            <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-red-100">
+                              Extreme security tradeoffs (optional) · {extremeSecurityRows.length} available
+                            </summary>
+                            <div className="space-y-2 p-2">
+                              <label className="flex items-start gap-2 rounded border border-red-300/30 bg-black/20 px-3 py-2 text-[11px] leading-relaxed text-red-100">
+                                <input
+                                  type="checkbox"
+                                  checked={extremeSecurityAcknowledged}
+                                  disabled={!previewIsCurrent || busy || previewBusy}
+                                  onChange={(event) => {
+                                    const enabled = event.currentTarget.checked
+                                    setExtremeSecurityAcknowledged(enabled)
+                                    if (!enabled) {
+                                      setSelectedIds((previous) => new Set([...previous].filter((id) => !EXTREME_SECURITY_TRADEOFF_IDS.has(id))))
+                                    }
+                                    setSelectionCustomized(true)
+                                  }}
+                                  className="mt-0.5 accent-red-500"
+                                />
+                                <span>
+                                  <strong className="text-red-200">I understand these are security changes, not guaranteed FPS tweaks.</strong>{' '}
+                                  They can reduce protection, break virtualization or anti-cheat requirements, and require a reboot. Asta will save the current native state before writing; I will test on a dedicated rig and use Revert/Diff to restore it if needed.
+                                </span>
+                              </label>
+                              <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[11px] text-text-muted">
+                                <span>Choose each setting below. The normal Apply button never selects this section.</span>
+                                <button
+                                  type="button"
+                                  disabled={!extremeSecurityAcknowledged || busy || previewBusy}
+                                  onClick={() => {
+                                    setSelectedIds((previous) => new Set([
+                                      ...previous,
+                                      ...extremeSecurityRows.map((tweak) => tweak.id),
+                                    ]))
+                                    setSelectionCustomized(true)
+                                  }}
+                                  className="rounded border border-red-300/40 px-2 py-1 text-red-100 hover:bg-red-300/10 disabled:opacity-40"
+                                >
+                                  Select all extreme rows
+                                </button>
+                              </div>
+                              <div className="max-h-[34rem] space-y-2 overflow-y-auto">
+                                {extremeSecurityRows.map((tweak) => (
+                                  <AstaPlanReviewRow
+                                    key={tweak.id}
+                                    tweak={tweak}
+                                    audit={planAudit[tweak.id] ?? null}
+                                    selected={selectedIds.has(tweak.id)}
+                                    disabled={!extremeSecurityAcknowledged || !previewIsCurrent || busy || previewBusy}
+                                    onToggle={() => setSelectedIds((previous) => {
+                                      setSelectionCustomized(true)
+                                      const next = new Set(previous)
+                                      if (next.has(tweak.id)) next.delete(tweak.id)
+                                      else next.add(tweak.id)
+                                      return next
+                                    })}
+                                  />
+                                ))}
+                              </div>
+                              <p className="px-1 text-[11px] leading-relaxed text-amber-100">
+                                Global Microsoft Defender disable is intentionally not a checkbox here. If Match Scan identifies a real Defender scan during play, fix that measured cause instead of removing the entire antivirus layer; Windows may also block a policy-only disable through Tamper Protection.
+                              </p>
+                            </div>
+                          </details>
+                        )}
+                        <div className="max-h-[34rem] space-y-2 overflow-y-auto">
+                        {advancedRows.map((tweak) => (
                           <AstaPlanReviewRow
                             key={tweak.id}
                             tweak={tweak}
@@ -1121,6 +1180,7 @@ export function Asta() {
                             })}
                           />
                         ))}
+                        </div>
                       </div>
                     </details>
                   </>
@@ -1138,7 +1198,8 @@ export function Asta() {
                     </div>
                   </details>
                 )}
-              </div>
+                </div>
+              </details>
             )}
 
             {!isVip && (
@@ -1256,8 +1317,8 @@ export function Asta() {
 
             {preflight?.pendingReboot && !preflight.windowsUpdateActive && (
               <div className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-100 leading-snug">
-                <strong className="text-amber-200">Pending Windows restart:</strong> Asta can apply now.
-                Restart before using the reboot-persistence check so Windows can finish the pending update.
+                <strong className="text-amber-200">Windows restart pending:</strong> You may apply now,
+                but restart Windows before checking persistence so the pending change can finish.
               </div>
             )}
 
@@ -1273,7 +1334,7 @@ export function Asta() {
                 </div>
               )}
 
-            <div className="mt-4 flex flex-col gap-2">
+            <div id="asta-primary-action" className="sticky bottom-3 z-20 mt-4 flex flex-col gap-2 rounded-lg border border-accent/30 bg-bg-base/95 p-3 shadow-xl backdrop-blur">
               <button
                 type="button"
                 onClick={() => void handleApply('pinnacle')}
@@ -1303,8 +1364,8 @@ export function Asta() {
                   : !isVip
                     ? '👑 VIP only'
                     : pinnacleDefaultCount > 0 && previewIsCurrent
-                      ? `🗡 Apply all supported Pinnacle settings (${pinnacleDefaultCount})`
-                      : '🗡 Apply all supported Pinnacle settings'}
+                      ? `Apply supported Pinnacle settings (${pinnacleDefaultCount})`
+                      : 'Apply supported Pinnacle settings'}
               </button>
               {reviewedPlan && planAudit && previewIsCurrent && selectionCustomized && selectedCount > 0 && (
                 <button
@@ -1313,18 +1374,17 @@ export function Asta() {
                   disabled={busy || previewBusy || !isNative || !isVip || preflight?.blocksAutoApply}
                   className="w-full rounded-md border border-sky-300/30 px-4 py-2 text-xs text-sky-200 hover:bg-sky-300/10 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Apply selected advanced rows ({selectedCount})
+                  Apply selected advanced rows ({selectedCount}{selectedExtremeSecurityCount > 0 ? ` · ${selectedExtremeSecurityCount} security` : ''})
                 </button>
               )}
               <p className="text-center text-[11px] text-text-subtle">
-                One click reads live state first. It applies only supported, read-back-safe Pinnacle settings;
-                review-only, policy-owned, unsupported, and ambiguous rows stay out automatically.
+                Reads live state first. Unsupported, policy-owned, ambiguous, and review-only rows stay untouched.
               </p>
               <Link
                 to="/benchmark"
                 className="text-center text-xs text-text-muted hover:text-text border border-border rounded-md px-3 py-1.5 hover:border-border-glow transition"
               >
-                Run Asta Bench (before / after)
+                Run a before/after bench (optional)
               </Link>
             </div>
           </div>
@@ -1543,6 +1603,12 @@ function AstaBenchResult({
         latency. A negative or tiny result is a reason to revert/compare under the same game
         conditions.
       </p>
+      {rebootProof?.status === 'armed' ? (
+        <p className="mt-2 text-[11px] text-sky-200/90">
+          Persistence scope: {rebootProof.receiptIds.length} active action receipt{rebootProof.receiptIds.length === 1 ? '' : 's'} with verified
+          read-back. Rows without an app-owned restore/read-back contract are not counted.
+        </p>
+      ) : null}
       {before && after ? (
         <p className="mt-2 text-[11px] text-sky-200/90">
           Measurement stability: typical run variation was {formatBenchVariation(before)} before and{' '}

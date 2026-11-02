@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.38',
+    date: '2026-11-01',
+    highlights: [
+      'IMPROVE **Asta apply flow.** The main action now reads the current PC, selects supported Pinnacle settings, applies them in one guided run, and leaves optional review rows untouched unless chosen.',
+      'NEW **Extreme security tradeoffs.** Dedicated test rigs can explicitly review cataloged CPU-mitigation, HVCI, Hyper-V, and SmartScreen changes with warnings, restore receipts, and a separate confirmation.',
+      'FIX **Persistence proof scope.** After the final live read-back, Asta arms the active verified receipt set instead of only the tweaks written by the latest run; the reboot card now explains exactly what was checked.',
+    ],
+  },
+  {
     version: '0.4.37',
     date: '2026-10-26',
     highlights: [

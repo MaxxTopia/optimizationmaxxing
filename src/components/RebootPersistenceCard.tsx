@@ -68,24 +68,40 @@ export function RebootPersistenceCard() {
 
   const status = report?.status ?? 'idle'
   const nonVerified = report?.items.filter((item) => item.status !== 'verified') ?? []
+  const passed = status === 'verified'
 
   return (
-    <section className="surface-card p-5 space-y-4">
+    <section className="surface-card p-5 space-y-4" aria-live="polite">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs uppercase tracking-widest text-text-subtle">release gate</p>
-          <h2 className="text-lg font-semibold">Reboot persistence proof</h2>
+          <p className="text-xs uppercase tracking-widest text-text-subtle">after restart</p>
+          <h2 className="text-lg font-semibold">Verify settings after reboot</h2>
           <p className="text-sm text-text-muted max-w-3xl">
-            Arms the exact tweaks currently applied, detects a real Windows reboot, and reads each
-            setting back. It never silently reapplies drifted state.
+            Asta checks the active settings selected when you arm this check after Windows
+            restarts. It reads them back; it never silently reapplies drifted state.
           </p>
         </div>
-        <span className={`text-xs font-semibold uppercase tracking-widest ${statusClass(status)}`}>
+        <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-widest ${statusBadgeClass(status)}`}>
           {statusLabel(status)}
         </span>
       </div>
 
-      <p className="text-sm text-text">{report?.detail ?? 'No reboot check is armed.'}</p>
+      <div className={`rounded-md border px-3 py-3 ${passed ? 'border-emerald-400/35 bg-emerald-400/10' : 'border-border bg-bg-base/30'}`}>
+        <p className={`text-sm font-semibold ${passed ? 'text-emerald-200' : 'text-text'}`}>
+          {passed ? 'Reboot check passed' : status === 'awaiting_reboot' || status === 'armed' ? 'Restart Windows to finish the check' : status === 'mismatch' || status === 'unknown' ? 'The check needs attention' : 'No reboot check is armed'}
+        </p>
+        <p className="mt-1 text-sm text-text-muted">
+          {passed
+            ? 'The armed settings survived a real Windows restart. No action is needed for this check.'
+            : report?.detail ?? 'Arm the settings after a successful apply, then restart Windows.'}
+        </p>
+      </div>
+
+      {report && report.receiptIds.length > 0 ? (
+        <p className="text-xs text-text-muted">
+          Scope: {report.receiptIds.length} app-owned action receipt{report.receiptIds.length === 1 ? '' : 's'} with a read-back contract. This proves that armed set only; it is not a claim that every catalog row was written.
+        </p>
+      ) : null}
 
       {report && report.checked > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
@@ -98,15 +114,15 @@ export function RebootPersistenceCard() {
 
       {report && report.items.length > 0 ? (
         <details className="border border-border rounded-md p-3" open={nonVerified.length > 0}>
-          <summary className="cursor-pointer text-xs uppercase tracking-widest text-text-subtle">
-            Per-action reboot read-back ({report.items.length})
+          <summary className="cursor-pointer text-xs font-semibold text-text-subtle">
+            Show setting read-backs ({report.items.length})
           </summary>
           <div className="mt-3 space-y-3">
             {report.items.map((item) => (
               <div key={item.receiptId} className="text-xs">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-semibold text-text truncate">{item.tweakId}</span>
-                  <span className={statusClass(item.status)}>{item.status}</span>
+                  <span className={statusClass(item.status)}>{item.status === 'verified' ? 'passed' : item.status}</span>
                 </div>
                 <p className="text-text-muted">
                   {item.verifiedAt
@@ -126,18 +142,16 @@ export function RebootPersistenceCard() {
           disabled={busy}
           className="px-3 py-1.5 rounded-md bg-accent text-bg-base text-xs font-semibold disabled:opacity-40"
         >
-          {busy ? 'Working…' : status === 'verified' || status === 'mismatch' || status === 'unknown' ? 'Arm new check' : 'Arm before reboot'}
+          {busy ? 'Working…' : status === 'verified' || status === 'mismatch' || status === 'unknown' ? 'Arm a new check' : 'Arm current settings'}
         </button>
         <button
           onClick={() => void check()}
-          disabled={busy || status === 'idle'}
+          disabled={busy || status === 'idle' || status === 'verified'}
           className="px-3 py-1.5 rounded-md border border-border hover:border-border-glow text-text text-xs font-semibold disabled:opacity-40"
         >
-          Check after reboot
+          Check after restart
         </button>
-        <span className="text-[11px] text-text-subtle">
-          After arming: restart Windows, then launch the app again.
-        </span>
+        <span className="text-[11px] text-text-subtle">{nextStep(status)}</span>
       </div>
 
       {error ? <p className="text-sm text-accent">{error}</p> : null}
@@ -155,13 +169,35 @@ function Count({ label, value }: { label: string; value: number }) {
 }
 
 function statusLabel(status: RebootValidationStatus): string {
-  return status.replace('_', ' ')
+  const labels: Record<RebootValidationStatus, string> = {
+    idle: 'not armed',
+    armed: 'restart required',
+    awaiting_reboot: 'restart required',
+    verified: 'passed',
+    mismatch: 'needs attention',
+    unknown: 'needs attention',
+  }
+  return labels[status]
 }
 
 function statusClass(status: string): string {
   if (status === 'verified') return 'text-emerald-400'
   if (status === 'mismatch' || status === 'unknown') return 'text-accent'
   return 'text-text-muted'
+}
+
+function statusBadgeClass(status: RebootValidationStatus): string {
+  if (status === 'verified') return 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
+  if (status === 'mismatch' || status === 'unknown') return 'border-accent/50 bg-accent/10 text-accent'
+  if (status === 'armed' || status === 'awaiting_reboot') return 'border-amber-300/40 bg-amber-300/10 text-amber-100'
+  return 'border-border bg-bg-base/30 text-text-muted'
+}
+
+function nextStep(status: RebootValidationStatus): string {
+  if (status === 'verified') return 'Persistence confirmed.'
+  if (status === 'armed' || status === 'awaiting_reboot') return 'Restart Windows, reopen the app, then check.'
+  if (status === 'mismatch' || status === 'unknown') return 'Review the read-back details, then arm a new check after fixing the issue.'
+  return 'Arm this after applying settings, then restart Windows.'
 }
 
 function formatError(error: unknown): string {

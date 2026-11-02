@@ -5,10 +5,12 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const catalogPath = path.join(root, 'resources', 'catalog', 'v1.json')
 const astaPath = path.join(root, 'src', 'pages', 'Asta.tsx')
+const tuneProfilesPath = path.join(root, 'src', 'lib', 'tuneProfiles.ts')
 const verifierPath = path.join(root, 'src', 'lib', 'powershellVerifiers.ts')
 
 const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'))
 const astaSource = fs.readFileSync(astaPath, 'utf8')
+const tuneProfilesSource = fs.readFileSync(tuneProfilesPath, 'utf8')
 const verifierSource = fs.readFileSync(verifierPath, 'utf8')
 const errors = []
 
@@ -16,6 +18,15 @@ function parseNamedSet(name) {
   const match = astaSource.match(new RegExp(`const ${name} = new Set\\(\\[([\\s\\S]*?)\\]\\)`))
   if (!match) {
     errors.push(`Asta source is missing the ${name} policy set`)
+    return []
+  }
+  return [...match[1].matchAll(/'([^']+)'/g)].map((entry) => entry[1])
+}
+
+function parseSourceSet(source, name) {
+  const match = source.match(new RegExp(`const ${name} = new Set\\(([\\s\\S]*?)\\)`))
+  if (!match) {
+    errors.push(`Source is missing the ${name} policy set`)
     return []
   }
   return [...match[1].matchAll(/'([^']+)'/g)].map((entry) => entry[1])
@@ -32,6 +43,7 @@ function assertNoDuplicates(name, ids) {
 const experimentalIds = parseNamedSet('PINNACLE_EXPERIMENTAL_IDS')
 const baselineIds = parseNamedSet('PINNACLE_BASELINE_IDS')
 const firstApplyIds = parseNamedSet('SAFE_FIRST_APPLY_IDS')
+const extremeSecurityIds = parseSourceSet(tuneProfilesSource, 'EXTREME_SECURITY_TRADEOFF_IDS')
 const allIds = new Set((catalog.tweaks ?? []).map((tweak) => tweak.id))
 const tweaks = new Map((catalog.tweaks ?? []).map((tweak) => [tweak.id, tweak]))
 const verifierIds = new Set(
@@ -41,6 +53,7 @@ const verifierIds = new Set(
 assertNoDuplicates('PINNACLE_EXPERIMENTAL_IDS', experimentalIds)
 assertNoDuplicates('PINNACLE_BASELINE_IDS', baselineIds)
 assertNoDuplicates('SAFE_FIRST_APPLY_IDS', firstApplyIds)
+assertNoDuplicates('EXTREME_SECURITY_TRADEOFF_IDS', extremeSecurityIds)
 
 for (const [name, ids] of [
   ['PINNACLE_EXPERIMENTAL_IDS', experimentalIds],
@@ -54,6 +67,13 @@ for (const [name, ids] of [
 
 for (const id of experimentalIds) {
   if (baselineIds.includes(id)) errors.push(`Pinnacle experimental and baseline lanes overlap at ${id}`)
+}
+
+for (const id of extremeSecurityIds) {
+  if (!allIds.has(id)) errors.push(`EXTREME_SECURITY_TRADEOFF_IDS: ${id} is not present in the catalog`)
+  if (experimentalIds.includes(id) || baselineIds.includes(id)) {
+    errors.push(`EXTREME_SECURITY_TRADEOFF_IDS: ${id} cannot enter the automatic Pinnacle lane`)
+  }
 }
 
 const supportedNativeKinds = new Set([
@@ -113,10 +133,16 @@ for (const requiredSourceFragment of [
   'GameUserSettings\\.ini',
   'isSafeFirstApplyAudit',
   'audit.actions.some((action) => action.status === \'differs\')',
+  'EXTREME_SECURITY_TRADEOFF_IDS',
+  'Security tradeoffs are selected but not acknowledged.',
+  'Global Microsoft Defender disable is intentionally not a checkbox',
 ]) {
   if (!astaSource.includes(requiredSourceFragment)) {
     errors.push(`Asta automatic-policy guard is missing source fragment: ${requiredSourceFragment}`)
   }
+}
+if (!tuneProfilesSource.includes('...EXTREME_SECURITY_TRADEOFF_IDS')) {
+  errors.push('Tune profile hard-block is missing the extreme security tradeoff set')
 }
 
 console.log(`Asta policy audit: catalog ${catalog.version}, ${catalog.tweaks.length} rows`)

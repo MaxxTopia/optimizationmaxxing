@@ -14,8 +14,27 @@ export type TuneIntensity = 'light' | 'competitive' | 'aggressive' | 'extreme'
  * systems, write a static game file without scan-aware interpolation, or
  * cannot be safely proven with the native read-back engine.
  */
-const NEVER_AUTO_APPLY_IDS = new Set([
+/**
+ * Security controls that may be useful for a deliberately isolated lab rig,
+ * but must never be hidden inside a one-click gaming preset. They are exposed
+ * in Asta's separate Extreme security tradeoffs section so the user can make
+ * a per-setting decision with the catalog warning and native restore receipt
+ * visible.
+ *
+ * This list is intentionally not a blanket "disable security" switch. Global
+ * Defender disable is not a catalog action: Windows tamper protection can
+ * reject policy writes, and disabling antivirus has no reliable Fortnite
+ * latency benefit. Match Scan can identify a real Defender scan instead.
+ */
+export const EXTREME_SECURITY_TRADEOFF_IDS = new Set([
   'process.cpu-mitigations.disable-DANGER',
+  'privacy.smartscreen.disable',
+  'vbs.hvci.disable',
+  'bcd.hypervisorlaunchtype.off',
+])
+
+const NEVER_AUTO_APPLY_IDS = new Set([
+  ...EXTREME_SECURITY_TRADEOFF_IDS,
   'process.fault-tolerant-heap.disable',
   'process.windows-update.auto-disable',
   'process.microsoft-store.disable',
@@ -34,9 +53,6 @@ const NEVER_AUTO_APPLY_IDS = new Set([
   'network.qos.dscp-tag',
   'power.device-idle.performance',
   'privacy.lock-screen-spotlight.disable',
-  'privacy.smartscreen.disable',
-  'vbs.hvci.disable',
-  'bcd.hypervisorlaunchtype.off',
   'process.hpet.disable',
   'bcd.useplatformclock.disable',
   'bcd.disabledynamictick.yes',

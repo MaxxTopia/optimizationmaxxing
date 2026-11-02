@@ -303,9 +303,10 @@ fn get_reboot_validation(
 }
 
 /// Capture a receipt set and current Windows uptime before a user restarts.
-/// Asta passes the receipts created by its current run; the optional empty
-/// selection keeps the standalone Reboot Persistence card's "arm active"
-/// behavior for users who deliberately want to check every active receipt.
+/// Asta passes the active, verified receipt set after its final read-back; the
+/// optional empty selection keeps the standalone Reboot Persistence card's
+/// "arm active" behavior for users who deliberately want to check every
+/// active receipt.
 #[tauri::command]
 fn arm_reboot_validation(
     state: tauri::State<'_, SnapshotStore>,
