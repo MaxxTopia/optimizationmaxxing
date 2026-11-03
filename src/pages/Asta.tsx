@@ -404,8 +404,8 @@ export function Asta() {
       const experimentalCount = chosen.filter((tweak) =>
         isExperimentalTweak(tweak) || PINNACLE_EXPERIMENTAL_IDS.has(tweak.id),
       ).length
-      if (!(await confirmAction(
-        `Pinnacle Asta is ready to apply the ${chosen.length} selected Fortnite/Windows tweaks from the reviewed plan. That is ${safeActionCount} standard actions; ${chosenReview.length} selected review rows (${reviewActionCount} actions) need a separate security/compatibility confirmation. ${experimentalCount} selected rows are experimental. Unchecked rows will be left alone; BIOS/NVRAM/firmware and mismatched hardware targets remain excluded. A restore point and same-condition game test are strongly recommended. Continue?`,
+      if (!automaticPinnacle && !(await confirmAction(
+        `Asta is ready to apply the ${chosen.length} selected Fortnite/Windows tweaks from the reviewed plan. That is ${safeActionCount} standard actions; ${chosenReview.length} selected review rows (${reviewActionCount} actions) need a separate security/compatibility confirmation. ${experimentalCount} selected rows are experimental. Unchecked rows will be left alone; BIOS/NVRAM/firmware and mismatched hardware targets remain excluded. A restore point and same-condition game test are strongly recommended. Continue?`,
       ))) {
         return
       }
@@ -877,40 +877,101 @@ export function Asta() {
     }
   }
 
+  const applyHasIssues = Boolean(
+    applied &&
+      (applied.errors.length > 0 ||
+        applied.mismatch > 0 ||
+        applied.unknown > 0 ||
+        applied.preflightSkipped > 0 ||
+        applied.policySkipped > 0 ||
+        applied.rolledBack > 0 ||
+        applied.safetyReverted > 0),
+  )
+  const waitingForReboot = Boolean(
+    applied &&
+      (rebootProof?.status === 'armed' ||
+        rebootProof?.status === 'awaiting_reboot'),
+  )
+  const rebootPassed = rebootProof?.status === 'verified'
+  const primaryButtonLabel = preflight?.blocksAutoApply
+    ? 'Finish Windows Update, then re-scan'
+    : busy
+      ? 'Optimizing...'
+      : !isNative
+        ? 'Open the desktop app'
+        : !isVip
+          ? 'VIP required'
+          : applied && applyHasIssues
+            ? 'Try the supported fixes again'
+            : applied
+              ? 'Check and optimize again'
+              : 'Optimize my PC'
+  const primaryStatusTitle = busy
+    ? 'Checking and optimizing your PC...'
+    : !applied
+      ? 'One click. No boxes to check.'
+      : applyHasIssues
+        ? 'Some settings need attention'
+        : applied.requested === 0
+          ? 'Your PC was already ready'
+          : 'Optimization complete'
+  const primaryStatusBody = busy
+    ? progress || 'Reading your hardware, applying supported settings, and verifying the result.'
+    : !applied
+      ? 'Asta reads this PC first, applies the supported Fortnite settings, and shows exactly what was verified.'
+      : applyHasIssues
+        ? 'The safe settings that passed are kept. Open the details below to see what needs a driver, policy, reboot, or manual decision.'
+        : waitingForReboot
+          ? 'The supported settings were applied. Restart Windows to prove they survive a reboot, then run the same Fortnite test.'
+          : rebootPassed
+            ? 'The settings survived the reboot check. Run the same Fortnite scene to measure the actual game result.'
+            : 'The supported settings were applied and verified for this run. You can now restart Windows and confirm persistence.'
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       <Hero />
 
       <section className="surface-card p-5 space-y-4 border border-border">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.28em] text-text-subtle">simple flow</p>
-            <h2 className="mt-1 text-2xl font-semibold text-text">Apply, restart, verify.</h2>
-            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-text-muted">
+            <p className="text-xs uppercase tracking-[0.28em] text-text-subtle">simple flow</p>
+            <h2 className="mt-1 text-2xl font-semibold text-text">Optimize, restart, play.</h2>
+            <p className="mt-1 max-w-3xl text-base leading-relaxed text-text-muted">
               Asta handles the supported Fortnite settings automatically. Advanced rows stay
               available below, but they are never required for the main path.
             </p>
           </div>
-          <span className="rounded-full border border-sky-300/25 bg-sky-300/5 px-2.5 py-1 text-[11px] text-sky-100">
-            No changes until Apply
-          </span>
+          {!applied ? (
+            <button
+              type="button"
+              onClick={() => void handleApply('pinnacle')}
+              disabled={busy || previewBusy || !isNative || !isVip || Boolean(preflight?.blocksAutoApply)}
+              className="min-h-12 w-full rounded-xl bg-accent px-5 py-3 text-base font-extrabold text-bg-base shadow-[0_0_24px_rgba(201,31,55,0.26)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-[230px]"
+            >
+              {primaryButtonLabel}
+            </button>
+          ) : (
+            <span className="rounded-full border border-emerald-300/25 bg-emerald-300/5 px-3 py-1.5 text-xs text-emerald-100">
+              Result shown below
+            </span>
+          )}
         </div>
         <ol className="grid gap-3 border-t border-border pt-4 sm:grid-cols-2 lg:grid-cols-4">
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">1</span>
-            <div><p className="text-xs font-semibold text-text">Apply supported settings</p><p className="mt-1 text-xs leading-relaxed text-text-muted">One guided Windows consent. Live read-back checks each supported change.</p></div>
+            <div><p className="text-sm font-semibold text-text">Optimize</p><p className="mt-1 text-sm leading-relaxed text-text-muted">One guided Windows consent. Asta checks each supported change.</p></div>
           </li>
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">2</span>
-            <div><p className="text-xs font-semibold text-text">Restart Windows</p><p className="mt-1 text-xs leading-relaxed text-text-muted">Required before persistence can be proven.</p></div>
+            <div><p className="text-sm font-semibold text-text">Restart Windows</p><p className="mt-1 text-sm leading-relaxed text-text-muted">This lets Asta prove the settings survive a reboot.</p></div>
           </li>
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">3</span>
-            <div><p className="text-xs font-semibold text-text">Check after restart</p><p className="mt-1 text-xs leading-relaxed text-text-muted">Asta reads the armed settings back; it does not reapply them.</p></div>
+            <div><p className="text-sm font-semibold text-text">Check after restart</p><p className="mt-1 text-sm leading-relaxed text-text-muted">Asta reads the settings back. It does not silently reapply them.</p></div>
           </li>
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-bg-base">4</span>
-            <div><p className="text-xs font-semibold text-text">Run game proof</p><p className="mt-1 text-xs leading-relaxed text-text-muted">Use the same scene to compare FPS, 1% lows, and frame time.</p></div>
+            <div><p className="text-sm font-semibold text-text">Play and compare</p><p className="mt-1 text-sm leading-relaxed text-text-muted">Use the same scene to compare FPS, 1% lows, and frame time.</p></div>
           </li>
         </ol>
       </section>
@@ -926,17 +987,97 @@ export function Asta() {
             }}
           />
           <div className="relative">
-            <p className="text-[10px] uppercase tracking-widest text-text-subtle">apply</p>
-            <h3 className="text-xl font-bold mt-1">Apply supported Fortnite settings</h3>
-            <p className="text-sm text-text-muted leading-snug mt-1 max-w-3xl">
-              The main button reads this PC first, selects the supported Pinnacle lane, applies it
-              in one guided run, and verifies each setting it can prove. You do not need to open
-              the preview or select individual boxes.
+            <p className="text-xs uppercase tracking-widest text-text-subtle">fortnite optimizer</p>
+            <h3 className="text-2xl font-bold mt-1">Make your PC feel better in Fortnite</h3>
+            <p className="text-base text-text-muted leading-relaxed mt-1 max-w-3xl">
+              Asta reads this PC first, applies the supported settings in one guided run, and
+              shows what was verified. You do not need to preview the plan or tick individual boxes.
             </p>
 
-            <details className="mt-3 rounded-md border border-sky-300/20 bg-sky-300/5 px-3 py-2">
-              <summary className="cursor-pointer text-xs font-semibold text-text">How Asta decides what to apply</summary>
-              <div className="mt-2 space-y-2 text-xs leading-relaxed text-text-muted">
+            <div id="asta-result" aria-live="polite" className="mt-5 rounded-2xl border border-accent/40 bg-bg-base/75 p-4 shadow-[0_0_32px_rgba(201,31,55,0.12)] md:p-5">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-start gap-3">
+                  <div
+                    aria-hidden="true"
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl font-black ${
+                      busy
+                        ? 'bg-amber-300/15 text-amber-200'
+                        : applied && !applyHasIssues
+                          ? 'asta-completion-pop bg-emerald-300/15 text-emerald-200'
+                          : applied
+                            ? 'bg-amber-300/15 text-amber-200'
+                            : 'bg-accent/20 text-accent'
+                    }`}
+                  >
+                    {busy ? '...' : applied && !applyHasIssues ? '✓' : applied ? '!' : '→'}
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-text">{primaryStatusTitle}</p>
+                    <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text-muted">{primaryStatusBody}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void handleApply('pinnacle')}
+                  disabled={busy || previewBusy || !isNative || !isVip || Boolean(preflight?.blocksAutoApply)}
+                  className="min-h-12 w-full rounded-xl bg-accent px-5 py-3 text-base font-extrabold text-bg-base shadow-[0_0_24px_rgba(201,31,55,0.26)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto md:min-w-[230px]"
+                >
+                  {primaryButtonLabel}
+                </button>
+              </div>
+
+              {applied && !busy && (
+                <div className="mt-5 grid grid-cols-3 gap-2 border-t border-border pt-4 text-center">
+                  <div className="rounded-xl bg-emerald-300/10 px-2 py-3">
+                    <p className="text-2xl font-black text-emerald-200">{applied.verified}</p>
+                    <p className="mt-1 text-xs text-text-muted">verified now</p>
+                  </div>
+                  <div className="rounded-xl bg-sky-300/10 px-2 py-3">
+                    <p className="text-2xl font-black text-sky-200">{applied.alreadyAtTarget + applied.skipped}</p>
+                    <p className="mt-1 text-xs text-text-muted">already good</p>
+                  </div>
+                  <div className="rounded-xl bg-amber-300/10 px-2 py-3">
+                    <p className="text-2xl font-black text-amber-200">
+                      {applied.mismatch + applied.unknown + applied.preflightSkipped + applied.policySkipped + applied.rolledBack}
+                    </p>
+                    <p className="mt-1 text-xs text-text-muted">needs attention</p>
+                  </div>
+                </div>
+              )}
+
+              {applied && !busy && (
+                <div className="mt-4 flex flex-col gap-3 rounded-xl border border-border bg-bg-base/45 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">next step</p>
+                    <p className="mt-1 text-sm text-text">
+                      {applyHasIssues
+                        ? 'Open the details below and fix only what needs attention.'
+                        : waitingForReboot
+                          ? 'Restart Windows, then use Check after restart.'
+                          : rebootPassed
+                            ? 'Run the same Fortnite scene and compare the result.'
+                            : 'Restart Windows, then use Check after restart.'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById(applyHasIssues ? 'asta-technical-details' : 'asta-reboot-persistence')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                    className="shrink-0 rounded-lg border border-accent/50 px-3 py-2 text-sm font-bold text-accent transition hover:bg-accent/10"
+                  >
+                    See next step
+                  </button>
+                </div>
+              )}
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-text-subtle">
+                <span>{busy ? 'Please keep the app open while the run finishes.' : 'No preview or checkbox selection is required.'}</span>
+                <Link to="/benchmark" className="font-semibold text-sky-200 underline-offset-2 hover:underline">Optional: measure Fortnite</Link>
+              </div>
+            </div>
+
+            <details id="asta-technical-details" className="mt-4 rounded-md border border-sky-300/20 bg-sky-300/5 px-3 py-2">
+              <summary className="cursor-pointer text-sm font-semibold text-text">How Asta decides what to apply</summary>
+              <div className="mt-2 space-y-3 text-sm leading-relaxed text-text-muted">
                 <p>
                   Asta includes matching actions only when Windows exposes a native read-back and
                   restore path. Ambiguous, policy-owned, unsupported, firmware, security-weakening,
@@ -969,7 +1110,7 @@ export function Asta() {
 
             {/nvidia|geforce|rtx|gtx/i.test(spec?.gpu.vendor ?? '') && (
               <details className="mt-3 rounded-md border border-amber-300/25 bg-amber-300/5 px-3 py-2">
-                <summary className="cursor-pointer text-xs font-semibold text-amber-100">Optional: NVIDIA driver profile</summary>
+                <summary className="cursor-pointer text-sm font-semibold text-amber-100">Optional: NVIDIA driver profile</summary>
                 <div className="mt-3">
                   <NvpiManualStepCard gpuVendor={spec?.gpu.vendor} canApply={isVip && isNative} />
                 </div>
@@ -977,7 +1118,7 @@ export function Asta() {
             )}
 
             {displayPlan && (
-              <div className="mt-3 rounded-md border border-border bg-bg-base/40 px-3 py-2 text-xs text-text-muted leading-relaxed">
+              <div className="mt-3 rounded-md border border-border bg-bg-base/40 px-3 py-2 text-sm text-text-muted leading-relaxed">
                 <strong className="text-text">{reviewedPlan ? 'Plan:' : 'Coverage:'}</strong>{' '}
                 <span className="text-emerald-300">{displayPlan.candidates.length} ready</span>{' · '}
                 <span className="text-sky-300">{displayPlan.alreadyApplied.length} already correct</span>{' · '}
@@ -1000,7 +1141,7 @@ export function Asta() {
 
             {displayPlan && (
               <details className="mt-3 rounded-md border border-emerald-300/20 bg-emerald-300/5 px-3 py-2">
-                <summary className="cursor-pointer text-xs font-semibold text-emerald-100">
+                <summary className="cursor-pointer text-sm font-semibold text-emerald-100">
                   What Asta can change on this PC
                   <span className="ml-2 font-normal text-text-subtle">
                     {reviewedPlan && planAudit ? `${pinnacleDefaultCount} automatic now` : 'show coverage'}
@@ -1029,15 +1170,15 @@ export function Asta() {
 
             {inventory && (
               <details className="mt-3 rounded-md border border-amber-200/20 bg-black/20 px-3 py-2">
-                <summary className="cursor-pointer text-xs font-semibold text-amber-100">
+                <summary className="cursor-pointer text-sm font-semibold text-amber-100">
                   Advanced review (optional)
                   <span className="ml-2 font-normal text-text-subtle">Inspect rows before applying</span>
                 </summary>
                 <div className="pt-3 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm font-semibold text-text">Preview exact changes</p>
-                    <p className="text-[11px] text-text-muted">This is read-only. The main Apply button handles the automatic lane without this step.</p>
+                    <p className="text-base font-semibold text-text">Preview exact changes</p>
+                    <p className="text-sm text-text-muted">This is read-only. The main Optimize button handles the automatic lane without this step.</p>
                   </div>
                   <button
                     type="button"
@@ -1190,7 +1331,7 @@ export function Asta() {
                 )}
                 {displayPlan && (
                   <details className="rounded border border-white/10 px-3 py-2">
-                    <summary className="cursor-pointer text-[11px] text-text-muted">Why other catalog rows are excluded from this Fortnite run</summary>
+                    <summary className="cursor-pointer text-sm text-text-muted">Why other catalog rows are excluded from this Fortnite run</summary>
                     <div className="mt-2 grid gap-3 md:grid-cols-3">
                       <ExcludedRows label="Manual firmware / BIOS" reason="No BIOS, NVRAM, or firmware changes are applied by Asta." rows={displayPlan.manual} />
                       <ExcludedRows label="Hardware does not match" reason="The exact rig-target filter did not pass; no nearby-hardware substitute is used." rows={displayPlan.notMatched} />
@@ -1199,6 +1340,16 @@ export function Asta() {
                   </details>
                 )}
                 </div>
+                {reviewedPlan && planAudit && previewIsCurrent && selectionCustomized && selectedCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => void handleApply('selected')}
+                    disabled={busy || previewBusy || !isNative || !isVip || Boolean(preflight?.blocksAutoApply)}
+                    className="mt-3 w-full rounded-lg border border-sky-300/40 px-4 py-3 text-sm font-bold text-sky-100 transition hover:bg-sky-300/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Apply selected advanced rows ({selectedCount}{selectedExtremeSecurityCount > 0 ? ` · ${selectedExtremeSecurityCount} security` : ''})
+                  </button>
+                )}
               </details>
             )}
 
@@ -1334,59 +1485,6 @@ export function Asta() {
                 </div>
               )}
 
-            <div id="asta-primary-action" className="sticky bottom-3 z-20 mt-4 flex flex-col gap-2 rounded-lg border border-accent/30 bg-bg-base/95 p-3 shadow-xl backdrop-blur">
-              <button
-                type="button"
-                onClick={() => void handleApply('pinnacle')}
-                disabled={busy || previewBusy || !isNative || !isVip || preflight?.blocksAutoApply}
-                className="btn-chrome w-full px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-                style={
-                  isVip
-                    ? {
-                        background:
-                          'linear-gradient(135deg, #c91f37 0%, #7a0a1a 60%, #04020a 100%)',
-                        color: '#f0e4d8',
-                        border: '1px solid rgba(201, 31, 55, 0.65)',
-                        boxShadow: '0 0 18px rgba(201, 31, 55, 0.3)',
-                      }
-                    : {
-                        background:
-                          'linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #cc9900 100%)',
-                        color: '#3a2a00',
-                        border: '1px solid rgba(255, 215, 0, 0.65)',
-                      }
-                }
-              >
-                {preflight?.blocksAutoApply
-                  ? 'Finish Windows Update, then re-scan'
-                  : busy
-                  ? 'Applying…'
-                  : !isVip
-                    ? '👑 VIP only'
-                    : pinnacleDefaultCount > 0 && previewIsCurrent
-                      ? `Apply supported Pinnacle settings (${pinnacleDefaultCount})`
-                      : 'Apply supported Pinnacle settings'}
-              </button>
-              {reviewedPlan && planAudit && previewIsCurrent && selectionCustomized && selectedCount > 0 && (
-                <button
-                  type="button"
-                  onClick={() => void handleApply('selected')}
-                  disabled={busy || previewBusy || !isNative || !isVip || preflight?.blocksAutoApply}
-                  className="w-full rounded-md border border-sky-300/30 px-4 py-2 text-xs text-sky-200 hover:bg-sky-300/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Apply selected advanced rows ({selectedCount}{selectedExtremeSecurityCount > 0 ? ` · ${selectedExtremeSecurityCount} security` : ''})
-                </button>
-              )}
-              <p className="text-center text-[11px] text-text-subtle">
-                Reads live state first. Unsupported, policy-owned, ambiguous, and review-only rows stay untouched.
-              </p>
-              <Link
-                to="/benchmark"
-                className="text-center text-xs text-text-muted hover:text-text border border-border rounded-md px-3 py-1.5 hover:border-border-glow transition"
-              >
-                Run a before/after bench (optional)
-              </Link>
-            </div>
           </div>
         </div>
       </section>
@@ -1947,8 +2045,8 @@ function Hero() {
       }}
     >
       <div className="relative">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-asta-bone-soft mb-2">
-          Asta Mode
+        <p className="text-xs uppercase tracking-[0.3em] text-asta-bone-soft mb-2">
+          Asta Mode · Fortnite
         </p>
         <h1
           className="text-4xl md:text-6xl font-bold leading-none"
@@ -1959,7 +2057,7 @@ function Hero() {
               '0 0 16px rgba(201, 31, 55, 0.45), 0 0 36px rgba(89, 13, 26, 0.7)',
           }}
         >
-          Push the rig to its limit.
+          Tune your PC for Fortnite.
         </h1>
         <p
           className="mt-4 max-w-2xl text-base md:text-lg leading-snug"
@@ -1969,9 +2067,9 @@ function Hero() {
             letterSpacing: '0.01em',
           }}
         >
-          Hardware-aware settings for competitive play, with live read-back before apply and a
-          reversible path after. Your rig determines which changes are supported; anything that
-          cannot be verified stays visible for manual review.
+          One guided run checks your hardware, applies the supported performance settings, and
+          tells you what actually verified. Advanced controls stay available, but beginners only
+          need the button below.
         </p>
       </div>
 

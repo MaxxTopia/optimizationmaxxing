@@ -1875,3 +1875,19 @@ body.profile-element-115 button,
 body.profile-element-115 a {
   letter-spacing: 0.005em;
 }
+
+/* A restrained completion reveal for the Asta result badge. It gives the
+ * user a satisfying finish without pretending a benchmark is a jackpot. */
+.asta-completion-pop {
+  animation: asta-completion-pop 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes asta-completion-pop {
+  0% { opacity: 0.2; transform: scale(0.84); }
+  65% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asta-completion-pop { animation: none; }
+}

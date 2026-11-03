@@ -71,14 +71,14 @@ export function RebootPersistenceCard() {
   const passed = status === 'verified'
 
   return (
-    <section className="surface-card p-5 space-y-4" aria-live="polite">
+    <section id="asta-reboot-persistence" className="surface-card p-5 space-y-4" aria-live="polite">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs uppercase tracking-widest text-text-subtle">after restart</p>
-          <h2 className="text-lg font-semibold">Verify settings after reboot</h2>
-          <p className="text-sm text-text-muted max-w-3xl">
-            Asta checks the active settings selected when you arm this check after Windows
-            restarts. It reads them back; it never silently reapplies drifted state.
+          <p className="text-xs uppercase tracking-widest text-text-subtle">step 3 · after restart</p>
+          <h2 className="text-xl font-semibold">Check that your settings survived</h2>
+          <p className="text-base text-text-muted max-w-3xl leading-relaxed">
+            Restart Windows first. Then click <strong className="text-text">Check after restart</strong>.
+            Asta reads the settings back and reports what survived; it never silently reapplies drifted state.
           </p>
         </div>
         <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-widest ${statusBadgeClass(status)}`}>
@@ -88,7 +88,7 @@ export function RebootPersistenceCard() {
 
       <div className={`rounded-md border px-3 py-3 ${passed ? 'border-emerald-400/35 bg-emerald-400/10' : 'border-border bg-bg-base/30'}`}>
         <p className={`text-sm font-semibold ${passed ? 'text-emerald-200' : 'text-text'}`}>
-          {passed ? 'Reboot check passed' : status === 'awaiting_reboot' || status === 'armed' ? 'Restart Windows to finish the check' : status === 'mismatch' || status === 'unknown' ? 'The check needs attention' : 'No reboot check is armed'}
+          {passed ? 'Reboot check passed' : status === 'awaiting_reboot' || status === 'armed' ? 'Restart Windows to finish the check' : status === 'mismatch' || status === 'unknown' ? 'The check needs attention' : 'Apply settings first'}
         </p>
         <p className="mt-1 text-sm text-text-muted">
           {passed

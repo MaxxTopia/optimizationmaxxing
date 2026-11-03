@@ -107,3 +107,54 @@ Confirm the armed count reflects the active verified receipt set, then run a
 same-scene Fortnite Match Scan for FPS, 1% lows, frame-time, and ping evidence.
 Source tests and CI cannot prove UAC/elevation, registry or BCD writes, adapter
 changes, reboot persistence, or improved gameplay.
+
+## 2026-11-03 beginner-first Asta completion UX
+
+### Intent and decisions
+
+- Make the first-run experience readable for a user who only wants one clear
+  action and an honest result.
+- Keep the satisfying finish moment restrained: a visible completion check,
+  verified/already-good/needs-attention counts, a clear next-step card, and a
+  short completion reveal. Do not use random outcomes, fake FPS gains, or
+  casino-style claims about performance.
+- Keep expert controls and evidence available below the beginner path without
+  requiring preview or checkbox selection for the automatic lane.
+
+### Source changes
+
+- `src/pages/Asta.tsx`: added the beginner-first result card, state-aware
+  primary action, live verification counts, next-step CTA, readable technical
+  details, and a visible first-viewport Optimize button. The automatic path
+  proceeds to the real Windows consent; review-only actions retain explicit
+  confirmation.
+- `src/components/RebootPersistenceCard.tsx`: renamed and clarified the
+  after-restart step and its idle, armed, and verified states.
+- `src/index.css`: added a reduced-motion-safe completion reveal animation.
+- `scripts/audit-pinnacle-coverage.mjs`: updated source-copy expectations for
+  the new UI.
+
+### Verification and release state
+
+- `git diff --check` passed.
+- `npx tsc --noEmit` passed.
+- `npm run audit:pinnacle-coverage` passed: 11/11 required capabilities,
+  0 errors.
+- `npm run audit:asta-policy` passed: catalog v1.9.4, 108 rows, 0 errors.
+- `npm run audit:catalog` passed: 108 rows, 0 errors, 0 warnings.
+- `npm run test:powershell-contracts` passed: 24 actions classified, 22
+  verified and 2 manual.
+- `npm run build` passed: 223 modules transformed.
+- A local Vite visual check confirmed the primary action is visible in the
+  first viewport. The browser preview correctly shows the desktop-shell gate;
+  no native apply was run from the browser.
+- These changes are local on `codex/pinnacle-v0.4.36` and are not pushed or
+  live yet. The existing v0.4.38 public release remains the last verified live
+  build.
+
+### Next gate
+
+Review the local diff, then make a focused commit and run the documented release
+sequence only when Diggy explicitly asks to publish. After release, verify the
+served installer/build and run one real Windows Apply -> restart -> Check flow;
+source checks cannot prove UAC, persistence, or Fortnite gameplay outcomes.

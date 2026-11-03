@@ -53,9 +53,9 @@ for (const id of required) {
 
 for (const sourceFragment of [
   'PinnacleCoverageCard',
-  'Apply supported Pinnacle settings',
+  'Optimize my PC',
   'isTransactionActionEligible',
-  'Unsupported, policy-owned, ambiguous, and review-only rows stay untouched',
+  'policy-owned, unsupported, firmware, security-weakening',
 ]) {
   if (!astaSource.includes(sourceFragment)) {
     errors.push(`Asta coverage boundary is missing source fragment: ${sourceFragment}`)
