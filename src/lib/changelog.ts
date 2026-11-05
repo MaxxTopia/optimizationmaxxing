@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.39',
+    date: '2026-11-05',
+    highlights: [
+      'IMPROVE **Beginner-first Asta flow.** The main path stays one click, while the dashboard and reboot proof now explain active catalog rows, action receipts, and persistence without making users decode the full catalog.',
+      'NEW **Siege support coverage.** Rainbow Six Siege is now recognized by game filtering, CPU-set quick setup, and the closed-loop capture workflow.',
+      'IMPROVE **Guides and CPU watcher clarity.** Advanced guides are opt-in, research text is easier to scan, and Fortnite CPU Sets can be configured with one recommended setup button.',
+    ],
+  },
+  {
     version: '0.4.38',
     date: '2026-11-01',
     highlights: [

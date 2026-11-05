@@ -12,7 +12,7 @@ import {
  * Two-phase reboot proof: arm the exact active receipt set, restart Windows,
  * then read every action back. A reboot is never inferred from an app reopen.
  */
-export function RebootPersistenceCard() {
+export function RebootPersistenceCard({ onReport }: { onReport?: (report: RebootValidation) => void }) {
   const native = inTauri()
   const [report, setReport] = useState<RebootValidation | null>(null)
   const [busy, setBusy] = useState(false)
@@ -22,7 +22,9 @@ export function RebootPersistenceCard() {
     if (!native) return
     try {
       setError(null)
-      setReport(await getRebootValidation())
+      const next = await getRebootValidation()
+      setReport(next)
+      onReport?.(next)
     } catch (e) {
       setError(formatError(e))
     }
@@ -30,6 +32,15 @@ export function RebootPersistenceCard() {
 
   useEffect(() => {
     void refresh()
+    if (window.location.hash === '#asta-reboot-persistence') {
+      const timer = window.setTimeout(() => {
+        document.getElementById('asta-reboot-persistence')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }, 100)
+      return () => window.clearTimeout(timer)
+    }
     // The native shell is stable for the lifetime of this page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -38,7 +49,9 @@ export function RebootPersistenceCard() {
     setBusy(true)
     setError(null)
     try {
-      setReport(await armRebootValidation())
+      const next = await armRebootValidation()
+      setReport(next)
+      onReport?.(next)
     } catch (e) {
       setError(formatError(e))
     } finally {
@@ -50,7 +63,9 @@ export function RebootPersistenceCard() {
     setBusy(true)
     setError(null)
     try {
-      setReport(await validateRebootPersistence())
+      const next = await validateRebootPersistence()
+      setReport(next)
+      onReport?.(next)
     } catch (e) {
       setError(formatError(e))
     } finally {
@@ -77,8 +92,8 @@ export function RebootPersistenceCard() {
           <p className="text-xs uppercase tracking-widest text-text-subtle">step 3 · after restart</p>
           <h2 className="text-xl font-semibold">Check that your settings survived</h2>
           <p className="text-base text-text-muted max-w-3xl leading-relaxed">
-            Restart Windows first. Then click <strong className="text-text">Check after restart</strong>.
-            Asta reads the settings back and reports what survived; it never silently reapplies drifted state.
+            After you arm this check, Optimizationmaxxing asks Windows to open the app once after the next restart.
+            It then reads the settings back and opens this result automatically. It never silently reapplies drifted state.
           </p>
         </div>
         <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-widest ${statusBadgeClass(status)}`}>
@@ -195,7 +210,7 @@ function statusBadgeClass(status: RebootValidationStatus): string {
 
 function nextStep(status: RebootValidationStatus): string {
   if (status === 'verified') return 'Persistence confirmed.'
-  if (status === 'armed' || status === 'awaiting_reboot') return 'Restart Windows, reopen the app, then check.'
+  if (status === 'armed' || status === 'awaiting_reboot') return 'Restart Windows; the app will reopen and check automatically.'
   if (status === 'mismatch' || status === 'unknown') return 'Review the read-back details, then arm a new check after fixing the issue.'
   return 'Arm this after applying settings, then restart Windows.'
 }

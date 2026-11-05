@@ -158,3 +158,113 @@ Review the local diff, then make a focused commit and run the documented release
 sequence only when Diggy explicitly asks to publish. After release, verify the
 served installer/build and run one real Windows Apply -> restart -> Check flow;
 source checks cannot prove UAC, persistence, or Fortnite gameplay outcomes.
+
+## 2026-11-05 automatic reboot-proof handoff
+
+### User/device evidence recovered
+
+- The user's pasted result is a real reboot-proof report: 147 app-owned action
+  receipts with read-back contracts were checked after Windows restarted; 147
+  matched, 0 mismatched, and 0 were unknown. This proves that armed set only,
+  not every catalog row and not gameplay improvement.
+
+### Local source changes
+
+- `src-tauri/src/lib.rs` now registers an app-owned HKCU Run entry when the
+  user arms a reboot check, removes it after a terminal result, and includes a
+  read-back/error note in the arm receipt. It never reapplies settings.
+- `src/App.tsx` performs the pending proof on the first normal interactive
+  launch and routes to the Asta result card. Hidden `--background` CPU-set
+  watcher launches opt out, so they cannot navigate or trigger the proof.
+- `src/components/RebootPersistenceCard.tsx` explains the automatic handoff,
+  keeps manual Check as a fallback, and scrolls to the result when opened from
+  the startup handoff. `src/pages/Asta.tsx` keeps the proof summary synchronized.
+
+### Verification and release state
+
+- `npx tsc --noEmit` passed.
+- `npm run build` passed: 223 modules transformed.
+- `npm run audit:pinnacle-coverage` passed: 11/11 required capabilities, 0
+  errors.
+- `npm run audit:asta-policy`, `npm run audit:catalog`, and
+  `npm run test:powershell-contracts` passed with 0 errors/warnings.
+- The first native `cargo test` attempt failed only because C: ran out of disk
+  space while writing its debug archive. A second test was moved to E: in
+  `E:\optimizationmaxxing-cargo-target`, but its compiler workers stalled and
+  were stopped; no native pass is claimed.
+- These changes are local and uncommitted. The public v0.4.38 release remains
+  live; no release or installer was published for this handoff.
+
+### Next gate
+
+Review the focused diff, then run the native test on a machine/drive with
+available build space before packaging. Build/package only if
+Diggy explicitly asks to push live. After installation, arm a fresh check on a
+real Windows client, restart once, and confirm the app opens Asta and reports
+the result automatically. Source tests cannot prove HKCU Run behavior, UAC,
+reboot persistence, or Fortnite gameplay outcome.
+
+## 2026-11-05 coverage and beginner-path improvement pass
+
+### Scope and decisions
+
+- Treat Rainbow Six Siege as a first-class supported game wherever the app
+  already has a game registry, closed-loop capture profile, or CPU-set quick
+  picker. Do not imply that the Siege preset can change router, firmware,
+  anti-cheat, or other controls outside the app's verified boundary.
+- Give Fortnite users a single recommended CPU-set setup path. The watcher
+  now saves all detected CPU sets for Fortnite, enables the watcher, and starts
+  it with Windows from one button; manual set-ID selection and Edit remain
+  available for advanced users.
+- Make Guides beginner-first: advanced firmware/BIOS material is opt-in and
+  research article typography is easier to scan. The underlying guide content
+  and safety boundaries remain intact.
+
+### Source changes
+
+- `src/lib/games.ts`: added `rainbow-six-siege` with Siege process names and
+  BattlEye-aware filtering metadata. Filtering only preserves the game and
+  launcher processes; it does not disable or alter anti-cheat.
+- `src/lib/optimizationSession.ts`: added a Siege closed-loop capture profile
+  using the existing PresentMon/sensor evidence path.
+- `src/components/AutoPinSection.tsx`: added a one-click recommended Fortnite
+  watcher setup using all detected CPU sets, with clear persistence and restore
+  guidance.
+- `src/pages/Guides.tsx`: advanced guides now start collapsed and the control
+  text explains what is being revealed.
+- `src/index.css`: improved research headings, links, lists, and code blocks
+  for readability without changing guide content.
+- `src/pages/Dashboard.tsx`: renamed the gauge to `Active catalog rows` and
+  clarified that catalog rows and underlying action receipts are different
+  counts, so a user no longer expects the number to equal all 108 rows.
+
+### Verification and release state
+
+- `npx tsc --noEmit` passed.
+- `npm run build` passed: 223 modules transformed.
+- `npm run audit:catalog` passed: catalog v1.9.4, 108 rows, 0 errors and 0
+  warnings.
+- `npm run audit:asta-policy` passed: 108 rows, 0 errors.
+- `npm run audit:pinnacle-coverage` passed: 11/11 required capabilities, 0
+  errors.
+- `git diff --check` passed. The native `cargo test --locked` gate passed with
+  107 Rust tests and no failures using the existing C: target cache.
+- `npm run tauri:build` compiled the optimized v0.4.39 executable and NSIS
+  installer. The local command then stopped at Tauri signing because the
+  private signing key is intentionally held by CI; no private key was exposed
+  or copied locally.
+- The public v0.4.38 release remains live until the v0.4.39 tag and release
+  workflow complete. The intended v0.4.39 changes are still uncommitted.
+
+### Remaining gates and next action
+
+- A real Windows install must verify the Siege registry/session path, the
+  one-click CPU-set watcher setup, UAC batching, reboot persistence, and the
+  existing Asta apply/restore flow. A same-scene game capture is still needed
+  before making FPS, 1% low, ping, or input-feel claims.
+- Before publishing, review the focused diff, commit only intended
+  source/checkpoint changes, rebase onto the current `origin/main`, tag
+  v0.4.39, and verify the CI-signed release installer. After installation,
+  complete the real Windows/UAC/reboot/gameplay gates listed above; source and
+  package tests do not prove Fortnite or Siege FPS, 1% lows, ping, or input
+  feel.

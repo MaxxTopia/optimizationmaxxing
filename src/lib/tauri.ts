@@ -521,6 +521,11 @@ export async function validateRebootPersistence(): Promise<RebootValidation> {
   return invoke<RebootValidation>('validate_reboot_persistence')
 }
 
+/** True for the hidden CPU-set watcher launch, which must not navigate the UI. */
+export async function isBackgroundMode(): Promise<boolean> {
+  return invoke<boolean>('app_background_mode')
+}
+
 /** Read-only stability gate for Tune Now. */
 export async function getTunePreflight(): Promise<TunePreflight> {
   return invoke<TunePreflight>('get_tune_preflight')

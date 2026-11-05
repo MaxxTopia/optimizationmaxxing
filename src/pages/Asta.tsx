@@ -4,6 +4,7 @@ import { useIsVip } from '../store/useVipStore'
 import {
   applyAstaBatch,
   armRebootValidation,
+  getRebootValidation,
   getTunePreflight,
   inTauri,
   kvGet,
@@ -202,6 +203,7 @@ export function Asta() {
       })
       .catch(() => undefined)
     void getTunePreflight().then(setPreflight).catch(() => undefined)
+    void getRebootValidation().then(setRebootProof).catch(() => undefined)
     void kvGet('asta_inflight')
       .then((raw) => {
         if (!raw) return
@@ -1491,7 +1493,7 @@ export function Asta() {
 
       <AstaFitCard />
 
-      <RebootPersistenceCard />
+      <RebootPersistenceCard onReport={setRebootProof} />
 
       <TournamentAudit />
 

@@ -96,6 +96,16 @@ export const GAME_SESSION_PROFILES: Record<GameId, GameSessionProfile> = {
     restoreOnExit: true,
     notes: 'Keep the render path and scene constant. Engine-family similarity is not proof of a Fortnite result.',
   },
+  'rainbow-six-siege': {
+    id: 'rainbow-six-siege-closed-loop-v1',
+    gameId: 'rainbow-six-siege',
+    label: 'Rainbow Six Siege closed-loop capture',
+    processNames: ['RainbowSix.exe', 'RainbowSix_Vulkan.exe', 'RainbowSix_DX11.exe'],
+    evidenceSource: 'presentmon-plus-sensors',
+    requiresBaseline: true,
+    restoreOnExit: true,
+    notes: 'Keep the map, render API, cap, Reflex setting, and background load constant. Compare local frame-time tails separately from server latency.',
+  },
 }
 
 export function sessionProfileFor(gameId: GameId): GameSessionProfile {

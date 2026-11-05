@@ -18,6 +18,7 @@ export type GameId =
   | 'osu'
   | 'overwatch'
   | 'marvel-rivals'
+  | 'rainbow-six-siege'
 
 export type Anticheat = 'eac' | 'vanguard' | 'battleye' | 'vac' | 'nexus' | 'none'
 
@@ -114,6 +115,24 @@ export const GAMES: Game[] = [
     glyph: '🦸',
     anticheat: 'nexus',
     keepNames: ['marvel-win64-shipping.exe', 'marvelrivals_launcher.exe'],
+    defaultSuspend: { launcher: true, voice: false, music: false, overlay: false },
+  },
+  {
+    id: 'rainbow-six-siege',
+    label: 'Rainbow Six Siege',
+    glyph: '🛡️',
+    // Siege's Windows game profile uses the existing BattlEye compatibility
+    // bucket. This only informs session/tournament filtering; it never edits
+    // or disables anti-cheat components.
+    anticheat: 'battleye',
+    keepNames: [
+      'rainbowsix.exe',
+      'rainbowsix_vulkan.exe',
+      'rainbowsix_dx11.exe',
+      'ubisoftconnect.exe',
+      'upc.exe',
+      'beservice.exe',
+    ],
     defaultSuspend: { launcher: true, voice: false, music: false, overlay: false },
   },
 ]

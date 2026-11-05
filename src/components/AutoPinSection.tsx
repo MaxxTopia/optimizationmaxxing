@@ -31,6 +31,7 @@ const COMMON_GAMES: Array<{ label: string; exe: string }> = [
   { label: 'Marvel Rivals', exe: 'Marvel-Win64-Shipping.exe' },
   { label: 'Overwatch 2', exe: 'Overwatch.exe' },
   { label: 'Warzone', exe: 'cod.exe' },
+  { label: 'Rainbow Six Siege', exe: 'RainbowSix.exe' },
 ]
 
 export function AutoPinSection() {
@@ -78,6 +79,25 @@ export function AutoPinSection() {
     } finally {
       setBusy(false)
     }
+  }
+
+  async function handleRecommendedFortniteSetup() {
+    if (!config || !info || info.cpuSetIds.length === 0) return
+    const fortniteExe = 'FortniteClient-Win64-Shipping.exe'
+    const existing = config.rules.findIndex(
+      (rule) => rule.processName.toLowerCase() === fortniteExe.toLowerCase(),
+    )
+    const rule: AutoPinRule = { processName: fortniteExe, cores: [...info.cpuSetIds] }
+    const rules = existing >= 0
+      ? config.rules.map((item, index) => (index === existing ? rule : item))
+      : [...config.rules, rule]
+    await persist({
+      ...config,
+      rules,
+      enabled: true,
+      startWithWindows: true,
+    })
+    setEditingIdx(null)
   }
 
   function handleToggleEnabled() {
@@ -238,6 +258,40 @@ export function AutoPinSection() {
       </div>
       <div className="surface-card p-6 space-y-4">
         {err && <div className="text-xs text-accent">Error: {err}</div>}
+
+        {config && info && (
+          <div
+            className="rounded-xl border border-accent/40 bg-accent/5 p-4 space-y-2"
+            aria-label="Recommended Fortnite CPU watcher setup"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-accent font-semibold">recommended path</p>
+                <p className="mt-1 text-base font-bold text-text">Set up Fortnite automatically</p>
+                <p className="mt-1 max-w-2xl text-xs leading-relaxed text-text-muted">
+                  One click saves Fortnite with all {info.cpuSetIds.length} CPU Sets Windows exposed,
+                  starts the watcher now, and starts it hidden at Windows sign-in. No ID picking or
+                  Edit step is required. You can stop it or restore the native scheduler below.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleRecommendedFortniteSetup()}
+                disabled={busy || info.cpuSetIds.length === 0}
+                className="min-h-10 rounded-lg bg-accent px-4 py-2 text-xs font-bold text-bg-base hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {config.enabled && config.rules.some((rule) =>
+                  rule.processName.toLowerCase() === 'fortniteclient-win64-shipping.exe'
+                  && rule.cores.length === info.cpuSetIds.length,
+                ) ? 'Refresh Fortnite setup' : 'Set up Fortnite watcher'}
+              </button>
+            </div>
+            <p className="text-[11px] text-text-subtle">
+              This is a soft Windows scheduling preference, not a BIOS core disable or a guaranteed
+              latency improvement. If a controlled same-scene capture gets worse, use <strong className="text-text">restore native</strong>.
+            </p>
+          </div>
+        )}
 
         <div className="flex items-baseline justify-between gap-3 flex-wrap">
           <div>

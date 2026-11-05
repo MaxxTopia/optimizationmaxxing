@@ -162,15 +162,15 @@ export function Dashboard() {
           color="var(--secondary)"
         />
         <RingGauge
-          label="TWEAKS APPLIED"
+          label="ACTIVE CATALOG ROWS"
           percent={tweakPct}
           value={String(appliedCount)}
           hint={
             appliedCount === 0
               ? unknownActiveCount > 0
-                ? `${catalog.tweaks.length} in catalog · ${unknownActiveCount} legacy active`
-                : `${catalog.tweaks.length} in catalog · browse →`
-              : `${appliedCount}/${catalog.tweaks.length} unique · ${activeReceiptCount} action receipts${
+                ? `${catalog.tweaks.length} total · ${unknownActiveCount} legacy active`
+                : `${catalog.tweaks.length} total · run Asta or Tune Now →`
+              : `${appliedCount}/${catalog.tweaks.length} catalog rows · ${activeReceiptCount} action receipts${
                   unknownActiveCount > 0 ? ` · ${unknownActiveCount} legacy` : ''
                 }`
           }

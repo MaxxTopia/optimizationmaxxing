@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect, useRef } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { CrashBoundary } from './components/CrashBoundary'
 import { Layout } from './components/Layout'
@@ -8,7 +8,16 @@ import { UpdateBanner } from './components/UpdateBanner'
 import { TournamentModeDriver } from './components/TournamentModeDriver'
 import { WhatsNewModal } from './components/WhatsNewModal'
 import { Dashboard } from './pages/Dashboard'
-import { inTauri, listApplied, openExternal, telemetrySendEvent, vipValidateOnline } from './lib/tauri'
+import {
+  getRebootValidation,
+  inTauri,
+  isBackgroundMode,
+  listApplied,
+  openExternal,
+  telemetrySendEvent,
+  validateRebootPersistence,
+  vipValidateOnline,
+} from './lib/tauri'
 import { invoke } from '@tauri-apps/api/core'
 import { useProfileStore } from './store/useProfileStore'
 import { useRigStore } from './store/useRigStore'
@@ -73,6 +82,50 @@ function FirstRunTuneRedirect() {
       alive = false
     }
   }, [location.pathname, navigate])
+
+  return null
+}
+
+/**
+ * Finish an armed reboot proof on the first normal launch after Windows
+ * restarts. This is deliberately verification-only: it never reapplies a
+ * drifted setting. The hidden CPU-set watcher launch opts out so a background
+ * daemon cannot unexpectedly open a UAC prompt or navigate a hidden window.
+ */
+function RebootValidationStartup() {
+  const navigate = useNavigate()
+  const attempted = useRef(false)
+
+  useEffect(() => {
+    if (!inTauri() || attempted.current) return
+    attempted.current = true
+    let alive = true
+
+    void (async () => {
+      try {
+        if (await isBackgroundMode()) return
+        const armed = await getRebootValidation()
+        if (!alive || !['armed', 'awaiting_reboot'].includes(armed.status)) return
+
+        // This is the same explicit persistence command used by the card. If
+        // a protected read needs elevation, Windows may show one normal UAC
+        // consent; no per-tweak prompt loop is introduced here.
+        try {
+          await validateRebootPersistence()
+        } catch {
+          // The card remains available for a deliberate manual retry. The
+          // route still opens so the user never has to hunt for the result.
+        }
+        if (alive) navigate('/asta#asta-reboot-persistence', { replace: true })
+      } catch {
+        // A transient startup/read failure must never block the normal app.
+      }
+    })()
+
+    return () => {
+      alive = false
+    }
+  }, [navigate])
 
   return null
 }
@@ -194,6 +247,7 @@ export default function App() {
     <CrashBoundary>
       <Layout>
         <FirstRunTuneRedirect />
+        <RebootValidationStartup />
         <UpdateBanner />
         <TournamentModeDriver />
         <Suspense fallback={<PageLoadingFallback />}>

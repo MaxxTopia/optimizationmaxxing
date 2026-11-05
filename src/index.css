@@ -711,12 +711,15 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
 /* Research-article body styling — applied to the rendered markdown. */
 .research-body h1,
 .research-body h2 {
-  color: var(--text);
+  color: var(--accent);
   font-weight: 700;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   line-height: 1.25;
+  letter-spacing: -0.01em;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  padding-left: 0.65rem;
 }
 .research-body h3,
 .research-body h4 {
@@ -729,7 +732,8 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
 }
 .research-body p {
   margin: 0.75rem 0;
-  line-height: 1.7;
+  font-size: 0.95rem;
+  line-height: 1.78;
 }
 .research-body ul,
 .research-body ol {
@@ -745,7 +749,17 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
 .research-body li {
   margin: 0.3rem 0;
   padding-left: 0.25rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.research-body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.research-body a:hover {
+  color: var(--text);
 }
 .research-body code {
   background: var(--bg-raised);
@@ -757,6 +771,17 @@ body.profile-bumblebee .bo3-hud-frame > .bo3-hud-frame__inner::after {
 }
 .research-body strong {
   color: var(--text);
+}
+.research-body pre {
+  overflow-x: auto;
+  margin: 0.85rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg-raised);
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1.55;
 }
 .research-body em {
   color: var(--text-muted);

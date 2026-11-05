@@ -18,7 +18,10 @@ export function Guides() {
     return 'any'
   })
   const [search, setSearch] = useState('')
-  const [showAdvanced, setShowAdvanced] = useState(true)
+  // Most visitors want a short, actionable starting point. Advanced firmware
+  // and audit material remains one checkbox away instead of dominating the
+  // first screen for new users.
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   // Deep-link target (e.g. a Match Scan finding links here with ?open=<id>):
   // auto-expand that article and scroll it into view.
@@ -58,20 +61,20 @@ export function Guides() {
         <div>
           <p className="text-xs uppercase tracking-widest text-text-subtle">research</p>
           <h1 className="text-2xl font-bold">Guides</h1>
-          <p className="text-text-muted text-sm max-w-2xl">
-            Vetted guides on the things our catalog can't auto-tune — peripherals,
-            BIOS, browsers, OS distros, and tournament eligibility. Sources shown where available.
-            Pick your game to filter callouts and hide guides that don't apply.
+          <p className="text-text-muted text-sm max-w-2xl leading-relaxed">
+            Short, practical guides for the settings Asta cannot safely change for you.
+            Start with the beginner-safe cards; turn on advanced guides only when you need BIOS,
+            firmware, or manual driver work.
           </p>
         </div>
       </header>
 
       <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-1 text-xs">
         <p className="text-[10px] uppercase tracking-widest text-emerald-300 font-semibold flex items-center gap-1.5">
-          <span>🔰 New to PC Optimization? Start Here</span>
+          <span>🔰 Start here</span>
         </p>
         <p className="text-text-muted leading-snug">
-          Look for the <span className="text-emerald-300 font-semibold border border-emerald-500/50 px-1 py-0.5 rounded bg-emerald-500/10">beginner safe</span> badge on guides — these are lower-risk starting points with a clear recovery path, not a promise of zero risk. Every guide includes a 30-second TL;DR, cited evidence where available, and exact click-by-click instructions. Uncheck "include advanced" below if you want to hide firmware-audit and experimental guides.
+          Choose a <span className="text-emerald-300 font-semibold border border-emerald-500/50 px-1 py-0.5 rounded bg-emerald-500/10">beginner safe</span> card, follow its steps, then measure in the same game scene. These are practical starting points, not promises of a guaranteed FPS or latency gain. Advanced firmware and audit guides are hidden until you enable them below.
         </p>
       </div>
 
@@ -104,14 +107,14 @@ export function Guides() {
               onChange={(e) => setShowAdvanced(e.target.checked)}
               className="accent-accent"
             />
-            include advanced (SCEWIN / firmware audits)
+            Show advanced guides (firmware / BIOS audits)
           </label>
           {(search || activeGame !== 'any' || !showAdvanced) && (
             <button
               onClick={() => {
                 setSearch('')
                 setActiveGame('any')
-                setShowAdvanced(true)
+                setShowAdvanced(false)
               }}
               className="ml-2 px-2 py-1 text-text-subtle hover:text-text underline text-[11px]"
             >

@@ -30,6 +30,11 @@ pub use specs::SpecProfile;
 const REBOOT_VALIDATION_KEY: &str = "reboot_validation";
 const ASTA_INFLIGHT_KEY: &str = "asta_inflight";
 
+#[cfg(windows)]
+const REBOOT_CHECK_STARTUP_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
+#[cfg(windows)]
+const REBOOT_CHECK_STARTUP_VALUE: &str = "Optimizationmaxxing Reboot Check";
+
 /// True when the per-user startup launcher opened the app only to host the
 /// runtime CPU-set watcher. The main window stays hidden in this mode.
 #[derive(Debug, Clone, Copy)]
@@ -128,6 +133,61 @@ fn current_uptime_secs() -> u64 {
     sysinfo::System::uptime()
 }
 
+/// Register or remove the one-time per-user launcher used by an armed reboot
+/// proof. This is deliberately separate from the CPU-set watcher startup
+/// entry: it exists only to finish an explicit persistence check, and is
+/// removed once that check reaches a terminal result.
+fn reconcile_reboot_check_startup(enabled: bool) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use winreg::enums::HKEY_CURRENT_USER;
+        use winreg::RegKey;
+
+        let hkcu = RegKey::predef(HKEY_CURRENT_USER);
+        let (run_key, _) = hkcu
+            .create_subkey(REBOOT_CHECK_STARTUP_KEY)
+            .map_err(|e| format!("open the current-user Windows startup key: {e}"))?;
+
+        if !enabled {
+            match run_key.delete_value(REBOOT_CHECK_STARTUP_VALUE) {
+                Ok(()) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => {
+                    return Err(format!(
+                        "remove the Optimizationmaxxing reboot-check startup entry: {error}"
+                    ))
+                }
+            }
+            return Ok(());
+        }
+
+        let exe = std::env::current_exe()
+            .map_err(|e| format!("resolve the Optimizationmaxxing executable path: {e}"))?;
+        let command = format!("\"{}\" --reboot-check", exe.display());
+        run_key
+            .set_value(REBOOT_CHECK_STARTUP_VALUE, &command)
+            .map_err(|e| format!("write the reboot-check startup entry: {e}"))?;
+        let saved: String = run_key
+            .get_value(REBOOT_CHECK_STARTUP_VALUE)
+            .map_err(|e| format!("read back the reboot-check startup entry: {e}"))?;
+        if saved != command {
+            return Err(
+                "the reboot-check startup entry read back a different command".into(),
+            );
+        }
+        Ok(())
+    }
+
+    #[cfg(not(windows))]
+    {
+        if enabled {
+            Err("automatic reboot-check startup is only available on Windows".into())
+        } else {
+            Ok(())
+        }
+    }
+}
+
 fn reboot_was_observed(before_uptime_secs: u64, after_uptime_secs: u64) -> bool {
     // GetTickCount64/sysinfo uptime resets on a Windows restart. A lower
     // value is the conservative signal; an equal-or-higher value means the
@@ -219,9 +279,10 @@ fn validate_reboot_report(state: &SnapshotStore) -> Result<RebootValidation, Str
         loaded.push((receipt_id, row.tweak_id.clone(), action));
     }
 
-    // The persistence check is an explicit user action after a real reboot,
-    // so protected reads may use elevation here. Batch them into one helper
-    // invocation instead of prompting once per receipt.
+    // The persistence check is only armed by an explicit user action. It may
+    // be finished automatically on the first normal launch after reboot, and
+    // protected reads may use one batched elevation there. Batch them into one
+    // helper invocation instead of prompting once per receipt.
     let action_refs = loaded.iter().map(|(_, _, action)| action).collect::<Vec<_>>();
     let verifications = engine::verify_batch(&action_refs);
     for ((receipt_id, tweak_id, _action), verification) in loaded.into_iter().zip(verifications) {
@@ -299,7 +360,14 @@ mod reboot_validation_tests {
 fn get_reboot_validation(
     state: tauri::State<'_, SnapshotStore>,
 ) -> Result<RebootValidation, String> {
-    load_reboot_validation(&state)
+    let report = load_reboot_validation(&state)?;
+    if report.status == "idle"
+        || (report.verified_at.is_some()
+            && matches!(report.status.as_str(), "verified" | "mismatch" | "unknown"))
+    {
+        let _ = reconcile_reboot_check_startup(false);
+    }
+    Ok(report)
 }
 
 /// Capture a receipt set and current Windows uptime before a user restarts.
@@ -337,6 +405,12 @@ fn arm_reboot_validation(
         .map(|row| row.receipt_id)
         .collect::<Vec<_>>();
 
+    let startup_note = match reconcile_reboot_check_startup(true) {
+        Ok(()) => " Windows will open optimizationmaxxing once after the next restart and finish this check automatically.".to_string(),
+        Err(error) => format!(
+            " Automatic startup could not be registered ({error}); reopen optimizationmaxxing manually after the restart and it will still check."
+        ),
+    };
     let report = RebootValidation {
         status: "armed".into(),
         armed_at: Some(chrono::Utc::now().to_rfc3339()),
@@ -351,8 +425,8 @@ fn arm_reboot_validation(
         mismatched: 0,
         unknown: 0,
         detail: format!(
-            "Armed {} receipt(s). Restart Windows, then open optimizationmaxxing to perform the post-boot read-back.",
-            active_count
+            "Armed {} receipt(s). Restart Windows, then the app will perform the post-boot read-back automatically.{}",
+            active_count, startup_note
         ),
         items: Vec::new(),
     };
@@ -367,9 +441,15 @@ async fn validate_reboot_persistence(
     state: tauri::State<'_, SnapshotStore>,
 ) -> Result<RebootValidation, String> {
     let store = (*state).clone();
-    tokio::task::spawn_blocking(move || validate_reboot_report(&store))
+    let report = tokio::task::spawn_blocking(move || validate_reboot_report(&store))
         .await
-        .map_err(|e| format!("reboot validation task failed: {e}"))?
+        .map_err(|e| format!("reboot validation task failed: {e}"))??;
+    if report.verified_at.is_some()
+        && matches!(report.status.as_str(), "verified" | "mismatch" | "unknown")
+    {
+        let _ = reconcile_reboot_check_startup(false);
+    }
+    Ok(report)
 }
 
 #[tauri::command]
@@ -3071,6 +3151,14 @@ async fn close_splashscreen(
     Ok(())
 }
 
+/// Lets the frontend distinguish a hidden CPU-set watcher launch from a
+/// normal interactive launch. Background mode must never navigate the UI or
+/// turn a sign-in watcher into an unexpected reboot-check prompt.
+#[tauri::command]
+fn app_background_mode(background: tauri::State<'_, BackgroundMode>) -> bool {
+    background.0
+}
+
 
 fn build_summary(action: &TweakAction, pre_state: &serde_json::Value) -> String {
     match action {
@@ -3219,6 +3307,7 @@ pub fn run() {
             get_reboot_validation,
             arm_reboot_validation,
             validate_reboot_persistence,
+            app_background_mode,
             get_tune_preflight,
             enable_system_protection,
             nvpi_status,
