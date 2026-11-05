@@ -253,8 +253,16 @@ reboot persistence, or Fortnite gameplay outcome.
   installer. The local command then stopped at Tauri signing because the
   private signing key is intentionally held by CI; no private key was exposed
   or copied locally.
-- The public v0.4.38 release remains live until the v0.4.39 tag and release
-  workflow complete. The intended v0.4.39 changes are still uncommitted.
+- Commit `680633c` is on `main` and tagged `v0.4.39`.
+- GitHub Actions release run `42075658200` completed successfully. Its local
+  audits, benchmark-stability test, signed build, updater-artifact check, and
+  MaxxTopia notification all passed.
+- The public release is non-draft and non-prerelease at:
+  `https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.39`
+- Public `latest.json` reports version `0.4.39` and the release contains the
+  installer and matching `.sig` updater artifact. The local package build also
+  compiled the optimized executable and NSIS installer; signing remained in CI
+  as intended because the private signing key is not stored locally.
 
 ### Remaining gates and next action
 
@@ -262,9 +270,11 @@ reboot persistence, or Fortnite gameplay outcome.
   one-click CPU-set watcher setup, UAC batching, reboot persistence, and the
   existing Asta apply/restore flow. A same-scene game capture is still needed
   before making FPS, 1% low, ping, or input-feel claims.
-- Before publishing, review the focused diff, commit only intended
-  source/checkpoint changes, rebase onto the current `origin/main`, tag
-  v0.4.39, and verify the CI-signed release installer. After installation,
-  complete the real Windows/UAC/reboot/gameplay gates listed above; source and
-  package tests do not prove Fortnite or Siege FPS, 1% lows, ping, or input
-  feel.
+- The source, native tests, package build, CI release, signature, and updater
+  metadata are verified. A real Windows install is still required to prove
+  UAC batching, HKCU startup behavior, reboot persistence, and Asta apply/restore
+  behavior on a client. A same-scene Fortnite or Siege capture is still needed
+  before making FPS, 1% low, ping, or input-feel claims.
+- Diggy's next test is to install v0.4.39, open Asta, run the one-click supported
+  apply path, restart once when prompted, and use the automatic reboot check.
+  Then run one controlled same-scene Match Scan if gameplay proof is needed.
