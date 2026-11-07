@@ -32,11 +32,12 @@ transaction, restore, or reboot-proof behavior.
 
 ## Verification
 
-- `npm run build` passed.
-- `cargo test --manifest-path src-tauri/Cargo.toml --lib match_scan` passed:
-  13 tests, 0 failures.
-- `cargo test --manifest-path src-tauri/Cargo.toml --lib` passed:
+- `npx tsc --noEmit` passed.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passed:
   107 tests, 0 failures.
+- `npm run tauri:build` produced the expected x64 binary and installer.
+- The local installer build stopped only at the documented CI-only signing
+  boundary because the private Tauri signing key is not stored on this PC.
 - `npm run audit:catalog` passed: 108 rows, 0 errors and 0 warnings.
 - `npm run audit:asta-policy` passed: 0 errors.
 - `npm run audit:pinnacle-coverage` passed: 11/11 required capabilities,
@@ -52,9 +53,15 @@ transaction, restore, or reboot-proof behavior.
 
 ## Release state
 
-- The public/live release remains v0.4.39 at the existing GitHub release.
-- The closed-loop wizard changes are local, uncommitted, unpushed, and not
-  deployed. No installer containing this change has been published.
+- v0.4.40 is published and live at GitHub release
+  https://github.com/MaxxTopia/optimizationmaxxing/releases/tag/v0.4.40.
+- Release commit: `aca2635`; release tag: `v0.4.40`.
+- GitHub Actions release run `42383631966` passed all audits, built and signed
+  the Windows installer, published the release, verified updater artifacts,
+  and notified maxxtopia.
+- The public release exposes the x64 installer, signature, and `latest.json`;
+  the latter was fetched successfully and reports version `0.4.40` with a
+  Windows signature and installer URL.
 - Pre-existing unrelated dirty files remain untouched:
   `_IF-YOU-LOSE-CLAUDE.txt`, `src-tauri/gen/schemas/acl-manifests.json`,
   `src-tauri/gen/schemas/desktop-schema.json`, and
@@ -69,8 +76,8 @@ reboot persistence, real Fortnite FPS, server ping, or input feel.
 
 ## Best next action
 
-Review this focused diff, then publish only when Diggy explicitly asks to push
-live. After installation: open Match Scan, run three baseline captures, use the
-guided Asta handoff, restart and pass the reboot check, then run three after
-captures. Keep or revert based on the measured result rather than the host
-proxy alone.
+Install v0.4.40 on the test PC. Open Match Scan, run three baseline captures,
+use the guided Asta handoff, restart and pass the reboot check, then run three
+after captures. Keep or revert based on the measured result rather than the
+host proxy alone. Source, CI, and public-artifact gates are complete; the real
+Windows/gameplay acceptance gate remains user/device work.
