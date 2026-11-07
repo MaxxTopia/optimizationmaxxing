@@ -12,6 +12,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.40',
+    date: '2026-11-07',
+    highlights: [
+      'NEW **Controlled Fortnite proof flow.** Match Scan now guides users through three baseline captures, Asta plus reboot verification, and three after captures before showing a result.',
+      'IMPROVE **Real game evidence.** The comparison reports average FPS, 1% and 0.1% lows, frame-time spikes, DPC, memory, and hardware context without claiming server ping or input latency proof.',
+      'IMPROVE **Capture reliability.** Sessions without enough real PresentMon game frames are rejected, and progress survives closing the app so users do not lose their test.',
+    ],
+  },
+  {
     version: '0.4.39',
     date: '2026-11-05',
     highlights: [

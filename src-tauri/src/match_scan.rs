@@ -152,6 +152,35 @@ pub struct Finding {
 }
 
 #[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionCaptureMetrics {
+    pub duration_s: u64,
+    pub sensor_samples: u32,
+    pub frames: Option<u32>,
+    pub avg_fps: Option<f32>,
+    pub low1_fps: Option<f32>,
+    pub low01_fps: Option<f32>,
+    pub worst_frametime_ms: Option<f32>,
+    pub median_frametime_ms: Option<f32>,
+    pub spikes_2x: Option<u32>,
+    pub present_mode: Option<String>,
+    pub cpu_bound_pct: Option<f32>,
+    pub gpu_bound_pct: Option<f32>,
+    pub bound_measured: bool,
+    pub min_cpu_effective_clock_mhz: Option<f32>,
+    pub max_cpu_effective_clock_mhz: Option<f32>,
+    pub base_cpu_clock_mhz: Option<f32>,
+    pub max_gpu_temp_c: Option<f32>,
+    pub gpu_throttle_samples: u32,
+    pub min_memory_available_pct: Option<f32>,
+    pub max_dpc_pct: Option<f32>,
+    pub avg_dpc_pct: Option<f32>,
+    pub whea_delta: Option<u32>,
+    pub udp_receive_errors_delta: Option<i64>,
+    pub nic_error_delta: Option<i64>,
+}
+
+#[derive(Serialize, Clone)]
 pub struct MatchScanReport {
     pub headline: String,
     pub findings: Vec<Finding>,
@@ -159,6 +188,9 @@ pub struct MatchScanReport {
     pub checked: u32,
     /// honest caveats — what this tier could NOT read, so we never imply we did
     pub notes: Vec<String>,
+    /// Structured session data used by the guided before/after comparison.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub capture: Option<SessionCaptureMetrics>,
 }
 
 fn hkcu_string(path: &str, name: &str) -> Option<String> {
@@ -545,6 +577,7 @@ pub fn run_preflight() -> MatchScanReport {
         findings,
         checked,
         notes,
+        capture: None,
     }
 }
 
@@ -685,6 +718,7 @@ pub fn interpret_lhm_gpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         findings,
         checked: if read_signal { 1 } else { 0 },
         notes,
+        capture: None,
     }
 }
 
@@ -864,6 +898,7 @@ pub fn interpret_lhm_cpu(lhm: &toolkit::LhmReport) -> MatchScanReport {
         findings,
         checked: if read_signal { 1 } else { 0 },
         notes,
+        capture: None,
     }
 }
 
@@ -1071,6 +1106,7 @@ pub fn run_live_spotcheck() -> MatchScanReport {
         findings,
         checked: sampled,
         notes,
+        capture: None,
     }
 }
 
@@ -1500,6 +1536,11 @@ pub fn session_stop() -> MatchScanReport {
     let mut findings: Vec<Finding> = Vec::new();
     let mut notes: Vec<String> = Vec::new();
     let duration_s = st.started.map(|s| s.elapsed().as_secs()).unwrap_or(0);
+    let frame_stats = st
+        .presentmon_csv
+        .clone()
+        .as_deref()
+        .and_then(parse_presentmon_csv);
 
     if n == 0 {
         return MatchScanReport {
@@ -1516,6 +1557,7 @@ pub fn session_stop() -> MatchScanReport {
             }],
             checked: 0,
             notes,
+            capture: None,
         };
     }
 
@@ -1695,12 +1737,7 @@ pub fn session_stop() -> MatchScanReport {
     }
 
     // Frametime + CPU-vs-GPU-bound from PresentMon (the bottleneck truth).
-    match st
-        .presentmon_csv
-        .clone()
-        .as_deref()
-        .and_then(parse_presentmon_csv)
-    {
+    match frame_stats.as_ref() {
         Some(fs) => {
             let stutter = fs.low01_fps < fs.avg_fps * 0.5;
             findings.push(Finding {
@@ -1831,6 +1868,7 @@ pub fn session_stop() -> MatchScanReport {
     }
 
     // ── UDP + NIC error/discard delta (system-level local signal) ──
+    let mut net_deltas: Option<(i64, i64)> = None;
     if let Some(before) = st.net_before.clone() {
         if let Some(after) = read_net_snapshot() {
             let udp_err = (after.udp_recv_errors - before.udp_recv_errors).max(0);
@@ -1840,6 +1878,7 @@ pub fn session_stop() -> MatchScanReport {
             let txd = (after.tx_discarded - before.tx_discarded).max(0);
             let txe = (after.tx_errors - before.tx_errors).max(0);
             let nic_bad = rxd + rxe + txd + txe;
+            net_deltas = Some((udp_err, nic_bad));
             if udp_err > 0 || nic_bad > 0 {
                 findings.push(Finding {
                     id: "session.net-loss".into(),
@@ -1884,6 +1923,49 @@ pub fn session_stop() -> MatchScanReport {
         base.map(|b| format!("{b:.0} MHz")).unwrap_or_else(|| "unknown".into())
     ));
 
+    let min_cpu_effective_clock_mhz = all_eff.iter().copied().reduce(f32::min);
+    let max_cpu_effective_clock_mhz = all_eff.iter().copied().reduce(f32::max);
+    let avg_dpc_pct = if n > 0 {
+        Some(st.samples.iter().map(|s| s.dpc_pct).sum::<f32>() / n as f32)
+    } else {
+        None
+    };
+    let whea_delta = match (st.whea_at_start, whea_now) {
+        (Some(start), Some(now)) => Some(now.saturating_sub(start)),
+        _ => None,
+    };
+    let capture = Some(SessionCaptureMetrics {
+        duration_s,
+        sensor_samples: n as u32,
+        frames: frame_stats.as_ref().map(|fs| fs.frames as u32),
+        avg_fps: frame_stats.as_ref().map(|fs| fs.avg_fps),
+        low1_fps: frame_stats.as_ref().map(|fs| fs.low1_fps),
+        low01_fps: frame_stats.as_ref().map(|fs| fs.low01_fps),
+        worst_frametime_ms: frame_stats.as_ref().map(|fs| fs.worst_ms),
+        median_frametime_ms: frame_stats.as_ref().map(|fs| fs.median_ms),
+        spikes_2x: frame_stats.as_ref().map(|fs| fs.spikes_2x as u32),
+        present_mode: frame_stats
+            .as_ref()
+            .and_then(|fs| fs.present_mode.clone()),
+        cpu_bound_pct: frame_stats.as_ref().map(|fs| fs.cpu_bound_pct),
+        gpu_bound_pct: frame_stats.as_ref().map(|fs| fs.gpu_bound_pct),
+        bound_measured: frame_stats
+            .as_ref()
+            .map(|fs| fs.bound_measured)
+            .unwrap_or(false),
+        min_cpu_effective_clock_mhz,
+        max_cpu_effective_clock_mhz,
+        base_cpu_clock_mhz: base,
+        max_gpu_temp_c: if gpu_temp_measured { Some(max_gpu) } else { None },
+        gpu_throttle_samples: throttle_samples as u32,
+        min_memory_available_pct: Some(min_mem),
+        max_dpc_pct: Some(max_dpc),
+        avg_dpc_pct,
+        whea_delta,
+        udp_receive_errors_delta: net_deltas.map(|(udp, _)| udp),
+        nic_error_delta: net_deltas.map(|(_, nic)| nic),
+    });
+
     let crits = findings.iter().filter(|f| f.severity == "critical").count();
     let warns = findings.iter().filter(|f| f.severity == "warn").count();
     let headline = if crits > 0 {
@@ -1907,6 +1989,7 @@ pub fn session_stop() -> MatchScanReport {
         findings,
         checked: n as u32,
         notes,
+        capture,
     }
 }
 

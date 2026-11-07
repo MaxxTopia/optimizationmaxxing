@@ -1,17 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useIsVip } from '../store/useVipStore'
+import { ClosedLoopTestWizard } from '../components/ClosedLoopTestWizard'
 import {
   matchScanPreflight,
   matchScanLive,
   matchScanDeepGpu,
   matchScanDeepCpu,
-  matchScanSessionStart,
-  matchScanSessionStop,
-  matchScanSessionStatus,
   type MatchScanReport,
   type MatchScanFinding,
-  type SessionStatus,
 } from '../lib/tauri'
 
 /**
@@ -36,39 +33,11 @@ const SEV_META: Record<
   ok: { label: 'Looks good', dot: 'bg-emerald-500', order: 4 },
 }
 
-function fmtElapsed(s: number): string {
-  const m = Math.floor(s / 60)
-  const sec = s % 60
-  return m > 0 ? `${m}m ${sec}s` : `${sec}s`
-}
-
 export function MatchScan() {
   const isVip = useIsVip()
   const [report, setReport] = useState<MatchScanReport | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const [session, setSession] = useState<SessionStatus | null>(null)
-
-  // Poll session status while a recording is running.
-  useEffect(() => {
-    if (!isVip) return
-    let alive = true
-    const tick = async () => {
-      try {
-        const s = await matchScanSessionStatus()
-        if (alive) setSession(s)
-      } catch {
-        /* ignore */
-      }
-    }
-    tick()
-    const h = window.setInterval(tick, 2000)
-    return () => {
-      alive = false
-      window.clearInterval(h)
-    }
-  }, [isVip])
 
   async function run(kind: 'preflight' | 'live' | 'deep' | 'deepcpu') {
     if (!isVip) return
@@ -91,25 +60,6 @@ export function MatchScan() {
     }
   }
 
-  async function toggleSession() {
-    if (!isVip) return
-    setError(null)
-    try {
-      if (session?.running) {
-        setBusy(true)
-        const verdict = await matchScanSessionStop()
-        setReport(verdict)
-        setBusy(false)
-      } else {
-        await matchScanSessionStart()
-      }
-      setSession(await matchScanSessionStatus())
-    } catch (e) {
-      setError(String(e))
-      setBusy(false)
-    }
-  }
-
   const findings = report
     ? [...report.findings].sort(
         (a, b) => SEV_META[a.severity].order - SEV_META[b.severity].order,
@@ -127,9 +77,9 @@ export function MatchScan() {
           never changes a setting on its own.
         </p>
         <p className="text-xs text-text-subtle">
-          Four scans plus Fight Capture below: the fast pre-game config scan, a
-          live spot-check, GPU/CPU deep scans for the temps your monitor hides,
-          and a full record-a-real-fight verdict.
+          Four individual scans plus the guided before/after proof flow below.
+          The guided flow records three real game sessions before and after
+          Asta, then compares the numbers for this PC.
         </p>
       </header>
 
@@ -143,6 +93,8 @@ export function MatchScan() {
           whether a tweak helps your game, not the Asta host proxy alone.
         </p>
       </div>
+
+      <ClosedLoopTestWizard isVip={isVip} />
 
       <div className="surface-card p-5 space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -232,53 +184,6 @@ export function MatchScan() {
         )}
         {error && (
           <p className="mt-3 text-sm text-red-400">Scan failed: {error}</p>
-        )}
-      </div>
-
-      <div className="surface-card p-5 space-y-3">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <div className="font-semibold text-text">
-              Fight Capture
-              {session?.running && (
-                <span className="ml-2 inline-flex items-center gap-1 text-xs text-red-400">
-                  <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  recording
-                </span>
-              )}
-            </div>
-            <div className="text-sm text-text-muted">
-              {session?.running
-                ? `Recording your fight — ${fmtElapsed(session.elapsedS)}, ${session.samples} samples. Get into a real build fight until inputs get eaten a few times, then Stop for the verdict.`
-                : 'One real build fight, everything measured around it. Start before you queue, get into an actual fight (not a lobby), then Stop. It records both streams at once — machine sensors + per-frame timing — and answers whether eaten inputs are the machine or the game.'}
-            </div>
-          </div>
-          <button
-            onClick={toggleSession}
-            disabled={!isVip || (busy && !session?.running)}
-            className={`btn-chrome px-5 py-2 font-semibold whitespace-nowrap ${
-              session?.running ? 'bg-accent' : ''
-            } ${!isVip ? 'opacity-60 cursor-not-allowed' : ''}`}
-          >
-            {!isVip
-              ? '👑 VIP only'
-              : session?.running
-                ? 'Stop & get verdict'
-                : 'Start fight capture'}
-          </button>
-        </div>
-        {!session?.running && isVip && (
-          <div className="text-xs text-text-subtle border-t border-border pt-3 leading-relaxed">
-            <span className="text-text-muted font-medium">You get back:</span>{' '}
-            the throttle flags (GPU thermal/power + CPU clock drop), the lowest
-            effective clock under load, and the worst single frametime spike —
-            plus a system UDP/NIC error-counter signal, present mode, DPC, and
-            CPU-vs-GPU bound. That network signal is local evidence, not direct
-            proof of Fortnite packet loss; confirm it with Net Debug Stats.
-            For CPU temps behind a throttle, run the CPU deep scan too. If a
-            supported game is open it captures frametimes via PresentMon
-            (one-time admin prompt).
-          </div>
         )}
       </div>
 

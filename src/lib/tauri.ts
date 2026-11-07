@@ -582,11 +582,40 @@ export interface MatchScanFinding {
   guideId: string | null
 }
 
+export interface SessionCaptureMetrics {
+  durationS: number
+  sensorSamples: number
+  frames: number | null
+  avgFps: number | null
+  low1Fps: number | null
+  low01Fps: number | null
+  worstFrametimeMs: number | null
+  medianFrametimeMs: number | null
+  spikes2x: number | null
+  presentMode: string | null
+  cpuBoundPct: number | null
+  gpuBoundPct: number | null
+  boundMeasured: boolean
+  minCpuEffectiveClockMhz: number | null
+  maxCpuEffectiveClockMhz: number | null
+  baseCpuClockMhz: number | null
+  maxGpuTempC: number | null
+  gpuThrottleSamples: number
+  minMemoryAvailablePct: number | null
+  maxDpcPct: number | null
+  avgDpcPct: number | null
+  wheaDelta: number | null
+  udpReceiveErrorsDelta: number | null
+  nicErrorDelta: number | null
+}
+
 export interface MatchScanReport {
   headline: string
   findings: MatchScanFinding[]
   checked: number
   notes: string[]
+  /** Structured data for the guided before/after test, when this is a session report. */
+  capture?: SessionCaptureMetrics | null
 }
 
 /** Driver-free preflight scan: surfaces silent config killers (XMP off, mouse
