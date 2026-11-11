@@ -379,6 +379,18 @@ function PriceCard({
       <div className={element115 ? 'pr-16' : ''}>
         <p className="text-xs uppercase tracking-widest text-text-subtle mb-1">{name}</p>
         <div className="flex items-baseline gap-2 flex-wrap">
+          {regularPrice && (
+            <span
+              className="relative inline-flex items-center text-4xl font-bold text-text select-none tabular-nums"
+              aria-label={`${regularPrice} original price`}
+            >
+              <span>{regularPrice}</span>
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute left-[-0.25rem] right-[-0.25rem] top-1/2 h-[3px] -rotate-[14deg] rounded-full bg-red-500 shadow-[0_0_7px_rgba(239,68,68,0.9)]"
+              />
+            </span>
+          )}
           <p
             className={`text-4xl font-bold ${regularPrice ? 'text-emerald-300' : 'text-text'} select-none`}
             onClick={onPriceTap}
@@ -400,11 +412,6 @@ function PriceCard({
           >
             {price}
           </p>
-          {regularPrice && (
-            <p className="text-base text-text-subtle line-through tabular-nums">
-              {regularPrice}
-            </p>
-          )}
           {regularPrice && (
             <span className="text-[10px] uppercase tracking-widest text-bg-base bg-accent px-1.5 py-0.5 rounded ml-1">
               {discountPercent != null ? `${discountPercent}% OFF` : 'SALE'}

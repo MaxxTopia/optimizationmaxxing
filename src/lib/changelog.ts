@@ -12,6 +12,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.42',
+    date: '2026-11-11',
+    highlights: [
+      'FIX **Pricing card layout.** The former $115 lifetime price stays in its original position with a diagonal red slash, while the neon-green $55 price appears to its right with the 52% discount badge.',
+    ],
+  },
+  {
     version: '0.4.41',
     date: '2026-11-11',
     highlights: [
