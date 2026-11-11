@@ -92,11 +92,12 @@ const OFFER_SESSION_RE = /^[A-Za-z0-9_-]{32,96}$/;
 const OFFER_TICKET_RE = /^OMAX-[0-9A-HJKMNP-Z]{16}$/;
 const OFFER_TTL_SEC = 7 * 24 * 60 * 60;
 const OFFER_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
-const OFFER_NORMAL_PRICE = 115;
+const OFFER_NORMAL_PRICE = 55;
+const LEGACY_OFFER_NORMAL_PRICE = 115;
 const OFFER_TIERS = [
-  { rarity: 'gold', chance: 70, price: 69 },
-  { rarity: 'emerald', chance: 24, price: 55 },
-  { rarity: 'diamond', chance: 6, price: 33 },
+  { rarity: 'gold', chance: 70, price: 40 },
+  { rarity: 'emerald', chance: 24, price: 33 },
+  { rarity: 'diamond', chance: 6, price: 25 },
 ];
 
 // Profile-flair validation. URLs must be https:// and ≤250 chars total; viewer
@@ -908,7 +909,7 @@ async function handleOfferJoin(code, session, env, ctx) {
 }
 
 function deriveAccountOffer(sessionRecord, userId, username) {
-  const discount = offerDiscount(sessionRecord.price);
+  const discount = offerDiscountForRecord(sessionRecord);
   return {
     version: 1,
     status: 'offered',
@@ -935,12 +936,22 @@ function pickOfferTier() {
   return roll < 70 ? OFFER_TIERS[0] : roll < 94 ? OFFER_TIERS[1] : OFFER_TIERS[2];
 }
 
-function offerDiscount(price) {
-  const savings = Math.max(0, OFFER_NORMAL_PRICE - Number(price));
+function offerDiscount(price, normalPrice = OFFER_NORMAL_PRICE) {
+  const savings = Math.max(0, normalPrice - Number(price));
   return {
-    normalPrice: OFFER_NORMAL_PRICE,
+    normalPrice,
     savings,
-    discountPercent: Math.round((savings / OFFER_NORMAL_PRICE) * 100),
+    discountPercent: Math.round((savings / normalPrice) * 100),
+  };
+}
+
+function offerDiscountForRecord(record) {
+  const normalPrice = Number.isFinite(record.normalPrice) ? record.normalPrice : LEGACY_OFFER_NORMAL_PRICE;
+  const fallback = offerDiscount(record.price, normalPrice);
+  return {
+    normalPrice,
+    savings: Number.isFinite(record.savings) ? record.savings : fallback.savings,
+    discountPercent: Number.isFinite(record.discountPercent) ? record.discountPercent : fallback.discountPercent,
   };
 }
 
@@ -959,7 +970,7 @@ function offerJson(record, requestOrUrl, corsHeaders) {
     ? requestOrUrl.origin
     : new URL(requestOrUrl.url).origin;
   const status = Date.now() > record.expiresAt && record.status === 'pending' ? 'expired' : record.status;
-  const discount = offerDiscount(record.price);
+  const discount = offerDiscountForRecord(record);
   return json({
     ok: true,
     status,
@@ -967,9 +978,9 @@ function offerJson(record, requestOrUrl, corsHeaders) {
     rarity: record.rarity,
     chanceLabel: record.chanceLabel,
     price: record.price,
-    normalPrice: Number.isFinite(record.normalPrice) ? record.normalPrice : discount.normalPrice,
-    savings: Number.isFinite(record.savings) ? record.savings : discount.savings,
-    discountPercent: Number.isFinite(record.discountPercent) ? record.discountPercent : discount.discountPercent,
+    normalPrice: discount.normalPrice,
+    savings: discount.savings,
+    discountPercent: discount.discountPercent,
     issuedAt: new Date(record.issuedAt).toISOString(),
     expiresAt: new Date(record.expiresAt).toISOString(),
     discordLinked: record.discordLinked === true || status === 'offered' || status === 'redeemed',
@@ -986,12 +997,13 @@ async function expireOfferSession(env, record) {
 function offerHtml(offer, message, status = 200) {
   const expiry = new Date(offer.expiresAt).toUTCString();
   const state = offer.status === 'redeemed' ? 'already used' : offer.status === 'revoked' ? 'cancelled' : offer.status === 'expired' ? 'expired' : 'available';
-  const discount = offerDiscount(offer.price);
-  const savings = Number.isFinite(offer.savings) ? offer.savings : discount.savings;
-  const discountPercent = Number.isFinite(offer.discountPercent) ? offer.discountPercent : discount.discountPercent;
+  const discount = offerDiscountForRecord(offer);
+  const savings = discount.savings;
+  const discountPercent = discount.discountPercent;
+  const normalPrice = discount.normalPrice;
   return htmlPage(
     `<h1>MAXX VIP offer</h1>` +
-      `<p><b>${escapeHtml(offer.rarity.toUpperCase())} TICKET</b> · lifetime VIP for <b>$${escapeHtml(String(offer.price))}</b> instead of $115 — <b>${discountPercent}% off</b> (save $${savings}).</p>` +
+      `<p><b>${escapeHtml(offer.rarity.toUpperCase())} TICKET</b> · lifetime VIP for <b>$${escapeHtml(String(offer.price))}</b> instead of $${escapeHtml(String(normalPrice))} — <b>${discountPercent}% off</b> (save $${savings}).</p>` +
       `<p>Offer status: <b>${escapeHtml(state)}</b>. It expires <b>${escapeHtml(expiry)}</b>.</p>` +
       `<p>${escapeHtml(message)}</p>` +
       `<p>Ticket ID: <code>${escapeHtml(offer.ticketId)}</code></p>` +
@@ -1018,12 +1030,13 @@ async function joinDiscordGuild(env, userId, accessToken) {
 }
 
 function offerDmText(offer) {
-  const discount = offerDiscount(offer.price);
-  const savings = Number.isFinite(offer.savings) ? offer.savings : discount.savings;
-  const discountPercent = Number.isFinite(offer.discountPercent) ? offer.discountPercent : discount.discountPercent;
+  const discount = offerDiscountForRecord(offer);
+  const savings = discount.savings;
+  const discountPercent = discount.discountPercent;
+  const normalPrice = discount.normalPrice;
   return (
     '**MAXXTOPIA — your first-time VIP offer**\n\n' +
-    `You have a **${offer.rarity.toUpperCase()} TICKET**: lifetime VIP for **$${offer.price}** instead of $115 — **${discountPercent}% off** (save **$${savings}**).\n` +
+    `You have a **${offer.rarity.toUpperCase()} TICKET**: lifetime VIP for **$${offer.price}** instead of **$${normalPrice}** — **${discountPercent}% off** (save **$${savings}**).\n` +
     `Ticket: **${offer.ticketId}**\n` +
     `Valid until: **${new Date(offer.expiresAt).toUTCString()}**\n\n` +
     'This is a limited-time discount, not a contest. You can ignore it if you do not want VIP. ' +
@@ -3123,9 +3136,7 @@ async function handleAdmin(url, request, env, corsHeaders) {
           ticketId: offer.ticketId,
           rarity: offer.rarity,
           price: offer.price,
-          normalPrice: OFFER_NORMAL_PRICE,
-          savings: Number.isFinite(offer.savings) ? offer.savings : offerDiscount(offer.price).savings,
-          discountPercent: Number.isFinite(offer.discountPercent) ? offer.discountPercent : offerDiscount(offer.price).discountPercent,
+          ...offerDiscountForRecord(offer),
           chanceLabel: offer.chanceLabel,
           status: offer.status,
           userId: offer.userId || null,

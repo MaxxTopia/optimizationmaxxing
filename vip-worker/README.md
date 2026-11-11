@@ -96,12 +96,11 @@ different hwid returns `409 already claimed by another rig`.
 
 The desktop app uses the same Worker for a separate discount-offer ledger:
 
-The current first-time ladder is measured against the regular $115 lifetime
-price:
+The new first-time ladder is measured against the public $55 lifetime price:
 
-- Gold (70% pull): $69, **40% off**, save $46
-- Emerald (24% pull): $55, **52% off**, save $60
-- Diamond (6% pull): $33, **71% off**, save $82
+- Gold (70% pull): $40, **27% off**, save $15
+- Emerald (24% pull): $33, **40% off**, save $22
+- Diamond (6% pull): $25, **55% off**, save $30
 
 Previously issued offers keep their original price and expiry. New sessions use
 the ladder above, and the Worker returns the normal price, savings, and rounded

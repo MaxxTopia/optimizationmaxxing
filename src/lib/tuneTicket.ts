@@ -7,10 +7,11 @@ const LEGACY_ENGINE_STORAGE_KEY = 'first_tune_ticket_v1'
 const OFFER_WORKER_BASE = 'https://optmaxxing-vip.maxxtopia.workers.dev'
 const OFFER_WINDOW_MS = 3 * 24 * 60 * 60 * 1000
 
-export const OFFER_NORMAL_PRICE = 115
+export const OFFER_NORMAL_PRICE = 55
+const LEGACY_OFFER_NORMAL_PRICE = 115
 export type TuneTicketRarity = 'gold' | 'emerald' | 'diamond'
 export type TuneTicketStatus = 'pending' | 'offered' | 'expired' | 'redeemed' | 'revoked' | 'local'
-export type TuneTicketPrice = 33 | 55 | 69 | 77 | 99
+export type TuneTicketPrice = 25 | 26 | 33 | 40 | 55 | 69 | 77 | 99
 
 export interface TuneTicket {
   id: string
@@ -41,9 +42,9 @@ const TIERS: Array<{
   savings: number
   discountPercent: number
 }> = [
-  { rarity: 'gold', chance: 70, price: 69, color: 'gold', ...offerDiscount(69) },
-  { rarity: 'emerald', chance: 24, price: 55, color: 'emerald', ...offerDiscount(55) },
-  { rarity: 'diamond', chance: 6, price: 33, color: 'diamond', ...offerDiscount(33) },
+  { rarity: 'gold', chance: 70, price: 40, color: 'gold', ...offerDiscount(40) },
+  { rarity: 'emerald', chance: 24, price: 33, color: 'emerald', ...offerDiscount(33) },
+  { rarity: 'diamond', chance: 6, price: 25, color: 'diamond', ...offerDiscount(25) },
 ]
 
 interface OfferPayload {
@@ -125,12 +126,12 @@ export function tuneTicketMeta(rarity: TuneTicketRarity) {
   return TIERS.find((tier) => tier.rarity === rarity) ?? TIERS[0]
 }
 
-export function offerDiscount(price: number) {
-  const savings = Math.max(0, OFFER_NORMAL_PRICE - price)
+export function offerDiscount(price: number, normalPrice = OFFER_NORMAL_PRICE) {
+  const savings = Math.max(0, normalPrice - price)
   return {
-    normalPrice: OFFER_NORMAL_PRICE,
+    normalPrice,
     savings,
-    discountPercent: Math.round((savings / OFFER_NORMAL_PRICE) * 100),
+    discountPercent: Math.round((savings / normalPrice) * 100),
   }
 }
 
@@ -226,19 +227,20 @@ function parseTicket(raw: string | null): TuneTicket | null {
     if (
       !parsed.id ||
       (parsed.rarity !== 'gold' && parsed.rarity !== 'emerald' && parsed.rarity !== 'diamond') ||
-      (price !== 33 && price !== 55 && price !== 69 && price !== 77 && price !== 99) ||
+      (price !== 25 && price !== 26 && price !== 33 && price !== 40 && price !== 55 && price !== 69 && price !== 77 && price !== 99) ||
       !parsed.chanceLabel ||
       !parsed.issuedAt
     ) return null
     const issuedMs = Date.parse(parsed.issuedAt)
     const legacy = !parsed.status || !parsed.expiresAt
-    const fallback = offerDiscount(price)
+    const normalPrice = typeof parsed.normalPrice === 'number' ? parsed.normalPrice : LEGACY_OFFER_NORMAL_PRICE
+    const fallback = offerDiscount(price, normalPrice)
     return {
       id: parsed.id,
       rarity: parsed.rarity,
       chanceLabel: parsed.chanceLabel,
       price,
-      normalPrice: typeof parsed.normalPrice === 'number' ? parsed.normalPrice : fallback.normalPrice,
+      normalPrice,
       savings: typeof parsed.savings === 'number' ? parsed.savings : fallback.savings,
       discountPercent: typeof parsed.discountPercent === 'number' ? parsed.discountPercent : fallback.discountPercent,
       issuedAt: parsed.issuedAt,

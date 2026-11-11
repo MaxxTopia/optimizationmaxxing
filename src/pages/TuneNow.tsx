@@ -1243,7 +1243,7 @@ function DoneState({
               to="/pricing"
               className="btn-chrome px-5 py-2.5 rounded-md bg-accent text-bg-base font-semibold"
             >
-              See lifetime VIP — $115 →
+              See lifetime VIP — $55 →
             </Link>
             <Link to="/asta" className="text-xs underline text-text-muted hover:text-text">
               See what Asta Mode does ↗

@@ -37,7 +37,7 @@ export const MAXXER_PRODUCTS: MaxxerProduct[] = [
   { slug: 'snipemaxxer',         name: 'Snipemaxxer',         status: 'beta', accentHex: '#ff3b3b', logo: '/logos/snipemaxxer.svg' },
   { slug: 'playlistmaxxing',     name: 'Playlistmaxxing',     status: 'live', accentHex: '#ff2e88', logo: '/logos/playlistmaxxing.webp' },
   { slug: 'dropmaxxer',          name: 'Dropmaxxer',          status: 'beta', accentHex: '#4c51f7', logo: '/logos/dropmaxxer-icon.svg' },
-  { slug: 'aimmaxxer',           name: 'Aimmaxxer',           status: 'soon', accentHex: '#f3af19', logo: '/logos/aimmaxxer-icon.png' },
+  { slug: 'aimmaxxer',           name: 'Aimmaxxer',           status: 'live', accentHex: '#f3af19', logo: '/logos/aimmaxxer-icon.png' },
 ]
 
 /** Two-letter monogram from product name (e.g., "Optimizationmaxxing" → "OM"). */

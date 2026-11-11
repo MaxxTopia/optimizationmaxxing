@@ -8,7 +8,8 @@ import { openExternal } from '../lib/tauri'
  * earlier $8/mo subscription model (one-shot value product → sub was
  * structurally wrong, see feedback_optimizationmaxxing_decisions.md).
  *
- * The lifetime price is currently $115. Visual treatment riffs on BO3
+ * The public lifetime price is now $55, with the previous $115 shown as the
+ * crossed-out comparison. Visual treatment riffs on BO3
  * Zombies — Element 115 in Treyarch lore is the substance that creates
  * undead (great pun: turns dead PCs into living ones). Cyan glow + atomic
  * symbol box.
@@ -57,7 +58,7 @@ export function Pricing() {
   const redeemedCode = useVipStore((s) => s.redeemedCode)
   const isVip = tier === 'vip'
 
-  // Easter egg: 5 clicks on the VIP "$115" price within 3 s reveals the
+  // Easter egg: 5 clicks on the VIP "$55" price within 3 s reveals the
   // hidden HWID-bound code-redemption panel.
   const [showRedemption, setShowRedemption] = useState(false)
   const clicks = useRef<number[]>([])
@@ -89,7 +90,7 @@ export function Pricing() {
         <h1 className="text-3xl font-bold">Pricing</h1>
         <p className="text-sm text-text-muted max-w-2xl">
           Free for life on the safest tweaks — enough to make a real, measured improvement on any
-          rig. VIP is normally a <strong className="text-text">$115 one-time lifetime</strong>{' '}
+          rig. VIP is currently a <strong className="text-text">$55 one-time lifetime</strong>{' '}
           unlock for the full catalog, measured before/after tools, and the Asta ceiling lane.
           Your actual gain still depends on your rig and game.
         </p>
@@ -107,7 +108,9 @@ export function Pricing() {
         />
         <PriceCard
           name="VIP"
-          price="$115"
+          price="$55"
+          regularPrice="$115"
+          discountPercent={52}
           tagline="One-time · lifetime · regular price"
           highlighted
           highlightLabel={isVip ? 'Active' : 'Lifetime unlock'}
@@ -154,12 +157,14 @@ export function Pricing() {
         <p className="text-[10px] uppercase tracking-widest" style={{ color: '#7ad9d9' }}>
           element 115 · the substance
         </p>
-        <h2 className="text-lg font-semibold">Why $115?</h2>
+        <h2 className="text-lg font-semibold">Why the 115 theme?</h2>
         <p className="text-sm text-text-muted leading-snug max-w-3xl">
           BO3 Zombies fans know. <strong className="text-text">Element 115 (Mc · Moscovium)</strong>{' '}
           is what turns dead things into living ones in Treyarch's lore — the perfect price
           point for the substance that turns dead PCs into living ones. The number isn't an
-          accident: $115 is the regular lifetime price, locked in forever.
+          accident: the crossed-out $115 is the former reference price; the
+          current $55 lifetime unlock keeps the Element 115 theme while making
+          the offer more accessible.
         </p>
       </section>
 
@@ -194,7 +199,7 @@ export function Pricing() {
           <div className="rounded-lg border border-amber-500/30 p-4 bg-amber-500/5 space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-amber-300 text-sm">👑</span>
-              <h3 className="font-semibold text-sm text-text">VIP Lifetime Pathway ($115)</h3>
+              <h3 className="font-semibold text-sm text-text">VIP Lifetime Pathway ($55)</h3>
             </div>
             <ol className="space-y-2 text-xs text-text-muted">
               <li className="flex items-start gap-2">
@@ -225,7 +230,7 @@ export function Pricing() {
             <span className="text-accent font-semibold">2.</span> Tell Diggy your preferred payment — PayPal, BTC, Venmo, Cash App, whatever works for you.
           </li>
           <li>
-            <span className="text-accent font-semibold">3.</span> Pay → Diggy DMs you a 16-char activation code → tap the <span className="text-accent">$115</span> price 5x on this page → paste code → first-claim-wins on your rig forever.
+            <span className="text-accent font-semibold">3.</span> Pay → Diggy DMs you a 16-char activation code → tap the <span className="text-accent">$55</span> price 5x on this page → paste code → first-claim-wins on your rig forever.
           </li>
         </ol>
         <p className="text-[11px] text-text-subtle mt-3 leading-snug">
@@ -263,6 +268,7 @@ function PriceCard({
   name,
   price,
   regularPrice,
+  discountPercent,
   tagline,
   features,
   ctaLabel,
@@ -276,6 +282,7 @@ function PriceCard({
   name: string
   price: string
   regularPrice?: string
+  discountPercent?: number
   tagline: string
   features: string[]
   ctaLabel: string
@@ -373,18 +380,21 @@ function PriceCard({
         <p className="text-xs uppercase tracking-widest text-text-subtle mb-1">{name}</p>
         <div className="flex items-baseline gap-2 flex-wrap">
           <p
-            className="text-4xl font-bold text-text select-none"
+            className={`text-4xl font-bold ${regularPrice ? 'text-emerald-300' : 'text-text'} select-none`}
             onClick={onPriceTap}
             style={
-              onPriceTap
+              onPriceTap || element115 || regularPrice
                 ? {
-                    cursor: 'default',
-                    ...(element115
+                    ...(onPriceTap ? { cursor: 'default' } : {}),
+                    ...(regularPrice
+                      ? {
+                          color: '#39ff88',
+                          textShadow: '0 0 10px rgba(57, 255, 136, 0.8), 0 0 24px rgba(57, 255, 136, 0.35)',
+                        }
+                      : element115
                       ? { textShadow: '0 0 12px rgba(58, 240, 240, 0.55)' }
                       : {}),
                   }
-                : element115
-                ? { textShadow: '0 0 12px rgba(58, 240, 240, 0.55)' }
                 : undefined
             }
           >
@@ -397,7 +407,7 @@ function PriceCard({
           )}
           {regularPrice && (
             <span className="text-[10px] uppercase tracking-widest text-bg-base bg-accent px-1.5 py-0.5 rounded ml-1">
-              SALE
+              {discountPercent != null ? `${discountPercent}% OFF` : 'SALE'}
             </span>
           )}
         </div>

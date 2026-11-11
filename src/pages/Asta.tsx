@@ -1371,7 +1371,7 @@ export function Asta() {
                     to="/pricing"
                     className="btn-chrome px-3 py-1.5 rounded-md bg-amber-400 text-bg-base font-semibold text-xs whitespace-nowrap hover:bg-amber-300 transition"
                   >
-                    View VIP ($115) →
+                    View VIP ($55) →
                   </Link>
                 </div>
               </div>

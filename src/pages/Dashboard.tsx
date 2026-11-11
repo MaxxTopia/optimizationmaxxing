@@ -138,7 +138,7 @@ export function Dashboard() {
                   to="/pricing"
                   className="px-3 py-2 rounded-md border border-amber-400/40 text-amber-300 hover:bg-amber-400/10 text-xs font-semibold whitespace-nowrap transition"
                 >
-                  👑 Upgrade ($115) / Redeem
+                  👑 Upgrade ($55) / Redeem
                 </Link>
               </>
             )}

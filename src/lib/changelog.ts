@@ -12,6 +12,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.4.41',
+    date: '2026-11-11',
+    highlights: [
+      'UPDATE **VIP pricing refresh.** Lifetime VIP is now $55 with the former $115 price shown as a 52% comparison discount; first-Tune offers are Gold $40, Emerald $33, and Diamond $25.',
+      'FIX **Aimmaxer is live.** The sidebar now presents Aimmaxer as available without the coming-soon lock.',
+    ],
+  },
+  {
     version: '0.4.40',
     date: '2026-11-07',
     highlights: [

@@ -147,7 +147,7 @@ export function TuneTicketModal({ ticket, open, onClose, onTicketChange }: Props
               <div className="text-right">
                 <p className="text-[11px] uppercase tracking-widest text-white/60">lifetime VIP</p>
                 <p className="text-5xl font-black text-white">${activeTicket.price}</p>
-                <p className="text-xs text-white/70"><span className="line-through">$115 normal</span> · {discountPercent}% off</p>
+                <p className="text-xs text-white/70"><span className="line-through">${activeTicket.normalPrice} normal</span> · {discountPercent}% off</p>
               </div>
             </div>
 
